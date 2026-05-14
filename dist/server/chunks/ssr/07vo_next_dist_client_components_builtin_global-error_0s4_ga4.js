@@ -1,3 +1,0 @@
-module.exports=[49141,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(19186);a.n(d("[project]/OneDrive/Pictures/Documents/SynArc/synarc-dao/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},32064,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(19186);a.n(d("[project]/OneDrive/Pictures/Documents/SynArc/synarc-dao/node_modules/next/dist/client/components/builtin/global-error.js"))},62541,a=>{"use strict";a.i(49141);var b=a.i(32064);a.n(b)},82129,a=>{a.n(a.i(62541))}];
-
-//# sourceMappingURL=07vo_next_dist_client_components_builtin_global-error_0s4_ga4.js.map
