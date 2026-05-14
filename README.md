@@ -69,13 +69,12 @@ npm run build
 
 ## Deployment
 
-### Vercel
-
 1. Push to GitHub
 2. Import project on [vercel.com](https://vercel.com)
 3. Framework preset: **Next.js**
-4. Build command: `npm run build`
-5. Output directory: `dist`
+4. Keep all other settings (Root Directory, Build Command, Output Directory) as **Default**.
+5. Add your environment variables (see `.env.example`).
+6. Deploy.
 
 ### Static Hosting
 
