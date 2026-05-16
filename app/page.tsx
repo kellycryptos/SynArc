@@ -14,24 +14,24 @@ import Link from "next/link";
 
 const features = [
   {
+    icon: Database,
+    title: "Stablecoin-Native Coordination",
+    description: "Manage multi-million dollar stablecoin treasuries with programmable execution and built-in yield strategies for the USDC economy.",
+  },
+  {
     icon: Lock,
-    title: "Confidential Voting",
-    description: "Zero-knowledge proofs ensure that governance votes remain entirely private while guaranteeing cryptographic accuracy on the Arc Network.",
+    title: "Confidential Execution",
+    description: "Zero-knowledge proofs ensure that governance votes and treasury movements remain private while guaranteeing cryptographic accuracy.",
+  },
+  {
+    icon: Zap,
+    title: "Programmable Governance",
+    description: "Implement custom coordination rules, automated timelocks, and smart-contract driven decision matrices for your organization.",
   },
   {
     icon: Layers,
-    title: "Scalable Coordination",
-    description: "Designed for high-throughput decision-making, allowing DAOs to scale their operations without high gas fees or network congestion.",
-  },
-  {
-    icon: Database,
-    title: "Secure Treasury Management",
-    description: "Manage multi-million dollar treasuries with multi-signature security and programmatic execution of funds post-quorum.",
-  },
-  {
-    icon: Shield,
-    title: "Sybil Resistance",
-    description: "Advanced identity frameworks to prevent voting manipulation and ensure that true stakeholders drive the decentralized organization.",
+    title: "Agentic Economies",
+    description: "Built for high-throughput, autonomous operations, enabling AI agents and delegates to coordinate value at scale.",
   },
 ];
 
@@ -154,10 +154,10 @@ export default function HomePage() {
         </section>
 
         {/* Features */}
-        <section className="space-y-12 pb-24">
+        <section className="space-y-12 pb-24 relative z-10">
           <div className="text-center space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold">Built for Modern Coordination</h2>
-            <p className="text-muted max-w-2xl mx-auto">SynArc provides the essential tools to build, manage, and scale decentralized organizations with uncompromising security and privacy.</p>
+            <h2 className="text-3xl md:text-4xl font-bold">Built for Agentic Coordination</h2>
+            <p className="text-muted max-w-2xl mx-auto text-lg">SynArc provides the essential infrastructure to build, manage, and scale programmable agentic economies with uncompromising security.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {features.map((feature, i) => {

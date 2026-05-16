@@ -56,7 +56,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted">Quorum Threshold (Tokens)</label>
+                    <label className="text-sm font-medium text-muted">Quorum Threshold (USDC)</label>
                     <input 
                       type="number" 
                       defaultValue={daoSettings.quorumThreshold}

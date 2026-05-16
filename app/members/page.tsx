@@ -49,7 +49,7 @@ export default function MembersPage() {
               <div className="space-y-4 pt-4 border-t border-border-thin">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted">Voting Power</span>
-                  <span className="font-semibold">{(member.votingPower / 1000).toFixed(0)}k ARC</span>
+                  <span className="font-semibold">{(member.votingPower / 1000).toFixed(0)}k USDC</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted">Delegated To</span>

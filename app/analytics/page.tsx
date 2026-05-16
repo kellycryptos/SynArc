@@ -85,7 +85,7 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="text-right">
                     <span className="font-semibold">{(delegate.power / 1000).toFixed(0)}k</span>
-                    <span className="text-xs text-muted ml-1">ARC</span>
+                    <span className="text-xs text-muted ml-1">USDC</span>
                   </div>
                 </div>
               ))}

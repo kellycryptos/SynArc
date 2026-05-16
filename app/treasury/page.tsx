@@ -44,18 +44,18 @@ export default function TreasuryPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 pt-6 border-t border-white/5">
+              <div className="flex items-center gap-6 pt-6 border-t border-border-thin">
                 <div>
                   <p className="text-sm text-muted mb-1">USDC</p>
                   <p className="text-xl font-semibold">$1.8M</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted mb-1">ETH</p>
-                  <p className="text-xl font-semibold">185.4</p>
+                  <p className="text-sm text-muted mb-1">sUSDC (Staked)</p>
+                  <p className="text-xl font-semibold">$450K</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted mb-1">ARC</p>
-                  <p className="text-xl font-semibold">1.2M</p>
+                  <p className="text-sm text-muted mb-1">USDT</p>
+                  <p className="text-xl font-semibold">$150K</p>
                 </div>
               </div>
             </div>
@@ -76,20 +76,20 @@ export default function TreasuryPage() {
                 </div>
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-sm">
-                    <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[#627EEA]"></div>ETH</span>
-                    <span>15%</span>
+                    <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-accent"></div>sUSDC</span>
+                    <span>19%</span>
                   </div>
                   <div className="w-full bg-surface-elevated h-2 rounded-full overflow-hidden">
-                    <div className="bg-[#627EEA] h-full" style={{ width: '15%' }} />
+                    <div className="bg-accent h-full" style={{ width: '19%' }} />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-sm">
-                    <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-primary"></div>ARC</span>
-                    <span>10%</span>
+                    <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-success"></div>USDT</span>
+                    <span>6%</span>
                   </div>
                   <div className="w-full bg-surface-elevated h-2 rounded-full overflow-hidden">
-                    <div className="bg-primary h-full" style={{ width: '10%' }} />
+                    <div className="bg-success h-full" style={{ width: '6%' }} />
                   </div>
                 </div>
               </div>

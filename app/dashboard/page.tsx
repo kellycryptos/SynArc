@@ -28,14 +28,14 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto space-y-8">
         
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard Overview</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Governance Dashboard</h1>
           <div className="px-3 py-1.5 rounded-lg bg-surface border border-border-thin text-sm font-medium">
-            Arc Testnet
+            Arc Mainnet
           </div>
         </div>
 
         {/* Stats */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
           <StatCard
             label="Treasury Value"
             value={`$${(healthMetrics.find(m => m.label === 'Treasury Value')?.value || 0) / 1000000}M`}
@@ -72,14 +72,14 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Active Proposals Summary */}
-          <section className="lg:col-span-2 space-y-6">
+          <section className="lg:col-span-2 space-y-6 relative z-10">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold">Recent Proposals</h2>
+                <h2 className="text-xl font-bold">Programmable Proposals</h2>
               </div>
               <Link
                 href="/proposals"
-                className="text-sm text-accent hover:text-accent/80 transition-colors inline-flex items-center gap-1"
+                className="text-sm text-accent hover:text-accent/80 transition-colors inline-flex items-center gap-1 font-medium"
               >
                 View all <ArrowRight className="w-4 h-4" />
               </Link>
@@ -113,14 +113,14 @@ export default function DashboardPage() {
           </section>
 
           {/* Recent Activity */}
-          <section className="space-y-6">
+          <section className="space-y-6 relative z-10">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold">Treasury Activity</h2>
+                <h2 className="text-xl font-bold">Stablecoin Treasury</h2>
               </div>
               <Link
                 href="/treasury"
-                className="text-sm text-accent hover:text-accent/80 transition-colors inline-flex items-center gap-1"
+                className="text-sm text-accent hover:text-accent/80 transition-colors inline-flex items-center gap-1 font-medium"
               >
                 Full history <ArrowRight className="w-4 h-4" />
               </Link>

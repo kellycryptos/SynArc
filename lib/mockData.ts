@@ -36,7 +36,7 @@ export const daoMembers: DAOMember[] = [
   {
     id: '3',
     address: '0x9d2E...f5A0',
-    ensName: 'daomaximalist.eth',
+    ensName: 'agenticoperator.eth',
     reputationLevel: 'Guardian',
     reputationScore: 7230,
     delegatedPower: 1560000,
@@ -67,7 +67,7 @@ export const daoMembers: DAOMember[] = [
   {
     id: '5',
     address: '0x5e6B...a1F0',
-    ensName: 'web3voter.eth',
+    ensName: 'usdcwhale.eth',
     reputationLevel: 'Steward',
     reputationScore: 4890,
     delegatedPower: 620000,
@@ -86,7 +86,7 @@ export const proposals: Proposal[] = [
   {
     id: '1',
     title: 'Treasury Diversification Proposal Q2',
-    description: 'Allocate 15% of treasury to stablecoin yield strategies across Aave, Compound, and Morpho.',
+    description: 'Allocate 15% of the stablecoin treasury to decentralized yield strategies across agentic protocols.',
     status: 'Active',
     proposer: '0x7a9F...a3B2',
     createdAt: '2024-05-10T10:00:00Z',
@@ -100,8 +100,8 @@ export const proposals: Proposal[] = [
   },
   {
     id: '2',
-    title: 'Governance Parameter Update v2.1',
-    description: 'Reduce voting duration from 7 to 5 days and increase quorum threshold to 2M tokens.',
+    title: 'Programmable Governance Parameter Update v2.1',
+    description: 'Reduce voting duration from 7 to 5 days and increase quorum threshold to 2M USDC equivalent.',
     status: 'Passed',
     proposer: '0x3b4C...d8E1',
     createdAt: '2024-05-01T14:30:00Z',
@@ -116,7 +116,7 @@ export const proposals: Proposal[] = [
   {
     id: '3',
     title: 'Protocol Fee Distribution Mechanism',
-    description: 'Implement a 30-day rolling average fee distribution to staked governance tokens.',
+    description: 'Implement a 30-day rolling average USDC fee distribution to staked governance delegates.',
     status: 'Executed',
     proposer: '0x9d2E...f5A0',
     createdAt: '2024-04-15T09:00:00Z',
@@ -130,8 +130,8 @@ export const proposals: Proposal[] = [
   },
   {
     id: '4',
-    title: 'Security Council Expansion',
-    description: 'Expand the 3-of-5 multisig to 5-of-9 with rotating membership every 6 months.',
+    title: 'Decentralized Coordination Expansion',
+    description: 'Expand the 3-of-5 multisig to 5-of-9 with rotating membership every 6 months to enhance agentic coordination.',
     status: 'Active',
     proposer: '0x1f8A...c4D3',
     createdAt: '2024-05-12T11:00:00Z',
@@ -145,8 +145,8 @@ export const proposals: Proposal[] = [
   },
   {
     id: '5',
-    title: 'Arc Ecosystem Grant Round 3',
-    description: 'Allocate 500K USDC for developer grants focused on cross-chain infrastructure.',
+    title: 'Arc Agentic Economy Grant Round 3',
+    description: 'Allocate 500K USDC for developer grants focused on agentic economies and value coordination infrastructure.',
     status: 'Pending',
     proposer: '0x5e6B...a1F0',
     createdAt: '2024-05-13T08:00:00Z',
@@ -160,8 +160,8 @@ export const proposals: Proposal[] = [
   },
   {
     id: '6',
-    title: 'Implement Decentralized Identity Module',
-    description: 'Integrate zk-proof based identity verification for DAO members to enhance privacy.',
+    title: 'Implement Confidential Execution Module',
+    description: 'Integrate zero-knowledge proof verification for DAO treasury execution to enhance privacy.',
     status: 'Pending',
     proposer: '0x7a9F...a3B2',
     createdAt: '2024-05-15T09:00:00Z',
@@ -177,13 +177,13 @@ export const proposals: Proposal[] = [
 
 export const treasuryActivities: TreasuryActivity[] = [
   { id: '1', type: 'Inflow', amount: 125000, token: 'USDC', timestamp: '2024-05-12T10:00:00Z', description: 'Protocol fees collected', txHash: '0xabc...123' },
-  { id: '2', type: 'Outflow', amount: 50000, token: 'USDC', timestamp: '2024-05-11T14:30:00Z', description: 'Grant payment to builder #42', txHash: '0xdef...456' },
+  { id: '2', type: 'Outflow', amount: 50000, token: 'USDC', timestamp: '2024-05-11T14:30:00Z', description: 'Grant payment to agentic builder #42', txHash: '0xdef...456' },
   { id: '3', type: 'Stake', amount: 200000, token: 'USDC', timestamp: '2024-05-10T09:15:00Z', description: 'Staked in Morpho Vault', txHash: '0xghi...789' },
-  { id: '4', type: 'Inflow', amount: 87000, token: 'USDC', timestamp: '2024-05-09T16:45:00Z', description: 'Liquidity pool yield', txHash: '0xjkl...012' },
-  { id: '5', type: 'Swap', amount: 100000, token: 'ETH', timestamp: '2024-05-08T11:20:00Z', description: 'Swapped ETH to USDC', txHash: '0xmno...345' },
-  { id: '6', type: 'Outflow', amount: 25000, token: 'USDC', timestamp: '2024-05-07T08:00:00Z', description: 'Auditor payment', txHash: '0xpqr...678' },
+  { id: '4', type: 'Inflow', amount: 87000, token: 'USDC', timestamp: '2024-05-09T16:45:00Z', description: 'Agentic liquidity pool yield', txHash: '0xjkl...012' },
+  { id: '5', type: 'Swap', amount: 100000, token: 'USDC', timestamp: '2024-05-08T11:20:00Z', description: 'Rebalanced treasury to stablecoin', txHash: '0xmno...345' },
+  { id: '6', type: 'Outflow', amount: 25000, token: 'USDC', timestamp: '2024-05-07T08:00:00Z', description: 'Auditor payment for governance contracts', txHash: '0xpqr...678' },
   { id: '7', type: 'Unstake', amount: 150000, token: 'USDC', timestamp: '2024-05-06T13:30:00Z', description: 'Unstaked from Aave', txHash: '0xstu...901' },
-  { id: '8', type: 'Inflow', amount: 63000, token: 'USDC', timestamp: '2024-05-05T10:00:00Z', description: 'Governance token swap fees', txHash: '0xvwx...234' },
+  { id: '8', type: 'Inflow', amount: 63000, token: 'USDC', timestamp: '2024-05-05T10:00:00Z', description: 'Governance coordinator fees', txHash: '0xvwx...234' },
 ];
 
 export const votingTrends: VotingTrend[] = [
