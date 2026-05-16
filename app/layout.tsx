@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/navbar/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { Web3Provider } from "@/providers/Web3Provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -60,7 +61,8 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${sora.variable} antialiased min-h-screen flex flex-col relative bg-background text-foreground`}
       >
-        <ThemeProvider
+        <Web3Provider>
+          <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem
@@ -86,6 +88,7 @@ export default function RootLayout({
             <Footer />
           </div>
         </ThemeProvider>
+        </Web3Provider>
       </body>
     </html>
   );
