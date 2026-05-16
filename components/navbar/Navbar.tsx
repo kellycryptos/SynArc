@@ -8,12 +8,12 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { ConnectButton } from "@/components/wallet/ConnectButton";
+import { PlaceholderConnect } from "@/components/ui/PlaceholderConnect";
 
 const navLinks = [
   { href: "/", label: "Dashboard", icon: Hexagon },
   { href: "/proposals", label: "Proposals", icon: FileText },
-  { href: "/delegates", label: "Delegates", icon: Users },
+  { href: "/members", label: "Members", icon: Users },
   { href: "/treasury", label: "Treasury", icon: Shield },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/docs", label: "Docs", icon: Settings },
@@ -72,7 +72,7 @@ export function Navbar() {
           {/* Right: Actions */}
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            <ConnectButton />
+            <PlaceholderConnect />
           </div>
 
           {/* Mobile menu button */}
@@ -120,7 +120,7 @@ export function Navbar() {
                   <span className="text-sm font-medium text-text-secondary">Theme</span>
                   <ThemeToggle />
                 </div>
-                <ConnectButton />
+                <PlaceholderConnect />
               </div>
             </div>
           </motion.div>

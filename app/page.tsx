@@ -1,256 +1,180 @@
-// Deployment trigger: flattened structure
 "use client";
 
 import { motion } from "framer-motion";
 import {
-  Hexagon,
-  Users,
-  Vote,
-  Wallet,
-  Activity,
-  ArrowRight,
-  Zap,
   Shield,
-  Globe,
+  Zap,
+  Lock,
+  ArrowRight,
+  Database,
+  Layers
 } from "lucide-react";
-import { StatCard } from "@/components/ui/StatCard";
 import { GlassCard } from "@/components/ui/GlassCard";
-import {
-  daoMembers,
-  proposals,
-  treasuryActivities,
-  healthMetrics,
-} from "@/lib/mockData";
 import Link from "next/link";
 
 const features = [
   {
-    icon: Vote,
-    title: "On-Chain Voting",
-    description: "Transparent, immutable governance votes secured by the Arc Network.",
+    icon: Lock,
+    title: "Confidential Voting",
+    description: "Zero-knowledge proofs ensure that governance votes remain entirely private while guaranteeing cryptographic accuracy on the Arc Network.",
+  },
+  {
+    icon: Layers,
+    title: "Scalable Coordination",
+    description: "Designed for high-throughput decision-making, allowing DAOs to scale their operations without high gas fees or network congestion.",
+  },
+  {
+    icon: Database,
+    title: "Secure Treasury Management",
+    description: "Manage multi-million dollar treasuries with multi-signature security and programmatic execution of funds post-quorum.",
   },
   {
     icon: Shield,
-    title: "Delegated Power",
-    description: "Delegate your voting power to trusted stewards or become one yourself.",
-  },
-  {
-    icon: Zap,
-    title: "Instant Execution",
-    description: "Automated proposal execution via timelock contracts post-quorum.",
-  },
-  {
-    icon: Globe,
-    title: "Cross-Chain",
-    description: "Governance that spans across the entire Arc ecosystem.",
+    title: "Sybil Resistance",
+    description: "Advanced identity frameworks to prevent voting manipulation and ensure that true stakeholders drive the decentralized organization.",
   },
 ];
 
 export default function HomePage() {
-  const activeProposals = proposals.filter((p) => p.status === "Active").length;
-  const totalDelegates = daoMembers.filter((m) => m.isDelegate).length;
-  const totalVotingPower = daoMembers.reduce((acc, m) => acc + m.votingPower, 0);
-
   return (
-    <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-16">
+    <div className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Background Gradients & Grids */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary opacity-20 blur-[100px]"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto space-y-24 relative z-10">
         {/* Hero */}
-        <section className="text-center space-y-6 py-12">
+        <section className="text-center space-y-8 py-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="space-y-4"
+            className="space-y-6 relative"
           >
+            {/* Glow behind text */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-accent/20 blur-[120px] rounded-full pointer-events-none" />
+
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-medium">
-              <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              Arc Testnet Live
+              <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              SynArc Protocol
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
-              Govern the{" "}
-              <span className="gradient-text">Arc Ecosystem</span>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight max-w-4xl mx-auto">
+              Confidential Governance Infrastructure on <span className="text-primary">Arc</span>
             </h1>
-            <p className="text-lg text-muted max-w-2xl mx-auto leading-relaxed">
-              SynArc DAO is the decentralized governance layer for Arc Network.
-              Create proposals, delegate voting power, and shape cross-chain
-              infrastructure.
+            <p className="text-lg sm:text-xl text-muted max-w-2xl mx-auto leading-relaxed">
+              Secure coordination, governance, and treasury management for decentralized organizations. Built for the next generation of DAOs.
             </p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex flex-wrap items-center justify-center gap-3"
+            className="flex flex-wrap items-center justify-center gap-4"
           >
             <Link
-              href="/members"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-white font-medium hover:bg-accent/90 transition-colors"
+              href="/dashboard"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)]"
             >
-              <Users className="w-4 h-4" />
-              Explore Members
+              <Zap className="w-5 h-5" />
+              Launch Dashboard
             </Link>
             <Link
-              href="/analytics"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.06] border border-white/[0.08] text-foreground font-medium hover:bg-white/[0.1] transition-colors"
+              href="/docs"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-surface border border-border-thin text-foreground font-semibold hover:bg-surface-elevated transition-colors"
             >
-              <Activity className="w-4 h-4" />
-              View Analytics
+              View Docs
             </Link>
           </motion.div>
         </section>
 
-        {/* Stats */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            label="Active Proposals"
-            value={activeProposals.toString()}
-            change={25}
-            changeType="increase"
-            icon={<Vote className="w-5 h-5" />}
-            delay={0}
-          />
-          <StatCard
-            label="DAO Members"
-            value={daoMembers.length.toString()}
-            change={12.5}
-            changeType="increase"
-            icon={<Users className="w-5 h-5" />}
-            delay={0.1}
-          />
-          <StatCard
-            label="Active Delegates"
-            value={totalDelegates.toString()}
-            change={8.3}
-            changeType="increase"
-            icon={<Hexagon className="w-5 h-5" />}
-            delay={0.2}
-          />
-          <StatCard
-            label="Total Voting Power"
-            value={`${(totalVotingPower / 1000000).toFixed(1)}M`}
-            change={15.2}
-            changeType="increase"
-            icon={<Wallet className="w-5 h-5" />}
-            delay={0.3}
-          />
+        {/* Floating UI Cards Demonstration */}
+        <section className="relative h-[400px] w-full max-w-5xl mx-auto hidden md:block">
+          <motion.div
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-10 left-10 z-10 w-64"
+          >
+            <GlassCard hover={false} className="p-4 bg-surface/60 backdrop-blur-md border border-white/10 shadow-2xl">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold">Treasury Protected</div>
+                  <div className="text-xs text-muted">Multisig secured</div>
+                </div>
+              </div>
+            </GlassCard>
+          </motion.div>
+
+          <motion.div
+            animate={{ y: [0, 15, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute top-32 right-10 z-20 w-72"
+          >
+            <GlassCard hover={false} className="p-4 bg-surface/80 backdrop-blur-xl border border-white/10 shadow-2xl">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Proposal #1042</span>
+                  <span className="text-xs px-2 py-1 bg-success/20 text-success rounded-full">Passed</span>
+                </div>
+                <div className="w-full bg-surface-elevated h-2 rounded-full overflow-hidden">
+                  <div className="bg-primary h-full w-[80%]" />
+                </div>
+                <div className="flex justify-between text-xs text-muted">
+                  <span>80% For</span>
+                  <span>20% Against</span>
+                </div>
+              </div>
+            </GlassCard>
+          </motion.div>
+
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 w-80"
+          >
+            <GlassCard hover={false} className="p-4 bg-surface/70 backdrop-blur-lg border border-primary/30 shadow-[0_0_30px_rgba(124,58,237,0.15)]">
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
+                     <Lock className="w-5 h-5 text-accent" />
+                   </div>
+                   <div>
+                     <div className="text-sm font-semibold">Zero-Knowledge Vote</div>
+                     <div className="text-xs text-muted">Verified on Arc</div>
+                   </div>
+                 </div>
+                 <ArrowRight className="w-4 h-4 text-muted" />
+               </div>
+            </GlassCard>
+          </motion.div>
         </section>
 
         {/* Features */}
-        <section className="space-y-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold">Why SynArc DAO?</h2>
-            <p className="text-muted">Built for modern decentralized governance</p>
+        <section className="space-y-12 pb-24">
+          <div className="text-center space-y-4">
+            <h2 className="text-3xl md:text-4xl font-bold">Built for Modern Coordination</h2>
+            <p className="text-muted max-w-2xl mx-auto">SynArc provides the essential tools to build, manage, and scale decentralized organizations with uncompromising security and privacy.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {features.map((feature, i) => {
               const Icon = feature.icon;
               return (
-                <GlassCard key={feature.title} delay={i * 0.1}>
-                  <div className="p-3 rounded-xl bg-accent/10 border border-accent/20 text-accent w-fit mb-4">
-                    <Icon className="w-5 h-5" />
+                <GlassCard key={feature.title} delay={i * 0.1} className="p-8">
+                  <div className="p-4 rounded-xl bg-surface-elevated border border-white/5 w-fit mb-6">
+                    <Icon className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted leading-relaxed">
+                  <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                  <p className="text-muted leading-relaxed">
                     {feature.description}
                   </p>
                 </GlassCard>
               );
             })}
           </div>
-        </section>
-
-        {/* Health Metrics */}
-        <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold">DAO Health</h2>
-              <p className="text-muted text-sm">Key performance indicators</p>
-            </div>
-            <Link
-              href="/analytics"
-              className="text-sm text-accent hover:text-accent/80 transition-colors inline-flex items-center gap-1"
-            >
-              Full analytics <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {healthMetrics.map((metric, i) => (
-              <StatCard
-                key={metric.label}
-                label={metric.label}
-                value={
-                  metric.label.includes("Value")
-                    ? `$${(metric.value / 1000000).toFixed(1)}M`
-                    : metric.label.includes("Rate")
-                    ? `${metric.value}%`
-                    : metric.label.includes("Time")
-                    ? `${metric.value}h`
-                    : metric.value.toString()
-                }
-                change={metric.change}
-                changeType={metric.changeType}
-                icon={<Activity className="w-5 h-5" />}
-                delay={i * 0.1}
-              />
-            ))}
-          </div>
-        </section>
-
-        {/* Recent Activity */}
-        <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold">Recent Treasury Activity</h2>
-              <p className="text-muted text-sm">Latest on-chain movements</p>
-            </div>
-          </div>
-          <GlassCard hover={false}>
-            <div className="space-y-3">
-              {treasuryActivities.slice(0, 5).map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-center justify-between py-3 border-b border-white/[0.04] last:border-0"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-2 h-2 rounded-full ${
-                        activity.type === "Inflow"
-                          ? "bg-success"
-                          : activity.type === "Outflow"
-                          ? "bg-danger"
-                          : activity.type === "Stake"
-                          ? "bg-accent"
-                          : activity.type === "Unstake"
-                          ? "bg-warning"
-                          : "bg-muted"
-                      }`}
-                    />
-                    <div>
-                      <p className="text-sm font-medium">{activity.description}</p>
-                      <p className="text-xs text-muted">{activity.txHash}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p
-                      className={`text-sm font-medium ${
-                        activity.type === "Inflow"
-                          ? "text-success"
-                          : activity.type === "Outflow"
-                          ? "text-danger"
-                          : "text-foreground"
-                      }`}
-                    >
-                      {activity.type === "Inflow" ? "+" : activity.type === "Outflow" ? "-" : ""}
-                      {activity.amount.toLocaleString()} {activity.token}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {new Date(activity.timestamp).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </GlassCard>
         </section>
       </div>
     </div>

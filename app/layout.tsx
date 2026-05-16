@@ -4,8 +4,6 @@ import "./globals.css";
 import { Navbar } from "@/components/navbar/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/providers/ThemeProvider";
-import { Web3Provider } from "@/providers/Web3Provider";
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -67,27 +65,25 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Web3Provider>
-            {/* Ambient page background */}
-            <div className="fixed inset-0 pointer-events-none z-0">
-              <div className="absolute inset-0 bg-background" />
-              <div className="absolute inset-0 grid-overlay opacity-30" />
-              {/* Subtle top glow */}
-              <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] opacity-20"
-                style={{
-                  background:
-                    "radial-gradient(ellipse at top, var(--glow-purple, rgba(168,85,247,0.15)) 0%, var(--glow-blue, rgba(59,130,246,0.08)) 40%, transparent 70%)",
-                }}
-              />
-            </div>
+          {/* Ambient page background */}
+          <div className="fixed inset-0 pointer-events-none z-0">
+            <div className="absolute inset-0 bg-background" />
+            <div className="absolute inset-0 grid-overlay opacity-30" />
+            {/* Subtle top glow */}
+            <div
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] opacity-20"
+              style={{
+                background:
+                  "radial-gradient(ellipse at top, var(--glow-purple, rgba(168,85,247,0.15)) 0%, var(--glow-blue, rgba(59,130,246,0.08)) 40%, transparent 70%)",
+              }}
+            />
+          </div>
 
-            <div className="relative z-10 flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-          </Web3Provider>
+          <div className="relative z-10 flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
         </ThemeProvider>
       </body>
     </html>

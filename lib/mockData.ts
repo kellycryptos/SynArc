@@ -79,52 +79,7 @@ export const daoMembers: DAOMember[] = [
     delegatorsCount: 54,
     joinedAt: '2023-09-05T09:30:00Z',
     lastActivity: '2024-05-08T13:20:00Z',
-  },
-  {
-    id: '6',
-    address: '0x2c7D...b8E5',
-    reputationLevel: 'Contributor',
-    reputationScore: 3150,
-    delegatedPower: 120000,
-    proposalsCreated: 4,
-    proposalsVoted: 45,
-    votingPower: 380000,
-    votingParticipationRate: 68.5,
-    isDelegate: false,
-    delegatorsCount: 8,
-    joinedAt: '2023-11-12T14:10:00Z',
-    lastActivity: '2024-05-05T10:45:00Z',
-  },
-  {
-    id: '7',
-    address: '0x8a3F...e2B1',
-    reputationLevel: 'Contributor',
-    reputationScore: 2780,
-    delegatedPower: 85000,
-    proposalsCreated: 2,
-    proposalsVoted: 38,
-    votingPower: 290000,
-    votingParticipationRate: 61.2,
-    isDelegate: false,
-    delegatorsCount: 3,
-    joinedAt: '2024-01-08T11:25:00Z',
-    lastActivity: '2024-05-03T15:10:00Z',
-  },
-  {
-    id: '8',
-    address: '0x4b1E...d7C0',
-    reputationLevel: 'Novice',
-    reputationScore: 1200,
-    delegatedPower: 0,
-    proposalsCreated: 0,
-    proposalsVoted: 12,
-    votingPower: 150000,
-    votingParticipationRate: 45.8,
-    isDelegate: false,
-    delegatorsCount: 0,
-    joinedAt: '2024-03-20T08:50:00Z',
-    lastActivity: '2024-04-28T09:30:00Z',
-  },
+  }
 ];
 
 export const proposals: Proposal[] = [
@@ -203,6 +158,21 @@ export const proposals: Proposal[] = [
     quorum: 1500000,
     category: 'Grants',
   },
+  {
+    id: '6',
+    title: 'Implement Decentralized Identity Module',
+    description: 'Integrate zk-proof based identity verification for DAO members to enhance privacy.',
+    status: 'Pending',
+    proposer: '0x7a9F...a3B2',
+    createdAt: '2024-05-15T09:00:00Z',
+    votingStarts: '2024-05-16T09:00:00Z',
+    votingEnds: '2024-05-23T09:00:00Z',
+    forVotes: 0,
+    againstVotes: 0,
+    abstainVotes: 0,
+    quorum: 1500000,
+    category: 'Protocol',
+  }
 ];
 
 export const treasuryActivities: TreasuryActivity[] = [
@@ -254,7 +224,7 @@ export const daoSettings: DAOSettings = {
 };
 
 export const healthMetrics = [
-  { label: 'Treasury Value', value: 12450000, change: 12.5, changeType: 'increase' as const },
+  { label: 'Treasury Value', value: 2400000, change: 12.5, changeType: 'increase' as const },
   { label: 'Active Members', value: 342, change: 8.2, changeType: 'increase' as const },
   { label: 'Proposal Pass Rate', value: 87, change: 3.1, changeType: 'increase' as const },
   { label: 'Avg Voting Time', value: 18, change: 5.4, changeType: 'decrease' as const },
