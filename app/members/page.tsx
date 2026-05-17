@@ -2,7 +2,7 @@
 
 import { GlassCard } from "@/components/ui/GlassCard";
 import { daoMembers } from "@/lib/mockData";
-import { Users, Award, Shield, Search } from "lucide-react";
+import { Award, Shield, Search } from "lucide-react";
 
 export default function MembersPage() {
   return (

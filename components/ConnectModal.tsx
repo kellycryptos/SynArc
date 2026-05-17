@@ -72,7 +72,7 @@ export function ConnectModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         onClose();
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Circle Auth Error:', err);
       setError('Authentication is currently unavailable. Please try again later.');
     } finally {

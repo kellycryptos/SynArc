@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/navbar/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Web3Provider } from "@/providers/Web3Provider";
 
@@ -82,11 +81,9 @@ export default function RootLayout({
             />
           </div>
 
-          <div className="relative z-10 flex flex-col min-h-screen">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          <DashboardLayout>
+            {children}
+          </DashboardLayout>
         </ThemeProvider>
         </Web3Provider>
       </body>

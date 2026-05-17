@@ -29,7 +29,7 @@ export async function POST(req: Request) {
       await circleClient.createUser({
         userId,
       });
-    } catch (error: any) {
+    } catch {
       // Circle API throws an error if the user already exists. We can safely ignore.
       console.log('User might already exist in Circle. Proceeding...');
     }
@@ -55,10 +55,11 @@ export async function POST(req: Request) {
       encryptionKey,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Circle Auth Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
     return NextResponse.json(
-      { error: error.message || 'Internal Server Error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

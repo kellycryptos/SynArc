@@ -1,12 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
+
 import {
   Hexagon,
   Users,
   Vote,
   Wallet,
-  Activity,
   ArrowRight,
 } from "lucide-react";
 import { StatCard } from "@/components/ui/StatCard";
