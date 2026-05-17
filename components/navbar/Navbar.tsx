@@ -7,7 +7,6 @@ import { Menu, X, Hexagon, Users, BarChart3, Settings, Shield, FileText } from "
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { PlaceholderConnect } from "@/components/ui/PlaceholderConnect";
 
 const navLinks = [
@@ -71,7 +70,6 @@ export function Navbar() {
 
           {/* Right: Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <ThemeToggle />
             <PlaceholderConnect />
           </div>
 
@@ -116,10 +114,6 @@ export function Navbar() {
                 );
               })}
               <div className="pt-4 mt-4 border-t border-border-thin flex flex-col gap-3">
-                <div className="flex items-center justify-between px-2">
-                  <span className="text-sm font-medium text-text-secondary">Theme</span>
-                  <ThemeToggle />
-                </div>
                 <PlaceholderConnect />
               </div>
             </div>

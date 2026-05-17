@@ -63,11 +63,11 @@ export default function RootLayout({
       >
         <Web3Provider>
           <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
+            attribute="class"
+            defaultTheme="dark"
+            forcedTheme="dark"
+            disableTransitionOnChange
+          >
           {/* Ambient page background */}
           <div className="fixed inset-0 pointer-events-none z-0">
             <div className="absolute inset-0 bg-background" />
