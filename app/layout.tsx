@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Web3Provider } from "@/providers/Web3Provider";
 
@@ -81,9 +80,9 @@ export default function RootLayout({
             />
           </div>
 
-          <DashboardLayout>
+          <div className="relative z-10 flex flex-col min-h-screen">
             {children}
-          </DashboardLayout>
+          </div>
         </ThemeProvider>
         </Web3Provider>
       </body>

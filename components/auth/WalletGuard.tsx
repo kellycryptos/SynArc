@@ -8,6 +8,10 @@ import { ReactNode, useState } from "react";
 const ARC_TESTNET_CHAIN_ID = 5042002;
 const ARC_TESTNET_CHAIN_ID_HEX = "0x4CE052";
 
+interface ArcEthereum {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+}
+
 export function WalletGuard({ children }: { children: ReactNode }) {
   const { isConnected } = useAccount();
   const chainId = useChainId();
@@ -15,7 +19,7 @@ export function WalletGuard({ children }: { children: ReactNode }) {
   const [isSwitching, setIsSwitching] = useState(false);
 
   const switchNetwork = async () => {
-    const ethereum = (window as any).ethereum;
+    const ethereum = (window as Window & { ethereum?: ArcEthereum }).ethereum;
     if (!ethereum) return;
     try {
       setIsSwitching(true);
@@ -35,7 +39,7 @@ export function WalletGuard({ children }: { children: ReactNode }) {
       });
       // The wallet_addEthereumChain usually switches automatically,
       // but just in case we can also call wallet_switchEthereumChain
-      await (window as any).ethereum.request({
+      await (window as Window & { ethereum?: ArcEthereum }).ethereum?.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: ARC_TESTNET_CHAIN_ID_HEX }]
       });

@@ -2,7 +2,7 @@
 
 import { Bell, Search, Menu } from "lucide-react";
 
-export function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
+export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   return (
     <header className="sticky top-0 z-30 glass border-b border-border-thin h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
       <div className="flex items-center gap-4">
