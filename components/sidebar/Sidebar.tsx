@@ -12,6 +12,7 @@ import {
   Settings 
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
+import { WalletConnectButton } from "@/components/ui/WalletConnectButton";
 
 const sidebarLinks = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
@@ -57,6 +58,10 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
             </Link>
           );
         })}
+      </div>
+      
+      <div className="p-4 border-t border-border-thin mt-auto">
+        <WalletConnectButton />
       </div>
     </aside>
   );

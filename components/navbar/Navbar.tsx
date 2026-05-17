@@ -1,7 +1,6 @@
 "use client";
 
 import { Bell, Search, Menu } from "lucide-react";
-import { PlaceholderConnect } from "@/components/ui/PlaceholderConnect";
 
 export function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   return (
@@ -29,7 +28,6 @@ export function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
            <Bell className="w-5 h-5" />
            <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-background" />
          </button>
-         <PlaceholderConnect />
       </div>
     </header>
   );

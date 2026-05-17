@@ -9,8 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@circle-fin/user-controlled-wallets": "^10.3.1",
-    "@circle-fin/w3s-pw-web-sdk": "^1.1.11",
     "@tanstack/react-query": "^5.100.10",
     "@web3modal/wagmi": "^5.1.11",
     "clsx": "^2.1.1",

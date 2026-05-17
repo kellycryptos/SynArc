@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sidebar } from "../sidebar/Sidebar";
 import { Navbar } from "../navbar/Navbar";
+import { WalletGuard } from "../auth/WalletGuard";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
@@ -50,7 +51,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 md:ml-64 relative">
         <Navbar onMenuClick={() => setMobileMenuOpen(true)} />
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8 pb-20">
-          {children}
+          <WalletGuard>
+            {children}
+          </WalletGuard>
         </main>
       </div>
     </div>
