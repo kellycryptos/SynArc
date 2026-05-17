@@ -14,7 +14,7 @@ const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'default_p
 const metadata = {
   name: 'SynArc',
   description: 'Confidential Governance Infrastructure for the Agentic Economy',
-  url: 'https://synarc-dao.vercel.app', 
+  url: 'https://synarc-dao.vercel.app/', 
   icons: ['https://avatars.githubusercontent.com/u/37784886']
 };
 

@@ -4,6 +4,12 @@ import crypto from 'crypto';
 
 export async function POST(req: Request) {
   try {
+    const apiKey = process.env.CIRCLE_API_KEY;
+    if (!apiKey) {
+      console.error('Missing CIRCLE_API_KEY environment variable');
+      return NextResponse.json({ error: 'Authentication is currently unavailable. Please try again later.' }, { status: 500 });
+    }
+
     const { email } = await req.json();
 
     if (!email) {
@@ -15,7 +21,7 @@ export async function POST(req: Request) {
     const userId = `${hash.slice(0, 8)}-${hash.slice(8, 12)}-${hash.slice(12, 16)}-${hash.slice(16, 20)}-${hash.slice(20, 32)}`;
 
     const circleClient = initiateUserControlledWalletsClient({
-      apiKey: process.env.CIRCLE_API_KEY as string,
+      apiKey,
     });
 
     // 1. Ensure the user exists

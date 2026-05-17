@@ -39,10 +39,15 @@ export function ConnectModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         throw new Error(data.error || 'Authentication failed');
       }
 
+      const appId = process.env.NEXT_PUBLIC_CIRCLE_APP_ID;
+      if (!appId) {
+        throw new Error('Circle App ID is not configured');
+      }
+
       // 2. Initialize Circle Web SDK
       const sdk = new W3SSdk();
       sdk.setAppSettings({
-        appId: process.env.NEXT_PUBLIC_CIRCLE_APP_ID as string,
+        appId,
       });
 
       sdk.setAuthentication({
@@ -68,8 +73,8 @@ export function ConnectModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
       }
 
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'An error occurred during authentication.');
+      console.error('Circle Auth Error:', err);
+      setError('Authentication is currently unavailable. Please try again later.');
     } finally {
       setLoading(false);
     }
