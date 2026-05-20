@@ -1,11 +1,11 @@
-import { getDefaultConfig } from '@rainbow-me/rainbowkit';
+import { createConfig } from '@privy-io/wagmi';
+import { http } from 'wagmi';
 import { arcTestnet } from '@/lib/chains/arc';
 
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '82c0f2095f9c5d123dbb77de568be3ad'; // safe fallback ID
-
-export const config = getDefaultConfig({
-  appName: 'SynArc',
-  projectId,
+export const config = createConfig({
   chains: [arcTestnet],
-  ssr: true,
+  transports: {
+    [arcTestnet.id]: http('https://rpc.testnet.arc.network'),
+  },
+  ssr: true, // Hydration-safe for Next.js App Router
 });
