@@ -1,19 +1,21 @@
 "use client";
 
-import { useWeb3Modal } from "@web3modal/wagmi/react";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount, useDisconnect } from "wagmi";
 import { Wallet, LogOut, Copy, ExternalLink, ChevronUp, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
-
 export function WalletConnectButton() {
-  const { open } = useWeb3Modal();
+  const { openConnectModal } = useConnectModal();
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setMounted(true);
+    
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -37,11 +39,24 @@ export function WalletConnectButton() {
     }
   };
 
+  // Prevent hydration mismatches by rendering a placeholder before the client mounts
+  if (!mounted) {
+    return (
+      <button 
+        disabled
+        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary/20 text-white/50 font-medium cursor-not-allowed border border-primary/10"
+      >
+        <Wallet className="w-5 h-5 animate-pulse" />
+        Initializing...
+      </button>
+    );
+  }
+
   if (!isConnected || !address) {
     return (
       <button 
-        onClick={() => open()}
-        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)]"
+        onClick={() => openConnectModal?.()}
+        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer"
       >
         <Wallet className="w-5 h-5" />
         Connect Wallet
@@ -55,7 +70,7 @@ export function WalletConnectButton() {
     <div className="relative w-full" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full p-3 rounded-xl bg-surface border border-border-thin hover:bg-surface-elevated transition-colors"
+        className="flex items-center justify-between w-full p-3 rounded-xl bg-surface border border-border-thin hover:bg-surface-elevated transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border-thin flex items-center justify-center relative overflow-hidden">
@@ -64,27 +79,27 @@ export function WalletConnectButton() {
           </div>
           <span className="font-medium text-sm text-foreground">{truncatedAddress}</span>
         </div>
-        {isOpen ? <ChevronDown className="w-4 h-4 text-muted" /> : <ChevronUp className="w-4 h-4 text-muted" />}
+        {isOpen ? <ChevronUp className="w-4 h-4 text-muted" /> : <ChevronDown className="w-4 h-4 text-muted" />}
       </button>
 
       {isOpen && (
         <div className="absolute bottom-full left-0 w-full mb-2 bg-surface-elevated border border-border-thin rounded-xl shadow-xl overflow-hidden animate-fade-in-up origin-bottom z-50 p-1">
           <button 
             onClick={copyAddress}
-            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-white/5 rounded-lg transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
             <Copy className="w-4 h-4 text-muted" /> Copy Address
           </button>
           <button 
             onClick={openExplorer}
-            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-white/5 rounded-lg transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
             <ExternalLink className="w-4 h-4 text-muted" /> View on Explorer
           </button>
           <div className="h-px bg-border-thin my-1 mx-2" />
           <button 
             onClick={() => { disconnect(); setIsOpen(false); }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-danger hover:bg-danger/10 rounded-lg transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-danger hover:bg-danger/10 rounded-lg transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" /> Disconnect
           </button>

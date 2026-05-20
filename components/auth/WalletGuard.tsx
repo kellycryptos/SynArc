@@ -1,52 +1,44 @@
 "use client";
 
-import { useAccount, useChainId } from "wagmi";
-import { useWeb3Modal } from "@web3modal/wagmi/react";
+import { useAccount, useChainId, useSwitchChain } from "wagmi";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Wallet, AlertTriangle, RefreshCw } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 
 const ARC_TESTNET_CHAIN_ID = 5042002;
-const ARC_TESTNET_CHAIN_ID_HEX = "0x4CE052";
-
-interface ArcEthereum {
-  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-}
 
 export function WalletGuard({ children }: { children: ReactNode }) {
   const { isConnected } = useAccount();
   const chainId = useChainId();
-  const { open } = useWeb3Modal();
-  const [isSwitching, setIsSwitching] = useState(false);
+  const { openConnectModal } = useConnectModal();
+  const { switchChain, isPending: isSwitching } = useSwitchChain();
+  const [mounted, setMounted] = useState(false);
 
-  const switchNetwork = async () => {
-    const ethereum = (window as Window & { ethereum?: ArcEthereum }).ethereum;
-    if (!ethereum) return;
+  // Prevent hydration mismatches by ensuring client-only rendering for guarded content
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
+        <div className="w-10 h-10 rounded-full border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent animate-spin mb-4" />
+        <p className="text-muted text-sm">Synchronizing governance access gate...</p>
+      </div>
+    );
+  }
+
+  const handleConnect = () => {
+    if (openConnectModal) {
+      openConnectModal();
+    }
+  };
+
+  const handleSwitchNetwork = () => {
     try {
-      setIsSwitching(true);
-      await ethereum.request({
-        method: "wallet_addEthereumChain",
-        params: [{
-          chainId: ARC_TESTNET_CHAIN_ID_HEX,
-          chainName: "Arc Testnet",
-          nativeCurrency: {
-            name: "USDC",
-            symbol: "USDC",
-            decimals: 18
-          },
-          rpcUrls: ["https://rpc.testnet.arc.network"],
-          blockExplorerUrls: ["https://testnet.arcscan.app"]
-        }]
-      });
-      // The wallet_addEthereumChain usually switches automatically,
-      // but just in case we can also call wallet_switchEthereumChain
-      await (window as Window & { ethereum?: ArcEthereum }).ethereum?.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: ARC_TESTNET_CHAIN_ID_HEX }]
-      });
+      switchChain({ chainId: ARC_TESTNET_CHAIN_ID });
     } catch (error) {
       console.error("Failed to switch network", error);
-    } finally {
-      setIsSwitching(false);
     }
   };
 
@@ -61,8 +53,8 @@ export function WalletGuard({ children }: { children: ReactNode }) {
           Please connect your Web3 wallet to access the SynArc Governance Dashboard and interact with the Arc Ecosystem.
         </p>
         <button 
-          onClick={() => open()}
-          className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)]"
+          onClick={handleConnect}
+          className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] cursor-pointer"
         >
           <Wallet className="w-5 h-5" />
           Connect Wallet
@@ -82,9 +74,9 @@ export function WalletGuard({ children }: { children: ReactNode }) {
           ⚠️ Please switch to the Arc Testnet to access the dashboard.
         </p>
         <button 
-          onClick={switchNetwork}
+          onClick={handleSwitchNetwork}
           disabled={isSwitching}
-          className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-warning text-[#0A0A0F] font-medium hover:bg-warning/90 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-warning text-[#0A0A0F] font-medium hover:bg-warning/90 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isSwitching ? <RefreshCw className="w-5 h-5 animate-spin" /> : <AlertTriangle className="w-5 h-5" />}
           Switch to Arc Testnet
