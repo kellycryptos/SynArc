@@ -1,14 +1,11 @@
 "use client";
 
-import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { useAccount, useDisconnect } from "wagmi";
+import { useAuth } from "@/hooks/auth/useAuth";
 import { Wallet, LogOut, Copy, ExternalLink, ChevronUp, ChevronDown } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 
 export function WalletConnectButton() {
-  const { openConnectModal } = useConnectModal();
-  const { address, isConnected } = useAccount();
-  const { disconnect } = useDisconnect();
+  const { isAuthenticated, walletAddress, login, logout, ready } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -26,21 +23,21 @@ export function WalletConnectButton() {
   }, []);
 
   const copyAddress = () => {
-    if (address) {
-      navigator.clipboard.writeText(address);
+    if (walletAddress) {
+      navigator.clipboard.writeText(walletAddress);
       setIsOpen(false);
     }
   };
 
   const openExplorer = () => {
-    if (address) {
-      window.open(`https://testnet.arcscan.app/address/${address}`, "_blank");
+    if (walletAddress) {
+      window.open(`https://testnet.arcscan.app/address/${walletAddress}`, "_blank");
       setIsOpen(false);
     }
   };
 
   // Prevent hydration mismatches by rendering a placeholder before the client mounts
-  if (!mounted) {
+  if (!mounted || !ready) {
     return (
       <button 
         disabled
@@ -52,10 +49,11 @@ export function WalletConnectButton() {
     );
   }
 
-  if (!isConnected || !address) {
+  // If disconnected, trigger the Privy auth modal on click
+  if (!isAuthenticated || !walletAddress) {
     return (
       <button 
-        onClick={() => openConnectModal?.()}
+        onClick={login}
         className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer"
       >
         <Wallet className="w-5 h-5" />
@@ -64,7 +62,7 @@ export function WalletConnectButton() {
     );
   }
 
-  const truncatedAddress = `${address.slice(0, 6)}...${address.slice(-4)}`;
+  const truncatedAddress = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
@@ -98,7 +96,7 @@ export function WalletConnectButton() {
           </button>
           <div className="h-px bg-border-thin my-1 mx-2" />
           <button 
-            onClick={() => { disconnect(); setIsOpen(false); }}
+            onClick={() => { logout(); setIsOpen(false); }}
             className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-danger hover:bg-danger/10 rounded-lg transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" /> Disconnect
