@@ -1,4 +1,5 @@
 import { OverviewCards } from "@/components/dashboard/OverviewCards";
+import { WalletFaucetCard } from "@/components/dashboard/WalletFaucetCard";
 import { GovernanceAnalytics } from "@/components/analytics/GovernanceAnalytics";
 import { ProposalFeed } from "@/components/proposals/ProposalFeed";
 import { ArrowRight } from "lucide-react";
@@ -24,6 +25,9 @@ export default function DashboardOverview() {
       {/* Metrics */}
       <OverviewCards />
 
+      {/* Wallet Balance & Arc Testnet Faucet */}
+      <WalletFaucetCard />
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 space-y-4">
@@ -45,3 +49,4 @@ export default function DashboardOverview() {
     </div>
   );
 }
+
