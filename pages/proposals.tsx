@@ -6,6 +6,7 @@ import { proposals as initialProposals } from "@/lib/mockData";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 import { useSignMessage } from "wagmi";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -36,6 +37,7 @@ export default function ProposalsPage() {
 
   const { balance: realUSDCBalance } = useUSDCBalance();
   const { isUnsupported } = useArcNetwork();
+  const { switchToArc, isSwitching } = useSwitchArcNetwork();
 
   const activeBalance = useMemo(() => {
     if (realUSDCBalance !== null) return parseFloat(realUSDCBalance);
@@ -190,8 +192,15 @@ Timestamp: ${timestamp}`;
 
           {/* Network Guard Warning */}
           {isUnsupported && (
-            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm text-amber-400 font-medium">
-              Please switch to Arc Testnet to continue.
+            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm text-amber-400 font-medium flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span>Please switch to Arc Testnet to continue.</span>
+              <button 
+                onClick={switchToArc}
+                disabled={isSwitching}
+                className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-background font-bold text-xs transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
+              >
+                {isSwitching ? "Switching..." : "Switch to Arc Testnet"}
+              </button>
             </div>
           )}
 

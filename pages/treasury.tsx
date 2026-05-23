@@ -4,9 +4,11 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { treasuryActivities, healthMetrics } from "@/lib/mockData";
 import { Wallet, ArrowUpRight, ArrowDownRight, RefreshCw, Send } from "lucide-react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 
 export default function TreasuryPage() {
   const { isUnsupported } = useArcNetwork();
+  const { switchToArc, isSwitching } = useSwitchArcNetwork();
   const treasuryValue = healthMetrics.find(m => m.label === 'Treasury Value')?.value || 2400000;
 
   return (
@@ -40,8 +42,15 @@ export default function TreasuryPage() {
 
           {/* Network Guard Warning */}
           {isUnsupported && (
-            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm text-amber-400 font-medium">
-              Please switch to Arc Testnet to continue.
+            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm text-amber-400 font-medium flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span>Please switch to Arc Testnet to continue.</span>
+              <button 
+                onClick={switchToArc}
+                disabled={isSwitching}
+                className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-background font-bold text-xs transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
+              >
+                {isSwitching ? "Switching..." : "Switch to Arc Testnet"}
+              </button>
             </div>
           )}
 

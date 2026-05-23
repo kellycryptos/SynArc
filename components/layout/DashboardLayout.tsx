@@ -7,19 +7,21 @@ import { WalletGuard } from "../auth/WalletGuard";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, AlertTriangle } from "lucide-react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 import { useAccount } from "wagmi";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isConnected } = useAccount();
-  const { isArcTestnet, isUnsupported, switchNetwork, isSwitching } = useArcNetwork();
+  const { isArcTestnet, isUnsupported } = useArcNetwork();
+  const { switchToArc, isSwitching } = useSwitchArcNetwork();
 
   // Automatically request network switch when connecting if wrong network
   useEffect(() => {
-    if (isConnected && !isArcTestnet && switchNetwork) {
-      switchNetwork();
+    if (isConnected && !isArcTestnet && switchToArc) {
+      switchToArc();
     }
-  }, [isConnected, isArcTestnet]);
+  }, [isConnected, isArcTestnet, switchToArc]);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground relative z-10">
@@ -78,11 +80,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 </span>
               </div>
               <button
-                onClick={switchNetwork}
+                onClick={switchToArc}
                 disabled={isSwitching}
                 className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-background font-bold text-xs transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
               >
-                {isSwitching ? "Switching..." : "Switch Network"}
+                {isSwitching ? "Switching..." : "Switch to Arc Testnet"}
               </button>
             </motion.div>
           )}

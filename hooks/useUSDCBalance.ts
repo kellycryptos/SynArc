@@ -46,10 +46,14 @@ export function useUSDCBalance() {
           address: USDC_CONTRACT_ADDRESS,
           abi: erc20Abi,
           functionName: "decimals",
-        }).catch(() => 18), // fallback to 18 if decimals fails
+        }).catch(() => 6),
       ]);
 
-      const formatted = formatUnits(bal, dec);
+      console.log("Raw USDC balance response:", bal.toString());
+      console.log("Decimals response from contract:", dec);
+
+      // Force 6 decimals as requested
+      const formatted = formatUnits(bal, 6);
       setBalance(formatted);
       setIsError(false);
     } catch (error) {
