@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHmac } from 'crypto';
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  const body = await req.text();
+  const signature = req.headers.get('privy-signature');
   
-  console.log('Privy webhook received:', body);
+  // Verify the request is from Privy
+  const hmac = createHmac('sha256', process.env.PRIVY_WEBHOOK_SIGNING_KEY!)
+    .update(body)
+    .digest('hex');
   
-  // Handle the event
-  const { type, data } = body;
-  
-  if (type === 'user.created') {
-    // do something when a new user signs up
+  if (hmac !== signature) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  
+
+  const event = JSON.parse(body);
+  console.log('Verified Privy event:', event.type);
+
   return NextResponse.json({ received: true });
 }
