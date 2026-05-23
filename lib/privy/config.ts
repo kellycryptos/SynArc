@@ -1,4 +1,5 @@
 import { PrivyClientConfig } from '@privy-io/react-auth';
+import { arcTestnet } from '@/lib/chains/arc';
 
 export const privyConfig: PrivyClientConfig = {
   loginMethods: ['email', 'google', 'twitter', 'discord', 'wallet'],
@@ -13,4 +14,6 @@ export const privyConfig: PrivyClientConfig = {
     },
     showWalletUIs: false, // Prevents annoying signing popups for smooth on-chain DAO participation
   },
+  supportedChains: [arcTestnet],
+  defaultChain: arcTestnet,
 };

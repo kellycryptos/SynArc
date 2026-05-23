@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useBalance } from "wagmi";
-import { formatUnits } from "viem";
+import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Wallet, 
@@ -40,10 +39,8 @@ export function WalletFaucetCard() {
   const [simulatedBalance, setSimulatedBalance] = useState<number | null>(null);
   const [txHistory, setTxHistory] = useState<FaucetTx[]>([]);
 
-  // Wagmi Hook to fetch actual native balance on Arc Testnet
-  const { data: balanceData, refetch, isFetching } = useBalance({
-    address: walletAddress ? (walletAddress as `0x${string}`) : undefined,
-  });
+  // Custom hook to fetch actual USDC balance on Arc Testnet
+  const { balance: realBalance, isLoading: balanceLoading, isError: balanceError, refetch: refetchUSDC, isFetching } = useUSDCBalance();
 
   // Load persistent override and history on mount
   useEffect(() => {
@@ -52,10 +49,10 @@ export function WalletFaucetCard() {
       const savedBalance = localStorage.getItem(`synarc_balance_override_${walletAddress}`);
       if (savedBalance) {
         setSimulatedBalance(parseFloat(savedBalance));
-      } else if (balanceData) {
-        setSimulatedBalance(parseFloat(formatUnits(balanceData.value, balanceData.decimals)));
+      } else if (realBalance !== null) {
+        setSimulatedBalance(parseFloat(realBalance));
       } else {
-        setSimulatedBalance(1500.0); // Premium onboarding starting balance
+        setSimulatedBalance(null);
       }
 
       // 2. Transaction History
@@ -66,7 +63,7 @@ export function WalletFaucetCard() {
         setTxHistory([]);
       }
     }
-  }, [walletAddress, balanceData]);
+  }, [walletAddress, realBalance]);
 
   // Copy Address helper
   const copyAddress = async () => {
@@ -109,7 +106,7 @@ export function WalletFaucetCard() {
     setCurrentTxHash(newTxHash);
     
     const increment = 500;
-    const currentBal = simulatedBalance ?? (balanceData ? parseFloat(formatUnits(balanceData.value, balanceData.decimals)) : 1500.0);
+    const currentBal = simulatedBalance ?? (realBalance ? parseFloat(realBalance) : 1500.0);
     const nextBalance = currentBal + increment;
     
     setSimulatedBalance(nextBalance);
@@ -130,7 +127,7 @@ export function WalletFaucetCard() {
     
     // Refetch real on-chain balance to synchronize if RPC is online
     try {
-      refetch();
+      refetchUSDC();
     } catch (e) {
       console.warn("Could not refetch balance from active network", e);
     }
@@ -204,7 +201,7 @@ export function WalletFaucetCard() {
   // Balance display
   const activeBalance = simulatedBalance !== null 
     ? simulatedBalance 
-    : (balanceData ? parseFloat(formatUnits(balanceData.value, balanceData.decimals)) : 1500.00);
+    : (realBalance ? parseFloat(realBalance) : 0.00);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-up">
@@ -266,9 +263,17 @@ export function WalletFaucetCard() {
               {isFetching && <RefreshCw className="w-3 h-3 animate-spin text-primary" />}
             </p>
             <div className="flex items-baseline gap-2">
-              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white font-heading">
-                {activeBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </h1>
+              {balanceLoading ? (
+                <div className="h-10 w-32 bg-white/5 animate-pulse rounded-xl shrink-0" />
+              ) : balanceError ? (
+                <span className="text-sm font-semibold text-danger bg-danger/10 border border-danger/20 rounded-full px-3 py-1 shrink-0" title="Failed to fetch balance from Arc RPC">
+                  Error fetching balance
+                </span>
+              ) : (
+                <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white font-heading">
+                  {activeBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </h1>
+              )}
               <span className="text-lg font-bold text-primary font-heading">USDC</span>
             </div>
             <p className="text-xs text-text-tertiary flex items-center gap-1.5 pt-1">

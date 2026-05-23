@@ -1,11 +1,13 @@
 "use client";
 
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { Bell, Search, Menu, LogOut, Wallet } from "lucide-react";
 import { useMemo } from "react";
 
 export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { isAuthenticated, walletAddress, email, user, login, logout } = useAuth();
+  const { balance, isLoading, isError } = useUSDCBalance();
 
   // Create a shortened representation of the wallet address (e.g. 0x12...abcd)
   const shortAddress = useMemo(() => {
@@ -62,6 +64,19 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               Arc Testnet
             </span>
+
+            {/* USDC Balance Display */}
+            {isLoading ? (
+              <div className="h-7 w-24 bg-surface-elevated animate-pulse rounded-full border border-border-thin shrink-0" />
+            ) : isError ? (
+              <span className="hidden xs:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-danger/10 border border-danger/20 text-danger shrink-0" title="Failed to fetch balance from Arc RPC">
+                Error USDC
+              </span>
+            ) : balance !== null ? (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/20 text-primary-glow text-purple-300 shrink-0">
+                {parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+              </span>
+            ) : null}
 
             {/* User Profile Card */}
             <div className="flex items-center gap-2 bg-surface-elevated border border-border-thin rounded-full pl-2 pr-3 py-1 hover:border-primary/20 transition-all duration-300">

@@ -1,14 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "../sidebar/Sidebar";
 import { DashboardNavbar } from "../navbar/DashboardNavbar";
 import { WalletGuard } from "../auth/WalletGuard";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { X, AlertTriangle } from "lucide-react";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { useAccount } from "wagmi";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isConnected } = useAccount();
+  const { isArcTestnet, isUnsupported, switchNetwork, isSwitching } = useArcNetwork();
+
+  // Automatically request network switch when connecting if wrong network
+  useEffect(() => {
+    if (isConnected && !isArcTestnet && switchNetwork) {
+      switchNetwork();
+    }
+  }, [isConnected, isArcTestnet]);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground relative z-10">
@@ -50,6 +61,33 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 md:ml-64 relative">
         <DashboardNavbar onMenuClick={() => setMobileMenuOpen(true)} />
+        
+        {/* Network Warning Banner */}
+        <AnimatePresence>
+          {isUnsupported && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-3 flex items-center justify-between gap-4 text-sm text-amber-400 z-20 shrink-0"
+            >
+              <div className="flex items-center gap-2.5">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 animate-pulse" />
+                <span>
+                  <strong>Wrong Network:</strong> You are currently connected to an unsupported chain. Please switch to Arc Testnet to continue.
+                </span>
+              </div>
+              <button
+                onClick={switchNetwork}
+                disabled={isSwitching}
+                className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-background font-bold text-xs transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
+              >
+                {isSwitching ? "Switching..." : "Switch Network"}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8 pb-20">
           <WalletGuard>
             {children}
