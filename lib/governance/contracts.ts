@@ -90,6 +90,29 @@ export const GovernorABI = [
   },
   {
     type: 'function',
+    name: 'getProposal',
+    inputs: [{ name: 'proposalId', type: 'uint256' }],
+    outputs: [
+      { name: 'id', type: 'uint256' },
+      { name: 'proposer', type: 'address' },
+      { name: 'title', type: 'string' },
+      { name: 'description', type: 'string' },
+      { name: 'category', type: 'string' },
+      { name: 'votingDuration', type: 'uint256' },
+      { name: 'startTime', type: 'uint256' },
+      { name: 'endTime', type: 'uint256' },
+      { name: 'forVotes', type: 'uint256' },
+      { name: 'againstVotes', type: 'uint256' },
+      { name: 'abstainVotes', type: 'uint256' },
+      { name: 'canceled', type: 'bool' },
+      { name: 'executed', type: 'bool' },
+      { name: 'treasuryImpactValue', type: 'uint256' },
+      { name: 'executionTarget', type: 'address' },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     name: 'state',
     inputs: [{ name: 'proposalId', type: 'uint256' }],
     outputs: [{ type: 'uint8' }], // 0=pending, 1=active, 2=canceled, 3=defeated, 4=succeeded, 5=queued, 6=expired, 7=executed
@@ -275,16 +298,16 @@ export const TreasuryABI = [
  */
 export const GOVERNANCE_CONTRACTS = {
   // Governor contract for proposal voting
-  governor: '0x' + '0'.repeat(40) as `0x${string}`,
+  governor: (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0') as `0x${string}`,
   
   // USDC token for voting power
-  token: '0x' + '0'.repeat(40) as `0x${string}`,
+  token: (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3') as `0x${string}`,
   
   // Treasury for fund management
-  treasury: '0x' + '0'.repeat(40) as `0x${string}`,
+  treasury: (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512') as `0x${string}`,
   
   // Timelock for execution delays
-  timelock: '0x' + '0'.repeat(40) as `0x${string}`,
+  timelock: '0x0000000000000000000000000000000000000000' as `0x${string}`,
 };
 
 /**
