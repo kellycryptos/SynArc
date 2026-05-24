@@ -268,7 +268,7 @@ export default function LandingPage() {
                   </span>
                 </div>
                 <p className="text-muted leading-relaxed mb-4 text-[15px]">
-                  Deploy SynArc governance infrastructure to mainnet chains. Enable production-ready DAOs with real asset management and institutional participation at scale.
+                  Deploy SynArc governance infrastructure to ARC mainnet. Enable production-ready DAOs with real asset management and institutional participation at scale.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Mainnet</span>
