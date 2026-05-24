@@ -13,7 +13,7 @@
 [![Privy](https://img.shields.io/badge/Privy-Auth-FF6B6B?style=for-the-badge)](https://privy.io)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-Governor-4E5EE4?style=for-the-badge)](https://openzeppelin.com)
 
-[**Launch App →**](https://synarc.vercel.app) · [**Documentation**](https://docs.arc.network) · [**Arc Ecosystem**](https://arc.network)
+[**Launch App →**](https://synarc-dao.vercel.app) · [**Documentation**](https://docs.arc.network) · [**Arc Ecosystem**](https://arc.network)
 
 </div>
 
@@ -353,7 +353,7 @@ This repository is licensed under the **MIT License**. Check [LICENSE](./LICENSE
 
 **Built for the Arc agentic economy.**
 
-[Website](https://synarc.vercel.app) · [Twitter](https://x.com/synarc_) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
+[Website](https://synarc-dao.vercel.app) · [Twitter](https://x.com/synarc_) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
 
 <sub>© 2026 SynArc. All rights reserved.</sub>
 
