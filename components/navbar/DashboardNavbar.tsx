@@ -2,9 +2,20 @@
 
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
+import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 import { Bell, Search, Menu, LogOut, Wallet } from "lucide-react";
 import { useMemo } from "react";
 
+/**
+ * DashboardNavbar Component
+ * 
+ * Main navigation header for authenticated users.
+ * Displays:
+ * - Arc Network connection status with RPC latency
+ * - USDC balance from connected wallet
+ * - User profile with shorthand address
+ * - Notification bell and logout button
+ */
 export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { isAuthenticated, walletAddress, email, user, login, logout } = useAuth();
   const { balance, isLoading, isError } = useUSDCBalance();
@@ -59,11 +70,8 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="flex items-center gap-3 sm:gap-4">
         {isAuthenticated ? (
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Arc Network Badge */}
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Arc Testnet
-            </span>
+            {/* Arc Network Status Badge with RPC Health */}
+            <NetworkStatusBadge />
 
             {/* USDC Balance Display */}
             {isLoading ? (

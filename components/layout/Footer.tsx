@@ -9,31 +9,24 @@ import { GlowOrb } from "@/components/ui/GlowOrb";
    ─────────────────────────────────────────────── */
 
 const productLinks = [
-  { label: "Governance", href: "/proposals" },
-  { label: "Delegates", href: "/members" },
-  { label: "Treasury", href: "/analytics" },
-  { label: "Analytics", href: "/analytics" },
   { label: "Proposals", href: "/proposals" },
+  { label: "Treasury", href: "/treasury" },
+  { label: "Roadmap", href: "/#roadmap" },
 ];
 
 const developerLinks = [
-  { label: "Documentation", href: "https://docs.arc.network", external: true },
-  { label: "Ecosystem", href: "https://www.arc.network/ecosystem", external: true },
-  { label: "Community", href: "https://community.arc.network/home", external: true },
-  { label: "API", href: "#" },
-  { label: "SDKs", href: "#" },
+  { label: "Docs", href: "https://docs.arc.network", external: true },
+  { label: "GitHub", href: "https://github.com/kellycryptos/SynArc", external: true },
 ];
 
 const socialLinks = [
   { label: "Twitter / X", href: "https://x.com/synarc_", external: true },
   { label: "Discord", href: "#", comingSoon: true },
-  { label: "GitHub", href: "https://github.com/kellycryptos/SynArc", external: true },
 ];
 
 const legalLinks = [
-  { label: "Terms & Conditions", href: "#" },
-  { label: "Privacy Policy", href: "#" },
-  { label: "Cookie Policy", href: "#" },
+  { label: "Terms", href: "#" },
+  { label: "Privacy", href: "#" },
 ];
 
 /* ───────────────────────────────────────────────
@@ -221,7 +214,7 @@ export function Footer() {
               <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06]">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-glow animate-pulse" />
                 <span className="text-[11px] font-medium tracking-wide uppercase text-muted/70">
-                  Private Governance Infrastructure
+                  Built for the Arc agentic economy.
                 </span>
               </div>
             </motion.div>

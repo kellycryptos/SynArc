@@ -7,6 +7,21 @@ import { config } from '@/lib/wagmi/config';
 import { privyConfig } from '@/lib/privy/config';
 import { ReactNode, useState } from 'react';
 
+/**
+ * PrivyProviderWrapper Component
+ * 
+ * Sets up the complete Web3 provider stack:
+ * - Privy: Authentication and embedded wallets
+ * - WAGMI: Blockchain interaction and contract calls
+ * - React Query: Data fetching and caching
+ * 
+ * Configuration:
+ * - NEXT_PUBLIC_PRIVY_APP_ID: Required for Privy initialization
+ * - NEXT_PUBLIC_ARC_RPC_URL: Optional personalized Arc RPC endpoint
+ * 
+ * Providers are initialized once and memoized to prevent re-initialization on re-renders,
+ * ensuring stable Web3 connection state and optimal performance.
+ */
 export function PrivyProviderWrapper({ children }: { children: ReactNode }) {
   // Prevent QueryClient from re-initializing on each render
   const [queryClient] = useState(() => new QueryClient({
@@ -18,8 +33,12 @@ export function PrivyProviderWrapper({ children }: { children: ReactNode }) {
     },
   }));
 
-  // Fetch the Privy App ID from env, with a standard development fallback for robustness
+  // Fetch the Privy App ID from environment, with a standard development fallback for robustness
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "clt57262n00ldmp0fhz113qep"; 
+
+  if (!appId) {
+    console.warn('NEXT_PUBLIC_PRIVY_APP_ID is not configured. Privy authentication may not work.');
+  }
 
   return (
     <PrivyProvider 
