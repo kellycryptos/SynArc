@@ -1,15 +1,24 @@
 "use client";
 
-import { MOCK_PROPOSALS } from "@/data/mock/proposals";
+import { useEffect } from "react";
+import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { cn } from "@/lib/utils";
 import { Clock, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 export function ProposalFeed() {
+  const { proposals, initialized, initializeStore } = useGovernanceStore();
+
+  useEffect(() => {
+    if (!initialized) initializeStore();
+  }, [initialized, initializeStore]);
+
+  const recentProposals = proposals.slice(0, 5);
+
   return (
     <div className="space-y-4">
-      {MOCK_PROPOSALS.map((proposal, i) => (
+      {recentProposals.map((proposal, i) => (
         <GlassCard key={proposal.id} delay={i * 0.05} hover={true} className="p-0 overflow-hidden">
           <Link href={`/proposals/${proposal.id}`} className="block p-5 sm:p-6 transition-colors hover:bg-surface-elevated/50">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -51,11 +60,11 @@ export function ProposalFeed() {
                     <div className="w-full h-2 bg-surface-elevated rounded-full overflow-hidden flex border border-border-thin">
                       <div 
                         className="h-full bg-success transition-all" 
-                        style={{ width: `${(proposal.forVotes / proposal.totalVotes) * 100 || 0}%` }} 
+                        style={{ width: `${(proposal.forVotes / (proposal.totalVotes || 1)) * 100 || 0}%` }} 
                       />
                       <div 
                         className="h-full bg-danger transition-all" 
-                        style={{ width: `${(proposal.againstVotes / proposal.totalVotes) * 100 || 0}%` }} 
+                        style={{ width: `${(proposal.againstVotes / (proposal.totalVotes || 1)) * 100 || 0}%` }} 
                       />
                     </div>
                   </div>

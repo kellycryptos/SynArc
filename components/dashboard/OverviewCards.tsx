@@ -1,17 +1,24 @@
 "use client";
 
-import { MOCK_METRICS } from "@/data/mock/proposals";
+import { useEffect } from "react";
+import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { DollarSign, FileText, Activity, Users, ArrowRightLeft, CheckCircle2 } from "lucide-react";
 
 export function OverviewCards() {
+  const { metrics, initialized, initializeStore } = useGovernanceStore();
+
+  useEffect(() => {
+    if (!initialized) initializeStore();
+  }, [initialized, initializeStore]);
+
   const cards = [
-    { title: "Treasury Value", value: MOCK_METRICS.treasuryValue, icon: DollarSign, trend: "+2.4%" },
-    { title: "Active Proposals", value: MOCK_METRICS.activeProposals, icon: FileText, trend: "Stable" },
-    { title: "Governance Participation", value: MOCK_METRICS.governanceParticipation, icon: Activity, trend: "+5.1%" },
-    { title: "DAO Members", value: MOCK_METRICS.daoMembers, icon: Users, trend: "+124 this week" },
-    { title: "Treasury Transactions", value: MOCK_METRICS.treasuryTransactions, icon: ArrowRightLeft, trend: "Active" },
-    { title: "Proposal Execution Rate", value: MOCK_METRICS.proposalExecutionRate, icon: CheckCircle2, trend: "High" },
+    { title: "Treasury Value", value: metrics?.treasuryValue || "$0", icon: DollarSign, trend: "+2.4%" },
+    { title: "Active Proposals", value: metrics?.activeProposals || 0, icon: FileText, trend: "Stable" },
+    { title: "Governance Participation", value: metrics?.governanceParticipation || "0%", icon: Activity, trend: "+5.1%" },
+    { title: "DAO Members", value: metrics?.daoMembers || 0, icon: Users, trend: "+124 this week" },
+    { title: "Treasury Transactions", value: metrics?.treasuryTransactions || 0, icon: ArrowRightLeft, trend: "Active" },
+    { title: "Proposal Execution Rate", value: metrics?.proposalExecutionRate || "0%", icon: CheckCircle2, trend: "High" },
   ];
 
   return (
