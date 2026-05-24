@@ -235,52 +235,7 @@ synarc-dao/
 *   **Mainnet Integration**: Production deployment on Arc Mainnet for real-asset management
 
 
----
-
-## 10. Getting Started
-
-### Prerequisites
-Make sure you have the following installed on your machine:
-*   [Node.js](https://nodejs.org) `>= 18.x`
-*   [npm](https://www.npmjs.com) `>= 9.x`
-*   An EVM-compatible browser extension (e.g., MetaMask, Rabby)
-
-### Installation
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/kellycryptos/SynArc.git
-    ```
-2.  Navigate to the project root directory:
-    ```bash
-    cd SynArc/synarc-dao
-    ```
-3.  Install dependencies:
-    ```bash
-    npm install
-    ```
-
----
-
-## 11. Local Development
-
-### 1. Configure Environment Variables
-Copy the environmental template to set up local configurations:
-```bash
-4.  Create and configure `.env.local`:
-    ```bash
-    cat > .env.local << EOF
-    NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id_here
-    NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
-    EOF
-    ```
-5.  Start the development server:
-    ```bash
-    npm run dev
-    ```
-6.  Open [http://localhost:3000](http://localhost:3000) in your browser
-
-
-## 12. Deployment
+## 10. Deployment
 
 ### Deploying to Vercel
 1.  Install the Vercel CLI globally:
@@ -302,7 +257,7 @@ Copy the environmental template to set up local configurations:
 
 ---
 
-## 13. Folder Structure
+## 11. Folder Structure
 
 SynArc organizes its code base into high-cohesion, low-coupling directories to maximize development efficiency:
 
@@ -325,7 +280,7 @@ synarc-dao/
 
 ---
 
-## 14. Security Philosophy
+## 12. Security Philosophy
 
 SynArc is developed with a strict security-first mindset, preparing for institutional integration:
 
@@ -338,7 +293,7 @@ SynArc is developed with a strict security-first mindset, preparing for institut
 
 ---
 
-## 15. Future Plans
+## 13. Future Plans
 
 | Initiative | Timeline | Objectives |
 | :--- | :--- | :--- |
@@ -349,7 +304,7 @@ SynArc is developed with a strict security-first mindset, preparing for institut
 
 ---
 
-## 16. License
+## 14. License
 
 This repository is licensed under the **MIT License**. Check [LICENSE](./LICENSE) for additional details.
 
