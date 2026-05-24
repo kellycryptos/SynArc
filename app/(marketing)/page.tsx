@@ -35,12 +35,6 @@ export default function LandingPage() {
             >
               Launch Dashboard <ArrowRight className="w-5 h-5" />
             </Link>
-            <Link 
-              href="#"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-surface border border-border-thin text-foreground font-semibold hover:bg-surface-elevated transition-colors flex items-center justify-center text-lg"
-            >
-              View Docs
-            </Link>
           </div>
         </div>
       </section>
@@ -255,6 +249,34 @@ export default function LandingPage() {
               </GlassCard>
             </div>
 
+            {/* Mainnet Integration */}
+            <div className="relative pl-8 group">
+              <div className="absolute -left-[11px] top-1.5 w-5 h-5 rounded-full bg-white/[0.2] border-4 border-background shadow-[0_0_12px_rgba(255,255,255,0.3)] flex items-center justify-center z-20 group-hover:scale-125 transition-transform duration-300" />
+              
+              <div className="absolute -left-[144px] top-1.5 hidden md:block text-right w-24">
+                <span className="text-xs font-semibold uppercase tracking-wider text-white/[0.5]">Future</span>
+                <p className="text-[10px] text-muted uppercase">Planned</p>
+              </div>
+
+              <GlassCard className="p-8 transition-all duration-300 group-hover:border-white/[0.2] group-hover:shadow-[0_0_25px_rgba(255,255,255,0.05)]">
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                  <h3 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                    Mainnet Integration
+                  </h3>
+                  <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-white/[0.04] border border-white/[0.08] text-muted/60">
+                    Planned
+                  </span>
+                </div>
+                <p className="text-muted leading-relaxed mb-4 text-[15px]">
+                  Deploy SynArc governance infrastructure to mainnet chains. Enable production-ready DAOs with real asset management and institutional participation at scale.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Mainnet</span>
+                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Production</span>
+                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Institutional</span>
+                </div>
+              </GlassCard>
+            </div>
           </div>
         </div>
       </section>

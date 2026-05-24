@@ -2,9 +2,9 @@
 
 <img src="./public/logo.png" alt="SynArc Logo" width="100" height="100" />
 
-# SynArc
+# SynArc DAO
 
-**Confidential governance infrastructure for the agentic economy on Arc.**
+**A governance platform built on Arc Testnet enabling decentralized organizations to coordinate proposals, treasury management, and programmable governance.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)](https://typescriptlang.org)
@@ -57,16 +57,13 @@ SynArc is the infrastructure layer that makes this future possible today.
 
 ## 3. Features
 
-*   **Governance Dashboard**: Real-time overview of active and historical proposals, system participation rates, and treasury distributions.
-*   **Proposal System**: Comprehensive interface for drafting, submitting, voting, and queuing proposals.
-*   **Treasury Analytics**: Dynamic charts detailing liquid USDC reserves, yield-bearing positions, and transaction ledgers.
-*   **Proposal Execution**: Simulated and verified on-chain execution with precise treasury impact calculations.
-*   **Arc Testnet Support**: Zero-latency interaction with the official Arc Testnet environment.
-*   **Privy Authentication**: Multi-method onboarding with social login, email, and external wallet connections.
-*   **Embedded Wallet Infrastructure**: Non-custodial embedded wallets powered by Privy for zero-friction user onboarding.
-*   **Responsive Governance UI**: Visually stunning, mobile-first design leveraging modern glassmorphism.
-*   **Light/Dark Theme System**: Optimized reading and voting environments designed to minimize user fatigue.
-*   **Modular DAO Architecture**: Extensible design structure that cleanly separates state, UI views, and smart contract layers.
+*   **Proposals**: Create, discuss, and vote on governance proposals
+*   **Treasury**: Real-time management and analytics of DAO assets in USDC
+*   **Wallet Connect**: Seamless wallet integration for governance participation
+*   **Arc Testnet Integration**: Native support for Arc Testnet with zero-latency execution
+*   **USDC Balance Display**: Real-time balance tracking and treasury visualization
+*   **Dashboard Analytics**: Governance participation metrics and voting trends
+*   **Responsive Design**: Mobile-first interface with glassmorphism effects
 
 ---
 
@@ -153,8 +150,25 @@ All treasury interactions are authorized strictly via successful governance outc
 ### Network
 *   **Execution Layer**: Arc Testnet
 
+
 ---
 
+## 7a. Complete Tech Stack
+
+**Frontend & Styling**:
+- Next.js 15 - React framework with App Router
+- TailwindCSS 4 - Utility-first CSS framework
+- Framer Motion - Animation library
+
+**Web3 Integration**:
+- Privy - Authentication and embedded wallets
+- ethers.js - Ethereum library (via Viem compatibility)
+- Wagmi / Viem - Low-level web3 client
+
+**Deployment**:
+- Vercel - Hosting and deployment platform
+
+---
 ## 8. Architecture
 
 ```
@@ -214,6 +228,12 @@ synarc-dao/
     *   [ ] Implement encrypted voting via Zero-Knowledge (ZK) proofs.
     *   [ ] Enable private coordinator sets to shield voting positions during voting periods.
     *   [ ] Release SynArc TypeScript SDK for seamless integration into other Arc ecosystem apps.
+### Planned Features
+*   **Members**: Member management and delegation interfaces
+*   **Analytics**: Advanced governance analytics and reporting
+*   **Settings**: DAO configuration and parameter management
+*   **Mainnet Integration**: Production deployment on Arc Mainnet for real-asset management
+
 
 ---
 
@@ -246,33 +266,19 @@ Make sure you have the following installed on your machine:
 ### 1. Configure Environment Variables
 Copy the environmental template to set up local configurations:
 ```bash
-cp .env.example .env.local
-```
+4.  Create and configure `.env.local`:
+    ```bash
+    cat > .env.local << EOF
+    NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id_here
+    NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
+    EOF
+    ```
+5.  Start the development server:
+    ```bash
+    npm run dev
+    ```
+6.  Open [http://localhost:3000](http://localhost:3000) in your browser
 
-Open `.env.local` and configure your credentials:
-```env
-# Privy App Configuration
-NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id_here
-
-# Network Configurations
-NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
-```
-
-### 2. Run the Development Server
-```bash
-npm run dev
-```
-Your local environment is now running at `http://localhost:3000`.
-
-### 3. Setup Arc Testnet in MetaMask
-To interact with the protocol, add Arc Testnet to your wallet using these parameters:
-*   **Network Name**: Arc Testnet
-*   **New RPC URL**: `https://rpc.testnet.arc.network`
-*   **Chain ID**: `5042002`
-*   **Currency Symbol**: USDC
-*   **Block Explorer URL**: `https://testnet.arcscan.app`
-
----
 
 ## 12. Deployment
 
