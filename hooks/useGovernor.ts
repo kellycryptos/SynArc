@@ -1,0 +1,200 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { ethers, JsonRpcProvider, BrowserProvider, Contract, formatUnits, parseUnits } from "ethers";
+import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
+import { Proposal } from "@/types/governance";
+import { useWallets } from "@privy-io/react-auth";
+
+interface UseGovernorReturn {
+  proposals: Proposal[];
+  loading: boolean;
+  error: Error | null;
+  refetch: () => Promise<void>;
+  castVote: (proposalId: number, support: 0 | 1 | 2, reason?: string) => Promise<string>;
+  createProposal: (title: string, description: string, category: string, duration: number, treasuryImpact: number, target: string) => Promise<string>;
+}
+
+/**
+ * Hook: useGovernor
+ * Fetches proposals and handles voting on Arc Testnet Governor contract
+ */
+export function useGovernor(): UseGovernorReturn {
+  const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const { wallets } = useWallets();
+
+  const fetchProposals = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const rpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
+      const provider = new JsonRpcProvider(rpcUrl);
+      const governorAddress = GOVERNANCE_CONTRACTS.governor;
+      const governorContract = new Contract(governorAddress, GovernorABI, provider);
+
+      const count = await governorContract.proposalCount();
+      const loadedProposals: Proposal[] = [];
+
+      for (let i = 1; i <= Number(count); i++) {
+        const p = await governorContract.getProposal(i);
+        const proposalStateNum = await governorContract.state(i);
+
+        const forV = Number(formatUnits(p.forVotes, 6));
+        const againstV = Number(formatUnits(p.againstVotes, 6));
+        const abstainV = Number(formatUnits(p.abstainVotes, 6));
+        const total = forV + againstV + abstainV;
+        const participation = total > 0 ? (total / 15000000) * 100 : 0;
+
+        const statusMap: Record<number, Proposal["status"]> = {
+          0: "Pending",
+          1: "Active",
+          2: "Executed", // Canceled maps to Executed for UI
+          3: "Defeated",
+          4: "Executed",
+          5: "Executed",
+          6: "Executed",
+          7: "Executed"
+        };
+        const status = statusMap[Number(proposalStateNum)] || "Active";
+
+        const now = Math.floor(Date.now() / 1000);
+        const timeLeft = Math.max(0, Number(p.endTime) - now);
+        const daysLeft = Math.ceil(timeLeft / 86400);
+
+        loadedProposals.push({
+          id: `SIP-${p.id}`,
+          title: p.title,
+          description: p.description,
+          proposer: p.proposer,
+          category: p.category,
+          status,
+          forVotes: forV,
+          againstVotes: againstV,
+          abstainVotes: abstainV,
+          totalVotes: total,
+          participationPercentage: parseFloat(participation.toFixed(1)),
+          treasuryImpactValue: Number(formatUnits(p.treasuryImpactValue, 6)),
+          treasuryImpact: p.treasuryImpactValue > 0n ? `-${Number(formatUnits(p.treasuryImpactValue, 6)).toLocaleString()} USDC` : "None",
+          timeRemaining: status === "Active" ? `${daysLeft} days left` : "Ended",
+          createdAt: new Date(Number(p.startTime) * 1000).toISOString(),
+          votingStarts: new Date(Number(p.startTime) * 1000).toISOString(),
+          votingEnds: new Date(Number(p.endTime) * 1000).toISOString(),
+          executionTarget: p.executionTarget,
+          votingDuration: Number(p.votingDuration) / 86400,
+          timeline: [
+            { title: "Proposal Created", timestamp: new Date(Number(p.startTime) * 1000).toISOString(), status: "Proposed" }
+          ]
+        });
+      }
+
+      setProposals(loadedProposals.reverse());
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error("Failed to fetch proposals");
+      setError(error);
+      console.error("Error fetching proposals:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProposals();
+  }, [fetchProposals]);
+
+  const castVote = useCallback(async (proposalId: number, support: 0 | 1 | 2, reason?: string): Promise<string> => {
+    try {
+      if (!wallets || wallets.length === 0) {
+        throw new Error("No wallet connected");
+      }
+
+      const privy = wallets.find(w => w.walletClientType === "privy");
+      if (!privy) {
+        throw new Error("Privy wallet not found");
+      }
+
+      const provider = await privy.getEthersProvider();
+      const signer = await provider.getSigner();
+
+      const governorAddress = GOVERNANCE_CONTRACTS.governor;
+      const governorContract = new Contract(governorAddress, GovernorABI, signer);
+
+      let tx;
+      if (reason) {
+        tx = await governorContract.castVoteWithReason(proposalId, support, reason);
+      } else {
+        tx = await governorContract.castVote(proposalId, support);
+      }
+
+      const receipt = await tx.wait();
+      
+      // Refetch proposals after vote
+      await fetchProposals();
+
+      return receipt?.hash || "";
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error("Failed to cast vote");
+      throw error;
+    }
+  }, [wallets, fetchProposals]);
+
+  const createProposal = useCallback(async (
+    title: string,
+    description: string,
+    category: string,
+    duration: number,
+    treasuryImpact: number,
+    target: string
+  ): Promise<string> => {
+    try {
+      if (!wallets || wallets.length === 0) {
+        throw new Error("No wallet connected");
+      }
+
+      const privy = wallets.find(w => w.walletClientType === "privy");
+      if (!privy) {
+        throw new Error("Privy wallet not found");
+      }
+
+      const provider = await privy.getEthersProvider();
+      const signer = await provider.getSigner();
+
+      const governorAddress = GOVERNANCE_CONTRACTS.governor;
+      const governorContract = new Contract(governorAddress, GovernorABI, signer);
+
+      const votingDurationSeconds = duration * 86400;
+      const treasuryImpactWei = parseUnits(Math.abs(treasuryImpact).toString(), 6);
+      const executionTarget = target || "0x0000000000000000000000000000000000000000";
+
+      const tx = await governorContract.propose(
+        title,
+        description,
+        category,
+        votingDurationSeconds,
+        treasuryImpactWei,
+        executionTarget
+      );
+
+      const receipt = await tx.wait();
+
+      // Refetch proposals after creation
+      await fetchProposals();
+
+      return receipt?.hash || "";
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error("Failed to create proposal");
+      throw error;
+    }
+  }, [wallets, fetchProposals]);
+
+  return {
+    proposals,
+    loading,
+    error,
+    refetch: fetchProposals,
+    castVote,
+    createProposal
+  };
+}
