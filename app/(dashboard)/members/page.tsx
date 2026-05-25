@@ -2,18 +2,17 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { Award, Shield, Search, AlertCircle, RefreshCw } from "lucide-react";
+import { Shield, Search, AlertCircle, RefreshCw, Users, Calendar, Wallet } from "lucide-react";
 import { ethers, JsonRpcProvider, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, ERC20ABI } from "@/lib/governance/contracts";
 
 interface Member {
   id: string;
   address: string;
-  ensName: string | null;
-  votingPower: number;
-  isDelegate: boolean;
-  delegatorsCount: number;
-  votingParticipationRate: number;
+  tokenBalance: number;
+  usdcBalance: number;
+  joinDate: string;
+  timestamp: number;
 }
 
 export default function MembersPage() {
@@ -45,47 +44,92 @@ export default function MembersPage() {
 
       const tokenAddress = GOVERNANCE_CONTRACTS.token;
       const tokenContract = new Contract(tokenAddress, ERC20ABI, provider);
+      const usdcContract = new Contract("0x3600000000000000000000000000000000000000", ERC20ABI, provider);
 
-      // Scrape Transfer events
+      // Scrape Transfer events from Token contract
       const filter = tokenContract.filters.Transfer();
       const events = await tokenContract.queryFilter(filter, 0, "latest");
       
       const holders = new Set<string>();
+      const holderFirstBlock = new Map<string, number>();
+
       events.forEach(event => {
         const log = event as ethers.EventLog;
         if (log.args) {
           const from = log.args[0] as string;
           const to = log.args[1] as string;
+          const blockNum = event.blockNumber;
           
-          if (to && to !== ethers.ZeroAddress) holders.add(to);
-          if (from && from !== ethers.ZeroAddress) holders.add(from);
+          if (to && to !== ethers.ZeroAddress) {
+            holders.add(to);
+            const current = holderFirstBlock.get(to);
+            if (current === undefined || blockNum < current) {
+              holderFirstBlock.set(to, blockNum);
+            }
+          }
+          if (from && from !== ethers.ZeroAddress) {
+            holders.add(from);
+            const current = holderFirstBlock.get(from);
+            if (current === undefined || blockNum < current) {
+              holderFirstBlock.set(from, blockNum);
+            }
+          }
         }
       });
 
-      const memberList: Member[] = [];
-      let index = 1;
+      // Fetch block timestamps in parallel
+      const distinctBlockNumbers = Array.from(new Set(Array.from(holderFirstBlock.values())));
+      const blockMap = new Map<number, number>();
+      
+      await Promise.all(
+        distinctBlockNumbers.map(async (blockNum) => {
+          try {
+            const block = await provider.getBlock(blockNum);
+            if (block) {
+              blockMap.set(blockNum, block.timestamp);
+            }
+          } catch (err) {
+            console.error(`Failed to fetch block ${blockNum}:`, err);
+          }
+        })
+      );
 
-      for (const holder of Array.from(holders)) {
-        const bal = await tokenContract.balanceOf(holder);
-        const balanceNum = Number(formatUnits(bal, 18));
+      // Fetch balances for each holder
+      const memberList: Member[] = await Promise.all(
+        Array.from(holders).map(async (holder, idx) => {
+          const [tokenBal, usdcBal] = await Promise.all([
+            tokenContract.balanceOf(holder).catch(() => 0n),
+            usdcContract.balanceOf(holder).catch(() => 0n),
+          ]);
 
-        if (balanceNum > 0) {
-          memberList.push({
-            id: index.toString(),
-            address: holder,
-            ensName: null,
-            votingPower: balanceNum,
-            isDelegate: balanceNum > 500000,
-            delegatorsCount: Math.floor(balanceNum / 100000),
-            votingParticipationRate: Math.min(100, Math.floor(75 + (balanceNum % 25)))
+          const tokenBalanceNum = Number(formatUnits(tokenBal, 18));
+          const usdcBalanceNum = Number(formatUnits(usdcBal, 6));
+          
+          const firstBlock = holderFirstBlock.get(holder);
+          const timestamp = firstBlock ? (blockMap.get(firstBlock) || (Date.now() / 1000)) : (Date.now() / 1000);
+          const joinDate = new Date(timestamp * 1000).toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
           });
-          index++;
-        }
-      }
 
-      // Sort by voting power descending
-      memberList.sort((a, b) => b.votingPower - a.votingPower);
-      setMembers(memberList);
+          return {
+            id: idx.toString(),
+            address: holder,
+            tokenBalance: tokenBalanceNum,
+            usdcBalance: usdcBalanceNum,
+            joinDate,
+            timestamp,
+          };
+        })
+      );
+
+      // Filter out holders with 0 token balance and sort by token balance descending
+      const activeMembers = memberList
+        .filter(m => m.tokenBalance > 0)
+        .sort((a, b) => b.tokenBalance - a.tokenBalance);
+
+      setMembers(activeMembers);
     } catch (err: any) {
       console.error("Failed to fetch on-chain token holders:", err);
       setError(err?.message || "Failed to load members. Please try again.");
@@ -131,17 +175,18 @@ export default function MembersPage() {
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
+        {/* Header & Search */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">DAO Members</h1>
-            <p className="text-muted mt-1">Delegates and contributors in the SynArc ecosystem.</p>
+            <p className="text-muted mt-1">Real-time token holders and voters on Arc Testnet.</p>
           </div>
           
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <input 
               type="text" 
-              placeholder="Search members..." 
+              placeholder="Search by address..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-4 py-2 w-full sm:w-64 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-sm"
@@ -149,6 +194,26 @@ export default function MembersPage() {
           </div>
         </div>
 
+        {/* Stats Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <GlassCard className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-muted uppercase tracking-wider">Total DAO Members</p>
+              <h3 className="text-3xl font-extrabold text-white mt-2">
+                {isLoading ? (
+                  <span className="inline-block w-12 h-8 bg-surface-elevated animate-pulse rounded" />
+                ) : (
+                  members.length
+                )}
+              </h3>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-[0_0_15px_rgba(124,58,237,0.1)]">
+              <Users className="w-6 h-6" />
+            </div>
+          </GlassCard>
+        </div>
+
+        {/* Members Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
@@ -163,45 +228,52 @@ export default function MembersPage() {
           ) : filteredMembers.length > 0 ? (
             filteredMembers.map((member, i) => {
               const truncatedAddress = `${member.address.slice(0, 6)}...${member.address.slice(-4)}`;
+              // Generative background seed based on address
+              const avatarGradient = `bg-gradient-to-tr from-purple-deep via-primary/30 to-arc-blue`;
+              const initials = member.address.slice(2, 4).toUpperCase();
+
               return (
-                <GlassCard key={member.id} delay={i * 0.05} className="p-6">
+                <GlassCard key={member.address} delay={i * 0.05} className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-surface-elevated border border-white/10 flex items-center justify-center overflow-hidden">
-                        <div className="w-full h-full bg-gradient-to-br from-primary/40 to-accent/40" />
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xs font-extrabold text-white shadow-md ${avatarGradient}`}>
+                        {initials}
                       </div>
                       <div>
-                        <h3 className="font-bold font-mono text-sm">{truncatedAddress}</h3>
-                        <p className="text-xs text-muted font-mono">{truncatedAddress}</p>
+                        <h3 className="font-bold font-mono text-sm" title={member.address}>{truncatedAddress}</h3>
+                        <p className="text-xs text-muted font-mono" title={member.address}>{truncatedAddress}</p>
                       </div>
                     </div>
-                    {member.isDelegate && (
-                      <span className="px-2.5 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-medium flex items-center gap-1">
-                        <Award className="w-3 h-3" /> Delegate
-                      </span>
-                    )}
                   </div>
 
                   <div className="space-y-4 pt-4 border-t border-border-thin">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted">Voting Power</span>
-                      <span className="font-semibold font-mono">{member.votingPower.toLocaleString(undefined, { maximumFractionDigits: 0 })} sARC</span>
+                      <span className="text-muted flex items-center gap-1.5">
+                        <Shield className="w-4 h-4 text-primary" />
+                        SynArcToken Balance
+                      </span>
+                      <span className="font-semibold font-mono text-white">
+                        {member.tokenBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} sARC
+                      </span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted">Delegated To</span>
-                      <span className="font-semibold font-mono">{member.delegatorsCount} addresses</span>
+                      <span className="text-muted flex items-center gap-1.5">
+                        <Wallet className="w-4 h-4 text-arc-blue" />
+                        USDC Balance
+                      </span>
+                      <span className="font-semibold font-mono text-white">
+                        {member.usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                      </span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted">Participation</span>
-                      <span className="font-semibold text-success font-mono">{member.votingParticipationRate}%</span>
+                      <span className="text-muted flex items-center gap-1.5">
+                        <Calendar className="w-4 h-4 text-accent" />
+                        Join Date
+                      </span>
+                      <span className="font-semibold font-mono text-white">
+                        {member.joinDate}
+                      </span>
                     </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <button className="w-full py-2.5 rounded-lg bg-surface border border-border-thin hover:bg-surface-elevated transition-colors text-sm font-medium flex items-center justify-center gap-2 cursor-pointer">
-                      <Shield className="w-4 h-4" />
-                      Delegate Votes
-                    </button>
                   </div>
                 </GlassCard>
               );

@@ -22,13 +22,12 @@ const activeLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/proposals", label: "Proposals", icon: FileText },
   { href: "/treasury", label: "Treasury", icon: Shield },
+  { href: "/members", label: "Members", icon: Users },
+  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-const comingSoonLinks = [
-  { label: "Members", icon: Users },
-  { label: "Analytics", icon: BarChart3 },
-  { label: "Settings", icon: Settings },
-];
+const comingSoonLinks: { label: string; icon: any }[] = [];
 
 export function Sidebar({ className, onClick }: { className?: string; onClick?: () => void }) {
   const pathname = usePathname();
@@ -85,33 +84,37 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
           );
         })}
 
-        {/* Divider */}
-        <div className="pt-3 pb-1">
-          <div className="h-px bg-border-thin mx-1" />
-        </div>
-
-        {/* Section label */}
-        <p className="px-3 pb-2 text-[10px] uppercase tracking-[0.15em] font-semibold text-muted/50">
-          Roadmap
-        </p>
-
-        {/* Disabled / Coming Soon links */}
-        {comingSoonLinks.map((link) => {
-          const Icon = link.icon;
-          return (
-            <div
-              key={link.label}
-              title="Coming Soon"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium border border-transparent cursor-not-allowed opacity-45 select-none"
-            >
-              <Icon className="w-4.5 h-4.5 shrink-0 text-muted" />
-              <span className="text-muted">{link.label}</span>
-              <span className="ml-auto inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest bg-primary/8 border border-primary/15 text-primary/60 backdrop-blur-sm">
-                Soon
-              </span>
+        {/* Divider & Roadmap if any coming soon */}
+        {comingSoonLinks.length > 0 && (
+          <>
+            <div className="pt-3 pb-1">
+              <div className="h-px bg-border-thin mx-1" />
             </div>
-          );
-        })}
+
+            {/* Section label */}
+            <p className="px-3 pb-2 text-[10px] uppercase tracking-[0.15em] font-semibold text-muted/50">
+              Roadmap
+            </p>
+
+            {/* Disabled / Coming Soon links */}
+            {comingSoonLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <div
+                  key={link.label}
+                  title="Coming Soon"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium border border-transparent cursor-not-allowed opacity-45 select-none"
+                >
+                  <Icon className="w-4.5 h-4.5 shrink-0 text-muted" />
+                  <span className="text-muted">{link.label}</span>
+                  <span className="ml-auto inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest bg-primary/8 border border-primary/15 text-primary/60 backdrop-blur-sm">
+                    Soon
+                  </span>
+                </div>
+              );
+            })}
+          </>
+        )}
       </div>
 
       {/* Mobile-only governance stats & status (USDC, Network, Notifications) */}

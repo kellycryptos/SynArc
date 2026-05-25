@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { Proposal, ProposalStatus, TimelineEvent, GovernanceMetrics } from "@/types/governance";
 import { TreasuryActivity } from "@/types";
 import { ethers, JsonRpcProvider, BrowserProvider, Contract, formatUnits, parseUnits } from "ethers";
-import { GOVERNANCE_CONTRACTS, GovernorABI, ProposalState, VoteType } from "@/lib/governance/contracts";
+import { GOVERNANCE_CONTRACTS, GovernorABI, ProposalState, VoteType, ERC20ABI } from "@/lib/governance/contracts";
 
 async function getResilientProvider(): Promise<JsonRpcProvider> {
   const rpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
@@ -168,33 +168,76 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       }
 
       set({
-        proposals: loadedProposals.length > 0 ? loadedProposals : INITIAL_PROPOSALS,
-        treasuryActivities: loadedActivities.length > 0 ? loadedActivities : INITIAL_TREASURY_ACTIVITIES,
+        proposals: loadedProposals,
+        treasuryActivities: loadedActivities,
+      });
+
+      // Get unique token holders for DAO members from Token contract
+      let activeHoldersCount = 0;
+      try {
+        const tokenAddress = GOVERNANCE_CONTRACTS.token;
+        const tokenContract = new Contract(tokenAddress, ERC20ABI, provider);
+        const filter = tokenContract.filters.Transfer();
+        const events = await tokenContract.queryFilter(filter, 0, "latest");
+        const holders = new Set<string>();
+        events.forEach(event => {
+          const log = event as ethers.EventLog;
+          if (log.args) {
+            const from = log.args[0] as string;
+            const to = log.args[1] as string;
+            if (to && to !== ethers.ZeroAddress) holders.add(to);
+            if (from && from !== ethers.ZeroAddress) holders.add(from);
+          }
+        });
+        
+        await Promise.all(
+          Array.from(holders).map(async (holder) => {
+            try {
+              const bal = await tokenContract.balanceOf(holder);
+              if (bal > 0n) {
+                activeHoldersCount++;
+              }
+            } catch (err) {
+              // Ignore failure for single address
+            }
+          })
+        );
+      } catch (err) {
+        console.error("Failed to load active members for metrics", err);
+      }
+
+      const avgPart = loadedProposals.length > 0
+        ? (loadedProposals.reduce((sum, p) => sum + p.participationPercentage, 0) / loadedProposals.length).toFixed(1) + "%"
+        : "0.0%";
+
+      const executionRate = loadedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
+        ? ((loadedProposals.filter(p => p.status === "Executed").length / loadedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
+        : "100.0%";
+
+      set({
         initialized: true,
         metrics: {
           treasuryValue: `$${treasuryVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
           activeProposals: loadedProposals.filter(p => p.status === "Active").length,
-          governanceParticipation: "68.5%",
-          daoMembers: 12450 + loadedProposals.length,
-          treasuryTransactions: loadedActivities.length || INITIAL_TREASURY_ACTIVITIES.length,
-          proposalExecutionRate: loadedProposals.filter(p => p.status === "Executed").length > 0
-            ? ((loadedProposals.filter(p => p.status === "Executed").length / loadedProposals.filter(p => p.status !== "Active" && p.status !== "Pending").length) * 100).toFixed(1) + "%"
-            : "92.4%",
+          governanceParticipation: avgPart,
+          daoMembers: activeHoldersCount || 1,
+          treasuryTransactions: loadedActivities.length,
+          proposalExecutionRate: executionRate,
         }
       });
     } catch (e) {
       console.warn("RPC connection unavailable, falling back to offline high-fidelity mockup data:", e);
       set({
-        proposals: INITIAL_PROPOSALS,
-        treasuryActivities: INITIAL_TREASURY_ACTIVITIES,
+        proposals: [],
+        treasuryActivities: [],
         initialized: true,
         metrics: {
-          treasuryValue: "$2,450,000",
-          activeProposals: INITIAL_PROPOSALS.filter(p => p.status === "Active").length,
-          governanceParticipation: "68.5%",
-          daoMembers: 12450,
-          treasuryTransactions: INITIAL_TREASURY_ACTIVITIES.length,
-          proposalExecutionRate: "92.4%"
+          treasuryValue: "$0",
+          activeProposals: 0,
+          governanceParticipation: "0.0%",
+          daoMembers: 1,
+          treasuryTransactions: 0,
+          proposalExecutionRate: "100.0%"
         }
       });
     }
