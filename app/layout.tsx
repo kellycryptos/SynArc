@@ -16,64 +16,30 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.synarcdao.xyz"),
-  title: "SynArc — Confidential Governance Infrastructure on Arc",
-  description:
-    "Confidential governance infrastructure for programmable organizations, proposal coordination, and USDC-native treasury management on Arc.",
-  keywords: [
-    "SynArc",
-    "DAO",
-    "governance",
-    "Arc Network",
-    "Web3",
-    "DeFi",
-    "cross-chain",
-    "delegation",
-    "treasury",
-    "privacy",
-    "confidential governance",
-    "stablecoin-native",
-    "USDC treasury",
-  ],
-  authors: [{ name: "SynArc" }],
-  alternates: {
-    canonical: "/",
-  },
+  title: "SynArc",
+  description: "Governance infrastructure for the Arc ecosystem",
   openGraph: {
-    title: "SynArc — Confidential Governance Infrastructure on Arc",
-    description:
-      "Confidential governance infrastructure for programmable organizations, proposal coordination, and USDC-native treasury management on Arc.",
-    url: "https://www.synarcdao.xyz/",
+    title: "SynArc — Governance Infrastructure",
+    description: "USDC-native DAO governance built on Arc Testnet",
+    url: "https://www.synarcdao.xyz",
     siteName: "SynArc",
     images: [
       {
-        url: "/logo.png",
-        width: 512,
-        height: 512,
-        alt: "SynArc — Confidential Governance Infrastructure on Arc",
-      },
+        url: "https://www.synarcdao.xyz/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "SynArc Governance",
+      }
     ],
-    type: "website",
-    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SynArc — Confidential Governance Infrastructure on Arc",
-    description:
-      "Confidential governance infrastructure for programmable organizations, proposal coordination, and USDC-native treasury management on Arc.",
-    images: ["/logo.png"],
-    creator: "@synarc_",
+    images: ["https://www.synarcdao.xyz/og-image.jpg"],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/og-image.jpg",
+  }
 };
 
 export default function RootLayout({
