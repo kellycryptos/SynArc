@@ -4,6 +4,28 @@ import { TreasuryActivity } from "@/types";
 import { ethers, JsonRpcProvider, BrowserProvider, Contract, formatUnits, parseUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI, ProposalState, VoteType } from "@/lib/governance/contracts";
 
+async function getResilientProvider(): Promise<JsonRpcProvider> {
+  const rpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
+  const fallbackRpcUrl = "https://arc-testnet.drpc.org";
+  
+  try {
+    const provider = new JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
+    // Let's do a lightweight network call to verify responsiveness
+    await provider.getNetwork();
+    return provider;
+  } catch (err) {
+    console.warn("Primary RPC connection failed, falling back to secondary RPC:", err);
+    try {
+      const fallbackProvider = new JsonRpcProvider(fallbackRpcUrl, undefined, { staticNetwork: true });
+      await fallbackProvider.getNetwork();
+      return fallbackProvider;
+    } catch (fallbackErr) {
+      console.error("Secondary RPC connection failed too:", fallbackErr);
+      throw new Error("All RPC endpoints are offline");
+    }
+  }
+}
+
 interface GovernanceState {
   proposals: Proposal[];
   metrics: GovernanceMetrics;
@@ -21,123 +43,13 @@ interface GovernanceState {
     executionTarget: string;
     votingDuration: number;
     proposer: string;
-  }) => Promise<string>;
-  castVote: (proposalId: string, option: "For" | "Against" | "Abstain", weight: number, signature: string) => Promise<void>;
-  executeProposal: (proposalId: string) => Promise<void>;
+  }, signer: ethers.Signer) => Promise<string>;
+  castVote: (proposalId: string, option: "For" | "Against" | "Abstain", weight: number, signature: string, signer: ethers.Signer) => Promise<void>;
+  executeProposal: (proposalId: string, signer: ethers.Signer) => Promise<void>;
 }
 
-const INITIAL_PROPOSALS: Proposal[] = [
-  {
-    id: "SIP-42",
-    title: "Allocate 500k USDC for Ecosystem Grants Q3",
-    description: `This proposal requests the allocation of 500,000 USDC from the SynArc DAO Treasury to fund ecosystem grants during Q3 2026. The funds will be distributed to developer teams building critical infrastructure, zero-knowledge voting integration, and delegate reputation scorecards. Recipient grants are vetted by the Grants Committee through a 3-stage validation process.
-
-### Funding Breakdown
-*   **Confidential Voting Integration**: 150,000 USDC
-*   **Developer SDK Tooling**: 150,000 USDC
-*   **Arcscan Governance API**: 100,000 USDC
-*   **Community Education Grants**: 100,000 USDC
-
-### Execution Details
-- Target Multisig Contract: \`0x7a9F23d758bBce42013f9c64A2F865a3B2728f32\`
-- Treasury Disbursement: 500,000 USDC`,
-    proposer: "0x7a9F23d758bBce42013f9c64A2F865a3B2728f32",
-    category: "Ecosystem Grant",
-    status: "Active",
-    forVotes: 8500000,
-    againstVotes: 1200000,
-    abstainVotes: 800000,
-    totalVotes: 10500000,
-    participationPercentage: 64.6,
-    treasuryImpactValue: -500000,
-    treasuryImpact: "-500,000 USDC",
-    timeRemaining: "2 days left",
-    createdAt: "2026-05-15T10:00:00Z",
-    votingStarts: "2026-05-16T10:00:00Z",
-    votingEnds: "2026-05-23T10:00:00Z",
-    executionTarget: "0x7a9F23d758bBce42013f9c64A2F865a3B2728f32",
-    votingDuration: 7,
-    timeline: [
-      { title: "Proposal Created", timestamp: "2026-05-15T10:00:00Z", status: "Proposed", txHash: "0xabc123..." },
-      { title: "Voting Phase Active", timestamp: "2026-05-16T10:00:00Z", status: "Active" }
-    ]
-  },
-  {
-    id: "SIP-41",
-    title: "Update Governance Quorum Parameter to 15%",
-    description: `This proposal aims to adjust the DAO governance quorum requirement from its current flat 10M USDC weight to a dynamic 15% of the total circulating delegate voting power. This ensures that quorum requirements automatically scale with total token delegation and prevents governance stagnation.
-
-### Parameters Affected
-*   **Minimum Quorum Threshold**: From \`10,000,000 USDC\` to \`15% of active delegations\`
-*   **Proposal Threshold**: Stays at \`100,000 USDC\`
-
-### Rationale
-As circulating power moves into long-term delegate locks, a flat parameter runs the risk of being unachievable or excessively easy. A percentage-based requirement resolves both scenarios.`,
-    proposer: "0x3b4C2818f9c64A2F865a3B2728f323156828ab1",
-    category: "Governance Parameter",
-    status: "Pending",
-    forVotes: 0,
-    againstVotes: 0,
-    abstainVotes: 0,
-    totalVotes: 0,
-    participationPercentage: 0,
-    treasuryImpactValue: 0,
-    treasuryImpact: "None",
-    timeRemaining: "Starts in 5 hrs",
-    createdAt: "2026-05-16T14:30:00Z",
-    votingStarts: "2026-05-24T14:30:00Z",
-    votingEnds: "2026-05-31T14:30:00Z",
-    executionTarget: "0x0000000000000000000000000000000000000000",
-    votingDuration: 7,
-    timeline: [
-      { title: "Proposal Created", timestamp: "2026-05-16T14:30:00Z", status: "Proposed", txHash: "0xdef456..." }
-    ]
-  },
-  {
-    id: "SIP-40",
-    title: "Onboard Gauntlet as Risk Service Provider",
-    description: `Retain Gauntlet for a 6-month risk management engagement to optimize lending and treasury yield strategy risks inside SynArc protocols on Arc Testnet. Gauntlet will deliver weekly risk scorecards, parameter suggestions, and automated hedging simulations.
-
-### Engagement Cost
-- Total Contract Fee: 100,000 USDC (paid as a lump sum upon execution)
-
-### Target Wallet
-- Gauntlet multisig: \`0xGauntletRisk...A420\`
-
-### Deliverables
-*   Dynamic risk parameters optimization
-*   Treasury sUSDC vault simulation reports
-*   Automated liquidations threshold tuning`,
-    proposer: "0x9d2E9f5A0d758bBce42013f9c64A2F865a3B2728",
-    category: "Delegate Onboarding",
-    status: "Executed",
-    forVotes: 12400000,
-    againstVotes: 500000,
-    abstainVotes: 100000,
-    totalVotes: 13000000,
-    participationPercentage: 92.1,
-    treasuryImpactValue: -100000,
-    treasuryImpact: "-100,000 USDC",
-    timeRemaining: "Ended 1 week ago",
-    createdAt: "2026-05-01T09:15:00Z",
-    votingStarts: "2026-05-02T09:15:00Z",
-    votingEnds: "2026-05-09T09:15:00Z",
-    executionTarget: "0xGauntletRisk3428905cdfa8e23bfae8432a901ff2a9",
-    votingDuration: 7,
-    timeline: [
-      { title: "Proposal Created", timestamp: "2026-05-01T09:15:00Z", status: "Proposed", txHash: "0x789txHash..." },
-      { title: "Voting Phase Active", timestamp: "2026-05-02T09:15:00Z", status: "Active" },
-      { title: "Voting Closed & Passed", timestamp: "2026-05-09T09:15:00Z", status: "Passed" },
-      { title: "Transaction Executed", timestamp: "2026-05-10T11:00:00Z", status: "Executed", txHash: "0xexec7890..." }
-    ]
-  }
-];
-
-const INITIAL_TREASURY_ACTIVITIES: TreasuryActivity[] = [
-  { id: '1', type: 'Inflow', amount: 125000, token: 'USDC', timestamp: '2026-05-12T10:00:00Z', description: 'Protocol fees collected', txHash: '0xabc123...' },
-  { id: '2', type: 'Outflow', amount: 100000, token: 'USDC', timestamp: '2026-05-10T11:00:00Z', description: 'SIP-40 Execution: Retain Gauntlet Risk Services', txHash: '0xexec7890...' },
-  { id: '3', type: 'Stake', amount: 200000, token: 'USDC', timestamp: '2026-05-08T09:15:00Z', description: 'Staked in sUSDC Morpho Vault', txHash: '0xghi789...' }
-];
+const INITIAL_PROPOSALS: Proposal[] = [];
+const INITIAL_TREASURY_ACTIVITIES: TreasuryActivity[] = [];
 
 export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   proposals: [],
@@ -157,8 +69,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     if (get().initialized) return;
 
     try {
-      const rpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
-      const provider = new JsonRpcProvider(rpcUrl);
+      const provider = await getResilientProvider();
 
       const governorAddress = GOVERNANCE_CONTRACTS.governor;
       const governorContract = new Contract(governorAddress, GovernorABI, provider);
@@ -289,13 +200,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     }
   },
 
-  submitProposal: async (proposalData) => {
-    const ethereum = (window as any).ethereum;
-    if (!ethereum) throw new Error("No web3 provider found");
-
-    const browserProvider = new BrowserProvider(ethereum);
-    const signer = await browserProvider.getSigner();
-
+  submitProposal: async (proposalData, signer) => {
     const governorAddress = GOVERNANCE_CONTRACTS.governor;
     const governorContract = new Contract(governorAddress, GovernorABI, signer);
 
@@ -320,13 +225,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     return `SIP-${get().proposals.length}`;
   },
 
-  castVote: async (proposalId, option, weight, signature) => {
-    const ethereum = (window as any).ethereum;
-    if (!ethereum) throw new Error("No web3 provider found");
-
-    const browserProvider = new BrowserProvider(ethereum);
-    const signer = await browserProvider.getSigner();
-
+  castVote: async (proposalId, option, weight, signature, signer) => {
     const governorAddress = GOVERNANCE_CONTRACTS.governor;
     const governorContract = new Contract(governorAddress, GovernorABI, signer);
 
@@ -345,13 +244,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     await get().initializeStore();
   },
 
-  executeProposal: async (proposalId) => {
-    const ethereum = (window as any).ethereum;
-    if (!ethereum) throw new Error("No web3 provider found");
-
-    const browserProvider = new BrowserProvider(ethereum);
-    const signer = await browserProvider.getSigner();
-
+  executeProposal: async (proposalId, signer) => {
     const governorAddress = GOVERNANCE_CONTRACTS.governor;
     const governorContract = new Contract(governorAddress, GovernorABI, signer);
 

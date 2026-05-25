@@ -7,10 +7,13 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Send, AlertCircle, Loader2 } from "lucide-react";
+import { useWallets } from "@privy-io/react-auth";
+import { BrowserProvider } from "ethers";
 
 export default function CreateProposalPage() {
   const router = useRouter();
   const { walletAddress, isAuthenticated, login } = useAuth();
+  const { wallets } = useWallets();
   const { submitProposal } = useGovernanceStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,18 +44,23 @@ export default function CreateProposalPage() {
     setError(null);
 
     try {
-      // Simulate network delay for realistic feel
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      const privy = wallets.find(w => w.walletClientType === "privy");
+      if (!privy) {
+        throw new Error("Privy wallet not found");
+      }
+      const ethereumProvider = await privy.getEthereumProvider();
+      const browserProvider = new BrowserProvider(ethereumProvider);
+      const signer = await browserProvider.getSigner();
+
       const proposalId = await submitProposal({
         ...formData,
         proposer: walletAddress
-      });
+      }, signer);
 
       router.push(`/proposals/${proposalId}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Failed to create proposal. Please try again.");
+      setError(err?.message || "Failed to create proposal. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

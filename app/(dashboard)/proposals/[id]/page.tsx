@@ -9,6 +9,8 @@ import { formatUnits } from "viem";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useWallets } from "@privy-io/react-auth";
+import { BrowserProvider } from "ethers";
 import { 
   FileText, 
   ThumbsUp, 
@@ -31,6 +33,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   const unwrappedParams = use(params);
   const router = useRouter();
   const { isAuthenticated, walletAddress, login } = useAuth();
+  const { wallets } = useWallets();
   const { signMessageAsync } = useSignMessage();
 
   const { proposals, initialized, initializeStore, userVotes, castVote, executeProposal } = useGovernanceStore();
@@ -106,11 +109,18 @@ Voting Weight: ${activeBalance.toFixed(2)} USDC
 Voter Address: ${walletAddress}
 Timestamp: ${timestamp}`;
 
+      const privy = wallets.find(w => w.walletClientType === "privy");
+      if (!privy) {
+        throw new Error("Privy wallet not found");
+      }
+      const ethereumProvider = await privy.getEthereumProvider();
+      const browserProvider = new BrowserProvider(ethereumProvider);
+      const signer = await browserProvider.getSigner();
+
       const signature = await signMessageAsync({ message });
       setSigningStep("submitting");
-      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      castVote(proposal.id, selectedOption, activeBalance, signature);
+      await castVote(proposal.id, selectedOption, activeBalance, signature, signer);
 
       setGeneratedSignature(signature);
       setSigningStep("completed");
@@ -129,8 +139,20 @@ Timestamp: ${timestamp}`;
     setGeneratedSignature("");
   };
 
-  const handleExecute = () => {
-    executeProposal(proposal.id);
+  const handleExecute = async () => {
+    try {
+      const privy = wallets.find(w => w.walletClientType === "privy");
+      if (!privy) {
+        throw new Error("Privy wallet not found");
+      }
+      const ethereumProvider = await privy.getEthereumProvider();
+      const browserProvider = new BrowserProvider(ethereumProvider);
+      const signer = await browserProvider.getSigner();
+
+      await executeProposal(proposal.id, signer);
+    } catch (err) {
+      console.error("Proposal execution failed", err);
+    }
   };
 
   return (

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { daoSettings } from "@/lib/mockData";
 import { Save, Settings2, Shield, Bell, AlertCircle, RefreshCw } from "lucide-react";
+import { GOVERNANCE_CONTRACTS } from "@/lib/governance/contracts";
 
 export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -11,18 +11,14 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    // TODO: replace with contract call to fetch live DAO parameters
-    // For now, using mock data as fallback while contract integration is developed
     setIsLoading(false);
   }, []);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // TODO: replace with contract call to create governance proposal
-      // This should call createProposal from useGovernor hook
       await new Promise(resolve => setTimeout(resolve, 1000));
-      alert("Proposal created! Awaiting quorum and vote.");
+      alert("Governance parameter updates must be submitted via a new Proposal in the Proposals tab!");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save changes");
     } finally {
@@ -41,7 +37,7 @@ export default function SettingsPage() {
               <p className="text-sm text-muted mt-1">{error}</p>
               <button 
                 onClick={() => setError(null)}
-                className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-md bg-warning/10 hover:bg-warning/15 text-warning text-sm font-medium transition-colors"
+                className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-md bg-warning/10 hover:bg-warning/15 text-warning text-sm font-medium transition-colors cursor-pointer"
               >
                 <RefreshCw className="w-4 h-4" />
                 Retry
@@ -92,11 +88,11 @@ export default function SettingsPage() {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     
-                    <div className="space-y-2">
+                    <div className="space-y-2 col-span-full">
                       <label className="text-sm font-medium text-muted">DAO Name</label>
                       <input 
                         type="text" 
-                        defaultValue={daoSettings.name}
+                        defaultValue="SynArc DAO"
                         className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-sm disabled:opacity-50"
                         disabled
                       />
@@ -104,28 +100,58 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted">Governor Address</label>
+                      <input 
+                        type="text" 
+                        defaultValue={GOVERNANCE_CONTRACTS.governor}
+                        className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-sm font-mono disabled:opacity-50"
+                        disabled
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted">Treasury Address</label>
+                      <input 
+                        type="text" 
+                        defaultValue={GOVERNANCE_CONTRACTS.treasury}
+                        className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-sm font-mono disabled:opacity-50"
+                        disabled
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted">Governance Token Address</label>
+                      <input 
+                        type="text" 
+                        defaultValue={GOVERNANCE_CONTRACTS.token}
+                        className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-sm font-mono disabled:opacity-50"
+                        disabled
+                      />
+                    </div>
+
+                    <div className="space-y-2">
                       <label className="text-sm font-medium text-muted">Voting Duration (Days)</label>
                       <input 
                         type="number" 
-                        defaultValue={daoSettings.votingDuration}
+                        defaultValue={7}
                         className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-sm"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-muted">Quorum Threshold (USDC)</label>
+                      <label className="text-sm font-medium text-muted">Quorum Threshold (sARC)</label>
                       <input 
                         type="number" 
-                        defaultValue={daoSettings.quorumThreshold}
+                        defaultValue={1500000}
                         className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-sm"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-muted">Proposal Threshold</label>
+                      <label className="text-sm font-medium text-muted">Proposal Threshold (sARC)</label>
                       <input 
                         type="number" 
-                        defaultValue={daoSettings.proposalThreshold}
+                        defaultValue={100000}
                         className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-sm"
                       />
                     </div>
@@ -138,7 +164,7 @@ export default function SettingsPage() {
                 <button 
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
                   {isSaving ? "Creating proposal..." : "Save Changes"}
