@@ -13,7 +13,7 @@
 [![Privy](https://img.shields.io/badge/Privy-Auth-FF6B6B?style=for-the-badge)](https://privy.io)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-Governor-4E5EE4?style=for-the-badge)](https://openzeppelin.com)
 
-[**Launch App →**](https://synarc-dao.vercel.app) · [**Documentation**](https://docs.arc.network) · [**Arc Ecosystem**](https://arc.network)
+[**Launch App →**](https://www.synarcdao.xyz/) · [**Documentation**](https://docs.arc.network) · [**Arc Ecosystem**](https://arc.network)
 
 </div>
 
@@ -237,6 +237,9 @@ synarc-dao/
 
 ## 10. Deployment
 
+## Live Deployment
+https://www.synarcdao.xyz/
+
 ### Deploying to Vercel
 1.  Install the Vercel CLI globally:
     ```bash
@@ -314,7 +317,7 @@ This repository is licensed under the **MIT License**. Check [LICENSE](./LICENSE
 
 **Built for the Arc agentic economy.**
 
-[Website](https://synarc-dao.vercel.app) · [Twitter](https://x.com/synarc_) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
+[Website](https://www.synarcdao.xyz/) · [Twitter](https://x.com/synarc_) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
 
 <sub>© 2026 SynArc. All rights reserved.</sub>
 

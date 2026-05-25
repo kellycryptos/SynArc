@@ -4,6 +4,14 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
+  // 1. Production Domain Handling & SEO canonical redirection
+  const host = request.headers.get('host');
+  if (host && (host === 'synarc-dao.vercel.app' || host === 'synarcdao.xyz')) {
+    const canonicalUrl = new URL(pathname + request.nextUrl.search, 'https://www.synarcdao.xyz');
+    return NextResponse.redirect(canonicalUrl, 301);
+  }
+
+  // 2. Authentication & Protected Routes
   // Extract Privy session/authentication cookies
   const privyToken = request.cookies.get('privy-token')?.value;
 
@@ -30,14 +38,9 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Limit the middleware execution to only the relevant protected route directories
+// Route matcher configuration: Run on all document pages, exclude api, _next static assets, images, icons, sitemaps, and images
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/proposals/:path*',
-    '/treasury/:path*',
-    '/analytics/:path*',
-    '/members/:path*',
-    '/settings/:path*',
+    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.svg|.*\\.png|.*\\.jpeg|.*\\.jpg).*)',
   ],
 };

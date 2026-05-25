@@ -15,9 +15,10 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "SynArc — Private Governance Infrastructure for the Arc Ecosystem",
+  metadataBase: new URL("https://www.synarcdao.xyz"),
+  title: "SynArc — Confidential Governance Infrastructure on Arc",
   description:
-    "SynArc is a modern governance and delegation platform built on Arc Network, enabling secure DAO coordination, treasury governance, delegate reputation systems, encrypted governance analytics, and scalable on-chain participation.",
+    "Confidential governance infrastructure for programmable organizations, proposal coordination, and USDC-native treasury management on Arc.",
   keywords: [
     "SynArc",
     "DAO",
@@ -29,23 +30,49 @@ export const metadata: Metadata = {
     "delegation",
     "treasury",
     "privacy",
+    "confidential governance",
+    "stablecoin-native",
+    "USDC treasury",
   ],
   authors: [{ name: "SynArc" }],
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "SynArc — Private Governance Infrastructure",
+    title: "SynArc — Confidential Governance Infrastructure on Arc",
     description:
-      "Secure DAO coordination, treasury governance, and encrypted analytics on Arc Network.",
+      "Confidential governance infrastructure for programmable organizations, proposal coordination, and USDC-native treasury management on Arc.",
+    url: "https://www.synarcdao.xyz/",
+    siteName: "SynArc",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "SynArc — Confidential Governance Infrastructure on Arc",
+      },
+    ],
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SynArc",
-    description: "Private Governance Infrastructure for the Arc Ecosystem",
+    title: "SynArc — Confidential Governance Infrastructure on Arc",
+    description:
+      "Confidential governance infrastructure for programmable organizations, proposal coordination, and USDC-native treasury management on Arc.",
+    images: ["/logo.png"],
+    creator: "@synarc_",
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
