@@ -10,9 +10,13 @@ import {
   Users,
   BarChart3,
   Settings,
+  Bell,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { WalletConnectButton } from "@/components/ui/WalletConnectButton";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { useUSDCBalance } from "@/hooks/useUSDCBalance";
+import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 
 const activeLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -28,6 +32,8 @@ const comingSoonLinks = [
 
 export function Sidebar({ className, onClick }: { className?: string; onClick?: () => void }) {
   const pathname = usePathname();
+  const { isAuthenticated } = useAuth();
+  const { balance, isLoading, isError } = useUSDCBalance();
 
   return (
     <aside className={cn("w-64 glass border-r border-border-thin flex flex-col h-full", className)}>
@@ -107,6 +113,42 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
           );
         })}
       </div>
+
+      {/* Mobile-only governance stats & status (USDC, Network, Notifications) */}
+      {isAuthenticated && (
+        <div className="md:hidden px-6 py-4 border-t border-border-thin space-y-4 bg-surface/30 shrink-0">
+          {/* Network Status Badge */}
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted">Network</span>
+            <NetworkStatusBadge />
+          </div>
+
+          {/* USDC Balance Display */}
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted">USDC Balance</span>
+            {isLoading ? (
+              <div className="h-6 w-20 bg-surface-elevated animate-pulse rounded-full border border-border-thin" />
+            ) : isError ? (
+              <span className="px-2 py-0.5 rounded-full bg-danger/10 border border-danger/20 text-danger font-semibold">
+                Error
+              </span>
+            ) : balance !== null ? (
+              <span className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-purple-300 font-bold">
+                {parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+              </span>
+            ) : null}
+          </div>
+
+          {/* Notifications Bell Option */}
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted">Notifications</span>
+            <button className="relative p-1.5 text-muted hover:text-foreground transition-colors rounded-full bg-surface-elevated border border-border-thin cursor-pointer">
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary rounded-full border-2 border-background" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Connect Button */}
       <div className="p-4 border-t border-border-thin mt-auto">

@@ -5,6 +5,7 @@ import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 import { Bell, Search, Menu, LogOut, Wallet } from "lucide-react";
 import { useMemo } from "react";
+import { SynArcLogo } from "@/components/ui/SynArcLogo";
 
 /**
  * DashboardNavbar Component
@@ -50,14 +51,18 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
   return (
     <header className="sticky top-0 z-30 glass border-b border-border-thin h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+      {/* Left side */}
       <div className="flex items-center gap-4">
-        <button 
-          className="md:hidden p-2 -ml-2 text-muted hover:text-foreground transition-colors cursor-pointer" 
-          onClick={onMenuClick}
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-        <div className="hidden sm:flex items-center bg-surface-elevated border border-border-thin rounded-full px-3 py-1.5 w-64 lg:w-80 focus-within:border-primary/50 focus-within:shadow-[0_0_10px_rgba(124,58,237,0.1)] transition-all">
+        {/* SynArc Logo & Name (Mobile Only) */}
+        <div className="flex items-center gap-2.5 md:hidden">
+          <SynArcLogo size={28} animated />
+          <span className="text-xl font-bold tracking-tight">
+            <span className="gradient-text">SynArc</span>
+          </span>
+        </div>
+
+        {/* Search Bar (Desktop Only) */}
+        <div className="hidden md:flex items-center bg-surface-elevated border border-border-thin rounded-full px-3 py-1.5 w-64 lg:w-80 focus-within:border-primary/50 focus-within:shadow-[0_0_10px_rgba(124,58,237,0.1)] transition-all">
           <Search className="w-4 h-4 text-muted mr-2" />
           <input 
             type="text" 
@@ -67,7 +72,8 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </div>
       </div>
       
-      <div className="flex items-center gap-3 sm:gap-4">
+      {/* Right side (Desktop Only) */}
+      <div className="hidden md:flex items-center gap-3 sm:gap-4">
         {isAuthenticated ? (
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Arc Network Status Badge with RPC Health */}
@@ -121,6 +127,14 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-background" />
         </button>
       </div>
+
+      {/* Hamburger Menu (Mobile Only) */}
+      <button 
+        className="md:hidden p-2 text-muted hover:text-foreground transition-colors cursor-pointer" 
+        onClick={onMenuClick}
+      >
+        <Menu className="w-6 h-6" />
+      </button>
     </header>
   );
 }
