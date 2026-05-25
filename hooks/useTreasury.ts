@@ -6,12 +6,16 @@ import { GOVERNANCE_CONTRACTS } from "@/lib/governance/contracts";
 import { TreasuryActivity } from "@/types";
 
 const TREASURY_ABI = [
-  "function getTransactions() external view returns (tuple(string txType, address party, uint256 amount, string description, uint256 timestamp)[])",
+  "function getTransactions() external view returns (tuple(string txType, address party, uint256 amount, string tokenSymbol, string description, uint256 timestamp)[])",
+  "function usdcBalance() external view returns (uint256)",
+  "function eurcBalance() external view returns (uint256)",
   "function balance() external view returns (uint256)"
 ];
 
 interface UseTreasuryReturn {
-  balance: number;
+  balance: number; // Combined total in USD
+  usdcBalance: number;
+  eurcBalance: number;
   activities: TreasuryActivity[];
   loading: boolean;
   error: Error | null;
@@ -20,10 +24,12 @@ interface UseTreasuryReturn {
 
 /**
  * Hook: useTreasury
- * Fetches treasury balance and transaction history from Arc Testnet
+ * Fetches treasury balances and transaction history from Arc Testnet
  */
 export function useTreasury(): UseTreasuryReturn {
   const [balance, setBalance] = useState(0);
+  const [usdcBalance, setUsdcBalance] = useState(0);
+  const [eurcBalance, setEurcBalance] = useState(0);
   const [activities, setActivities] = useState<TreasuryActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -38,18 +44,29 @@ export function useTreasury(): UseTreasuryReturn {
       const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
       const treasuryContract = new Contract(treasuryAddress, TREASURY_ABI, provider);
 
-      // Fetch balance
-      const bal = await treasuryContract.balance();
-      const balanceValue = Number(formatUnits(bal, 6));
-      setBalance(balanceValue);
+      // Fetch USDC and EURC balances
+      const [usdcBal, eurcBal] = await Promise.all([
+        treasuryContract.usdcBalance().catch(() => 0n),
+        treasuryContract.eurcBalance().catch(() => 0n)
+      ]);
+
+      const usdcVal = Number(formatUnits(usdcBal, 6));
+      const eurcVal = Number(formatUnits(eurcBal, 6));
+      
+      setUsdcBalance(usdcVal);
+      setEurcBalance(eurcVal);
+
+      // Combined total USD value (EUR to USD conversion rate placeholder: 1.08)
+      const combinedVal = usdcVal + (eurcVal * 1.08);
+      setBalance(combinedVal);
 
       // Fetch transaction history
       const rawActivities = await treasuryContract.getTransactions();
       const formattedActivities: TreasuryActivity[] = rawActivities.map((act: any, idx: number) => ({
         id: idx.toString(),
-        type: act.txType as "Inflow" | "Outflow" | "Stake" | "Unstake" | "Swap",
+        type: act.txType as "Inflow" | "Outflow",
         amount: Number(formatUnits(act.amount, 6)),
-        token: "USDC",
+        token: act.tokenSymbol || "USDC",
         timestamp: new Date(Number(act.timestamp) * 1000).toISOString(),
         description: act.description,
         txHash: "0x" + Math.random().toString(16).substring(2, 10) + "..."
@@ -71,6 +88,8 @@ export function useTreasury(): UseTreasuryReturn {
 
   return {
     balance,
+    usdcBalance,
+    eurcBalance,
     activities,
     loading,
     error,

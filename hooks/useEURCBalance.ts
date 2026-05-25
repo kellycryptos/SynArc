@@ -1,0 +1,89 @@
+import { useEffect, useState, useCallback } from "react";
+import { useWallets } from "@privy-io/react-auth";
+import { createPublicClient, http, parseAbi, formatUnits } from "viem";
+import { arcTestnet } from "@/lib/chains/arc";
+import { GOVERNANCE_CONTRACTS } from "@/lib/governance/contracts";
+
+const EURC_CONTRACT_ADDRESS = GOVERNANCE_CONTRACTS.eurc;
+
+const erc20Abi = parseAbi([
+  "function balanceOf(address owner) view returns (uint256)",
+  "function decimals() view returns (uint8)",
+]);
+
+export function useEURCBalance() {
+  const { wallets, ready: walletsReady } = useWallets();
+  const [balance, setBalance] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+
+  const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+
+  const fetchBalance = useCallback(async () => {
+    if (!activeWallet?.address) {
+      setBalance(null);
+      setIsError(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setIsError(false);
+
+    try {
+      const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.testnet.arc.network";
+      const publicClient = createPublicClient({
+        chain: arcTestnet,
+        transport: http(rpcUrl),
+      });
+
+      const [bal, dec] = await Promise.all([
+        publicClient.readContract({
+          address: EURC_CONTRACT_ADDRESS,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [activeWallet.address as `0x${string}`],
+        }),
+        publicClient.readContract({
+          address: EURC_CONTRACT_ADDRESS,
+          abi: erc20Abi,
+          functionName: "decimals",
+        }).catch(() => 6),
+      ]);
+
+      console.log("Raw EURC balance response:", bal.toString());
+      console.log("Decimals response from contract:", dec);
+
+      // Force 6 decimals as EURC uses 6 decimals
+      const formatted = formatUnits(bal, 6);
+      setBalance(formatted);
+      setIsError(false);
+    } catch (error) {
+      console.error("Error fetching EURC balance from Arc Testnet:", error);
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [activeWallet?.address]);
+
+  useEffect(() => {
+    if (walletsReady && activeWallet?.address) {
+      fetchBalance();
+
+      // Poll every 15 seconds to keep the balance fresh
+      const interval = setInterval(fetchBalance, 15000);
+      return () => clearInterval(interval);
+    } else if (walletsReady && !activeWallet) {
+      setBalance(null);
+      setIsLoading(false);
+      setIsError(false);
+    }
+  }, [activeWallet?.address, walletsReady, fetchBalance]);
+
+  return {
+    balance,
+    isLoading: isLoading && balance === null,
+    isFetching: isLoading,
+    isError,
+    refetch: fetchBalance,
+  };
+}

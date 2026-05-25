@@ -304,7 +304,10 @@ export const GOVERNANCE_CONTRACTS = {
   token: (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0x637cA7788aBC956832F389A7BB895D5249FE757B') as `0x${string}`,
   
   // Treasury for fund management
-  treasury: (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '0x43b776BA2e614a672dBc98d1aDD01A61Ae8F39Fb') as `0x${string}`,
+  treasury: (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '0x8Ab21363cB0319548B051f129e477393908be7c1') as `0x${string}`,
+  
+  // EURC token address
+  eurc: (process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS || '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}`,
   
   // Timelock for execution delays
   timelock: '0x0000000000000000000000000000000000000000' as `0x${string}`,

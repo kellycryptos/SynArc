@@ -14,11 +14,12 @@ async function main() {
   const tokenAddress = await token.getAddress();
   console.log("SynArcToken deployed to:", tokenAddress);
 
-  // 2. Deploy SynArcTreasury (USDC address on Arc Testnet)
+  // 2. Deploy SynArcTreasury (USDC and EURC addresses on Arc Testnet)
   const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
+  const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a";
   console.log("Deploying SynArcTreasury...");
   const SynArcTreasury = await ethers.getContractFactory("SynArcTreasury");
-  const treasury = await SynArcTreasury.deploy(USDC_ADDRESS);
+  const treasury = await SynArcTreasury.deploy(USDC_ADDRESS, EURC_ADDRESS);
   await treasury.waitForDeployment();
   const treasuryAddress = await treasury.getAddress();
   console.log("SynArcTreasury deployed to:", treasuryAddress);
