@@ -72,7 +72,6 @@ export default function MembersPage() {
             ))
           ) : (
             daoMembers.map((member, i) => (
-            daoMembers.map((member, i) => (
               <GlassCard key={member.id} delay={i * 0.05} className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">

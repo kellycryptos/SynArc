@@ -115,7 +115,8 @@ export function useGovernor(): UseGovernorReturn {
         throw new Error("Privy wallet not found");
       }
 
-      const provider = await privy.getEthersProvider();
+      const ethereumProvider = await privy.getEthereumProvider();
+      const provider = new BrowserProvider(ethereumProvider);
       const signer = await provider.getSigner();
 
       const governorAddress = GOVERNANCE_CONTRACTS.governor;
@@ -158,7 +159,8 @@ export function useGovernor(): UseGovernorReturn {
         throw new Error("Privy wallet not found");
       }
 
-      const provider = await privy.getEthersProvider();
+      const ethereumProvider = await privy.getEthereumProvider();
+      const provider = new BrowserProvider(ethereumProvider);
       const signer = await provider.getSigner();
 
       const governorAddress = GOVERNANCE_CONTRACTS.governor;
