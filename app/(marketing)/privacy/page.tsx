@@ -1,10 +1,54 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Shield, EyeOff, Key, Database } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { SynArcLogo } from "@/components/ui/SynArcLogo";
+import { ArrowLeft, Shield, Key, Eye, EyeOff, Server, Trash2, Heart, HelpCircle } from "lucide-react";
 
-export default function PrivacyPolicy() {
+export default function PrivacyPage() {
+  const sections = [
+    {
+      title: "1. Data Collected",
+      icon: Shield,
+      content: "SynArc is a privacy-first governance platform. We do not require or collect personal data such as names, email addresses, phone numbers, or IP addresses. The only data processed is public, on-chain data (your wallet address, proposal creations, delegations, and votes cast) which is necessary to interact with the Arc blockchain."
+    },
+    {
+      title: "2. Wallet Data",
+      icon: Key,
+      content: "All interactions with the SynArc DAO require connecting a compatible Web3 wallet. SynArc never holds, reads, or gains access to your wallet's private keys or seed phrases. Any data associated with your wallet is publicly queryable from the distributed blockchain ledger."
+    },
+    {
+      title: "3. Privy Authentication",
+      icon: Eye,
+      content: "SynArc uses Privy for wallet authentication and social login integration. Any credentials, social accounts, or embedded wallets created through Privy are managed and secured by Privy in accordance with their official Privacy Policy. SynArc does not store these credentials."
+    },
+    {
+      title: "4. Cookies Policy",
+      icon: EyeOff,
+      content: "We use only minimal, strictly functional cookies or browser local storage parameters (e.g. storing your theme toggle preference or notification alert flag). We do not use third-party analytics cookies or tracking pixels to target advertising."
+    },
+    {
+      title: "5. Third Party Services",
+      icon: Server,
+      content: "To maintain frontend hosting, wallet connection triggers, and node interaction channels, SynArc communicates with external infrastructure services including Vercel (hosting), Privy (connection), and Arc Testnet RPC nodes (blockchain state). Each service maintains its own privacy regulations."
+    },
+    {
+      title: "6. Data Retention",
+      icon: Trash2,
+      content: "Data submitted through on-chain transactions (such as cast votes, proposals, or treasury deposits) is permanently recorded onto the Arc distributed blockchain ledger. By its decentralized nature, this historical ledger data is immutable and cannot be edited, erased, or deleted by any party."
+    },
+    {
+      title: "7. Your Rights",
+      icon: Heart,
+      content: "Under standard digital privacy regulations (including GDPR/CCPA), you retain the right to manage your data. Because SynArc never stores or has custody of your personal data on any server, there are no databases containing your personal records to update, restrict, or delete."
+    },
+    {
+      title: "8. Support & Community Contact",
+      icon: HelpCircle,
+      content: "If you have questions about this Privacy Policy or wish to inspect the transparent open-source code of the frontend, you can join our active community Discord or view our codebase and file audit logs on our public GitHub repository."
+    }
+  ];
+
   return (
     <div className="relative min-h-screen pt-12 pb-24 overflow-hidden px-4 md:px-6">
       {/* Background glow effects */}
@@ -12,9 +56,9 @@ export default function PrivacyPolicy() {
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] opacity-20 bg-gradient-to-r from-primary via-arc-blue to-accent blur-[100px] rounded-full" />
       </div>
 
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div className="max-w-4xl mx-auto relative z-10 space-y-8">
         {/* Back Link */}
-        <div className="mb-8">
+        <div className="flex justify-between items-center">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors group"
@@ -22,96 +66,43 @@ export default function PrivacyPolicy() {
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Back to Home
           </Link>
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded bg-surface border border-border-thin text-muted">
+            Last Updated: May 2026
+          </span>
         </div>
 
         {/* Title & Header */}
-        <div className="mb-10 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-elevated border border-border-thin text-xs font-semibold uppercase tracking-wider text-primary mb-4">
-            <Shield className="w-3.5 h-3.5" /> User Confidentiality
+        <div className="text-center md:text-left space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-elevated border border-border-thin text-xs font-semibold uppercase tracking-wider text-primary">
+            <Shield className="w-3.5 h-3.5" /> Privacy & Security
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold font-heading tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-foreground to-muted">
+          <h1 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-white">
             Privacy Policy
           </h1>
-          <p className="text-muted">Last updated: May 25, 2026</p>
+          <p className="text-muted text-sm leading-relaxed max-w-xl">
+            We value your digital sovereignty. SynArc does not collect, record, or track your personal information.
+          </p>
         </div>
 
-        {/* Main Privacy Container */}
-        <GlassCard hover={false} className="p-8 md:p-12 space-y-8 leading-relaxed text-muted-foreground">
-          
-          <section className="space-y-4">
-            <h2 className="text-xl font-bold font-heading text-foreground flex items-center gap-2">
-              <EyeOff className="w-5 h-5 text-primary" /> 1. Overview of Governance Privacy
-            </h2>
-            <p>
-              SynArc is committed to preserving the privacy of members participating in the governance of programmable organizations on Arc. Our platform uses client-side cryptography, embedded wallet clients, and peer-to-peer RPC interfaces to ensure you interact with the network with minimal exposure of off-chain metadata.
-            </p>
-            <p>
-              The official URL for our platform is{" "}
-              <Link href="https://www.synarcdao.xyz" className="text-primary hover:underline font-semibold">
-                https://www.synarcdao.xyz/
-              </Link>
-              .
-            </p>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-xl font-bold font-heading text-foreground flex items-center gap-2">
-              <Key className="w-5 h-5 text-arc-blue" /> 2. Non-Custodial Key Storage
-            </h2>
-            <p>
-              Under no circumstances does SynArc capture, store, or transmit your private keys, wallet seed phrases, or login passwords. Embedded wallets are managed securely through Privy&apos;s authentication service, which generates split keys client-side to enforce secure, user-authorized actions only.
-            </p>
-            <p>
-              Your public wallet address, voting history, and token balances are retrieved directly from the public Arc testnet blockchain using remote RPC servers. This information is publicly available on the ledger and cannot be hidden or deleted.
-            </p>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-xl font-bold font-heading text-foreground flex items-center gap-2">
-              <Database className="w-5 h-5 text-accent" /> 3. Data Collection and Usage
-            </h2>
-            <p>
-              Our application does not employ persistent tracking databases or sell personal information to third parties. We collect minimal telemetry strictly to run the web interface, which includes:
-            </p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li>
-                <strong>Authentication Tokens:</strong> Temporary cookies (like `privy-token`) stored locally in your browser to maintain your login session across route changes.
-              </li>
-              <li>
-                <strong>Web Analytics:</strong> Basic anonymous site usage metrics to optimize rendering efficiency and identify system errors.
-              </li>
-              <li>
-                <strong>RPC Logs:</strong> Basic server request data received during nodes coordination, subject to the privacy statements of the public RPC providers.
-              </li>
-            </ul>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-xl font-bold font-heading text-foreground">
-              4. External Integrations
-            </h2>
-            <p>
-              We integrate third-party services including Privy, WAGMI libraries, and Arc scan indexers. These services may collect basic networking identifiers (like your IP address) necessary to initiate Web3 sessions. We encourage you to review their individual privacy statements to verify how they process your request information.
-            </p>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-xl font-bold font-heading text-foreground">
-              5. Policy Changes
-            </h2>
-            <p>
-              This Privacy Policy may be updated to reflect updates in the underlaying Arc blockchain networks, smart contract upgrades, or feature changes. We will indicate the most recent update date at the top of this document.
-            </p>
-            <p>
-              For additional questions or to contribute to the open-source platform code, visit our github repository or our website at{" "}
-              <Link href="https://www.synarcdao.xyz" className="text-primary hover:underline font-semibold">
-                https://www.synarcdao.xyz/
-              </Link>
-              .
-            </p>
-          </section>
-
-        </GlassCard>
+        {/* Sections list */}
+        <div className="space-y-6">
+          {sections.map((section, idx) => {
+            const Icon = section.icon;
+            return (
+              <GlassCard key={idx} delay={idx * 0.03} className="p-6 sm:p-8 border border-border-thin">
+                <div className="flex items-start gap-4">
+                  <div className="p-2.5 bg-primary/10 border border-primary/20 rounded-xl text-primary shrink-0">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-bold text-white font-heading">{section.title}</h3>
+                    <p className="text-sm text-text-secondary leading-relaxed font-body">{section.content}</p>
+                  </div>
+                </div>
+              </GlassCard>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

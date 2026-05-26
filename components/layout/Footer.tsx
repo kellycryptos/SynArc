@@ -25,8 +25,8 @@ const socialLinks = [
 ];
 
 const legalLinks = [
-  { label: "Terms", href: "/terms" },
-  { label: "Privacy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
+  { label: "Privacy Policy", href: "/privacy" },
 ];
 
 /* ───────────────────────────────────────────────
@@ -236,7 +236,7 @@ export function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
             {/* Copyright */}
             <p className="text-xs text-muted/50 tracking-wide">
-              &copy; 2026 SynArc. All Rights Reserved.
+              &copy; 2025 SynArc. All Rights Reserved.
             </p>
 
             {/* Legal Links */}

@@ -52,13 +52,21 @@ export function WalletConnectButton() {
   // If disconnected, trigger the Privy auth modal on click
   if (!isAuthenticated || !walletAddress) {
     return (
-      <button 
-        onClick={login}
-        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer"
-      >
-        <Wallet className="w-5 h-5" />
-        Connect Wallet
-      </button>
+      <div className="space-y-3 w-full">
+        <button 
+          onClick={login}
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer"
+        >
+          <Wallet className="w-5 h-5" />
+          Connect Wallet
+        </button>
+        <p className="text-[10px] text-center text-muted px-2 leading-relaxed">
+          By connecting you agree to our{" "}
+          <a href="/terms" className="text-primary hover:underline transition-all">Terms of Service</a>
+          {" "}and{" "}
+          <a href="/privacy" className="text-primary hover:underline transition-all">Privacy Policy</a>
+        </p>
+      </div>
     );
   }
 
