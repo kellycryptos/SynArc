@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -37,19 +37,35 @@ const comingSoonLinks: { label: string; icon: any }[] = [];
 
 export function Sidebar({ className, onClick }: { className?: string; onClick?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { isAuthenticated } = useAuth();
   const { balance, isLoading, isError } = useUSDCBalance();
+
+  // Navigate first, then close the mobile drawer so the drawer unmount
+  // doesn't cancel the in-flight route change.
+  const handleNavClick = (href: string) => {
+    router.push(href);
+    // Small defer allows Next.js to start the navigation before the sidebar
+    // overlay is removed from the DOM, preventing the route change from
+    // being swallowed on mobile browsers.
+    if (onClick) {
+      setTimeout(onClick, 50);
+    }
+  };
 
   return (
     <aside className={cn("w-64 glass border-r border-border-thin flex flex-col h-full", className)}>
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-border-thin shrink-0">
-        <Link href="/" className="flex items-center gap-2.5 group" onClick={onClick}>
+        <button
+          onClick={() => handleNavClick("/")}
+          className="flex items-center gap-2.5 group cursor-pointer"
+        >
           <SynArcLogo size={28} animated />
           <span className="text-xl font-bold tracking-tight">
             <span className="gradient-text">SynArc</span>
           </span>
-        </Link>
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
@@ -60,17 +76,21 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
 
         {/* Active navigation links */}
         {activeLinks.map((link) => {
+          // Mark active if exact match, or if current path starts with link href
+          // (handles sub-routes like /proposals/[id], /daos/[id])
+          // Special case: /dashboard only matches exactly to avoid matching all paths
           const active =
             pathname === link.href ||
+            (link.href !== "/dashboard" && pathname.startsWith(link.href + "/")) ||
             (link.href === "/dashboard" && pathname === "/");
+
           const Icon = link.icon;
           return (
-            <Link
+            <button
               key={link.href}
-              href={link.href}
-              onClick={onClick}
+              onClick={() => handleNavClick(link.href)}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group",
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer text-left",
                 active
                   ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_18px_rgba(124,58,237,0.12)]"
                   : "text-muted hover:text-foreground hover:bg-surface-elevated border border-transparent hover:border-border-thin hover:shadow-[0_0_10px_rgba(124,58,237,0.05)]"
@@ -86,7 +106,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
               {active && (
                 <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(124,58,237,0.8)]" />
               )}
-            </Link>
+            </button>
           );
         })}
 
