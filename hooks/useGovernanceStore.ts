@@ -12,9 +12,16 @@ interface GovernanceState {
   treasuryActivities: TreasuryActivity[];
   userVotes: Record<string, { option: "For" | "Against" | "Abstain"; sig: string; vp: number }>;
   initialized: boolean;
+  currentDaoId: string | null;
+  currentDao: { id: string; governorAddress: string; treasuryAddress: string; tokenAddress: string } | null;
+  activeContracts: {
+    governor: string;
+    treasury: string;
+    token: string;
+  };
   
   // Actions
-  initializeStore: () => void;
+  initializeStore: (customDao?: { id: string; governorAddress: string; treasuryAddress: string; tokenAddress: string }) => Promise<void>;
   submitProposal: (proposalData: {
     title: string;
     description: string;
@@ -44,14 +51,42 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   treasuryActivities: [],
   userVotes: {},
   initialized: false,
+  currentDaoId: null,
+  currentDao: null,
+  activeContracts: {
+    governor: GOVERNANCE_CONTRACTS.governor,
+    treasury: GOVERNANCE_CONTRACTS.treasury,
+    token: GOVERNANCE_CONTRACTS.token,
+  },
 
-  initializeStore: async () => {
-    if (get().initialized) return;
+  initializeStore: async (customDao) => {
+    const activeDaoId = customDao?.id || 'synarc';
+    if (get().initialized && get().currentDaoId === activeDaoId) return;
+
+    // Reset store state for new DAO load
+    const contracts = customDao ? {
+      governor: customDao.governorAddress,
+      treasury: customDao.treasuryAddress,
+      token: customDao.tokenAddress
+    } : {
+      governor: GOVERNANCE_CONTRACTS.governor,
+      treasury: GOVERNANCE_CONTRACTS.treasury,
+      token: GOVERNANCE_CONTRACTS.token
+    };
+
+    set({ 
+      proposals: [], 
+      treasuryActivities: [],
+      initialized: false, 
+      currentDaoId: activeDaoId,
+      currentDao: customDao || null,
+      activeContracts: contracts 
+    });
 
     try {
       const provider = await getResilientProvider();
 
-      const governorAddress = GOVERNANCE_CONTRACTS.governor;
+      const governorAddress = contracts.governor;
       const governorContract = new Contract(governorAddress, GovernorABI, provider);
 
       const count = await governorContract.proposalCount();
@@ -120,7 +155,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
       loadedProposals.reverse();
 
-      const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
+      const treasuryAddress = contracts.treasury;
       const treasuryContract = new Contract(treasuryAddress, [
         "function getTransactions() external view returns (tuple(string txType, address party, uint256 amount, string description, uint256 timestamp)[])",
         "function balance() external view returns (uint256)"
@@ -155,7 +190,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       // Get unique token holders for DAO members from Token contract
       let activeHoldersCount = 0;
       try {
-        const tokenAddress = GOVERNANCE_CONTRACTS.token;
+        const tokenAddress = contracts.token;
         const tokenContract = new Contract(tokenAddress, ERC20ABI, provider);
         const filter = tokenContract.filters.Transfer();
         const latestBlock = await provider.getBlockNumber();
@@ -232,7 +267,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   },
 
   submitProposal: async (proposalData, signer) => {
-    const governorAddress = GOVERNANCE_CONTRACTS.governor;
+    const governorAddress = get().activeContracts.governor;
     const governorContract = new Contract(governorAddress, GovernorABI, signer);
 
     const votingDurationSeconds = proposalData.votingDuration * 86400;
@@ -251,13 +286,14 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     await tx.wait();
 
     set({ initialized: false });
-    await get().initializeStore();
+    const currentDao = get().currentDao;
+    await get().initializeStore(currentDao || undefined);
 
     return `SIP-${get().proposals.length}`;
   },
 
   castVote: async (proposalId, option, weight, signature, signer) => {
-    const governorAddress = GOVERNANCE_CONTRACTS.governor;
+    const governorAddress = get().activeContracts.governor;
     const governorContract = new Contract(governorAddress, GovernorABI, signer);
 
     const id = Number(proposalId.replace("SIP-", ""));
@@ -272,11 +308,12 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     await tx.wait();
 
     set({ initialized: false });
-    await get().initializeStore();
+    const currentDao = get().currentDao;
+    await get().initializeStore(currentDao || undefined);
   },
 
   executeProposal: async (proposalId, signer) => {
-    const governorAddress = GOVERNANCE_CONTRACTS.governor;
+    const governorAddress = get().activeContracts.governor;
     const governorContract = new Contract(governorAddress, GovernorABI, signer);
 
     const id = Number(proposalId.replace("SIP-", ""));
@@ -285,6 +322,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     await tx.wait();
 
     set({ initialized: false });
-    await get().initializeStore();
+    const currentDao = get().currentDao;
+    await get().initializeStore(currentDao || undefined);
   }
 }));

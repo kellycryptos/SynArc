@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
+  Grid,
   FileText,
   Shield,
   Users,
@@ -21,6 +22,7 @@ import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 
 const activeLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/daos", label: "DAOs", icon: Grid },
   { href: "/proposals", label: "Proposals", icon: FileText },
   { href: "/treasury", label: "Treasury", icon: Shield },
   { href: "/members", label: "Members", icon: Users },

@@ -28,7 +28,7 @@ interface UseTreasuryReturn {
  * Hook: useTreasury
  * Fetches treasury balances and transaction history from Arc Testnet
  */
-export function useTreasury(): UseTreasuryReturn {
+export function useTreasury(customTreasuryAddress?: string): UseTreasuryReturn {
   const [balance, setBalance] = useState(0);
   const [usdcBalance, setUsdcBalance] = useState(0);
   const [eurcBalance, setEurcBalance] = useState(0);
@@ -42,7 +42,7 @@ export function useTreasury(): UseTreasuryReturn {
       setError(null);
 
       const provider = await getResilientProvider();
-      const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
+      const treasuryAddress = customTreasuryAddress || GOVERNANCE_CONTRACTS.treasury;
       const treasuryContract = new Contract(treasuryAddress, TREASURY_ABI, provider);
 
       // Fetch USDC and EURC balances
