@@ -15,7 +15,7 @@ const productLinks = [
 ];
 
 const developerLinks = [
-  { label: "Docs", href: "https://docs.arc.network", external: true },
+  { label: "Docs", href: "/docs" },
   { label: "GitHub", href: "https://github.com/kellycryptos/SynArc", external: true },
 ];
 

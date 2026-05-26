@@ -94,7 +94,7 @@ export default function DocsPage() {
           content: (
             <div className="space-y-4">
               <p className="text-muted leading-relaxed">
-                SynArc is a decentralized governance protocol and treasury coordination platform engineered natively for **Arc Testnet** (Chain ID: `5042002`). It empowers decentralized organizations, capital managers, and autonomous AI agents to vote, delegate, and manage multi-token stablecoin treasuries trustlessly.
+                SynArc is a decentralized governance and treasury management platform built directly on the Arc Testnet (Chain ID: <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded font-mono text-white">5042002</code>). It allows decentralized organizations, capital managers, and autonomous AI agents to vote, delegate, and manage multi-token stablecoin treasuries securely and trustlessly.
               </p>
               <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
@@ -103,7 +103,7 @@ export default function DocsPage() {
                 <div>
                   <h4 className="font-semibold text-white text-sm">Ecosystem Purpose</h4>
                   <p className="text-xs text-muted mt-1">
-                    By combining secure OpenZeppelin Governor frameworks, timelocked vaults, and multi-asset reserves, SynArc provides institutional-grade administrative security for the next generation of digital assets.
+                    By combining secure OpenZeppelin Governor frameworks, timelocked vaults, and multi-asset reserves, SynArc provides robust administrative security for digital assets.
                   </p>
                 </div>
               </div>
@@ -116,12 +116,12 @@ export default function DocsPage() {
           content: (
             <div className="space-y-4">
               <p className="text-muted leading-relaxed">
-                SynArc leverages **Privy** authentication to enable frictionless boarding. You don&apos;t need a pre-configured web3 wallet like MetaMask to participate.
+                SynArc leverages Privy authentication to enable frictionless onboarding. You do not need a pre-configured Web3 wallet like MetaMask to participate.
               </p>
               <ul className="list-disc pl-5 text-muted space-y-2">
-                <li>Click the **Connect Wallet** button on the page header or sidebar.</li>
-                <li>Authenticate using your **Google account**, **Twitter / X**, **Discord**, or standard **Email**.</li>
-                <li>Alternatively, click **Detect Wallets** to connect external hardware or browser extension accounts like MetaMask or Coinbase Wallet.</li>
+                <li>Click the <strong>Connect Wallet</strong> button in the page header or sidebar.</li>
+                <li>Sign in using your <strong>Google account</strong>, <strong>Twitter / X</strong>, <strong>Discord</strong>, or standard <strong>Email</strong>.</li>
+                <li>Alternatively, click <strong>Detect Wallets</strong> to connect external hardware or browser extension accounts like MetaMask or Coinbase Wallet.</li>
                 <li>Once connected, Privy automatically provisions a secure, non-custodial embedded wallet key secured directly via your device hardware.</li>
               </ul>
             </div>
@@ -133,19 +133,19 @@ export default function DocsPage() {
           content: (
             <div className="space-y-4">
               <p className="text-muted leading-relaxed">
-                SynArc requires your connected wallet to be configured for **Arc Testnet** to query balances and execute contract operations.
+                SynArc requires your connected wallet to be configured for Arc Testnet to query balances and execute contract operations.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl bg-surface-elevated border border-border-thin space-y-2">
                   <span className="text-xs font-semibold text-primary uppercase tracking-wider">Method 1: Automatic</span>
                   <p className="text-xs text-muted">
-                    If you are on the wrong network, SynArc displays a **Switch to Arc** banner on your settings page. Simply click this banner to authorize an automatic network configuration inside your wallet client.
+                    If you are on another network, SynArc will display a <strong>Switch to Arc</strong> banner on your settings page. Simply click this banner to automatically authorize a network switch in your wallet.
                   </p>
                 </div>
                 <div className="p-4 rounded-xl bg-surface-elevated border border-border-thin space-y-2">
                   <span className="text-xs font-semibold text-accent uppercase tracking-wider">Method 2: Manual Parameters</span>
                   <p className="text-xs text-muted">
-                    Add the custom network configuration in your wallet:
+                    Add the custom network configuration manually in your wallet:
                   </p>
                   <ul className="text-[10px] text-muted space-y-1 font-mono">
                     <li>• Chain ID: 5042002</li>
@@ -163,11 +163,11 @@ export default function DocsPage() {
           content: (
             <div className="space-y-4">
               <p className="text-muted leading-relaxed">
-                Arc is a stablecoin-native network where transaction gas fees are denominated directly in stablecoins (e.g. USDC). To interact with contracts, you require testnet USDC:
+                Arc is a stablecoin-native network where transaction gas fees are denominated directly in stablecoins like USDC. To interact with contracts, you require testnet USDC:
               </p>
               <ul className="list-decimal pl-5 text-muted space-y-2">
-                <li>Ensure you have the **Canteen ARC CLI** installed (`uv tool install git+https://github.com/the-canteen-dev/ARC-cli`).</li>
-                <li>Retrieve a developer faucet allotment through your logged-in shell using `arc-canteen rpc-url` or the official Canteen platform developer portal.</li>
+                <li>Make sure you have the <strong>Canteen ARC CLI</strong> installed by running <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded font-mono text-white">uv tool install git+https://github.com/the-canteen-dev/ARC-cli</code>.</li>
+                <li>Retrieve a developer faucet allotment in your terminal using <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded font-mono text-white">arc-canteen rpc-url</code> or the official Canteen platform developer portal.</li>
                 <li>Use the faucet link inside the developer dashboard to mint mock testnet USDC directly to your connected wallet address.</li>
               </ul>
             </div>
@@ -193,21 +193,21 @@ export default function DocsPage() {
                   <div className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_6px_rgba(124,58,237,0.8)]" />
                   <h4 className="font-semibold text-white">1. Submission & Pending State</h4>
                   <p className="text-xs text-muted mt-1">
-                    A proposal is submitted with executable transactions. It enters a **Pending** delay allowing delegates to adjust voting weight snapshots.
+                    A proposal is submitted with executable transactions. It enters a <strong>Pending</strong> delay allowing delegates to adjust voting weight snapshots.
                   </p>
                 </div>
                 <div className="relative">
                   <div className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-accent shadow-[0_0_6px_rgba(236,72,153,0.8)]" />
                   <h4 className="font-semibold text-white">2. Active Voting Phase</h4>
                   <p className="text-xs text-muted mt-1">
-                    The proposal enters the **Active** voting window. Members cast votes (For, Against, Abstain) signed cryptographically via their wallets.
+                    The proposal enters the <strong>Active</strong> voting window. Members cast votes (For, Against, Abstain) signed cryptographically via their wallets.
                   </p>
                 </div>
                 <div className="relative">
                   <div className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-success shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
                   <h4 className="font-semibold text-white">3. Resolution & Timelock Controller</h4>
                   <p className="text-xs text-muted mt-1">
-                    If voting requirements and the 4% Quorum are met, the proposal enters the **TimelockController** buffer to prevent immediate execution surprises.
+                    If voting requirements and the 4% Quorum are met, the proposal enters the <strong>Timelock Controller</strong> buffer to prevent immediate execution surprises.
                   </p>
                 </div>
                 <div className="relative">
@@ -230,10 +230,10 @@ export default function DocsPage() {
                 If your voting power meets or exceeds the proposal threshold, you can author a proposal:
               </p>
               <ul className="list-disc pl-5 text-muted space-y-2">
-                <li>Navigate to the **Proposals** tab and click **New Proposal**.</li>
-                <li>Fill in the **Title**, **Description**, **Category**, and **Execution Duration** parameters.</li>
-                <li>Under **Treasury Impact**, define the disbursement value in USDC, and assign the destination **Target EVM address**.</li>
-                <li>Confirm the transaction inside your Privy embedded wallet. Once mined, your proposal enters the **Pending** phase.</li>
+                <li>Navigate to the <strong>Proposals</strong> tab and click <strong>New Proposal</strong>.</li>
+                <li>Fill in the <strong>Title</strong>, <strong>Description</strong>, <strong>Category</strong>, and <strong>Execution Duration</strong> parameters.</li>
+                <li>Under <strong>Treasury Impact</strong>, define the disbursement value in USDC, and assign the destination <strong>Target EVM address</strong>.</li>
+                <li>Confirm the transaction inside your Privy embedded wallet. Once mined, your proposal enters the <strong>Pending</strong> phase.</li>
               </ul>
             </div>
           )
@@ -247,8 +247,8 @@ export default function DocsPage() {
                 Active proposals can be voted on by any member with a balance greater than 0 sARC at the snapshot block:
               </p>
               <ul className="list-disc pl-5 text-muted space-y-2">
-                <li>Select any proposal currently marked as **Active** from the Proposals grid.</li>
-                <li>Select **For**, **Against**, or **Abstain** on the voting module card.</li>
+                <li>Select any proposal currently marked as <strong>Active</strong> from the Proposals grid.</li>
+                <li>Select <strong>For</strong>, <strong>Against</strong>, or <strong>Abstain</strong> on the voting module card.</li>
                 <li>Optional: Add a text reason detailing your voting rationale.</li>
                 <li>Author the signature inside your wallet to submit your vote on-chain.</li>
               </ul>
@@ -264,7 +264,7 @@ export default function DocsPage() {
                 { name: "Pending", desc: "Proposal has been submitted but voting snapshot has not been finalized yet. Users can delegate weight.", color: "border-primary/20 text-primary-glow bg-primary/5" },
                 { name: "Active", desc: "Voting is actively open. Users can record cryptographic signatures on-chain to support or oppose.", color: "border-accent/20 text-accent bg-accent/5" },
                 { name: "Executed", desc: "The proposal has passed quorum, satisfied timelock delays, and has been successfully executed on-chain.", color: "border-success/20 text-success bg-success/5" },
-                { name: "Defeated", desc: "The voting window has closed but the proposal failed to meetquorum or received majority Against votes.", color: "border-danger/20 text-danger bg-danger/5" },
+                { name: "Defeated", desc: "The voting window has closed but the proposal failed to meet quorum or received majority Against votes.", color: "border-danger/20 text-danger bg-danger/5" },
               ].map((state) => (
                 <div key={state.name} className={`p-4 rounded-xl border ${state.color} space-y-2`}>
                   <h4 className="font-bold text-sm">{state.name}</h4>
@@ -318,7 +318,7 @@ export default function DocsPage() {
           content: (
             <div className="space-y-4">
               <p className="text-muted leading-relaxed">
-                The SynArc Treasury is a fully on-chain multi-asset vault managed strictly by smart contracts. The treasury can hold multiple stablecoin assets (USDC & EURC), allowing the DAO to operate across major regional reserve currencies.
+                The SynArc Treasury is a fully on-chain multi-asset vault managed strictly by smart contracts. The treasury can hold multiple stablecoin assets (USDC and EURC), allowing the DAO to operate across major regional reserve currencies.
               </p>
               <p className="text-muted leading-relaxed">
                 All capital inflows, allocations, and outflows are tracked inside the immutable ledger, precluding single-point-of-failure vulnerabilities like manual multi-sig overrides.
@@ -335,11 +335,11 @@ export default function DocsPage() {
                 To fund the DAO operating runway, members can deposit USDC directly using the frontend:
               </p>
               <ul className="list-disc pl-5 text-muted space-y-2">
-                <li>Navigate to the **Treasury** page in the sidebar.</li>
-                <li>Locate the **Deposit Portal** on the right side of the dashboard.</li>
-                <li>Ensure the **USDC** tab is selected.</li>
-                <li>Enter the deposit amount or click **MAX** to fetch your current wallet balance.</li>
-                <li>Click **Deposit USDC** and authorize the ERC20 approval and deposit transactions inside your Privy wallet.</li>
+                <li>Navigate to the <strong>Treasury</strong> page in the sidebar.</li>
+                <li>Locate the <strong>Deposit Portal</strong> on the right side of the dashboard.</li>
+                <li>Ensure the <strong>USDC</strong> tab is selected.</li>
+                <li>Enter the deposit amount or click <strong>MAX</strong> to fetch your current wallet balance.</li>
+                <li>Click <strong>Deposit USDC</strong> and authorize the ERC20 approval and deposit transactions inside your Privy wallet.</li>
               </ul>
             </div>
           )
@@ -350,10 +350,10 @@ export default function DocsPage() {
           content: (
             <div className="space-y-4">
               <p className="text-muted leading-relaxed">
-                In addition to USDC, SynArc natively supports **EURC** stablecoin deposits:
+                In addition to USDC, SynArc natively supports EURC stablecoin deposits:
               </p>
               <ul className="list-disc pl-5 text-muted space-y-2">
-                <li>Toggle the token selector inside the **Deposit Portal** to **EURC**.</li>
+                <li>Toggle the token selector inside the <strong>Deposit Portal</strong> to <strong>EURC</strong>.</li>
                 <li>Input your desired deposit amount in EURC.</li>
                 <li>Authorize the approval transaction followed by the deposit transaction.</li>
                 <li>Once validated, your EURC will populate the treasury reserves separately, with the frontend converting its value dynamically to USD (converting EURC at a 1.08 exchange rate) for portfolio mapping.</li>
@@ -367,12 +367,12 @@ export default function DocsPage() {
           content: (
             <div className="space-y-4">
               <p className="text-muted leading-relaxed">
-                SynArc has **no admin keys**. No founder, member, or developer can withdraw assets manually. Release of funds is automated:
+                SynArc has no admin keys. No founder, member, or developer can withdraw assets manually. Release of funds is automated:
               </p>
               <div className="p-4 rounded-xl bg-danger/5 border border-danger/10 space-y-2">
                 <span className="text-xs font-semibold text-danger uppercase tracking-wider">Automated Smart Contract Flow</span>
                 <p className="text-xs text-muted leading-relaxed">
-                  When a proposal requesting treasury capital successfully passes, the executable target inside the proposal represents a call to the treasury. Once the execution transaction is submitted on-chain, the Governor contract calls the `execute` wrapper, releasing the approved tokens directly to the proposal target address.
+                  When a proposal requesting treasury capital successfully passes, the executable target inside the proposal represents a call to the treasury. Once the execution transaction is submitted on-chain, the Governor contract calls the <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded font-mono text-white">execute</code> wrapper, releasing the approved tokens directly to the proposal target address.
                 </p>
               </div>
             </div>
@@ -434,7 +434,7 @@ export default function DocsPage() {
           content: (
             <div className="space-y-4">
               <p className="text-muted leading-relaxed">
-                SynArc contracts are deployed on the **Arc Testnet** and can be inspected on the explorer. Use the copy helper to get verified addresses:
+                SynArc contracts are deployed on the Arc Testnet and can be inspected on the explorer. Use the copy helper to get verified addresses:
               </p>
               
               <div className="space-y-3 font-mono">
@@ -528,7 +528,7 @@ export default function DocsPage() {
                 },
                 { 
                   q: "Where can I get help?", 
-                  a: "Visit the Discord server for technical support, or read the official documentation at docs.arc.network for core network specification lookups." 
+                  a: "Visit our Discord server for technical support, or browse our internal documentation sections to learn more about the platform's core features." 
                 }
               ].map((faq, idx) => {
                 const faqId = `faq-${idx}`;

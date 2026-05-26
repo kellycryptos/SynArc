@@ -35,6 +35,12 @@ export default function LandingPage() {
             >
               Launch Dashboard <ArrowRight className="w-5 h-5" />
             </Link>
+            <Link 
+              href="/docs"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/[0.02] text-white font-semibold transition-all flex items-center justify-center gap-2 text-lg"
+            >
+              View Docs &rarr;
+            </Link>
           </div>
         </div>
       </section>
