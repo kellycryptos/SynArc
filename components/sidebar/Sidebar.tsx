@@ -10,6 +10,7 @@ import {
   Shield,
   Users,
   BarChart3,
+  Droplets,
   Settings,
   Bell,
   BookOpen,
@@ -27,6 +28,7 @@ const activeLinks = [
   { href: "/treasury", label: "Treasury", icon: Shield },
   { href: "/members", label: "Members", icon: Users },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/faucet", label: "Faucet", icon: Droplets },
   { href: "/settings", label: "Settings", icon: Settings },
   { href: "/docs", label: "Docs", icon: BookOpen },
 ];

@@ -44,6 +44,9 @@ export function MarketingNavbar() {
           <Link href="/docs" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
             Docs
           </Link>
+          <Link href="/faucet" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+            Faucet
+          </Link>
         </nav>
 
         <div className="flex items-center gap-4">
