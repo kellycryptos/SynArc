@@ -115,6 +115,12 @@ export function useGovernor(): UseGovernorReturn {
         throw new Error("Privy wallet not found");
       }
 
+      // Force Arc Testnet before transaction
+      const currentChainId = parseInt(privy.chainId.replace("eip155:", ""));
+      if (currentChainId !== 5042002) {
+        await privy.switchChain(5042002);
+      }
+
       const ethereumProvider = await privy.getEthereumProvider();
       const provider = new BrowserProvider(ethereumProvider);
       const signer = await provider.getSigner();
@@ -157,6 +163,12 @@ export function useGovernor(): UseGovernorReturn {
       const privy = wallets.find(w => w.walletClientType === "privy");
       if (!privy) {
         throw new Error("Privy wallet not found");
+      }
+
+      // Force Arc Testnet before transaction
+      const currentChainId = parseInt(privy.chainId.replace("eip155:", ""));
+      if (currentChainId !== 5042002) {
+        await privy.switchChain(5042002);
       }
 
       const ethereumProvider = await privy.getEthereumProvider();

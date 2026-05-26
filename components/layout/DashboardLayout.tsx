@@ -9,19 +9,21 @@ import { X, AlertTriangle } from "lucide-react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 import { useAccount } from "wagmi";
+import { useAuth } from "@/hooks/auth/useAuth";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isConnected } = useAccount();
+  const { isAuthenticated } = useAuth();
   const { isArcTestnet, isUnsupported } = useArcNetwork();
   const { switchToArc, isSwitching } = useSwitchArcNetwork();
 
   // Automatically request network switch when connecting if wrong network
   useEffect(() => {
-    if (isConnected && !isArcTestnet && switchToArc) {
+    if ((isConnected || isAuthenticated) && !isArcTestnet && switchToArc) {
       switchToArc();
     }
-  }, [isConnected, isArcTestnet, switchToArc]);
+  }, [isConnected, isAuthenticated, isArcTestnet, switchToArc]);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground relative z-10">

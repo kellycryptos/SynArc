@@ -115,12 +115,18 @@ export default function TreasuryPage() {
       setTxStep("approving");
       setErrorMessage("");
 
+      // Force Arc Testnet before transaction
+      const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
+      if (currentChainId !== 5042002) {
+        await activeWallet.switchChain(5042002);
+      }
+
       const privyProvider = await activeWallet.getEthereumProvider();
       const provider = new ethers.BrowserProvider(privyProvider);
       const signer = await provider.getSigner();
 
       const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
-      const tokenAddress = selectedToken === "USDC" ? GOVERNANCE_CONTRACTS.token : GOVERNANCE_CONTRACTS.eurc;
+      const tokenAddress = selectedToken === "USDC" ? "0x3600000000000000000000000000000000000000" : GOVERNANCE_CONTRACTS.eurc;
       const amountWei = parseUnits(depositAmount, 6); // Both USDC and EURC use 6 decimals on testnet
 
       // 1. Approve contract

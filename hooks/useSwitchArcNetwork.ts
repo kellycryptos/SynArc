@@ -20,7 +20,7 @@ export function useSwitchArcNetwork() {
     setIsSwitching(true);
     try {
       const provider = await activeWallet.getEthereumProvider();
-      const chainIdHex = "0x4ce9fa"; // 5042002 in hex
+      const chainIdHex = "0x4cef52"; // 5042002 in hex
 
       try {
         // Attempt switching to Chain ID 5042002
@@ -53,7 +53,7 @@ export function useSwitchArcNetwork() {
                   nativeCurrency: {
                     name: "USDC",
                     symbol: "USDC",
-                    decimals: 18, // Native currency decimals on Arc
+                    decimals: 6, // USDC uses 6 decimals
                   },
                   blockExplorerUrls: ["https://testnet.arcscan.app"],
                 },

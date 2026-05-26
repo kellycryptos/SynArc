@@ -113,6 +113,13 @@ Timestamp: ${timestamp}`;
       if (!privy) {
         throw new Error("Privy wallet not found");
       }
+
+      // Force Arc Testnet before transaction
+      const currentChainId = parseInt(privy.chainId.replace("eip155:", ""));
+      if (currentChainId !== 5042002) {
+        await privy.switchChain(5042002);
+      }
+
       const ethereumProvider = await privy.getEthereumProvider();
       const browserProvider = new BrowserProvider(ethereumProvider);
       const signer = await browserProvider.getSigner();
@@ -145,6 +152,13 @@ Timestamp: ${timestamp}`;
       if (!privy) {
         throw new Error("Privy wallet not found");
       }
+
+      // Force Arc Testnet before transaction
+      const currentChainId = parseInt(privy.chainId.replace("eip155:", ""));
+      if (currentChainId !== 5042002) {
+        await privy.switchChain(5042002);
+      }
+
       const ethereumProvider = await privy.getEthereumProvider();
       const browserProvider = new BrowserProvider(ethereumProvider);
       const signer = await browserProvider.getSigner();
