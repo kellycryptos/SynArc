@@ -6,8 +6,9 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { BarChart3, TrendingUp, Users, Activity, AlertCircle, RefreshCw, Calendar } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { ethers, Contract, formatUnits } from "ethers";
-import { GOVERNANCE_CONTRACTS, ERC20ABI, GovernorABI } from "@/lib/governance/contracts";
+import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
 import { getResilientProvider } from "@/lib/rpc/config";
+
 import {
   ResponsiveContainer,
   LineChart,
@@ -21,8 +22,8 @@ import {
   YAxis,
   Tooltip,
   Legend,
-  CartesianGrid
-} from "recharts";
+  CartesianGrid,
+} from "@/components/charts/RechartsBundle";
 
 export default function AnalyticsPage() {
   const { proposals, metrics, initialized, initializeStore } = useGovernanceStore();
