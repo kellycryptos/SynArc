@@ -5,6 +5,8 @@ import { ethers, JsonRpcProvider, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS } from "@/lib/governance/contracts";
 import { TreasuryActivity } from "@/types";
 
+import { getResilientProvider } from "@/lib/rpc/config";
+
 const TREASURY_ABI = [
   "function getTransactions() external view returns (tuple(string txType, address party, uint256 amount, string tokenSymbol, string description, uint256 timestamp)[])",
   "function usdcBalance() external view returns (uint256)",
@@ -39,8 +41,7 @@ export function useTreasury(): UseTreasuryReturn {
       setLoading(true);
       setError(null);
 
-      const rpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
-      const provider = new JsonRpcProvider(rpcUrl);
+      const provider = await getResilientProvider();
       const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
       const treasuryContract = new Contract(treasuryAddress, TREASURY_ABI, provider);
 

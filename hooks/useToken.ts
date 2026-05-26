@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ethers, JsonRpcProvider, Contract, formatUnits } from "ethers";
+import { ethers, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS } from "@/lib/governance/contracts";
+import { getResilientProvider } from "@/lib/rpc/config";
 
 const ERC20_ABI = [
   "function balanceOf(address account) external view returns (uint256)",
@@ -36,8 +37,7 @@ export function useToken(userAddress: string | null): UseTokenReturn {
       setLoading(true);
       setError(null);
 
-      const rpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
-      const provider = new JsonRpcProvider(rpcUrl);
+      const provider = await getResilientProvider();
       const tokenAddress = GOVERNANCE_CONTRACTS.token;
       const tokenContract = new Contract(tokenAddress, ERC20_ABI, provider);
 

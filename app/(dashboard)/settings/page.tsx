@@ -21,7 +21,8 @@ import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 import { useTheme } from "next-themes";
-import { ethers, JsonRpcProvider, Contract, formatUnits } from "ethers";
+import { ethers, Contract, formatUnits } from "ethers";
+import { getResilientProvider } from "@/lib/rpc/config";
 
 export default function SettingsPage() {
   const { walletAddress, isAuthenticated } = useAuth();
@@ -56,14 +57,7 @@ export default function SettingsPage() {
     if (!walletAddress) return;
     try {
       setTokenLoading(true);
-      const rpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
-      let provider;
-      try {
-        provider = new JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
-        await provider.getNetwork();
-      } catch {
-        provider = new JsonRpcProvider("https://arc-testnet.drpc.org", undefined, { staticNetwork: true });
-      }
+      const provider = await getResilientProvider();
 
       const tokenAddress = GOVERNANCE_CONTRACTS.token;
       const tokenContract = new Contract(tokenAddress, ERC20ABI, provider);

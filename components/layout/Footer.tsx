@@ -239,6 +239,17 @@ export function Footer() {
               &copy; 2025 SynArc. All Rights Reserved.
             </p>
 
+            {/* Canteen Builder Badge */}
+            <a
+              href="https://thecanteenapp.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-300 text-xs font-medium text-muted/80 hover:text-white"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-glow animate-pulse" />
+              <span>Built on Arc • Powered by Canteen</span>
+            </a>
+
             {/* Legal Links */}
             <div className="flex items-center gap-6">
               {legalLinks.map((link, i) => (

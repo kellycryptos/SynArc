@@ -4,27 +4,7 @@ import { TreasuryActivity } from "@/types";
 import { ethers, JsonRpcProvider, BrowserProvider, Contract, formatUnits, parseUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI, ProposalState, VoteType, ERC20ABI } from "@/lib/governance/contracts";
 
-async function getResilientProvider(): Promise<JsonRpcProvider> {
-  const rpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
-  const fallbackRpcUrl = "https://arc-testnet.drpc.org";
-  
-  try {
-    const provider = new JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
-    // Let's do a lightweight network call to verify responsiveness
-    await provider.getNetwork();
-    return provider;
-  } catch (err) {
-    console.warn("Primary RPC connection failed, falling back to secondary RPC:", err);
-    try {
-      const fallbackProvider = new JsonRpcProvider(fallbackRpcUrl, undefined, { staticNetwork: true });
-      await fallbackProvider.getNetwork();
-      return fallbackProvider;
-    } catch (fallbackErr) {
-      console.error("Secondary RPC connection failed too:", fallbackErr);
-      throw new Error("All RPC endpoints are offline");
-    }
-  }
-}
+import { getResilientProvider } from "@/lib/rpc/config";
 
 interface GovernanceState {
   proposals: Proposal[];

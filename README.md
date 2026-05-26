@@ -83,6 +83,37 @@ SynArc is built natively for **Arc** — a high-performance, EVM-equivalent bloc
 
 Arc's dedicated focus on institutional-grade settlement, native USDC capital, and autonomous agent participation perfectly aligns with SynArc's governance framework.
 
+### Canteen ARC CLI & Resilient RPC Fallbacks
+
+SynArc is integrated with the **Canteen Builder Program**, providing personalized high-performance RPC connections and gasless transaction routing for all critical treasury and governance operations.
+
+#### CLI Installation & Commands
+
+To manage and retrieve your personalized Canteen RPC endpoints, install the Canteen ARC CLI tool:
+
+```bash
+# Install uv tool suite (if not present)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install the Canteen ARC CLI
+uv tool install git+https://github.com/the-canteen-dev/ARC-cli
+```
+
+Once installed, use the following commands:
+*   `arc-canteen login` - Log into your Canteen developer account.
+*   `arc-canteen rpc-url` - Fetch your personalized, high-performance Arc RPC endpoint.
+*   `arc-canteen update product` - Sync your latest product status with the Canteen registry.
+
+#### Centralized 4-Endpoint RPC Resiliency Chain
+
+To ensure uninterrupted uptime for our users and AI agents, the SynArc frontend implements a centralized sequential fallback resolver traversing four RPC nodes in priority order:
+1.  **Personalized Canteen RPC** (`process.env.NEXT_PUBLIC_ARC_RPC_URL`)
+2.  **Arc Testnet Public RPC** (`https://rpc.testnet.arc.network`)
+3.  **dRPC Arc Testnet Node** (`https://arc-testnet.drpc.org`)
+4.  **Thirdweb Arc Testnet Node** (`https://5042002.rpc.thirdweb.com`)
+
+If the primary endpoint experiences rate limits or downtime, the system transparently loops through the fallback nodes to maintain client connectivity.
+
 ---
 
 ## 5. Governance Infrastructure

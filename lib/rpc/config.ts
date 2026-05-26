@@ -1,37 +1,57 @@
+import { JsonRpcProvider } from "ethers";
+
 /**
  * Arc RPC Configuration
  * 
  * Centralized management of Arc RPC endpoints with fallback support.
  * Supports personalized RPC URLs from ARC CLI (arc-canteen rpc-url).
- * 
- * Setup:
- * 1. Get personalized Arc RPC endpoint: arc-canteen rpc-url
- * 2. Set NEXT_PUBLIC_ARC_RPC_URL in .env.local
- * 3. Fallback to Arc Testnet public RPC if not configured
  */
 
 export const ARC_TESTNET_RPC = 'https://rpc.testnet.arc.network';
 
+// Priority array of RPC endpoints with fallback URLs
+export const RPC_URLS = [
+  process.env.NEXT_PUBLIC_ARC_RPC_URL || '',
+  'https://rpc.testnet.arc.network',
+  'https://arc-testnet.drpc.org',
+  'https://5042002.rpc.thirdweb.com'
+].filter(url => url.trim() !== '');
+
 /**
- * Get the primary Arc RPC URL with fallback support
- * Prioritizes personalized RPC from environment, falls back to public testnet
+ * Get resilient provider traversing all RPC URLs sequentially
  */
-export function getArcRpcUrl(): string {
-  const customRpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL;
-  
-  if (customRpcUrl && customRpcUrl.trim()) {
-    return customRpcUrl.trim();
+export async function getResilientProvider(): Promise<JsonRpcProvider> {
+  for (const rpcUrl of RPC_URLS) {
+    try {
+      const provider = new JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
+      await provider.getNetwork();
+      return provider;
+    } catch (err) {
+      console.warn(`RPC connection failed for ${rpcUrl}, trying next fallback...`, err);
+    }
   }
-  
-  return ARC_TESTNET_RPC;
+  throw new Error("All RPC endpoints are offline");
 }
 
 /**
- * Get the fallback Arc RPC URL (always public testnet)
- * Used when primary RPC fails
+ * Get the primary Arc RPC URL with fallback support
+ */
+export function getArcRpcUrl(): string {
+  return RPC_URLS[0] || ARC_TESTNET_RPC;
+}
+
+/**
+ * Get the fallback Arc RPC URL (public testnet)
  */
 export function getArcRpcFallback(): string {
-  return ARC_TESTNET_RPC;
+  return RPC_URLS[1] || ARC_TESTNET_RPC;
+}
+
+/**
+ * Get all configured RPC URLs in priority order
+ */
+export function getArcRpcUrls(): string[] {
+  return RPC_URLS;
 }
 
 /**
@@ -47,26 +67,7 @@ export function isValidRpcUrl(url: string): boolean {
 }
 
 /**
- * Get all configured RPC URLs in priority order
- * Primary: personalized from ARC CLI
- * Fallback: public testnet RPC
- */
-export function getArcRpcUrls(): string[] {
-  const urls: string[] = [];
-  
-  const primaryUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL;
-  if (primaryUrl?.trim() && primaryUrl !== ARC_TESTNET_RPC) {
-    urls.push(primaryUrl.trim());
-  }
-  
-  urls.push(ARC_TESTNET_RPC);
-  
-  return urls;
-}
-
-/**
- * RPC configuration object for WAGMI
- * Provides all Arc RPC endpoints
+ * RPC configuration object for WAGMI / Privy
  */
 export const arcRpcConfig = {
   primary: getArcRpcUrl(),

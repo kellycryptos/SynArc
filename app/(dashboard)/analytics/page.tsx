@@ -5,8 +5,9 @@ import { useTreasury } from "@/hooks/useTreasury";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { BarChart3, TrendingUp, Users, Activity, AlertCircle, RefreshCw, Calendar } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
-import { ethers, JsonRpcProvider, Contract, formatUnits } from "ethers";
+import { ethers, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, GovernorABI } from "@/lib/governance/contracts";
+import { getResilientProvider } from "@/lib/rpc/config";
 import {
   ResponsiveContainer,
   LineChart,
@@ -41,14 +42,7 @@ export default function AnalyticsPage() {
     async function loadActiveVoters() {
       try {
         setVotersLoading(true);
-        const rpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
-        let provider;
-        try {
-          provider = new JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
-          await provider.getNetwork();
-        } catch {
-          provider = new JsonRpcProvider("https://arc-testnet.drpc.org", undefined, { staticNetwork: true });
-        }
+        const provider = await getResilientProvider();
 
         const governorAddress = GOVERNANCE_CONTRACTS.governor;
         const governorContract = new Contract(governorAddress, GovernorABI, provider);

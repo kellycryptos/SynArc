@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useWallets } from "@privy-io/react-auth";
-import { createPublicClient, http, parseAbi, formatUnits } from "viem";
+import { createPublicClient, http, fallback, parseAbi, formatUnits } from "viem";
 import { arcTestnet } from "@/lib/chains/arc";
 import { GOVERNANCE_CONTRACTS } from "@/lib/governance/contracts";
+import { getArcRpcUrls } from "@/lib/rpc/config";
 
 const EURC_CONTRACT_ADDRESS = GOVERNANCE_CONTRACTS.eurc;
 
@@ -30,10 +31,10 @@ export function useEURCBalance() {
     setIsError(false);
 
     try {
-      const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.testnet.arc.network";
+      const rpcUrls = getArcRpcUrls();
       const publicClient = createPublicClient({
         chain: arcTestnet,
-        transport: http(rpcUrl),
+        transport: fallback(rpcUrls.map(url => http(url))),
       });
 
       const [bal, dec] = await Promise.all([

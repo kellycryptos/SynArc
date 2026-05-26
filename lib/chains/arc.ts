@@ -1,5 +1,5 @@
 import { defineChain } from "viem";
-import { getArcRpcUrl, getArcRpcFallback } from "@/lib/rpc/config";
+import { getArcRpcUrls } from "@/lib/rpc/config";
 
 /**
  * Arc Testnet Chain Configuration
@@ -20,12 +20,9 @@ export const arcTestnet = defineChain({
     decimals: 18 
   },
   rpcUrls: {
-    // Primary RPC endpoint (personalized from ARC CLI) with fallback to public RPC
+    // Primary RPC endpoint (personalized from ARC CLI) with fallback endpoints in order
     default: { 
-      http: [
-        getArcRpcUrl(),
-        getArcRpcFallback(),
-      ]
+      http: getArcRpcUrls()
     },
   },
   blockExplorers: {

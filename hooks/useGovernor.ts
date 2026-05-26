@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ethers, JsonRpcProvider, BrowserProvider, Contract, formatUnits, parseUnits } from "ethers";
+import { ethers, BrowserProvider, Contract, formatUnits, parseUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
 import { Proposal } from "@/types/governance";
 import { useWallets } from "@privy-io/react-auth";
+import { getResilientProvider } from "@/lib/rpc/config";
 
 interface UseGovernorReturn {
   proposals: Proposal[];
@@ -30,8 +31,7 @@ export function useGovernor(): UseGovernorReturn {
       setLoading(true);
       setError(null);
 
-      const rpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
-      const provider = new JsonRpcProvider(rpcUrl);
+      const provider = await getResilientProvider();
       const governorAddress = GOVERNANCE_CONTRACTS.governor;
       const governorContract = new Contract(governorAddress, GovernorABI, provider);
 

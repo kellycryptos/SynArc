@@ -3,8 +3,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Shield, Search, AlertCircle, RefreshCw, Users, Calendar, Wallet } from "lucide-react";
-import { ethers, JsonRpcProvider, Contract, formatUnits } from "ethers";
+import { ethers, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, ERC20ABI } from "@/lib/governance/contracts";
+import { getResilientProvider } from "@/lib/rpc/config";
 
 interface Member {
   id: string;
@@ -26,21 +27,7 @@ export default function MembersPage() {
       setIsLoading(true);
       setError(null);
 
-      const rpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
-      let provider;
-      try {
-        provider = new JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
-        await provider.getNetwork();
-      } catch (err) {
-        console.warn("Primary RPC connection failed, falling back to secondary RPC:", err);
-        try {
-          provider = new JsonRpcProvider("https://arc-testnet.drpc.org", undefined, { staticNetwork: true });
-          await provider.getNetwork();
-        } catch (fallbackErr) {
-          console.error("Secondary RPC connection failed too:", fallbackErr);
-          throw new Error("All RPC endpoints are offline");
-        }
-      }
+      const provider = await getResilientProvider();
 
       const tokenAddress = GOVERNANCE_CONTRACTS.token;
       const tokenContract = new Contract(tokenAddress, ERC20ABI, provider);
