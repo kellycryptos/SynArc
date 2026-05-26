@@ -32,14 +32,17 @@ export function MarketingNavbar() {
         </Link>
         
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="#features" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+          <Link href="/#features" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
             Features
           </Link>
-          <Link href="#governance" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+          <Link href="/#governance" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
             Governance
           </Link>
-          <Link href="#treasury" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+          <Link href="/#treasury" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
             Treasury
+          </Link>
+          <Link href="/docs" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+            Docs
           </Link>
         </nav>
 

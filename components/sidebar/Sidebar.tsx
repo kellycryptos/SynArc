@@ -11,6 +11,7 @@ import {
   BarChart3,
   Settings,
   Bell,
+  BookOpen,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { WalletConnectButton } from "@/components/ui/WalletConnectButton";
@@ -25,6 +26,7 @@ const activeLinks = [
   { href: "/members", label: "Members", icon: Users },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/docs", label: "Docs", icon: BookOpen },
 ];
 
 const comingSoonLinks: { label: string; icon: any }[] = [];
