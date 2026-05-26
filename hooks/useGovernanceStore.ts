@@ -158,7 +158,15 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         const tokenAddress = GOVERNANCE_CONTRACTS.token;
         const tokenContract = new Contract(tokenAddress, ERC20ABI, provider);
         const filter = tokenContract.filters.Transfer();
-        const events = await tokenContract.queryFilter(filter, 0, "latest");
+        const latestBlock = await provider.getBlockNumber();
+        const chunkSize = 5000;
+        const events = [];
+        
+        for (let i = 0; i <= latestBlock; i += chunkSize) {
+          const toBlock = Math.min(i + chunkSize - 1, latestBlock);
+          const chunk = await tokenContract.queryFilter(filter, i, toBlock);
+          events.push(...chunk);
+        }
         const holders = new Set<string>();
         events.forEach(event => {
           const log = event as ethers.EventLog;

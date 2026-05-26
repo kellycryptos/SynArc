@@ -33,9 +33,17 @@ export default function MembersPage() {
       const tokenContract = new Contract(tokenAddress, ERC20ABI, provider);
       const usdcContract = new Contract("0x3600000000000000000000000000000000000000", ERC20ABI, provider);
 
-      // Scrape Transfer events from Token contract
+      // Scrape Transfer events from Token contract in chunks of 5000 blocks to prevent eth_getLogs range limits
       const filter = tokenContract.filters.Transfer();
-      const events = await tokenContract.queryFilter(filter, 0, "latest");
+      const latestBlock = await provider.getBlockNumber();
+      const chunkSize = 5000;
+      const events = [];
+      
+      for (let i = 0; i <= latestBlock; i += chunkSize) {
+        const toBlock = Math.min(i + chunkSize - 1, latestBlock);
+        const chunk = await tokenContract.queryFilter(filter, i, toBlock);
+        events.push(...chunk);
+      }
       
       const holders = new Set<string>();
       const holderFirstBlock = new Map<string, number>();

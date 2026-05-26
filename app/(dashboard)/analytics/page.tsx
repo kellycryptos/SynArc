@@ -48,7 +48,15 @@ export default function AnalyticsPage() {
         const governorContract = new Contract(governorAddress, GovernorABI, provider);
 
         const filter = governorContract.filters.VoteCast();
-        const events = await governorContract.queryFilter(filter, 0, "latest");
+        const latestBlock = await provider.getBlockNumber();
+        const chunkSize = 5000;
+        const events = [];
+        
+        for (let i = 0; i <= latestBlock; i += chunkSize) {
+          const toBlock = Math.min(i + chunkSize - 1, latestBlock);
+          const chunk = await governorContract.queryFilter(filter, i, toBlock);
+          events.push(...chunk);
+        }
         
         const voterCounts = new Map<string, number>();
         const voterPower = new Map<string, number>();
