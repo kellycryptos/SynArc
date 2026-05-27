@@ -66,7 +66,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       const savedBalance = localStorage.getItem(`synarc_balance_override_${walletAddress}`);
       if (savedBalance) return parseFloat(savedBalance);
     }
-    return balanceData ? parseFloat(formatUnits(balanceData.value, balanceData.decimals)) : 1500.0;
+    return balanceData ? parseFloat(formatUnits(balanceData.value, 18)) : 1500.0;
   }, [walletAddress, balanceData]);
 
   // Modal and signing UI states
@@ -137,9 +137,17 @@ Timestamp: ${timestamp}`;
 
       setGeneratedSignature(signature);
       setSigningStep("completed");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Cryptographic signing rejected", err);
-      setSigningStep("error");
+      const isExplicitRejection = err?.message?.toLowerCase().includes("rejected") || 
+                                  err?.message?.toLowerCase().includes("user denied") ||
+                                  err?.message?.toLowerCase().includes("user rejected") ||
+                                  err?.code === 4001;
+      if (isExplicitRejection) {
+        setSigningStep("error");
+      } else {
+        setSigningStep("idle");
+      }
     } finally {
       setIsSigning(false);
     }
@@ -487,9 +495,14 @@ Payload verified by Arc Security layers.`}
 
               <div className="space-y-4 pt-3 border-t border-border-subtle">
                 {signingStep === "requesting" && (
-                  <div className="p-3.5 bg-primary/10 border border-primary/20 rounded-2xl flex items-center gap-3 text-xs text-purple-300 animate-pulse">
-                    <PenTool className="w-4 h-4 animate-spin text-purple-400" />
-                    Awaiting signature confirmation from secure Privy credentials...
+                  <div className="p-3.5 bg-primary/10 border border-primary/20 rounded-2xl flex flex-col gap-2 text-xs text-purple-300 animate-pulse">
+                    <div className="flex items-center gap-3">
+                      <PenTool className="w-4 h-4 animate-spin text-purple-400" />
+                      <span className="font-bold">Awaiting signature confirmation...</span>
+                    </div>
+                    <span className="text-[10px] text-purple-400/90 font-semibold pl-7 block">
+                      👉 Please confirm the signature in your wallet/browser extension popup.
+                    </span>
                   </div>
                 )}
                 {signingStep === "submitting" && (
