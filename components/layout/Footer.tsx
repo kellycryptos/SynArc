@@ -233,12 +233,7 @@ export function Footer() {
           variants={itemVariants}
           className="relative py-8 border-t border-white/[0.05]"
         >
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
-            {/* Copyright */}
-            <p className="text-xs text-muted/50 tracking-wide">
-              &copy; 2025 SynArc. All Rights Reserved.
-            </p>
-
+          <div className="flex flex-col items-center justify-center text-center gap-4">
             {/* Canteen Builder Badge */}
             <a
               href="https://thecanteenapp.com"
@@ -267,6 +262,11 @@ export function Footer() {
                 </span>
               ))}
             </div>
+
+            {/* Copyright */}
+            <p className="text-xs text-muted/50 tracking-wide mt-1">
+              &copy; 2026 SynArc. All Rights Reserved.
+            </p>
           </div>
         </motion.div>
       </motion.div>
