@@ -79,7 +79,7 @@ function FooterColumn({
 }) {
   return (
     <motion.div variants={itemVariants} className="space-y-5">
-      <h4 className="text-xs font-semibold tracking-[0.12em] uppercase text-foreground/50 select-none">
+      <h4 className="text-xs font-semibold tracking-[0.12em] uppercase text-text-secondary/70 select-none">
         {title}
       </h4>
       <ul className="space-y-3">
@@ -91,12 +91,12 @@ function FooterColumn({
             whileHover="hover"
           >
             {link.comingSoon ? (
-              <span className="group inline-flex items-center gap-2 text-sm text-muted/60 cursor-default">
+              <span className="group inline-flex items-center gap-2 text-sm text-text-secondary/60 cursor-default">
                 <span className="relative">
                   {link.label}
                   <span className="absolute bottom-[-2px] left-0 w-0 h-px bg-gradient-to-r from-purple-glow to-cyan-glow group-hover:w-full transition-all duration-300" />
                 </span>
-                <span className="px-1.5 py-0.5 text-[10px] font-medium tracking-wide uppercase rounded bg-white/[0.04] border border-white/[0.06] text-muted/50">
+                <span className="px-1.5 py-0.5 text-[10px] font-medium tracking-wide uppercase rounded bg-background-primary border border-border text-text-secondary/80">
                   Coming Soon
                 </span>
               </span>
@@ -105,7 +105,7 @@ function FooterColumn({
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors duration-300 relative"
+                className="group inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-accent-blue transition-colors duration-300 relative"
               >
                 <span className="relative">
                   {link.label}
@@ -128,7 +128,7 @@ function FooterColumn({
             ) : (
               <a
                 href={link.href}
-                className="group inline-flex items-center text-sm text-muted hover:text-foreground transition-colors duration-300 relative"
+                className="group inline-flex items-center text-sm text-text-secondary hover:text-accent-blue transition-colors duration-300 relative"
               >
                 <span className="relative">
                   {link.label}
@@ -149,9 +149,9 @@ function FooterColumn({
 
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-white/[0.06]">
+    <footer className="relative overflow-hidden border-t border-border bg-background-primary text-text-secondary transition-colors duration-200">
       {/* ── Ambient Background ── */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0f] to-[#07070c]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background-surface to-background-primary" />
       <div className="absolute inset-0 grid-overlay opacity-40" />
 
       {/* ── Glow Orbs ── */}
@@ -231,7 +231,7 @@ export function Footer() {
         {/* ── Bottom Bar ── */}
         <motion.div
           variants={itemVariants}
-          className="relative py-8 border-t border-white/[0.05]"
+          className="relative py-8 border-t border-border"
         >
           <div className="flex flex-col items-center justify-center text-center gap-4">
             {/* Canteen Builder Badge */}
@@ -251,20 +251,20 @@ export function Footer() {
                 <span key={link.label} className="flex items-center gap-6">
                   <a
                     href={link.href}
-                    className="group relative text-xs text-muted/50 hover:text-foreground/70 transition-colors duration-300"
+                    className="group relative text-xs text-text-secondary/50 hover:text-text-primary/70 transition-colors duration-300"
                   >
                     {link.label}
                     <span className="absolute bottom-[-2px] left-0 w-0 h-px bg-gradient-to-r from-purple-glow to-cyan-glow group-hover:w-full transition-all duration-300" />
                   </a>
                   {i < legalLinks.length - 1 && (
-                    <span className="w-px h-3 bg-white/[0.06]" />
+                    <span className="w-px h-3 bg-border" />
                   )}
                 </span>
               ))}
             </div>
 
             {/* Copyright */}
-            <p className="text-xs text-muted/50 tracking-wide mt-1">
+            <p className="text-xs text-text-secondary/50 tracking-wide mt-1">
               &copy; 2026 SynArc. All Rights Reserved.
             </p>
           </div>
