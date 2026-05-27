@@ -21,7 +21,7 @@ export default function CreateProposalPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const proposalThreshold = 1000;
+  const proposalThreshold = 1;
   const hasEnoughBalance = votingPower >= proposalThreshold;
 
   const [formData, setFormData] = useState({
