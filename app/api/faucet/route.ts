@@ -4,7 +4,7 @@ import { getResilientProvider } from "@/lib/rpc/config";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const TOKEN_ADDRESS = "0x637cA7788aBC956832F389A7BB895D5249FE757B";
-const FAUCET_AMOUNT_TOKENS = 1n; // 1 SYN token
+const FAUCET_AMOUNT_TOKENS = 1n; // 1 sARC token
 const COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours in ms
 
 // Minimal ERC-20 transfer ABI
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
         success: true,
         simulated: true,
         message: "Faucet simulated (FAUCET_PRIVATE_KEY not configured).",
-        amount: "1 SYN",
+        amount: "1 sARC",
         wallet,
       });
     }
@@ -103,9 +103,9 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       txHash: tx.hash,
-      amount: "1 SYN",
+      amount: "1 sARC",
       wallet,
-      message: "1 SYN Token sent to your wallet!",
+      message: "1 sARC Token sent to your wallet!",
     });
   } catch (error: any) {
     console.error("Faucet error:", error);

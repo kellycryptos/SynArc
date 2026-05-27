@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import {
   Coins,
@@ -54,9 +54,9 @@ function CooldownTimer({ nextClaimAt }: { nextClaimAt: string }) {
 export default function FaucetPage() {
   const { isAuthenticated, walletAddress, login } = useAuth();
 
-  const [synStatus, setSynStatus] = useState<ClaimStatus>("idle");
-  const [synMsg, setSynMsg] = useState("");
-  const [synTxHash, setSynTxHash] = useState("");
+  const [sarcStatus, setSarcStatus] = useState<ClaimStatus>("idle");
+  const [sarcMsg, setSarcMsg] = useState("");
+  const [sarcTxHash, setSarcTxHash] = useState("");
   const [nextClaimAt, setNextClaimAt] = useState<string | null>(null);
 
   // ─── Check localStorage cooldown on mount ─────────────────────────────────
@@ -66,7 +66,7 @@ export default function FaucetPage() {
     if (stored) {
       const nextAt = new Date(parseInt(stored) + COOLDOWN_MS).toISOString();
       if (new Date(nextAt).getTime() > Date.now()) {
-        setSynStatus("cooldown");
+        setSarcStatus("cooldown");
         setNextClaimAt(nextAt);
       }
     }
@@ -79,22 +79,22 @@ export default function FaucetPage() {
       .then((r) => r.json())
       .then((data) => {
         if (!data.eligible && data.nextClaimAt) {
-          setSynStatus("cooldown");
+          setSarcStatus("cooldown");
           setNextClaimAt(data.nextClaimAt);
         }
       })
       .catch(() => {});
   }, [walletAddress]);
 
-  // ─── Claim SYN Token ──────────────────────────────────────────────────────
-  const handleClaimSYN = async () => {
+  // ─── Claim sARC Token ──────────────────────────────────────────────────────
+  const handleClaimSarc = async () => {
     if (!walletAddress) {
       login();
       return;
     }
-    setSynStatus("loading");
-    setSynMsg("");
-    setSynTxHash("");
+    setSarcStatus("loading");
+    setSarcMsg("");
+    setSarcTxHash("");
 
     try {
       const res = await fetch("/api/faucet", {
@@ -106,9 +106,9 @@ export default function FaucetPage() {
 
       if (res.status === 429) {
         // Already claimed
-        setSynStatus("cooldown");
+        setSarcStatus("cooldown");
         setNextClaimAt(data.nextClaimAt || null);
-        setSynMsg(data.cooldown ? `Next claim in ${data.cooldown}` : "Already claimed today.");
+        setSarcMsg(data.cooldown ? `Next claim in ${data.cooldown}` : "Already claimed today.");
         return;
       }
 
@@ -122,12 +122,12 @@ export default function FaucetPage() {
         String(Date.now())
       );
       setNextClaimAt(new Date(Date.now() + COOLDOWN_MS).toISOString());
-      setSynStatus("success");
-      setSynMsg(data.message || "1 SYN Token sent to your wallet!");
-      setSynTxHash(data.txHash || "");
+      setSarcStatus("success");
+      setSarcMsg(data.message || "1 sARC Token sent to your wallet!");
+      setSarcTxHash(data.txHash || "");
     } catch (err: any) {
-      setSynStatus("error");
-      setSynMsg(err.message || "Something went wrong. Please try again.");
+      setSarcStatus("error");
+      setSarcMsg(err.message || "Something went wrong. Please try again.");
     }
   };
 
@@ -145,14 +145,14 @@ export default function FaucetPage() {
         </h1>
         <p className="text-muted leading-relaxed max-w-2xl">
           Fund your wallet with testnet tokens to participate in SynArc governance.
-          SYN tokens give you voting power; USDC and EURC let you deposit into the treasury.
+          sARC tokens give you voting power; USDC and EURC let you deposit into the treasury.
         </p>
       </div>
 
       {/* Token Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        {/* ── SynArc Token (SYN) ─────────────────────────────────────────── */}
+        {/* ── SynArc Token (sARC) ─────────────────────────────────────────── */}
         <GlassCard className="p-6 flex flex-col gap-5 border border-primary/20 bg-gradient-to-br from-primary/[0.04] to-transparent relative overflow-hidden">
           {/* Glow */}
           <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/20 rounded-full blur-2xl pointer-events-none" />
@@ -163,23 +163,23 @@ export default function FaucetPage() {
             </div>
             <div>
               <h2 className="font-extrabold text-white text-lg leading-tight">SynArc Token</h2>
-              <p className="text-xs text-muted font-mono">SYN · 1 per day</p>
+              <p className="text-xs text-muted font-mono">sARC · 1 per day</p>
             </div>
           </div>
 
           <p className="text-sm text-muted leading-relaxed flex-1">
-            SYN is the governance token for SynArc. Hold SYN to earn voting power on proposals.
+            sARC is the governance token for SynArc. Hold sARC to earn voting power on proposals.
           </p>
 
           {/* Status messages */}
-          {synStatus === "success" && (
+          {sarcStatus === "success" && (
             <div className="flex items-start gap-2 p-3 rounded-xl bg-success/10 border border-success/20 text-success text-xs font-semibold">
               <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
               <div className="space-y-1">
-                <p>{synMsg}</p>
-                {synTxHash && (
+                <p>{sarcMsg}</p>
+                {sarcTxHash && (
                   <a
-                    href={`https://testnet.arcscan.app/tx/${synTxHash}`}
+                    href={`https://testnet.arcscan.app/tx/${sarcTxHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 text-success/80 hover:text-success underline underline-offset-2"
@@ -191,14 +191,14 @@ export default function FaucetPage() {
             </div>
           )}
 
-          {synStatus === "error" && (
+          {sarcStatus === "error" && (
             <div className="flex items-start gap-2 p-3 rounded-xl bg-danger/10 border border-danger/20 text-danger text-xs font-semibold">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-              <p>{synMsg}</p>
+              <p>{sarcMsg}</p>
             </div>
           )}
 
-          {synStatus === "cooldown" && nextClaimAt && (
+          {sarcStatus === "cooldown" && nextClaimAt && (
             <div className="flex items-center gap-2 p-3 rounded-xl bg-surface-elevated border border-border-thin text-xs">
               <Clock className="w-4 h-4 text-primary shrink-0" />
               <div className="flex flex-col gap-0.5">
@@ -209,7 +209,7 @@ export default function FaucetPage() {
           )}
 
           {/* CTA Button */}
-          {synStatus === "cooldown" ? (
+          {sarcStatus === "cooldown" ? (
             <button
               disabled
               className="w-full py-3 rounded-xl bg-surface border border-border-thin text-muted font-bold text-sm flex items-center justify-center gap-2 cursor-not-allowed opacity-60"
@@ -217,7 +217,7 @@ export default function FaucetPage() {
               <Clock className="w-4 h-4" />
               Claimed Today
             </button>
-          ) : synStatus === "success" ? (
+          ) : sarcStatus === "success" ? (
             <button
               disabled
               className="w-full py-3 rounded-xl bg-success/10 border border-success/20 text-success font-bold text-sm flex items-center justify-center gap-2 cursor-not-allowed"
@@ -227,12 +227,12 @@ export default function FaucetPage() {
             </button>
           ) : (
             <button
-              id="faucet-syn-btn"
-              onClick={handleClaimSYN}
-              disabled={synStatus === "loading"}
+              id="faucet-sarc-btn"
+              onClick={handleClaimSarc}
+              disabled={sarcStatus === "loading"}
               className="w-full py-3 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
-              {synStatus === "loading" ? (
+              {sarcStatus === "loading" ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
                   Sending Token...
@@ -240,7 +240,7 @@ export default function FaucetPage() {
               ) : (
                 <>
                   <Coins className="w-4 h-4" />
-                  {isAuthenticated ? "Claim 1 SYN Token" : "Connect Wallet to Claim"}
+                  {isAuthenticated ? "Claim 1 sARC Token" : "Connect Wallet to Claim"}
                 </>
               )}
             </button>
@@ -341,7 +341,7 @@ export default function FaucetPage() {
             <p className="text-sm text-muted leading-relaxed">
               All tokens here are for Arc Testnet and have no real-world monetary value.
               They exist purely for testing and governance participation during the testnet phase.
-              SYN tokens reset whenever the contracts are redeployed.
+              sARC tokens reset whenever the contracts are redeployed.
             </p>
           </div>
         </div>

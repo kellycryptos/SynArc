@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useToken } from "@/hooks/useToken";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Wallet, 
@@ -31,39 +32,95 @@ interface FaucetTx {
   status: "success" | "pending";
 }
 
+const COOLDOWN_KEY = "synarc_faucet_last_claim";
+const COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+function CooldownTimer({ nextClaimAt }: { nextClaimAt: string }) {
+  const [display, setDisplay] = useState("--:--:--");
+
+  useEffect(() => {
+    const update = () => {
+      const remaining = new Date(nextClaimAt).getTime() - Date.now();
+      if (remaining <= 0) {
+        setDisplay("00:00:00");
+        return;
+      }
+      const h = Math.floor(remaining / 3_600_000);
+      const m = Math.floor((remaining % 3_600_000) / 60_000);
+      const s = Math.floor((remaining % 60_000) / 1000);
+      setDisplay(
+        `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+      );
+    };
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, [nextClaimAt]);
+
+  return (
+    <span className="font-mono text-xs font-bold text-primary tabular-nums">
+      {display}
+    </span>
+  );
+}
+
 export function WalletFaucetCard() {
   const { isAuthenticated, walletAddress, email, authMethod, login } = useAuth();
   const [copied, setCopied] = useState(false);
-  const [faucetStatus, setFaucetStatus] = useState<"idle" | "requesting" | "confirming" | "success" | "error">("idle");
+  const [faucetStatus, setFaucetStatus] = useState<"idle" | "requesting" | "success" | "error" | "cooldown">("idle");
   const [currentTxHash, setCurrentTxHash] = useState<string>("");
-  const [simulatedBalance, setSimulatedBalance] = useState<number | null>(null);
+  const [synMsg, setSynMsg] = useState("");
   const [txHistory, setTxHistory] = useState<FaucetTx[]>([]);
+  const [nextClaimAt, setNextClaimAt] = useState<string | null>(null);
 
   // Custom hook to fetch actual USDC balance on Arc Testnet
   const { balance: realBalance, isLoading: balanceLoading, isError: balanceError, refetch: refetchUSDC, isFetching } = useUSDCBalance();
+  
+  // Custom hook to fetch actual sARC token balance
+  const { votingPower: tokenBalance, refetch: refetchToken } = useToken(walletAddress);
 
-  // Load persistent override and history on mount
+  // Load persistent override and history on mount & address change
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // 1. Simulated Balance
-      const savedBalance = localStorage.getItem(`synarc_balance_override_${walletAddress}`);
-      if (savedBalance) {
-        setSimulatedBalance(parseFloat(savedBalance));
-      } else if (realBalance !== null) {
-        setSimulatedBalance(parseFloat(realBalance));
+    if (typeof window !== "undefined" && walletAddress) {
+      // 1. Check local storage cooldown
+      const stored = localStorage.getItem(`${COOLDOWN_KEY}_${walletAddress.toLowerCase()}`);
+      if (stored) {
+        const nextAt = new Date(parseInt(stored) + COOLDOWN_MS).toISOString();
+        if (new Date(nextAt).getTime() > Date.now()) {
+          setFaucetStatus("cooldown");
+          setNextClaimAt(nextAt);
+        } else {
+          setFaucetStatus("idle");
+          setNextClaimAt(null);
+        }
       } else {
-        setSimulatedBalance(null);
+        setFaucetStatus("idle");
+        setNextClaimAt(null);
       }
 
       // 2. Transaction History
-      const savedHistory = localStorage.getItem(`synarc_faucet_history_${walletAddress}`);
+      const savedHistory = localStorage.getItem(`synarc_sarc_faucet_history_${walletAddress}`);
       if (savedHistory) {
         setTxHistory(JSON.parse(savedHistory));
       } else {
         setTxHistory([]);
       }
     }
-  }, [walletAddress, realBalance]);
+  }, [walletAddress]);
+
+  // Check server-side cooldown on mount & address change
+  useEffect(() => {
+    if (!walletAddress) return;
+    fetch(`/api/faucet?wallet=${walletAddress}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.eligible && data.nextClaimAt) {
+          setFaucetStatus("cooldown");
+          setNextClaimAt(data.nextClaimAt);
+        }
+      })
+      .catch(() => {});
+  }, [walletAddress]);
 
   // Copy Address helper
   const copyAddress = async () => {
@@ -87,55 +144,76 @@ export function WalletFaucetCard() {
     return hash;
   };
 
-  // Faucet Request Action
+  // Faucet Request Action (sARC claim)
   const handleRequestFaucet = async () => {
     if (!walletAddress || faucetStatus !== "idle") return;
 
     setFaucetStatus("requesting");
-    
-    // Simulate Request to Faucet Server (1.5 seconds)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    setFaucetStatus("confirming");
-    
-    // Simulate Block Confirmation on Arc Testnet (2.0 seconds)
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setSynMsg("");
+    setCurrentTxHash("");
 
-    // Success Operations
-    const newTxHash = generateTxHash();
-    setCurrentTxHash(newTxHash);
-    
-    const increment = 500;
-    const currentBal = simulatedBalance ?? (realBalance ? parseFloat(realBalance) : 1500.0);
-    const nextBalance = currentBal + increment;
-    
-    setSimulatedBalance(nextBalance);
-    localStorage.setItem(`synarc_balance_override_${walletAddress}`, nextBalance.toString());
-
-    const newTx: FaucetTx = {
-      hash: newTxHash,
-      amount: increment,
-      timestamp: new Date().toISOString(),
-      status: "success"
-    };
-
-    const updatedHistory = [newTx, ...txHistory].slice(0, 5); // Keep last 5 transactions
-    setTxHistory(updatedHistory);
-    localStorage.setItem(`synarc_faucet_history_${walletAddress}`, JSON.stringify(updatedHistory));
-
-    setFaucetStatus("success");
-    
-    // Refetch real on-chain balance to synchronize if RPC is online
     try {
-      refetchUSDC();
-    } catch (e) {
-      console.warn("Could not refetch balance from active network", e);
-    }
+      const res = await fetch("/api/faucet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet: walletAddress }),
+      });
+      const data = await res.json();
 
-    // Reset status back to idle after 4 seconds
-    setTimeout(() => {
-      setFaucetStatus("idle");
-    }, 4000);
+      if (res.status === 429) {
+        setFaucetStatus("cooldown");
+        setNextClaimAt(data.nextClaimAt || new Date(Date.now() + COOLDOWN_MS).toISOString());
+        setSynMsg(data.cooldown ? `Next claim in ${data.cooldown}` : "Already claimed today.");
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error || "Faucet request failed.");
+      }
+
+      // Success — store timestamp in localStorage
+      localStorage.setItem(
+        `${COOLDOWN_KEY}_${walletAddress.toLowerCase()}`,
+        String(Date.now())
+      );
+      const nextAt = new Date(Date.now() + COOLDOWN_MS).toISOString();
+      setNextClaimAt(nextAt);
+      const txHashValue = data.txHash || generateTxHash();
+      setCurrentTxHash(txHashValue);
+
+      const newTx: FaucetTx = {
+        hash: txHashValue,
+        amount: 1,
+        timestamp: new Date().toISOString(),
+        status: "success"
+      };
+
+      const updatedHistory = [newTx, ...txHistory].slice(0, 5); // Keep last 5 transactions
+      setTxHistory(updatedHistory);
+      localStorage.setItem(`synarc_sarc_faucet_history_${walletAddress}`, JSON.stringify(updatedHistory));
+
+      setFaucetStatus("success");
+      setSynMsg(data.message || "1 sARC Token sent to your wallet!");
+
+      // Refetch sARC token balance
+      try {
+        refetchToken();
+      } catch (e) {
+        console.warn("Could not refetch sARC balance", e);
+      }
+
+      // Reset back to cooldown after 4 seconds
+      setTimeout(() => {
+        setFaucetStatus("cooldown");
+      }, 4000);
+
+    } catch (err: any) {
+      setFaucetStatus("error");
+      setSynMsg(err.message || "Something went wrong. Please try again.");
+      setTimeout(() => {
+        setFaucetStatus("idle");
+      }, 4000);
+    }
   };
 
   // Identity Badge config
@@ -198,10 +276,8 @@ export function WalletFaucetCard() {
     ? `${walletAddress.substring(0, 8)}...${walletAddress.substring(walletAddress.length - 8)}`
     : "No address detected";
 
-  // Balance display
-  const activeBalance = simulatedBalance !== null 
-    ? simulatedBalance 
-    : (realBalance ? parseFloat(realBalance) : 0.00);
+  // Balance display (USDC)
+  const activeBalance = realBalance ? parseFloat(realBalance) : 0.00;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-up">
@@ -285,54 +361,65 @@ export function WalletFaucetCard() {
 
           {/* Faucet Trigger Section */}
           <div className="bg-surface-elevated/40 border border-border-subtle rounded-2xl p-5 flex flex-col items-center justify-center text-center gap-3 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-1.5">
-              <Coins className="w-8 h-8 text-primary/10 select-none pointer-events-none" />
+            <div className="absolute top-0 right-0 p-1.5 text-2xl select-none pointer-events-none">
+              🪙
             </div>
 
             <h4 className="font-bold text-sm text-text-primary flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-purple-400" />
-              Need USDC Test Tokens?
+              SynArc Token (sARC)
             </h4>
             <p className="text-xs text-text-tertiary max-w-[240px]">
-              Instantly claim +500 testnet USDC stablecoins once per day to build delegation reputation and participate in voting.
+              Claim 1 sARC token per day to participate in governance and voting.
             </p>
 
-            <button
-              onClick={handleRequestFaucet}
-              disabled={faucetStatus !== "idle"}
-              className={`w-full py-3 px-4 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer
-                ${faucetStatus === "idle" 
-                  ? "bg-primary text-white hover:bg-primary/95 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 active:scale-[0.98]" 
-                  : faucetStatus === "success"
-                    ? "bg-success/20 border border-success/30 text-success"
+            {faucetStatus === "cooldown" && nextClaimAt ? (
+              <button
+                disabled
+                className="w-full py-3 px-4 rounded-xl bg-surface border border-border-thin text-muted font-bold text-sm flex flex-col items-center justify-center gap-1 cursor-not-allowed opacity-60"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-primary shrink-0" />
+                  <span>Next claim in</span>
+                </div>
+                <CooldownTimer nextClaimAt={nextClaimAt} />
+              </button>
+            ) : faucetStatus === "success" ? (
+              <button
+                disabled
+                className="w-full py-3 px-4 rounded-xl bg-success/10 border border-success/20 text-success font-bold text-sm flex items-center justify-center gap-2 cursor-not-allowed"
+              >
+                <Check className="w-4 h-4 animate-bounce" />
+                Token Sent!
+              </button>
+            ) : (
+              <button
+                onClick={handleRequestFaucet}
+                disabled={faucetStatus === "requesting"}
+                className={`w-full py-3 px-4 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer
+                  ${faucetStatus === "idle" || faucetStatus === "error"
+                    ? "bg-primary text-white hover:bg-primary/95 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 active:scale-[0.98]" 
                     : "bg-surface-elevated border border-border-thin text-text-secondary"
-                }`}
-            >
-              {faucetStatus === "idle" && (
-                <>
-                  <Coins className="w-4.5 h-4.5 animate-bounce" />
-                  Claim Faucet Funds
-                </>
-              )}
-              {faucetStatus === "requesting" && (
-                <>
-                  <RefreshCw className="w-4.5 h-4.5 animate-spin text-purple-400" />
-                  Requesting Faucet Server...
-                </>
-              )}
-              {faucetStatus === "confirming" && (
-                <>
-                  <Clock className="w-4.5 h-4.5 animate-pulse text-cyan-soft" />
-                  Waiting Block Confirmations...
-                </>
-              )}
-              {faucetStatus === "success" && (
-                <>
-                  <Check className="w-4.5 h-4.5 animate-bounce" />
-                  +500 USDC Claimed!
-                </>
-              )}
-            </button>
+                  }`}
+              >
+                {faucetStatus === "idle" && (
+                  <>
+                    <Coins className="w-4.5 h-4.5 animate-bounce" />
+                    Claim sARC Token
+                  </>
+                )}
+                {faucetStatus === "requesting" && (
+                  <>
+                    <RefreshCw className="w-4.5 h-4.5 animate-spin text-purple-400" />
+                    Requesting Faucet...
+                  </>
+                )}
+                {faucetStatus === "error" && (
+                  <>
+                    <span>Try Again</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
 
@@ -380,7 +467,7 @@ export function WalletFaucetCard() {
             {txHistory.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center p-6 text-text-tertiary border border-dashed border-border-thin rounded-xl gap-2 bg-surface/20">
                 <Coins className="w-6 h-6 opacity-30" />
-                <span className="text-[11px]">No claimed faucet transactions detected on this account yet.</span>
+                <span className="text-[11px]">No claimed sARC faucet transactions detected on this account yet.</span>
               </div>
             ) : (
               txHistory.map((tx) => (
@@ -390,7 +477,7 @@ export function WalletFaucetCard() {
                 >
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-text-primary">+500.00 USDC</span>
+                      <span className="text-xs font-bold text-text-primary">+1.00 sARC</span>
                       <span className="inline-flex items-center px-1.5 py-0.2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[9px] font-bold">
                         Success
                       </span>
