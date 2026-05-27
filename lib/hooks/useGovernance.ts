@@ -139,6 +139,9 @@ export function useCastVote() {
         abi: GovernorABI,
         functionName: 'castVoteWithReason',
         args: [proposalId, support, reason],
+        gas: 150000n,                         // Standard lightweight vote execution ceiling
+        maxFeePerGas: 30000000n,              // 6-Decimal max base fee parameter
+        maxPriorityFeePerGas: 2000000n,       // 6-Decimal tip priority parameter
       });
     } else {
       writeContract({
@@ -147,6 +150,9 @@ export function useCastVote() {
         abi: GovernorABI,
         functionName: 'castVote',
         args: [proposalId, support],
+        gas: 150000n,                         // Standard lightweight vote execution ceiling
+        maxFeePerGas: 30000000n,              // 6-Decimal max base fee parameter
+        maxPriorityFeePerGas: 2000000n,       // 6-Decimal tip priority parameter
       });
     }
   };
@@ -234,6 +240,9 @@ export function useExecuteProposal() {
       abi: GovernorABI,
       functionName: 'execute',
       args: [targets, values, calldatas, descriptionHash],
+      gas: 250000n,                         // Standard lightweight execute execution ceiling
+      maxFeePerGas: 30000000n,              // 6-Decimal max base fee parameter
+      maxPriorityFeePerGas: 2000000n,       // 6-Decimal tip priority parameter
     });
   };
 

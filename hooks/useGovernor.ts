@@ -130,9 +130,17 @@ export function useGovernor(): UseGovernorReturn {
 
       let tx;
       if (reason) {
-        tx = await governorContract.castVoteWithReason(proposalId, support, reason);
+        tx = await governorContract.castVoteWithReason(proposalId, support, reason, {
+          gasLimit: 150000n,
+          maxFeePerGas: 30000000n,
+          maxPriorityFeePerGas: 2000000n
+        });
       } else {
-        tx = await governorContract.castVote(proposalId, support);
+        tx = await governorContract.castVote(proposalId, support, {
+          gasLimit: 150000n,
+          maxFeePerGas: 30000000n,
+          maxPriorityFeePerGas: 2000000n
+        });
       }
 
       const receipt = await tx.wait();
