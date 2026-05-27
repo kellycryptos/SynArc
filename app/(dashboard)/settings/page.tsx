@@ -164,7 +164,7 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-1">
-                <p className="text-xs font-semibold text-muted uppercase tracking-wider">SynArcToken Voting Power</p>
+                <p className="text-xs font-semibold text-muted uppercase tracking-wider">sARC TOKEN (VOTING POWER)</p>
                 <div className="font-semibold font-mono text-base text-white bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin flex justify-between items-center">
                   <span>{tokenLoading ? "Loading..." : `${tokenBalance} sARC`}</span>
                   <button 
@@ -249,21 +249,24 @@ export default function SettingsPage() {
               For security auditing and audit tracking, correct deployments can be inspected on the explorer.
             </p>
             
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3">
               {[
-                { name: "SynArc Governor", address: GOVERNANCE_CONTRACTS.governor, id: "gov" },
-                { name: "SynArc Treasury", address: GOVERNANCE_CONTRACTS.treasury, id: "treasury" },
-                { name: "SynArcToken (Voting Power)", address: GOVERNANCE_CONTRACTS.token, id: "token" },
+                { name: "SynArc Governor", address: "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702", id: "gov" },
+                { name: "SynArc Treasury", address: "0x8Ab21363cB0319548B051f129e477393908be7c1", id: "treasury" },
+                { name: "sARC Token (Voting Power)", address: "0x637cA7788aBC956832F389A7BB895D5249FE757B", id: "token" },
+                { name: "EURC Token", address: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a", id: "eurc" },
               ].map((contract) => (
-                <div key={contract.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-surface-elevated rounded-xl border border-border-thin">
-                  <div>
+                <div key={contract.id} className="flex items-center justify-between gap-3 p-4 bg-surface-elevated rounded-xl border border-border-thin w-full">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-muted uppercase tracking-wider">{contract.name}</p>
-                    <span className="font-mono text-sm text-white">{contract.address}</span>
+                    <span className="font-mono text-xs sm:text-sm text-white block truncate" title={contract.address}>
+                      {contract.address.slice(0, 6)}...{contract.address.slice(-4)}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2 self-end sm:self-center">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => copyToClipboard(contract.address, contract.id)}
-                      className="p-2 bg-surface hover:bg-surface-elevated rounded-lg border border-border-thin text-muted hover:text-white transition-colors cursor-pointer"
+                      className="p-2 bg-surface hover:bg-surface-elevated rounded-lg border border-border-thin text-muted hover:text-white transition-colors cursor-pointer flex items-center justify-center"
                       title="Copy Address"
                     >
                       {copiedContract === contract.id ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
@@ -280,6 +283,34 @@ export default function SettingsPage() {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Network Info Footer */}
+            <div className="mt-6 pt-4 border-t border-border-thin grid grid-cols-2 gap-4 text-xs">
+              <div className="space-y-1">
+                <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Network</span>
+                <span className="text-white font-medium">Arc Testnet</span>
+              </div>
+              <div className="space-y-1">
+                <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Chain ID</span>
+                <span className="text-white font-medium">5042002</span>
+              </div>
+              <div className="space-y-1 col-span-2">
+                <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">RPC Endpoint</span>
+                <span className="text-white font-mono break-all">https://rpc.testnet.arc.network</span>
+              </div>
+              <div className="space-y-1 col-span-2">
+                <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Block Explorer</span>
+                <a 
+                  href="https://testnet.arcscan.app" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-primary hover:underline font-medium flex items-center gap-1"
+                >
+                  testnet.arcscan.app
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
           </div>
         </GlassCard>
