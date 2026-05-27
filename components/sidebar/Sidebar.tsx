@@ -54,7 +54,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
   };
 
   return (
-    <aside className={cn("w-64 glass border-r border-border-thin flex flex-col h-full", className)}>
+    <aside className={cn("w-64 bg-background-surface border-r border-border flex flex-col h-full", className)}>
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-border-thin shrink-0">
         <button

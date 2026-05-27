@@ -106,7 +106,7 @@ export default function LandingPage() {
             </Link>
             <Link 
               href="/docs"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/[0.02] text-white font-semibold transition-all flex items-center justify-center gap-2 text-lg"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg"
             >
               View Docs &rarr;
             </Link>
@@ -162,7 +162,7 @@ export default function LandingPage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] opacity-15 bg-primary rounded-full blur-[120px]" />
         </div>
         <div className="max-w-4xl mx-auto relative z-10 text-center space-y-8">
-          <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-white leading-tight">
+          <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
             Governance Infrastructure <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">for the Arc Ecosystem</span>
           </h2>
@@ -178,7 +178,7 @@ export default function LandingPage() {
             </button>
             <Link
               href="/daos"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/[0.02] text-white font-semibold transition-all flex items-center justify-center gap-2 text-lg"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg"
             >
               Explore DAOs &rarr;
             </Link>

@@ -26,7 +26,7 @@ export function OverviewCards() {
       {cards.map((card, i) => {
         const Icon = card.icon;
         return (
-          <GlassCard key={card.title} delay={i * 0.1} className="p-5 flex flex-col gap-4 relative overflow-hidden group">
+          <GlassCard key={card.title} delay={i * 0.1} className="p-5 flex flex-col gap-4 relative overflow-hidden group bg-background-surface border border-border">
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
             <div className="flex items-start justify-between relative z-10">
               <div className="p-2 bg-surface-elevated rounded-lg border border-border-thin shadow-sm">
@@ -38,7 +38,7 @@ export function OverviewCards() {
             </div>
             <div className="relative z-10">
               <p className="text-sm text-muted font-medium mb-1">{card.title}</p>
-              <h3 className="text-2xl font-bold font-heading tracking-tight text-foreground">{card.value}</h3>
+              <h3 className="text-2xl font-bold font-heading tracking-tight text-text-primary">{card.value}</h3>
             </div>
           </GlassCard>
         );

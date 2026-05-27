@@ -13,28 +13,26 @@
 
   /* Default theme is dark */
   --bg-primary: #0A0A0F;
-  --bg-surface: #111118;
+  --bg-surface: #12121A;
   --text-primary: #FFFFFF;
-  --text-secondary: #9CA3AF;
-  --text-muted: #6B7280;
-  --border: #1F2937;
+  --text-secondary: #A0AEC0;
+  --text-muted: #718096;
+  --border: #1A1A26;
   --accent-purple: #7C3AED;
   --accent-blue: #3B82F6;
 
   --background: var(--bg-primary);
   --foreground: var(--text-primary);
-  --card: rgba(17, 17, 24, 0.7);
+  --card: var(--bg-surface);
   --card-border: var(--border);
   --muted: var(--text-muted);
   --accent: var(--accent-purple);
-  --surface: rgba(17, 17, 24, 0.7);
+  --surface: var(--bg-surface);
   --surface-elevated: rgba(20, 20, 32, 0.6);
   
   --border-subtle: rgba(255, 255, 255, 0.05);
   --border-thin: var(--border);
   
-  --text-primary: var(--text-primary);
-  --text-secondary: var(--text-secondary);
   --text-tertiary: var(--text-muted);
 
   --purple-deep: var(--accent-purple);
@@ -46,28 +44,26 @@
 
 .dark {
   --bg-primary: #0A0A0F;
-  --bg-surface: #111118;
+  --bg-surface: #12121A;
   --text-primary: #FFFFFF;
-  --text-secondary: #9CA3AF;
-  --text-muted: #6B7280;
-  --border: #1F2937;
+  --text-secondary: #A0AEC0;
+  --text-muted: #718096;
+  --border: #1A1A26;
   --accent-purple: #7C3AED;
   --accent-blue: #3B82F6;
 
   --background: var(--bg-primary);
   --foreground: var(--text-primary);
-  --card: rgba(17, 17, 24, 0.7);
+  --card: var(--bg-surface);
   --card-border: var(--border);
   --muted: var(--text-muted);
   --accent: var(--accent-purple);
-  --surface: rgba(17, 17, 24, 0.7);
+  --surface: var(--bg-surface);
   --surface-elevated: rgba(20, 20, 32, 0.6);
   
   --border-subtle: rgba(255, 255, 255, 0.05);
   --border-thin: var(--border);
   
-  --text-primary: var(--text-primary);
-  --text-secondary: var(--text-secondary);
   --text-tertiary: var(--text-muted);
 
   --purple-deep: var(--accent-purple);
@@ -78,32 +74,27 @@
 }
 
 .light {
-  --bg-primary: #F8F9FF;
+  --bg-primary: #F4F6FA;
   --bg-surface: #FFFFFF;
-  --text-primary: #0A0A1A;
-  --text-secondary: #374151;
-  --text-muted: #6B7280;
-  --border: #E5E7EB;
+  --text-primary: #0B0B16;
+  --text-secondary: #2D3748;
+  --text-muted: #4A5568;
+  --border: #E2E8F0;
   --accent-purple: #7C3AED;
   --accent-blue: #2563EB;
-  --card-bg: #FFFFFF;
-  --card-border: #E5E7EB;
-  --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
-
+  
   --background: var(--bg-primary);
   --foreground: var(--text-primary);
-  --card: rgba(255, 255, 255, 0.85);
-  --card-border: var(--card-border);
+  --card: var(--bg-surface);
+  --card-border: var(--border);
   --muted: var(--text-muted);
   --accent: var(--accent-purple);
-  --surface: rgba(255, 255, 255, 0.75);
+  --surface: var(--bg-surface);
   --surface-elevated: rgba(255, 255, 255, 0.85);
   
   --border-subtle: var(--border);
   --border-thin: var(--border);
   
-  --text-primary: var(--text-primary);
-  --text-secondary: var(--text-secondary);
   --text-tertiary: var(--text-muted);
 
   --purple-deep: var(--accent-purple);
@@ -132,14 +123,24 @@
   --color-purple-deep: var(--purple-deep);
   --color-cyan-glow: var(--cyan-glow);
   --color-cyan-soft: var(--cyan-soft);
-  --color-arc-blue: var(--arc-blue);
+  --color-arc-blue: var(--accent-blue);
   --color-arc-blue-soft: var(--arc-blue-soft);
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
   --color-border-subtle: var(--border-subtle);
   --color-border-thin: var(--border-thin);
+  
+  /* Semantic Variables from tailwind.config mapping */
+  --color-background-primary: var(--bg-primary);
+  --color-background-surface: var(--bg-surface);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-accent-purple: var(--accent-purple);
+  --color-accent-blue: var(--accent-blue);
+  
+  /* Legacy alias compatibility */
   --color-text-tertiary: var(--text-tertiary);
 }
 
@@ -191,11 +192,10 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 
 /* Light mode glass */
 .light .glass-card {
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.45) !important;
+  border: 1px solid rgba(11, 11, 22, 0.08) !important;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
 .glass-surface {
