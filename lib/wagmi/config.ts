@@ -3,19 +3,13 @@ import { http } from 'wagmi';
 import { fallback } from 'viem';
 import { arcTestnet } from '@/lib/chains/arc';
 
-const transports = [
-  http('https://rpc.testnet.arc.network'),                       // Core public operational node
-  http('https://arc-testnet.drpc.org'),                          // Highly responsive drpc backup node
-];
-
-if (process.env.NEXT_PUBLIC_ALCHEMY_ARC_URL) {
-  transports.push(http(process.env.NEXT_PUBLIC_ALCHEMY_ARC_URL)); // Alchemy backup slot
-}
-
 export const config = createConfig({
   chains: [arcTestnet],
   transports: {
-    [arcTestnet.id]: fallback(transports, { rank: true }),
+    [arcTestnet.id]: fallback([
+      http('https://rpc.testnet.arc.network'), // Public infrastructure node used by mobile wallets
+      http('https://arc-testnet.drpc.org'),    // High-performance backup cluster
+    ], { rank: true, retryCount: 3, retryDelay: 500 }),
   },
   ssr: true, // Hydration-safe for Next.js App Router
 });

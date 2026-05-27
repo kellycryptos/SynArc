@@ -19,7 +19,11 @@ export const rpcConfig = fallback([
 export const arcTestnet = defineChain({
   id: 5042002,
   name: 'Arc Testnet',
-  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 }, // Arc uses 18-decimal native USDC representation for standard EVM compatibility!
+  nativeCurrency: { 
+    name: 'USD Coin', 
+    symbol: 'USDC', 
+    decimals: 6 // Ensure PC extensions calculate fee structures at 6 decimals!
+  },
   rpcUrls: {
     default: { http: ['https://rpc.testnet.arc.network', 'https://arc-testnet.drpc.org'] },
     public: { http: ['https://rpc.testnet.arc.network', 'https://arc-testnet.drpc.org'] },

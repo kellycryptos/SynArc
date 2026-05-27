@@ -305,7 +305,11 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         values,
         calldatas,
         formattedDescription,
-        { gasLimit: 600000n } // Manual override fallback prevent estimateGas lockups
+        { 
+          gasLimit: 550000n, 
+          maxFeePerGas: 30000000n, 
+          maxPriorityFeePerGas: 2000000n 
+        }
       );
 
       await tx.wait();
