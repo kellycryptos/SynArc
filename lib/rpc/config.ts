@@ -13,11 +13,9 @@ export const ARC_TESTNET_RPC = 'https://rpc.testnet.arc.network';
 // Priority array of RPC endpoints with fallback support
 // Automatically detects rate-limiting and switches to backup nodes
 export const RPC_URLS = [
-  process.env.NEXT_PUBLIC_ARC_RPC_URL || '',
-  process.env.NEXT_PUBLIC_ALCHEMY_ARC_URL || '', // Secondary Alchemy endpoint as backup
   'https://rpc.testnet.arc.network',
-  'https://testnet.arcscan.app/rpc', // ArcScan reliable fallback
   'https://arc-testnet.drpc.org',
+  'https://testnet.arcscan.app/rpc', // ArcScan reliable fallback
   'https://5042002.rpc.thirdweb.com'
 ].filter(url => url.trim() !== '');
 
