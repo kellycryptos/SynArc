@@ -57,7 +57,9 @@ export function Web3Provider({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        refetchOnWindowFocus: false,
+        staleTime: 30000,      // Keep data fresh for 30 seconds before re-fetching
+        gcTime: 300000,       // Cache data in background memory for 5 minutes
+        refetchOnWindowFocus: false, // Prevent lag bursts when swapping between browser windows
         retry: false,
       },
     },

@@ -53,6 +53,11 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   // Voting Power Hook
   const { data: balanceData } = useBalance({
     address: walletAddress ? (walletAddress as `0x${string}`) : undefined,
+    query: {
+      staleTime: 30000,
+      gcTime: 300000,
+      refetchOnWindowFocus: false,
+    }
   });
 
   const activeBalance = useMemo(() => {
