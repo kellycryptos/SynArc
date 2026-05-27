@@ -52,22 +52,25 @@ export default function LandingPage() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to submit DAO application");
-      }
+      const data = await response.json();
 
-      setSubmitSuccess(true);
-      setFormData({
-        daoName: "",
-        description: "",
-        website: "",
-        twitter: "",
-        wallet: "",
-        message: "",
-      });
+      if (response.ok && data.success) {
+        setSubmitSuccess(true);
+        setFormData({
+          daoName: "",
+          description: "",
+          website: "",
+          twitter: "",
+          wallet: "",
+          message: "",
+        });
+      } else {
+        setErrorMsg(data.error || "Failed to submit application. Please try again.");
+        setSubmitSuccess(false);
+      }
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || "An unexpected error occurred. Please try again.");
+      setErrorMsg("Something went wrong. Please email us directly at devsynarc@gmail.com");
       setSubmitSuccess(false);
     } finally {
       setSubmitting(false);
@@ -394,7 +397,7 @@ export default function LandingPage() {
                     <div className="space-y-2">
                       <h4 className="font-bold text-white text-lg">Application Submitted!</h4>
                       <p className="text-sm text-muted max-w-sm mx-auto">
-                        Your application has been received and emailed to devsynarc@gmail.com. We will review your project details and get in touch with you shortly.
+                        We'll review your application and contact you via Telegram <span className="font-semibold">@Kellycryptos</span> or email within 48 hours.
                       </p>
                     </div>
                     <button
@@ -404,7 +407,7 @@ export default function LandingPage() {
                       }}
                       className="px-6 py-2.5 rounded-xl bg-surface border border-border-thin text-white font-semibold hover:border-white/10 text-xs transition-colors cursor-pointer"
                     >
-                      Close Window
+                      Close
                     </button>
                   </div>
                 ) : (
