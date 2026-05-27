@@ -178,17 +178,16 @@ export function useGovernor(): UseGovernorReturn {
       const governorAddress = GOVERNANCE_CONTRACTS.governor;
       const governorContract = new Contract(governorAddress, GovernorABI, signer);
 
-      const votingDurationSeconds = duration * 86400;
-      const treasuryImpactWei = parseUnits(Math.abs(treasuryImpact).toString(), 6);
-      const executionTarget = target || "0x0000000000000000000000000000000000000000";
+      const targets = [ethers.ZeroAddress]; // placeholder target
+      const values = [0n];                   // no ETH value
+      const calldatas = ['0x'];              // empty calldata
+      const formattedDescription = `${title}\n\n${description}\n\nCategory: ${category}`;
 
       const tx = await governorContract.propose(
-        title,
-        description,
-        category,
-        votingDurationSeconds,
-        treasuryImpactWei,
-        executionTarget
+        targets,
+        values,
+        calldatas,
+        formattedDescription
       );
 
       const receipt = await tx.wait();
@@ -197,9 +196,9 @@ export function useGovernor(): UseGovernorReturn {
       await fetchProposals();
 
       return receipt?.hash || "";
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error("Failed to create proposal");
-      throw error;
+    } catch (err: any) {
+      const message = err?.reason || err?.message || 'Failed to create proposal';
+      throw new Error(message);
     }
   }, [wallets, fetchProposals]);
 

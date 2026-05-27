@@ -67,7 +67,8 @@ export default function CreateProposalPage() {
       router.push(`/proposals/${proposalId}`);
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || "Failed to create proposal. Please try again.");
+      const message = err?.reason || err?.message || "Failed to create proposal. Please try again.";
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }

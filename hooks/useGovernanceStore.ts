@@ -267,29 +267,33 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   },
 
   submitProposal: async (proposalData, signer) => {
-    const governorAddress = get().activeContracts.governor;
-    const governorContract = new Contract(governorAddress, GovernorABI, signer);
+    try {
+      const governorAddress = get().activeContracts.governor;
+      const governorContract = new Contract(governorAddress, GovernorABI, signer);
 
-    const votingDurationSeconds = proposalData.votingDuration * 86400;
-    const treasuryImpactWei = parseUnits(Math.abs(proposalData.treasuryImpactValue).toString(), 6);
-    const target = proposalData.executionTarget || "0x0000000000000000000000000000000000000000";
+      const targets = [ethers.ZeroAddress]; // placeholder target
+      const values = [0n];                   // no ETH value
+      const calldatas = ['0x'];              // empty calldata
+      const formattedDescription = `${proposalData.title}\n\n${proposalData.description}\n\nCategory: ${proposalData.category}`;
 
-    const tx = await governorContract.propose(
-      proposalData.title,
-      proposalData.description,
-      proposalData.category,
-      votingDurationSeconds,
-      treasuryImpactWei,
-      target
-    );
+      const tx = await governorContract.propose(
+        targets,
+        values,
+        calldatas,
+        formattedDescription
+      );
 
-    await tx.wait();
+      await tx.wait();
 
-    set({ initialized: false });
-    const currentDao = get().currentDao;
-    await get().initializeStore(currentDao || undefined);
+      set({ initialized: false });
+      const currentDao = get().currentDao;
+      await get().initializeStore(currentDao || undefined);
 
-    return `SIP-${get().proposals.length}`;
+      return `SIP-${get().proposals.length}`;
+    } catch (err: any) {
+      const message = err?.reason || err?.message || 'Failed to create proposal';
+      throw new Error(message);
+    }
   },
 
   castVote: async (proposalId, option, weight, signature, signer) => {

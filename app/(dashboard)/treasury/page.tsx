@@ -167,7 +167,17 @@ export default function TreasuryPage() {
       refetchWalletEURC();
     } catch (err: any) {
       console.error("Deposit transaction failed:", err);
-      setErrorMessage(err?.reason || err?.message || "Transaction failed. Please try again.");
+      const errMsg = err?.reason || err?.message || "Transaction failed. Please try again.";
+      if (
+        errMsg.toLowerCase().includes("capacity exceeded") ||
+        errMsg.toLowerCase().includes("unexpected token") ||
+        errMsg.toLowerCase().includes("coalesce") ||
+        errMsg.toLowerCase().includes("monthly ca")
+      ) {
+        setErrorMessage("Network provider busy, retrying... (RPC rate limited)");
+      } else {
+        setErrorMessage(errMsg);
+      }
       setTxStep("error");
     }
   };

@@ -5,7 +5,9 @@ import { WagmiProvider } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { config } from '@/lib/wagmi/config';
 import { privyConfig } from '@/lib/privy/config';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
+import { initializeResilientRpc } from '@/lib/rpc/config';
+import { arcTestnet } from '@/lib/chains/arc';
 
 /**
  * PrivyProviderWrapper Component
@@ -32,6 +34,10 @@ export function PrivyProviderWrapper({ children }: { children: ReactNode }) {
       },
     },
   }));
+
+  useEffect(() => {
+    initializeResilientRpc(arcTestnet);
+  }, []);
 
   // Fetch the Privy App ID from environment, with a standard development fallback for robustness
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "clt57262n00ldmp0fhz113qep"; 
