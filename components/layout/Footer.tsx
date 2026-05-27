@@ -211,9 +211,9 @@ export function Footer() {
               </p>
 
               {/* Tagline */}
-              <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06]">
+              <div className="mt-6 inline-flex items-center gap-2 bg-background-primary border border-border text-text-secondary px-3 py-1 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-glow animate-pulse" />
-                <span className="text-[11px] font-medium tracking-wide uppercase text-muted/70">
+                <span className="text-[11px] font-medium tracking-wide uppercase">
                   Built for the Arc agentic economy.
                 </span>
               </div>
@@ -239,7 +239,7 @@ export function Footer() {
               href="https://thecanteenapp.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-300 text-xs font-medium text-muted/80 hover:text-white"
+              className="inline-flex items-center gap-2 bg-background-primary border border-border text-text-secondary px-3 py-1 rounded-full hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-300 text-xs font-medium"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-glow animate-pulse" />
               <span>Built on Arc • Powered by Canteen</span>
