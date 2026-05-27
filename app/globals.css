@@ -1,37 +1,116 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0f;
-  --foreground: #f8fafc;
-  --card: rgba(15, 15, 25, 0.7);
-  --card-border: rgba(255, 255, 255, 0.1);
-  --muted: #94a3b8;
-  --accent: #8b5cf6;
-  --accent-foreground: #ffffff;
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
-  --glass: rgba(255, 255, 255, 0.04);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --accent-foreground: #ffffff;
 
   --purple-glow: rgba(168, 85, 247, 1);
-  --purple-deep: #7c3aed;
   --cyan-glow: rgba(34, 211, 238, 1);
   --cyan-soft: #06b6d4;
-  --arc-blue: #3b82f6;
   --arc-blue-soft: #60a5fa;
-  
-  --surface: rgba(13, 13, 20, 0.7);
+
+  /* Default theme is dark */
+  --bg-primary: #0A0A0F;
+  --bg-surface: #111118;
+  --text-primary: #FFFFFF;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+  --border: #1F2937;
+  --accent-purple: #7C3AED;
+  --accent-blue: #3B82F6;
+
+  --background: var(--bg-primary);
+  --foreground: var(--text-primary);
+  --card: rgba(17, 17, 24, 0.7);
+  --card-border: var(--border);
+  --muted: var(--text-muted);
+  --accent: var(--accent-purple);
+  --surface: rgba(17, 17, 24, 0.7);
   --surface-elevated: rgba(20, 20, 32, 0.6);
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-thin: rgba(255, 255, 255, 0.08);
   
-  --text-primary: #ffffff;
-  --text-secondary: #cbd5e1;
-  --text-tertiary: #94a3b8;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-thin: var(--border);
+  
+  --text-primary: var(--text-primary);
+  --text-secondary: var(--text-secondary);
+  --text-tertiary: var(--text-muted);
+
+  --purple-deep: var(--accent-purple);
+  --arc-blue: var(--accent-blue);
 
   --glow-purple: rgba(168, 85, 247, 0.15);
   --glow-blue: rgba(59, 130, 246, 0.08);
+}
+
+.dark {
+  --bg-primary: #0A0A0F;
+  --bg-surface: #111118;
+  --text-primary: #FFFFFF;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+  --border: #1F2937;
+  --accent-purple: #7C3AED;
+  --accent-blue: #3B82F6;
+
+  --background: var(--bg-primary);
+  --foreground: var(--text-primary);
+  --card: rgba(17, 17, 24, 0.7);
+  --card-border: var(--border);
+  --muted: var(--text-muted);
+  --accent: var(--accent-purple);
+  --surface: rgba(17, 17, 24, 0.7);
+  --surface-elevated: rgba(20, 20, 32, 0.6);
+  
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-thin: var(--border);
+  
+  --text-primary: var(--text-primary);
+  --text-secondary: var(--text-secondary);
+  --text-tertiary: var(--text-muted);
+
+  --purple-deep: var(--accent-purple);
+  --arc-blue: var(--accent-blue);
+
+  --glow-purple: rgba(168, 85, 247, 0.15);
+  --glow-blue: rgba(59, 130, 246, 0.08);
+}
+
+.light {
+  --bg-primary: #F8F9FF;
+  --bg-surface: #FFFFFF;
+  --text-primary: #0A0A1A;
+  --text-secondary: #374151;
+  --text-muted: #6B7280;
+  --border: #E5E7EB;
+  --accent-purple: #7C3AED;
+  --accent-blue: #2563EB;
+  --card-bg: #FFFFFF;
+  --card-border: #E5E7EB;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+  --background: var(--bg-primary);
+  --foreground: var(--text-primary);
+  --card: rgba(255, 255, 255, 0.85);
+  --card-border: var(--card-border);
+  --muted: var(--text-muted);
+  --accent: var(--accent-purple);
+  --surface: rgba(255, 255, 255, 0.75);
+  --surface-elevated: rgba(255, 255, 255, 0.85);
+  
+  --border-subtle: var(--border);
+  --border-thin: var(--border);
+  
+  --text-primary: var(--text-primary);
+  --text-secondary: var(--text-secondary);
+  --text-tertiary: var(--text-muted);
+
+  --purple-deep: var(--accent-purple);
+  --arc-blue: var(--accent-blue);
+
+  --glow-purple: rgba(124, 58, 237, 0.03);
+  --glow-blue: rgba(37, 99, 235, 0.02);
 }
 
 @theme {
@@ -97,28 +176,58 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 .glass-card {
-  background: var(--color-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--color-card-border);
   border-radius: 16px;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+}
+
+/* Dark mode glass */
+.dark .glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* Light mode glass */
+.light .glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .glass-surface {
-  background: var(--color-surface);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
+}
+
+.dark .glass-surface {
+  background: var(--color-surface);
   border: 1px solid var(--color-border-subtle);
 }
 
+.light .glass-surface {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--border);
+}
+
 .glass-elevated {
-  background: var(--color-surface-elevated);
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
+}
+
+.dark .glass-elevated {
+  background: var(--color-surface-elevated);
   border: 1px solid var(--color-border-thin);
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+}
+
+.light .glass-elevated {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
 }
 
 /* ── Gradient Text ── */
@@ -164,11 +273,6 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 
 /* ── Grid Overlay ── */
 .grid-overlay {
-  background-image: linear-gradient(
-      rgba(255, 255, 255, 0.02) 1px,
-      transparent 1px
-    ),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
   -webkit-mask-image: radial-gradient(
@@ -176,6 +280,22 @@ h1, h2, h3, h4, h5, h6, .font-heading {
     black 0%,
     transparent 70%
   );
+}
+
+.dark .grid-overlay {
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.02) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+.light .grid-overlay {
+  background-image: linear-gradient(
+      rgba(0, 0, 0, 0.02) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
 }
 
 /* ── Animated Underline ── */
@@ -277,3 +397,66 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   background: rgba(168, 85, 247, 0.3);
   color: #f1f5f9;
 }
+
+/* ── Recharts Theme Adapters ── */
+.recharts-default-tooltip {
+  border-radius: 12px !important;
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+}
+
+.dark .recharts-default-tooltip {
+  background-color: #111118 !important;
+  border: 1px solid #1F2937 !important;
+  color: #FFFFFF !important;
+}
+
+.dark .recharts-tooltip-item,
+.dark .recharts-default-tooltip span {
+  color: #9CA3AF !important;
+}
+
+.dark .recharts-cartesian-grid-horizontal line,
+.dark .recharts-cartesian-grid-vertical line {
+  stroke: #1F2937 !important;
+  stroke-opacity: 0.8 !important;
+}
+
+.dark .recharts-cartesian-axis-line {
+  stroke: #1F2937 !important;
+}
+
+.dark .recharts-cartesian-axis-tick-value,
+.dark .recharts-text {
+  fill: #9CA3AF !important;
+  color: #9CA3AF !important;
+}
+
+.light .recharts-default-tooltip {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  color: #0A0A1A !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.light .recharts-tooltip-item,
+.light .recharts-default-tooltip span {
+  color: #374151 !important;
+}
+
+.light .recharts-cartesian-grid-horizontal line,
+.light .recharts-cartesian-grid-vertical line {
+  stroke: #E5E7EB !important;
+  stroke-opacity: 0.8 !important;
+}
+
+.light .recharts-cartesian-axis-line {
+  stroke: #E5E7EB !important;
+}
+
+.light .recharts-cartesian-axis-tick-value,
+.light .recharts-text {
+  fill: #374151 !important;
+  color: #374151 !important;
+}
+

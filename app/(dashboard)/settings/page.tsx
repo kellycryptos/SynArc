@@ -20,7 +20,7 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/providers/ThemeProvider";
 import { ethers, Contract, formatUnits } from "ethers";
 import { getResilientProvider } from "@/lib/rpc/config";
 
@@ -182,24 +182,34 @@ export default function SettingsPage() {
         {/* Preferences Toggle */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Theme Preference Toggle */}
-          <GlassCard className="p-6 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-3 border-b border-border-thin pb-4 mb-4">
-                {theme === "light" ? <Sun className="w-5 h-5 text-accent" /> : <Moon className="w-5 h-5 text-primary" />}
-                <h3 className="font-bold text-lg text-white">Theme Mode</h3>
+          <GlassCard className="p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div>
+                <h3 className="font-extrabold text-lg text-white">Appearance</h3>
+                <p className="text-sm text-muted">Choose your preferred theme</p>
               </div>
-              <p className="text-sm text-muted mb-6">
-                Toggle between premium Dark/Light visual presentation preferences.
-              </p>
-            </div>
-            <div className="flex items-center justify-between bg-surface-elevated p-2.5 rounded-xl border border-border-thin">
-              <span className="text-sm font-semibold text-white capitalize">{theme || "dark"} Mode</span>
-              <button
-                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                className="px-4 py-2 text-xs font-bold rounded-lg bg-primary hover:bg-primary/90 text-white shadow-lg transition-all cursor-pointer"
-              >
-                Switch to {theme === "light" ? "Dark" : "Light"}
-              </button>
+              <div className="flex gap-2 bg-surface-elevated p-1.5 rounded-xl border border-border-thin">
+                <button 
+                  onClick={() => setTheme('dark')}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    theme === 'dark' 
+                      ? 'bg-primary text-white shadow-md' 
+                      : 'text-muted hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  🌙 Dark
+                </button>
+                <button 
+                  onClick={() => setTheme('light')}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    theme === 'light' 
+                      ? 'bg-primary text-white shadow-md' 
+                      : 'text-muted hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  ☀️ Light
+                </button>
+              </div>
             </div>
           </GlassCard>
 

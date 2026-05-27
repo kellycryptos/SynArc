@@ -53,11 +53,7 @@ export default function RootLayout({
         className={`${inter.variable} ${sora.variable} antialiased min-h-screen flex flex-col relative bg-background text-foreground`}
       >
         <Web3Provider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            disableTransitionOnChange
-          >
+          <ThemeProvider>
           {/* Ambient page background */}
           <div className="fixed inset-0 pointer-events-none z-0">
             <div className="absolute inset-0 bg-background" />
