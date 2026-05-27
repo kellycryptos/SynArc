@@ -21,9 +21,9 @@
 
 ## 1. Introduction
 
-SynArc is governance infrastructure for the agentic economy — enabling DAOs, AI agents, and autonomous systems to coordinate, vote, and manage USDC-native treasuries on Arc. The first multi-DAO governance layer built natively on Arc with Circle’s full stablecoin stack.
+SynArc is governance infrastructure for the agentic economy enabling DAOs, AI agents, and autonomous systems to coordinate, vote, and manage USDC-native treasuries on Arc. The first multi-DAO governance layer built natively on Arc with Circle’s full stablecoin stack.
 
-Designed for institutional-grade decentralized organizations, SynArc provides the full governance lifecycle stack: from on-chain proposal creation and off-chain gasless voting to treasury execution and confidential coordination — all denominated natively in USDC.
+Designed for institutional-grade decentralized organizations, SynArc provides the full governance lifecycle stack: from on-chain proposal creation and off-chain gasless voting to treasury execution and confidential coordination  all denominated natively in USDC.
 
 SynArc is built for the **agentic economy**: a world where DAOs, autonomous agents, and programmable organizations coordinate at scale without compromising operational security or member privacy.
 
