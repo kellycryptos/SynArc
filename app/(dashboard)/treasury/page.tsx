@@ -5,9 +5,11 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { useTreasury } from "@/hooks/useTreasury";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useEURCBalance } from "@/hooks/useEURCBalance";
+import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets } from "@privy-io/react-auth";
 import { ethers, Contract, parseUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, ERC20ABI } from "@/lib/governance/contracts";
+import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart as RechartsPieChart, Pie, Cell, Legend
@@ -29,6 +31,7 @@ export default function TreasuryPage() {
   const { balance: walletUSDC, refetch: refetchWalletUSDC } = useUSDCBalance();
   const { balance: walletEURC, refetch: refetchWalletEURC } = useEURCBalance();
   const { wallets } = useWallets();
+  const { isAuthenticated, login } = useAuth();
 
   const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
 
@@ -190,7 +193,10 @@ export default function TreasuryPage() {
           
           <div className="flex items-center gap-4">
             <button 
-              onClick={() => setModalOpen(true)}
+              onClick={() => {
+                if (!isAuthenticated) { login(); return; }
+                setModalOpen(true);
+              }}
               className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer"
             >
               <PlusCircle className="w-4.5 h-4.5" />

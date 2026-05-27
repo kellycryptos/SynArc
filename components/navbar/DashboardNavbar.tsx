@@ -113,13 +113,19 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
             </button>
           </div>
         ) : (
-          <button
-            onClick={login}
-            className="group px-4 py-1.5 rounded-full bg-primary hover:bg-primary/90 text-white font-medium text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] flex items-center gap-2 cursor-pointer"
-          >
-            <Wallet className="w-4 h-4 group-hover:scale-110 transition-transform" />
-            Connect
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-elevated border border-border-thin text-xs font-medium text-muted">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+              Public Explorer
+            </span>
+            <button
+              onClick={login}
+              className="group px-4 py-1.5 rounded-full bg-primary hover:bg-primary/90 text-white font-medium text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] flex items-center gap-2 cursor-pointer"
+            >
+              <Wallet className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              Connect to Participate
+            </button>
+          </div>
         )}
 
         <button className="relative p-2 text-muted hover:text-foreground transition-colors rounded-full hover:bg-surface-elevated border border-transparent hover:border-border-thin cursor-pointer">

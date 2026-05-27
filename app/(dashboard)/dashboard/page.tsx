@@ -2,25 +2,15 @@ import { OverviewCards } from "@/components/dashboard/OverviewCards";
 import { WalletFaucetCard } from "@/components/dashboard/WalletFaucetCard";
 import { GovernanceAnalytics } from "@/components/analytics/GovernanceAnalytics";
 import { ProposalFeed } from "@/components/proposals/ProposalFeed";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardOverview() {
   return (
     <div className="space-y-8 animate-fade-in-up">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold font-heading tracking-tight">Overview</h1>
-          <p className="text-muted">Monitor governance activity and treasury health across the SynArc ecosystem.</p>
-        </div>
-        <Link 
-          href="/proposals/create" 
-          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary/90 transition-colors shadow-[0_0_15px_rgba(124,58,237,0.2)]"
-        >
-          Create Proposal
-        </Link>
-      </div>
+      {/* Auth-aware header: banner + Create Proposal button */}
+      <DashboardHeader />
 
       {/* Metrics */}
       <OverviewCards />
@@ -49,4 +39,3 @@ export default function DashboardOverview() {
     </div>
   );
 }
-

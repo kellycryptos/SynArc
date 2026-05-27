@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Sidebar } from "../sidebar/Sidebar";
 import { DashboardNavbar } from "../navbar/DashboardNavbar";
 import { WalletGuard } from "../auth/WalletGuard";
@@ -18,12 +18,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isArcTestnet, isUnsupported } = useArcNetwork();
   const { switchToArc, isSwitching } = useSwitchArcNetwork();
 
-  // Automatically request network switch when connecting if wrong network
-  useEffect(() => {
-    if ((isConnected || isAuthenticated) && !isArcTestnet && switchToArc) {
-      switchToArc();
-    }
-  }, [isConnected, isAuthenticated, isArcTestnet, switchToArc]);
+  // Network switch is handled at transaction time (vote, deposit, create proposal).
+  // We no longer auto-switch on page load to avoid disrupting public browsing.
 
   return (
     <div className="flex min-h-screen bg-background text-foreground relative z-10">

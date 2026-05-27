@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
+import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
 import Link from "next/link";
 import { 
   FileText, 
@@ -34,6 +35,9 @@ export default function ProposalsPage() {
   return (
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Non-blocking auth prompt */}
+        <AuthPromptBanner action="vote or create proposals" />
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
