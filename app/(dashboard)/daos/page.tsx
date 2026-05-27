@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { DAO_REGISTRY, DAOInfo } from "@/data/daos";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { Grid, Users, Shield, ArrowRight, Award, Plus, X, Globe, MessageSquare, Send, CheckCircle2, Clock } from "lucide-react";
+import { Grid, Users, Shield, ArrowRight, Award, Plus, X, Globe, MessageSquare, Send, CheckCircle2, Clock, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { AnimatePresence } from "framer-motion";
@@ -29,12 +29,18 @@ export default function DAOsPage() {
   const [synarcMembers, setSynarcMembers] = useState<number | null>(null);
   const [synarcTreasury, setSynarcTreasury] = useState<number | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
-  // Sort registry: SynArc featured first
+  // Sort registry: Featured pinning first
   const sortedDAOs = [...DAO_REGISTRY].sort((a, b) => {
-    if (a.id === "synarc") return -1;
-    if (b.id === "synarc") return 1;
+    if (a.featured && !b.featured) return -1;
+    if (!a.featured && b.featured) return 1;
     return 0;
+  });
+
+  const filteredDAOs = sortedDAOs.filter((dao) => {
+    if (selectedCategory === "All") return true;
+    return dao.category === selectedCategory;
   });
 
   // Fetch live metrics for SynArc DAO from smart contracts
@@ -190,14 +196,30 @@ export default function DAOsPage() {
           className="md:self-start shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer text-sm"
         >
           <Plus className="w-4 h-4" />
-          Apply for Your DAO
         </button>
+      </div>
+
+      {/* Category Filter */}
+      <div className="flex flex-wrap gap-2 pb-2 border-b border-border-thin">
+        {["All", "Governance", "DEX", "Borrow/Lend", "Infrastructure", "Yield"].map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+              selectedCategory === cat
+                ? "bg-primary text-white shadow-[0_0_15px_rgba(124,58,237,0.25)]"
+                : "bg-surface-elevated/40 border border-border-thin text-muted hover:text-white hover:bg-surface-elevated/60"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
 
       {/* Discovery Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {sortedDAOs.map((dao) => {
-          const isFeatured = dao.id === "synarc";
+        {filteredDAOs.map((dao) => {
+          const isFeatured = dao.featured || dao.id === "synarc";
           const logoInitials = dao.name.slice(0, 2).toUpperCase();
 
           // Use live contract read value for SynArc, otherwise mock registry data
@@ -249,9 +271,15 @@ export default function DAOsPage() {
                     <span className="px-1.5 py-0.2 rounded bg-white/5 text-[9px] font-bold text-muted uppercase">
                       {dao.category}
                     </span>
-                    <span className="text-[10px] text-primary/70 font-mono tracking-wider break-all">
-                      {dao.governorAddress.slice(0, 6)}...{dao.governorAddress.slice(-4)}
-                    </span>
+                    {dao.governorAddress ? (
+                      <span className="text-[10px] text-primary/70 font-mono tracking-wider break-all">
+                        {dao.governorAddress.slice(0, 6)}...{dao.governorAddress.slice(-4)}
+                      </span>
+                    ) : (
+                      <span className="text-[9px] text-text-tertiary font-bold uppercase tracking-wider">
+                        Ecosystem Partner
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -291,21 +319,38 @@ export default function DAOsPage() {
                 </div>
               </div>
 
-              {/* Enter DAO */}
-              <Link
-                href={`/daos/${dao.id}`}
-                className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all text-sm group ${
-                  isFeatured
-                    ? "bg-primary/10 border border-primary/20 hover:bg-primary/20 text-white"
-                    : "bg-surface-elevated border border-border-thin hover:border-white/10 text-white"
-                }`}
-              >
-                Enter DAO 
-                <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
-              </Link>
+              {/* Enter DAO / Visit Website */}
+              {!dao.governorAddress && dao.website ? (
+                <a
+                  href={dao.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 bg-surface-elevated border border-border-thin hover:border-white/10 text-white transition-all text-sm group cursor-pointer"
+                >
+                  Visit Website
+                  <ExternalLink className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
+                </a>
+              ) : (
+                <Link
+                  href={`/daos/${dao.id}`}
+                  className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all text-sm group ${
+                    isFeatured
+                      ? "bg-primary/10 border border-primary/20 hover:bg-primary/20 text-white"
+                      : "bg-surface-elevated border border-border-thin hover:border-white/10 text-white"
+                  }`}
+                >
+                  Enter DAO 
+                  <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
+                </Link>
+              )}
             </GlassCard>
           );
         })}
+      </div>
+
+      {/* Disclaimer */}
+      <div className="text-center text-xs text-text-tertiary font-semibold pt-4">
+        *Partner data is indicative
       </div>
 
       {/* Application Form Modal */}

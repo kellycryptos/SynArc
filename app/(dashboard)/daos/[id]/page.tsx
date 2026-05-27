@@ -109,7 +109,7 @@ export default function DAODetailsPage() {
 
   // 1. Initialize store for this specific DAO
   useEffect(() => {
-    if (dao) {
+    if (dao && dao.governorAddress && dao.treasuryAddress && dao.tokenAddress) {
       initializeStore({
         id: dao.id,
         governorAddress: dao.governorAddress,
@@ -121,7 +121,7 @@ export default function DAODetailsPage() {
 
   // 2. Fetch Members dynamically using this DAO's tokenAddress
   const fetchMembers = useCallback(async () => {
-    if (!dao) return;
+    if (!dao || !dao.tokenAddress) return;
     try {
       setMembersLoading(true);
       setMembersError(null);
@@ -347,11 +347,29 @@ export default function DAODetailsPage() {
     }
   };
 
-  if (!dao) {
+  if (!dao || !dao.governorAddress) {
     return (
-      <div className="pt-24 min-h-screen text-center flex flex-col justify-center items-center gap-4">
-        <h3 className="font-extrabold text-white text-2xl">DAO Not Found</h3>
-        <Link href="/daos" className="flex items-center gap-2 text-primary hover:underline">
+      <div className="pt-24 min-h-screen text-center flex flex-col justify-center items-center gap-6 px-4">
+        <div className="max-w-md space-y-4 bg-surface-elevated/40 border border-border-thin p-8 rounded-2xl backdrop-blur-sm">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-lg font-extrabold text-white bg-gradient-to-br from-purple-deep via-primary/30 to-arc-blue border border-primary/20 shadow-md mx-auto mb-4">
+            {dao?.name.slice(0, 2).toUpperCase()}
+          </div>
+          <h3 className="font-extrabold text-white text-2xl">Ecosystem Partner Profile</h3>
+          <p className="text-muted text-sm leading-relaxed">
+            {dao?.name} is a featured ecosystem partner. On-chain governance dashboard and operations are managed directly on their native platform.
+          </p>
+          {dao?.website && (
+            <a
+              href={dao.website}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer mt-4"
+            >
+              Visit {dao.name} Website <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
+        </div>
+        <Link href="/daos" className="flex items-center gap-2 text-xs font-bold text-primary hover:underline mt-4">
           <ArrowLeft className="w-4 h-4" />
           Back to DAO Registry
         </Link>
@@ -389,9 +407,9 @@ export default function DAODetailsPage() {
           <div className="flex items-center justify-between gap-4">
             <span>Governor:</span>
             <div className="flex items-center gap-1.5 text-white font-bold">
-              <span>{dao.governorAddress.slice(0, 8)}...{dao.governorAddress.slice(-6)}</span>
+              <span>{dao.governorAddress ? `${dao.governorAddress.slice(0, 8)}...${dao.governorAddress.slice(-6)}` : "None"}</span>
               <button 
-                onClick={() => copyToClipboard(dao.governorAddress, "gov")} 
+                onClick={() => copyToClipboard(dao.governorAddress || "", "gov")} 
                 className="hover:text-primary transition-colors cursor-pointer"
               >
                 {copiedAddress === "gov" ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3" />}
@@ -401,9 +419,9 @@ export default function DAODetailsPage() {
           <div className="flex items-center justify-between gap-4">
             <span>Treasury:</span>
             <div className="flex items-center gap-1.5 text-white font-bold">
-              <span>{dao.treasuryAddress.slice(0, 8)}...{dao.treasuryAddress.slice(-6)}</span>
+              <span>{dao.treasuryAddress ? `${dao.treasuryAddress.slice(0, 8)}...${dao.treasuryAddress.slice(-6)}` : "None"}</span>
               <button 
-                onClick={() => copyToClipboard(dao.treasuryAddress, "treas")} 
+                onClick={() => copyToClipboard(dao.treasuryAddress || "", "treas")} 
                 className="hover:text-primary transition-colors cursor-pointer"
               >
                 {copiedAddress === "treas" ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3" />}
