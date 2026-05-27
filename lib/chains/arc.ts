@@ -1,5 +1,10 @@
-import { defineChain } from "viem";
+import { defineChain, fallback, http } from "viem";
 import { getArcRpcUrls } from "@/lib/rpc/config";
+
+export const rpcConfig = fallback([
+  http(process.env.NEXT_PUBLIC_ALCHEMY_ARC_URL),
+  http('https://testnet.arcscan.app/rpc'), // Public fallback node
+])
 
 /**
  * Arc Testnet Chain Configuration

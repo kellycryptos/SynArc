@@ -189,6 +189,7 @@ export function useCreateProposal() {
       abi: GovernorABI,
       functionName: 'propose',
       args: [targets, values, calldatas, description],
+      gas: 500000n, // Manual override fallback prevent estimateGas lockups
     });
   };
 

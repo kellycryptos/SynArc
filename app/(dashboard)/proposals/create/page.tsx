@@ -4,6 +4,7 @@ import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useToken } from "@/hooks/useToken";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Send, AlertCircle, Loader2 } from "lucide-react";
@@ -15,9 +16,13 @@ export default function CreateProposalPage() {
   const { walletAddress, isAuthenticated, login } = useAuth();
   const { wallets } = useWallets();
   const { submitProposal } = useGovernanceStore();
+  const { votingPower, loading: tokenLoading } = useToken(walletAddress);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const proposalThreshold = 1000;
+  const hasEnoughBalance = votingPower >= proposalThreshold;
 
   const [formData, setFormData] = useState({
     title: "",
@@ -32,6 +37,11 @@ export default function CreateProposalPage() {
     e.preventDefault();
     if (!isAuthenticated || !walletAddress) {
       login();
+      return;
+    }
+
+    if (votingPower < proposalThreshold) {
+      setError(`You require a minimum of ${proposalThreshold.toLocaleString()} tokens to submit a proposal.`);
       return;
     }
 
@@ -96,6 +106,13 @@ export default function CreateProposalPage() {
               <div className="p-4 bg-danger/10 border border-danger/20 rounded-xl flex items-center gap-3 text-sm text-danger">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 {error}
+              </div>
+            )}
+
+            {!tokenLoading && !hasEnoughBalance && (
+              <div className="p-4 bg-warning/10 border border-warning/20 rounded-xl flex items-center gap-3 text-sm text-warning">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>You require a minimum of {proposalThreshold.toLocaleString()} tokens to submit a proposal. Your current balance is {votingPower.toLocaleString()} tokens.</span>
               </div>
             )}
 
@@ -186,7 +203,7 @@ export default function CreateProposalPage() {
             <div className="pt-6 border-t border-border-subtle flex justify-end">
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || (!tokenLoading && !hasEnoughBalance)}
                 className="px-6 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isSubmitting ? (
