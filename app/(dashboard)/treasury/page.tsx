@@ -361,7 +361,7 @@ export default function TreasuryPage() {
                       </td>
                       <td className="py-4 text-right pr-2">
                         <a 
-                          href={`https://explorer.testnet.arc.network/tx/${tx.txHash}`} 
+                          href={`https://testnet.arcscan.app/tx/${tx.txHash}`} 
                           target="_blank" 
                           rel="noreferrer" 
                           className="text-primary hover:underline font-mono text-xs"
@@ -487,7 +487,7 @@ export default function TreasuryPage() {
                 </div>
                 {txHash && (
                   <a
-                    href={`https://explorer.testnet.arc.network/tx/${txHash}`}
+                    href={`https://testnet.arcscan.app/tx/${txHash}`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-block text-xs font-semibold text-primary hover:underline font-mono"

@@ -458,7 +458,7 @@ export default function DocsPage() {
                         {copiedContract === contract.id ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
                       </button>
                       <a
-                        href={`https://explorer.testnet.arc.network/address/${contract.address}`}
+                        href={`https://testnet.arcscan.app/address/${contract.address}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-2 rounded-lg bg-surface border border-border-thin text-muted hover:text-white transition-colors"
