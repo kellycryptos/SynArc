@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DAO_REGISTRY, DAOInfo } from "@/data/daos";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { Grid, Users, Shield, ArrowRight, Award, Plus, X, Globe, MessageSquare, Send, CheckCircle2 } from "lucide-react";
+import { Grid, Users, Shield, ArrowRight, Award, Plus, X, Globe, MessageSquare, Send, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { AnimatePresence } from "framer-motion";
+import { ethers, Contract, formatUnits } from "ethers";
+import { getResilientProvider } from "@/lib/rpc/config";
 
 export default function DAOsPage() {
   const { isAuthenticated } = useAuth();
@@ -23,12 +25,96 @@ export default function DAOsPage() {
   const [submitSuccess, setSubmitSuccess] = useState<boolean | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Live contract read states for SynArc DAO
+  const [synarcMembers, setSynarcMembers] = useState<number | null>(null);
+  const [synarcTreasury, setSynarcTreasury] = useState<number | null>(null);
+  const [metricsLoading, setMetricsLoading] = useState(true);
+
   // Sort registry: SynArc featured first
   const sortedDAOs = [...DAO_REGISTRY].sort((a, b) => {
     if (a.id === "synarc") return -1;
     if (b.id === "synarc") return 1;
     return 0;
   });
+
+  // Fetch live metrics for SynArc DAO from smart contracts
+  useEffect(() => {
+    async function fetchSynArcLiveMetrics() {
+      try {
+        setMetricsLoading(true);
+        const provider = await getResilientProvider();
+        
+        // 1. Fetch live treasury balance
+        const treasuryAddress = "0x8Ab21363cB0319548B051f129e477393908be7c1";
+        const TREASURY_ABI = [
+          "function usdcBalance() external view returns (uint256)",
+          "function eurcBalance() external view returns (uint256)"
+        ];
+        const treasuryContract = new Contract(treasuryAddress, TREASURY_ABI, provider);
+        const [usdcBal, eurcBal] = await Promise.all([
+          treasuryContract.usdcBalance().catch(() => 0n),
+          treasuryContract.eurcBalance().catch(() => 0n)
+        ]);
+        const usdcVal = Number(formatUnits(usdcBal, 6));
+        const eurcVal = Number(formatUnits(eurcBal, 6));
+        const combinedTreasury = usdcVal + (eurcVal * 1.08); // combined USD value
+        setSynarcTreasury(combinedTreasury);
+
+        // 2. Fetch live members count by scraping token Transfer logs
+        const tokenAddress = "0x637cA7788aBC956832F389A7BB895D5249FE757B";
+        const ERC20_ABI = [
+          "function balanceOf(address account) external view returns (uint256)"
+        ];
+        const tokenContract = new Contract(tokenAddress, ERC20_ABI, provider);
+        
+        const latestBlock = await provider.getBlockNumber();
+        const chunkSize = 5000;
+        const events = [];
+        
+        for (let i = 0; i <= latestBlock; i += chunkSize) {
+          const toBlock = Math.min(i + chunkSize - 1, latestBlock);
+          const chunk = await provider.getLogs({
+            address: tokenAddress,
+            topics: [ethers.id("Transfer(address,address,uint256)")],
+            fromBlock: i,
+            toBlock: toBlock
+          }).catch(() => []);
+          events.push(...chunk);
+        }
+
+        const holders = new Set<string>();
+        events.forEach(log => {
+          if (log.topics && log.topics.length >= 3) {
+            const from = ethers.getAddress("0x" + log.topics[1].substring(26));
+            const to = ethers.getAddress("0x" + log.topics[2].substring(26));
+            if (to && to !== ethers.ZeroAddress) holders.add(to);
+            if (from && from !== ethers.ZeroAddress) holders.add(from);
+          }
+        });
+
+        // Filter active holders
+        let activeHoldersCount = 0;
+        await Promise.all(
+          Array.from(holders).map(async (holder) => {
+            try {
+              const bal = await tokenContract.balanceOf(holder);
+              if (bal > 0n) {
+                activeHoldersCount++;
+              }
+            } catch (err) {}
+          })
+        );
+        
+        setSynarcMembers(activeHoldersCount > 0 ? activeHoldersCount : holders.size);
+      } catch (err) {
+        console.error("Failed to fetch live contract reads for SynArc DAO registry", err);
+      } finally {
+        setMetricsLoading(false);
+      }
+    }
+
+    fetchSynArcLiveMetrics();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -114,6 +200,10 @@ export default function DAOsPage() {
           const isFeatured = dao.id === "synarc";
           const logoInitials = dao.name.slice(0, 2).toUpperCase();
 
+          // Use live contract read value for SynArc, otherwise mock registry data
+          const displayMembers = (isFeatured && synarcMembers !== null) ? synarcMembers : dao.members;
+          const displayTreasury = (isFeatured && synarcTreasury !== null) ? synarcTreasury : dao.treasury;
+
           return (
             <GlassCard
               key={dao.id}
@@ -131,23 +221,38 @@ export default function DAOsPage() {
 
               {/* Logo / Details */}
               <div className="flex items-center gap-4 mb-6">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-sm font-extrabold text-white shadow-md relative overflow-hidden bg-gradient-to-br ${
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-md relative overflow-hidden bg-gradient-to-br shrink-0 ${
                   isFeatured 
                     ? "from-purple-deep to-primary/40" 
                     : "from-white/10 to-white/5"
                 }`}>
-                  {logoInitials}
+                  {dao.logo ? (
+                    <img src={dao.logo} alt={dao.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-sm font-extrabold text-white">{logoInitials}</span>
+                  )}
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-extrabold text-white text-lg">{dao.name}</h3>
-                    <span className="px-2 py-0.5 rounded bg-white/5 text-[9px] font-bold text-muted uppercase">
+                    {dao.verified ? (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-success/15 border border-success/30 text-[9px] font-bold text-success">
+                        ✅ Verified
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-[9px] font-bold text-amber-400">
+                        ⏳ Pending
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="px-1.5 py-0.2 rounded bg-white/5 text-[9px] font-bold text-muted uppercase">
                       {dao.category}
                     </span>
+                    <span className="text-[10px] text-primary/70 font-mono tracking-wider break-all">
+                      {dao.governorAddress.slice(0, 6)}...{dao.governorAddress.slice(-4)}
+                    </span>
                   </div>
-                  <span className="text-[10px] text-primary/70 font-mono tracking-wider break-all block mt-0.5">
-                    {dao.governorAddress.slice(0, 6)}...{dao.governorAddress.slice(-4)}
-                  </span>
                 </div>
               </div>
 
@@ -164,7 +269,11 @@ export default function DAOsPage() {
                     Members
                   </span>
                   <span className="text-white font-mono font-extrabold text-base">
-                    {dao.members?.toLocaleString() || "0"}
+                    {metricsLoading && isFeatured ? (
+                      <span className="block w-12 h-5 bg-white/5 animate-pulse rounded" />
+                    ) : (
+                      displayMembers?.toLocaleString() || "0"
+                    )}
                   </span>
                 </div>
                 <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl flex flex-col gap-1.5">
@@ -173,7 +282,11 @@ export default function DAOsPage() {
                     Treasury
                   </span>
                   <span className="text-white font-mono font-extrabold text-base">
-                    ${dao.treasury?.toLocaleString() || "0"}
+                    {metricsLoading && isFeatured ? (
+                      <span className="block w-16 h-5 bg-white/5 animate-pulse rounded" />
+                    ) : (
+                      `$${displayTreasury?.toLocaleString(undefined, { maximumFractionDigits: 0 }) || "0"}`
+                    )}
                   </span>
                 </div>
               </div>

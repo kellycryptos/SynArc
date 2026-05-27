@@ -10,6 +10,7 @@ export interface DAOInfo {
   category: string;
   members?: number;
   treasury?: number;
+  verified: boolean; // verified badge status
 }
 
 export const DAO_REGISTRY: DAOInfo[] = [
@@ -25,6 +26,7 @@ export const DAO_REGISTRY: DAOInfo[] = [
     category: 'Infrastructure',
     members: 12450,
     treasury: 2450000,
+    verified: true,
   },
   {
     id: 'canteen',
@@ -38,6 +40,7 @@ export const DAO_REGISTRY: DAOInfo[] = [
     category: 'DeFi',
     members: 512,
     treasury: 750000,
+    verified: false,
   },
   {
     id: 'arclabs',
@@ -51,5 +54,6 @@ export const DAO_REGISTRY: DAOInfo[] = [
     category: 'Ecosystem',
     members: 245,
     treasury: 1200000,
+    verified: false,
   }
 ];
