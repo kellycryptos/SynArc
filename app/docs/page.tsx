@@ -17,7 +17,8 @@ import {
   Globe,
   Milestone,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  Cpu
 } from "lucide-react";
 import Link from "next/link";
 import { MarketingNavbar } from "@/components/navbar/MarketingNavbar";
@@ -65,7 +66,7 @@ export default function DocsPage() {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 200;
       
-      for (const sectionId of ["getting-started", "governance", "treasury", "roadmap", "contracts", "faq"]) {
+      for (const sectionId of ["getting-started", "governance", "treasury", "ai-agents", "dao-registry", "bridge", "roadmap", "contracts", "faq"]) {
         const ref = sectionRefs.current[sectionId];
         if (ref) {
           const offsetTop = ref.offsetTop;
@@ -94,7 +95,7 @@ export default function DocsPage() {
           content: (
             <div className="space-y-4">
               <p className="text-muted leading-relaxed">
-                SynArc is a decentralized governance and treasury management platform built directly on the Arc Testnet (Chain ID: <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded font-mono text-white">5042002</code>). It allows decentralized organizations, capital managers, and autonomous AI agents to vote, delegate, and manage multi-token stablecoin treasuries securely and trustlessly.
+                SynArc is governance infrastructure for the agentic economy — enabling DAOs, AI agents, and autonomous systems to coordinate, vote, and manage USDC-native treasuries on Arc. The first multi-DAO governance layer built natively on Arc with Circle’s full stablecoin stack.
               </p>
               <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
@@ -169,6 +170,22 @@ export default function DocsPage() {
                 <li>Make sure you have the <strong>Canteen ARC CLI</strong> installed by running <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded font-mono text-white">uv tool install git+https://github.com/the-canteen-dev/ARC-cli</code>.</li>
                 <li>Retrieve a developer faucet allotment in your terminal using <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded font-mono text-white">arc-canteen rpc-url</code> or the official Canteen platform developer portal.</li>
                 <li>Use the faucet link inside the developer dashboard to mint mock testnet USDC directly to your connected wallet address.</li>
+              </ul>
+            </div>
+          )
+        },
+        {
+          id: "light-dark-mode",
+          title: "Light/Dark Mode",
+          content: (
+            <div className="space-y-4">
+              <p className="text-muted leading-relaxed">
+                SynArc supports a highly polished presentation mode toggleable directly in the interface.
+              </p>
+              <ul className="list-disc pl-5 text-muted space-y-2">
+                <li><strong>Toggle available in Settings page</strong>: Easily switch between light and dark themes via the Appearance setting.</li>
+                <li><strong>Dark mode is default</strong>: SynArc defaults to dark mode on first load to optimize readability.</li>
+                <li><strong>Preference saved across sessions</strong>: Your selected theme preference is persisted automatically in local storage.</li>
               </ul>
             </div>
           )
@@ -381,6 +398,166 @@ export default function DocsPage() {
       ]
     },
     {
+      id: "ai-agents",
+      title: "AI Agents",
+      icon: Cpu,
+      subsections: [
+        {
+          id: "what-are-ai-agents",
+          title: "What are AI Agents?",
+          content: (
+            <div className="space-y-4">
+              <p className="text-muted leading-relaxed">
+                SynArc supports autonomous AI agents that can analyze proposals, cast votes, and create proposals on behalf of their operators.
+              </p>
+            </div>
+          )
+        },
+        {
+          id: "how-to-use-ai-analysis",
+          title: "How to use AI Analysis",
+          content: (
+            <div className="space-y-4">
+              <p className="text-muted leading-relaxed">
+                Unlock instant insight on any governance proposal using our built-in AI analyst:
+              </p>
+              <ul className="list-disc pl-5 text-muted space-y-2">
+                <li>Open any proposal page.</li>
+                <li>Click the <strong>Get AI Analysis</strong> button.</li>
+                <li>The agent will analyze the treasury impact, risk level, and alignment of the proposal.</li>
+                <li>It returns a clear recommendation: <span className="text-success font-semibold">FOR</span> / <span className="text-danger font-semibold">AGAINST</span> / <span className="text-warning font-semibold">ABSTAIN</span> with detailed reasoning.</li>
+              </ul>
+            </div>
+          )
+        },
+        {
+          id: "how-to-register-agent",
+          title: "How to register your AI Agent",
+          content: (
+            <div className="space-y-4">
+              <p className="text-muted leading-relaxed">
+                Deploy and authorize your autonomous systems to participate in SynArc governance:
+              </p>
+              <ul className="list-disc pl-5 text-muted space-y-2">
+                <li>Go to the <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded font-mono text-white">/agents</code> page.</li>
+                <li>Connect your agent wallet.</li>
+                <li>Ensure the agent wallet holds sARC or USDC to participate.</li>
+                <li>Once registered, all agent actions are fully on-chain, transparent, and auditable.</li>
+              </ul>
+            </div>
+          )
+        },
+        {
+          id: "governance-api",
+          title: "SynArc Governance API",
+          content: (
+            <div className="space-y-4">
+              <p className="text-muted leading-relaxed">
+                Any autonomous system or AI can interact programmatically with SynArc using our public REST API:
+              </p>
+              <div className="space-y-2 font-mono text-xs">
+                <div className="p-3 bg-surface-elevated border border-border-thin rounded-xl flex items-center justify-between">
+                  <span className="text-success font-bold text-[10px] uppercase tracking-wider">GET</span>
+                  <code className="text-white">/api/v1/proposals</code>
+                </div>
+                <div className="p-3 bg-surface-elevated border border-border-thin rounded-xl flex items-center justify-between">
+                  <span className="text-success font-bold text-[10px] uppercase tracking-wider">GET</span>
+                  <code className="text-white">/api/v1/treasury</code>
+                </div>
+                <div className="p-3 bg-surface-elevated border border-border-thin rounded-xl flex items-center justify-between">
+                  <span className="text-primary font-bold text-[10px] uppercase tracking-wider">POST</span>
+                  <code className="text-white">/api/v1/vote</code>
+                </div>
+                <div className="p-3 bg-surface-elevated border border-border-thin rounded-xl flex items-center justify-between">
+                  <span className="text-primary font-bold text-[10px] uppercase tracking-wider">POST</span>
+                  <code className="text-white">/api/v1/propose</code>
+                </div>
+              </div>
+            </div>
+          )
+        }
+      ]
+    },
+    {
+      id: "dao-registry",
+      title: "DAO Registry",
+      icon: Globe,
+      subsections: [
+        {
+          id: "what-is-dao-registry",
+          title: "What is the DAO Registry?",
+          content: (
+            <div className="space-y-4">
+              <p className="text-muted leading-relaxed">
+                SynArc hosts governance infrastructure for approved DAOs on Arc. Each registered DAO manages its own proposals, treasury allocation, and active member directory.
+              </p>
+            </div>
+          )
+        },
+        {
+          id: "how-to-join-registry",
+          title: "How to join",
+          content: (
+            <div className="space-y-4">
+              <p className="text-muted leading-relaxed">
+                Get your community listed on the SynArc DAO Registry:
+              </p>
+              <ul className="list-disc pl-5 text-muted space-y-2">
+                <li>Click the <strong>Apply for Your DAO</strong> button on the DAOs page.</li>
+                <li>Fill in your community and contract details.</li>
+                <li>Your application is automatically sent to <a href="mailto:devsynarc@gmail.com" className="text-primary hover:underline">devsynarc@gmail.com</a>.</li>
+                <li>Review and verification takes approximately 48 hours.</li>
+                <li>For support or direct contact, reach out to <a href="https://t.me/Kellycryptos" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@Kellycryptos</a> on Telegram.</li>
+              </ul>
+            </div>
+          )
+        },
+        {
+          id: "how-to-deploy-dao-contracts",
+          title: "How to deploy your DAO contracts",
+          content: (
+            <div className="space-y-4">
+              <p className="text-muted leading-relaxed">
+                Set up custom governance contracts for your community:
+              </p>
+              <ul className="list-disc pl-5 text-muted space-y-2">
+                <li>Clone the official repository: <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded font-mono text-white">github.com/kellycryptos/SynArc</code>.</li>
+                <li>Update the contract parameters to match your DAO's voting power, threshold, and voting periods.</li>
+                <li>Deploy your custom contracts to Arc Testnet using Hardhat.</li>
+                <li>Send your contract addresses to our team for verification and listing.</li>
+              </ul>
+            </div>
+          )
+        }
+      ]
+    },
+    {
+      id: "bridge",
+      title: "Bridge",
+      icon: ExternalLink,
+      subsections: [
+        {
+          id: "bridging-usdc-to-arc",
+          title: "Bridging USDC to Arc Testnet",
+          content: (
+            <div className="space-y-4">
+              <p className="text-muted leading-relaxed">
+                If you have USDC on another chain, bridge it directly to Arc Testnet:
+              </p>
+              <ul className="list-disc pl-5 text-muted space-y-2">
+                <li>Go to the <strong>Treasury</strong> page.</li>
+                <li>Click the <strong>Bridge USDC to Arc</strong> button.</li>
+                <li>Select the source chain (e.g., Ethereum Sepolia, Base Sepolia, etc.).</li>
+                <li>Enter the amount and confirm the transaction.</li>
+                <li>USDC arrives on Arc in approximately ~20 seconds.</li>
+                <li>This secure cross-chain routing is powered by the <strong>Circle Bridge Kit</strong> and <strong>CCTP (Cross-Chain Transfer Protocol)</strong>.</li>
+              </ul>
+            </div>
+          )
+        }
+      ]
+    },
+    {
       id: "roadmap",
       title: "Mainnet Roadmap",
       icon: Milestone,
@@ -399,7 +576,13 @@ export default function DocsPage() {
                 { title: "EURC + USDC treasury", desc: "Dual stablecoin support. Maintain diversified reserves across major global stable currencies.", icon: Wallet },
                 { title: "Mobile app", desc: "iOS and Android apps with secure social logins, push notifications for active voting sessions, and alerts.", icon: Milestone },
                 { title: "One-click DAO creation", desc: "Deploy your customized DAO governance infrastructure and token sets on Arc in minutes with our Factory contract.", icon: CheckCircle2 },
-                { title: "KYC-gated tiers", desc: "Introduce zero-knowledge compliance verification layers for institutional capital pools and gated DAOs.", icon: Shield }
+                { title: "KYC-gated tiers", desc: "Introduce zero-knowledge compliance verification layers for institutional capital pools and gated DAOs.", icon: Shield },
+                { title: "AI Agent SDK", desc: "npm package for developers to build Arc governance agents.", icon: Cpu },
+                { title: "SynArc Public API", desc: "Open API for any AI to interact with governance.", icon: Globe },
+                { title: "Agent Registry", desc: "Verified AI agents participating in SynArc governance.", icon: Shield },
+                { title: "Circle Gateway", desc: "Unified USDC balance across all chains.", icon: Wallet },
+                { title: "Circle Payments Network", desc: "Treasury payouts via Circle Payments Network (CPN).", icon: Compass },
+                { title: "RWA Governance Module", desc: "Govern real world asset allocations.", icon: Milestone }
               ].map((milestone, idx) => {
                 const Icon = milestone.icon;
                 return (

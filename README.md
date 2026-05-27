@@ -4,7 +4,7 @@
 
 # SynArc DAO
 
-**A governance platform built on Arc Testnet enabling decentralized organizations to coordinate proposals, treasury management, and programmable governance.**
+**SynArc is governance infrastructure for the agentic economy — enabling DAOs, AI agents, and autonomous systems to coordinate, vote, and manage USDC-native treasuries on Arc. The first multi-DAO governance layer built natively on Arc with Circle’s full stablecoin stack.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)](https://typescriptlang.org)
@@ -21,7 +21,7 @@
 
 ## 1. Introduction
 
-SynArc is a governance coordination protocol built for the Arc ecosystem, enabling decentralized organizations to manage proposals, treasury coordination, and programmable governance infrastructure through a modern Arc-native interface.
+SynArc is governance infrastructure for the agentic economy — enabling DAOs, AI agents, and autonomous systems to coordinate, vote, and manage USDC-native treasuries on Arc. The first multi-DAO governance layer built natively on Arc with Circle’s full stablecoin stack.
 
 Designed for institutional-grade decentralized organizations, SynArc provides the full governance lifecycle stack: from on-chain proposal creation and off-chain gasless voting to treasury execution and confidential coordination — all denominated natively in USDC.
 
@@ -341,6 +341,30 @@ SynArc is developed with a strict security-first mindset, preparing for institut
 ## 14. License
 
 This repository is licensed under the **MIT License**. Check [LICENSE](./LICENSE) for additional details.
+
+---
+
+## 15. New Features
+
+### AI Agent Governance
+SynArc supports AI agents participating in governance:
+- AI proposal analysis on every proposal
+- Agent voting with on-chain transparency  
+- Public governance API for external agents
+- Agent registry at /agents
+
+### DAO Registry
+Multi-DAO support — other communities can deploy on SynArc:
+- Apply at synarcdao.xyz/daos
+- Contact: devsynarc@gmail.com
+- Telegram: @Kellycryptos
+
+### Circle Integration
+USDC-native treasury management, payments, and bridging:
+- Powered by Circle Bridge Kit and CCTP
+- USDC/EURC dual stablecoin treasury vaults
+- Instant cross-chain bridging with 20-second finality
+- Seamless payouts via the Circle Payments Network (CPN)
 
 ---
 

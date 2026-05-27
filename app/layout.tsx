@@ -17,10 +17,10 @@ const sora = Sora({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.synarcdao.xyz"),
   title: "SynArc",
-  description: "Governance infrastructure for the Arc ecosystem",
+  description: "SynArc is governance infrastructure for the agentic economy — enabling DAOs, AI agents, and autonomous systems to coordinate, vote, and manage USDC-native treasuries on Arc. The first multi-DAO governance layer built natively on Arc with Circle’s full stablecoin stack.",
   openGraph: {
     title: "SynArc — Governance Infrastructure",
-    description: "USDC-native DAO governance built on Arc Testnet",
+    description: "SynArc is governance infrastructure for the agentic economy — enabling DAOs, AI agents, and autonomous systems to coordinate, vote, and manage USDC-native treasuries on Arc. The first multi-DAO governance layer built natively on Arc with Circle’s full stablecoin stack.",
     url: "https://www.synarcdao.xyz",
     siteName: "SynArc",
     images: [
