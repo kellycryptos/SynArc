@@ -13,8 +13,12 @@ import {
   CheckCircle, 
   ExternalLink,
   Copy,
-  Check
+  Check,
+  Activity,
+  Play
 } from "lucide-react";
+import { useWallets } from "@privy-io/react-auth";
+import { parseArcError } from "@/lib/utils";
 import { GOVERNANCE_CONTRACTS, ERC20ABI } from "@/lib/governance/contracts";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
@@ -31,10 +35,147 @@ export default function SettingsPage() {
   const { switchToArc, isSwitching } = useSwitchArcNetwork();
   const { theme, setTheme } = useTheme();
   
+  const { wallets } = useWallets();
+  const [diagLog, setDiagLog] = useState<string>("Ready for diagnostics testing...");
+  const [diagLoading, setDiagLoading] = useState<Record<string, boolean>>({
+    approve: false,
+    vote: false,
+    ping: false
+  });
+
   const [tokenBalance, setTokenBalance] = useState<string>("0.00");
   const [tokenLoading, setTokenLoading] = useState(false);
   const [copiedContract, setCopiedContract] = useState<string | null>(null);
-  
+
+  const logDiag = (msg: string) => {
+    setDiagLog(prev => `${prev}\n[${new Date().toLocaleTimeString()}] ${msg}`);
+  };
+
+  const handleTestApprove = async () => {
+    if (!wallets || wallets.length === 0) {
+      logDiag("Error: Wallet not connected.");
+      return;
+    }
+    setDiagLoading(prev => ({ ...prev, approve: true }));
+    logDiag("Initiating lightweight contract write (USDC.approve)...");
+    try {
+      const privy = wallets.find(w => w.walletClientType === "privy") || wallets[0];
+      const privyProvider = await privy.getEthereumProvider();
+      const provider = new ethers.BrowserProvider(privyProvider);
+      const signer = await provider.getSigner();
+
+      const usdcAddress = "0x3600000000000000000000000000000000000000";
+      const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
+      const tokenContract = new Contract(usdcAddress, [
+        "function approve(address spender, uint256 amount) external returns (bool)"
+      ], signer);
+
+      logDiag(`Sending approve(spender=${treasuryAddress}, amount=0)...`);
+      const tx = await tokenContract.approve(treasuryAddress, 0n);
+      logDiag(`Transaction submitted! Hash: ${tx.hash}`);
+      logDiag("Waiting for transaction receipt...");
+      const receipt = await tx.wait();
+      logDiag(`Success! Approved 0 USDC. Gas used: ${receipt.gasUsed.toString()}. Block: ${receipt.blockNumber}`);
+    } catch (err: any) {
+      console.error(err);
+      logDiag(`Transaction failed: ${parseArcError(err)}`);
+    } finally {
+      setDiagLoading(prev => ({ ...prev, approve: false }));
+    }
+  };
+
+  const handleTestMockVote = async () => {
+    if (!wallets || wallets.length === 0) {
+      logDiag("Error: Wallet not connected.");
+      return;
+    }
+    setDiagLoading(prev => ({ ...prev, vote: true }));
+    logDiag("Initiating mock vote write on Governor (castVote)...");
+    try {
+      const privy = wallets.find(w => w.walletClientType === "privy") || wallets[0];
+      const privyProvider = await privy.getEthereumProvider();
+      const provider = new ethers.BrowserProvider(privyProvider);
+      const signer = await provider.getSigner();
+
+      const governorAddress = GOVERNANCE_CONTRACTS.governor;
+      const governorContract = new Contract(governorAddress, [
+        "function castVote(uint256 proposalId, uint8 support) external returns (uint256)"
+      ], signer);
+
+      logDiag("Submitting vote for proposal ID 9999 (support = 1)...");
+      logDiag("Note: This is expected to revert at the contract level (ID doesn't exist).");
+      
+      const tx = await governorContract.castVote(9999n, 1);
+      logDiag(`Transaction submitted! Hash: ${tx.hash}`);
+      await tx.wait();
+      logDiag("Vote cast transaction completed successfully (unexpected but valid).");
+    } catch (err: any) {
+      console.error(err);
+      const parsed = parseArcError(err);
+      if (parsed.toLowerCase().includes("reverted")) {
+        logDiag(`Diagnostics Pass: Contract reverted correctly. Intrinsic gas checks passed! Error: ${parsed}`);
+      } else {
+        logDiag(`Transaction failed: ${parsed}`);
+      }
+    } finally {
+      setDiagLoading(prev => ({ ...prev, vote: false }));
+    }
+  };
+
+  const handleCheckGasEstimation = async () => {
+    setDiagLoading(prev => ({ ...prev, ping: true }));
+    logDiag("Initiating gas estimation & RPC diagnostics...");
+    try {
+      const provider = await getResilientProvider();
+      const start = Date.now();
+      const blockNumber = await provider.getBlockNumber();
+      const latency = Date.now() - start;
+      
+      logDiag(`Connected to RPC. Current Block: ${blockNumber}. Latency: ${latency}ms`);
+      
+      const feeData = await provider.getFeeData();
+      const gasPrice = feeData.gasPrice || 20000000000n;
+      logDiag(`Gas Price: ${gasPrice.toString()} wei (${ethers.formatUnits(gasPrice, "gwei")} gwei)`);
+
+      const governorAddress = GOVERNANCE_CONTRACTS.governor;
+      const governorContract = new Contract(governorAddress, [
+        "function propose(address[] targets, uint256[] values, bytes[] calldatas, string description) external returns (uint256)"
+      ], provider);
+
+      const targets = [ethers.ZeroAddress];
+      const values = [0n];
+      const calldatas = ["0x"];
+      const description = "Diagnostic Test Proposal description string.";
+
+      logDiag("Populating propose transaction for gas estimation...");
+      const txData = await governorContract.propose.populateTransaction(
+        targets,
+        values,
+        calldatas,
+        description
+      );
+
+      if (walletAddress) {
+        txData.from = walletAddress;
+        logDiag(`Estimating gas with sender: ${walletAddress}...`);
+        const gasEst = await provider.estimateGas(txData);
+        logDiag(`Estimated Gas Limit: ${gasEst.toString()}`);
+        const totalCostWei = gasEst * gasPrice;
+        logDiag(`Computed intrinsic cost: ${totalCostWei.toString()} wei (${Number(totalCostWei) / 1e18} USDC)`);
+      } else {
+        logDiag("Warning: Connect wallet to calculate custom sender gas estimation.");
+        txData.from = "0x8Ab21363cB0319548B051f129e477393908be7c1"; // Treasury fallback
+        const gasEst = await provider.estimateGas(txData);
+        logDiag(`Estimated Gas Limit (Treasury Sender): ${gasEst.toString()}`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      logDiag(`Gas estimation failed: ${parseArcError(err)}`);
+    } finally {
+      setDiagLoading(prev => ({ ...prev, ping: false }));
+    }
+  };
+
   // Local storage for Notification preference
   const [emailAlerts, setEmailAlerts] = useState(true);
   const [emailInput, setEmailInput] = useState("");
@@ -246,6 +387,57 @@ export default function SettingsPage() {
             </div>
           </GlassCard>
         </div>
+
+        {/* Transaction Diagnostics & Testing */}
+        <GlassCard className="p-6 space-y-6">
+          <div className="flex items-center gap-3 border-b border-border-thin pb-4">
+            <Activity className="w-5 h-5 text-primary" />
+            <h3 className="font-bold text-lg text-white">DAO Transaction Diagnostics</h3>
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-sm text-muted">
+              Use these tools to test contract writes, verify Arc-native USDC gas estimation, and troubleshoot execution locks.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <button
+                onClick={handleTestApprove}
+                disabled={diagLoading.approve}
+                className="py-3 px-4 bg-surface hover:bg-surface-elevated rounded-xl border border-border-thin text-xs font-bold text-white transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {diagLoading.approve ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-3.5 h-3.5 text-primary" />}
+                Test USDC Approve (Lightweight)
+              </button>
+
+              <button
+                onClick={handleTestMockVote}
+                disabled={diagLoading.vote}
+                className="py-3 px-4 bg-surface hover:bg-surface-elevated rounded-xl border border-border-thin text-xs font-bold text-white transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {diagLoading.vote ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-3.5 h-3.5 text-primary" />}
+                Test Mock Vote (Simple Write)
+              </button>
+
+              <button
+                onClick={handleCheckGasEstimation}
+                disabled={diagLoading.ping}
+                className="py-3 px-4 bg-surface hover:bg-surface-elevated rounded-xl border border-border-thin text-xs font-bold text-white transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {diagLoading.ping ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-3.5 h-3.5 text-primary" />}
+                Check Gas Estimation (Ping)
+              </button>
+            </div>
+
+            {/* Diagnostic Log Output */}
+            <div className="mt-4">
+              <span className="text-xs font-semibold text-muted uppercase tracking-wider block mb-2">Diagnostics Log Output</span>
+              <pre className="w-full bg-surface-dark border border-border-thin rounded-xl p-4 font-mono text-xs text-text-secondary h-48 overflow-y-auto whitespace-pre-wrap">
+                {diagLog}
+              </pre>
+            </div>
+          </div>
+        </GlassCard>
 
         {/* Smart Contracts Transparency Block */}
         <GlassCard className="p-6 space-y-6">

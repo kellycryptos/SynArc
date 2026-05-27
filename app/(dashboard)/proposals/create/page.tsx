@@ -10,6 +10,7 @@ import Link from "next/link";
 import { ArrowLeft, Send, AlertCircle, Loader2 } from "lucide-react";
 import { useWallets } from "@privy-io/react-auth";
 import { BrowserProvider } from "ethers";
+import { parseArcError } from "@/lib/utils";
 
 export default function CreateProposalPage() {
   const router = useRouter();
@@ -50,6 +51,11 @@ export default function CreateProposalPage() {
       return;
     }
 
+    if (formData.description.length > 3000) {
+      setError("Description is too long. Please limit proposal details to 3,000 characters to optimize transaction calldata size.");
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -76,9 +82,8 @@ export default function CreateProposalPage() {
 
       router.push(`/proposals/${proposalId}`);
     } catch (err: any) {
-      console.error(err);
-      const message = err?.reason || err?.message || "Failed to create proposal. Please try again.";
-      setError(message);
+      console.error("Proposal submission error details:", err);
+      setError(parseArcError(err));
     } finally {
       setIsSubmitting(false);
     }
