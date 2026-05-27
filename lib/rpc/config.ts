@@ -18,20 +18,35 @@ export const RPC_URLS = [
 ].filter(url => url.trim() !== '');
 
 /**
- * Get resilient provider traversing all RPC URLs sequentially
+ * Get resilient provider by racing all RPC URLs with a per-endpoint timeout.
+ *
+ * Uses getBlockNumber() instead of getNetwork() — lighter call, faster fail.
+ * A 3-second per-URL timeout ensures a hanging Canteen endpoint doesn't stall
+ * the entire app while it waits for a TCP response.
  */
 export async function getResilientProvider(): Promise<JsonRpcProvider> {
+  const TIMEOUT_MS = 3000;
+
   for (const rpcUrl of RPC_URLS) {
     try {
       const provider = new JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
-      await provider.getNetwork();
+
+      // Race the health check against a timeout so a hanging URL fails fast
+      await Promise.race([
+        provider.getBlockNumber(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`RPC timeout: ${rpcUrl}`)), TIMEOUT_MS)
+        ),
+      ]);
+
       return provider;
     } catch (err) {
-      console.warn(`RPC connection failed for ${rpcUrl}, trying next fallback...`, err);
+      console.warn(`RPC unavailable (${rpcUrl}), trying next fallback...`);
     }
   }
-  throw new Error("All RPC endpoints are offline");
+  throw new Error("All RPC endpoints are offline. Please try again later.");
 }
+
 
 /**
  * Get the primary Arc RPC URL with fallback support

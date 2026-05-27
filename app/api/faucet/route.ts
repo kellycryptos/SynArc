@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { JsonRpcProvider, Wallet, Contract, parseUnits } from "ethers";
+import { Wallet, Contract } from "ethers";
+import { getResilientProvider } from "@/lib/rpc/config";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const TOKEN_ADDRESS = "0x637cA7788aBC956832F389A7BB895D5249FE757B";
@@ -13,31 +14,9 @@ const ERC20_TRANSFER_ABI = [
   "function balanceOf(address account) view returns (uint256)",
 ];
 
-// RPC endpoints (same priority chain as frontend)
-const RPC_URLS = [
-  process.env.NEXT_PUBLIC_ARC_RPC_URL || "",
-  "https://rpc.testnet.arc.network",
-  "https://arc-testnet.drpc.org",
-  "https://5042002.rpc.thirdweb.com",
-].filter((u) => u.trim() !== "");
-
 // ─── In-memory rate-limit store ───────────────────────────────────────────────
 // Key: lowercase wallet address, Value: timestamp of last successful claim
 const claimStore = new Map<string, number>();
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-async function getProvider(): Promise<JsonRpcProvider> {
-  for (const url of RPC_URLS) {
-    try {
-      const p = new JsonRpcProvider(url, undefined, { staticNetwork: true });
-      await p.getNetwork();
-      return p;
-    } catch {
-      // try next
-    }
-  }
-  throw new Error("All RPC endpoints are unavailable");
-}
 
 function formatCooldown(remainingMs: number): string {
   const totalSecs = Math.ceil(remainingMs / 1000);
@@ -97,7 +76,7 @@ export async function POST(request: Request) {
     }
 
     // --- Connect provider + signer ---
-    const provider = await getProvider();
+    const provider = await getResilientProvider();
     const signer = new Wallet(privateKey, provider);
 
     // --- Get token decimals ---
