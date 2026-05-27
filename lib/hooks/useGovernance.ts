@@ -183,12 +183,13 @@ export function useCreateProposal() {
     calldatas: `0x${string}`[],
     description: string
   ) => {
+    const optimizedDescription = description.trim();
     writeContract({
       chainId: arcTestnet.id,
       address: GOVERNANCE_CONTRACTS.governor,
       abi: GovernorABI,
       functionName: 'propose',
-      args: [targets, values, calldatas, description],
+      args: [targets, values, calldatas, optimizedDescription],
       gas: 550000n,                         // Sets a predictable manual execution ceiling
       maxFeePerGas: 30000000n,              // 6-Decimal max base fee parameter
       maxPriorityFeePerGas: 2000000n,       // 6-Decimal priority tip setting

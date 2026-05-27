@@ -298,13 +298,13 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const targets = [ethers.ZeroAddress]; // placeholder target
       const values = [0n];                   // no ETH value
       const calldatas = ['0x'];              // empty calldata
-      const formattedDescription = `${proposalData.title}\n\n${proposalData.description}\n\nCategory: ${proposalData.category}`;
+      const optimizedDescription = `${proposalData.title.trim()}\n\n${proposalData.description.trim()}\n\nCategory: ${proposalData.category.trim()}`;
 
       const tx = await governorContract.propose(
         targets,
         values,
         calldatas,
-        formattedDescription,
+        optimizedDescription,
         { 
           gasLimit: 550000n, 
           maxFeePerGas: 30000000n, 

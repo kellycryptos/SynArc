@@ -181,13 +181,13 @@ export function useGovernor(): UseGovernorReturn {
       const targets = [ethers.ZeroAddress]; // placeholder target
       const values = [0n];                   // no ETH value
       const calldatas = ['0x'];              // empty calldata
-      const formattedDescription = `${title}\n\n${description}\n\nCategory: ${category}`;
+      const optimizedDescription = `${title.trim()}\n\n${description.trim()}\n\nCategory: ${category.trim()}`;
 
       const tx = await governorContract.propose(
         targets,
         values,
         calldatas,
-        formattedDescription,
+        optimizedDescription,
         { 
           gasLimit: 550000n, 
           maxFeePerGas: 30000000n, 

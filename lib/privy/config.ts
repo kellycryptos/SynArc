@@ -1,5 +1,5 @@
 import { PrivyClientConfig } from '@privy-io/react-auth';
-import { arcTestnet } from '@/lib/chains/arc';
+import { arcTestnet } from '@/providers/Web3Provider';
 
 export const privyConfig: PrivyClientConfig = {
   loginMethods: ['email', 'google', 'twitter', 'discord', 'wallet'],
