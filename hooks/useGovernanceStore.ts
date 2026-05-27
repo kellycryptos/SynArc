@@ -43,6 +43,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   metrics: {
     treasuryValue: "$2,450,000",
     activeProposals: 0,
+    totalProposals: 0,
     governanceParticipation: "68.5%",
     daoMembers: 12450,
     treasuryTransactions: 3,
@@ -89,69 +90,90 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const governorAddress = contracts.governor;
       const governorContract = new Contract(governorAddress, GovernorABI, provider);
 
-      const count = await governorContract.proposalCount();
-      const loadedProposals: Proposal[] = [];
+      // Fetch ProposalCreated events from Governor
+      const filter = governorContract.filters.ProposalCreated();
+      const events = await governorContract.queryFilter(filter);
 
-      for (let i = 1; i <= Number(count); i++) {
-        const p = await governorContract.getProposal(i);
-        const proposalStateNum = await governorContract.state(i);
+      const loadedProposals = await Promise.all(
+        events.map(async (event: any) => {
+          const args = event.args;
+          if (!args) throw new Error("No event args");
 
-        const forV = Number(formatUnits(p.forVotes, 6)); // USDC 6 decimals
-        const againstV = Number(formatUnits(p.againstVotes, 6));
-        const abstainV = Number(formatUnits(p.abstainVotes, 6));
-        const total = forV + againstV + abstainV;
-        const participation = total > 0 ? (total / 15000000) * 100 : 0;
+          const proposalId = args.proposalId !== undefined ? args.proposalId : args[0];
+          const proposerAddress = args.proposer !== undefined ? args.proposer : args[1];
+          const descriptionString = args.description !== undefined ? args.description : args[8];
 
-        const statusMap: Record<number, string> = {
-          0: "Pending",
-          1: "Active",
-          2: "Canceled",
-          3: "Defeated",
-          4: "Succeeded",
-          5: "Queued",
-          6: "Expired",
-          7: "Executed"
-        };
-        const status = statusMap[Number(proposalStateNum)] || "Active";
+          let blockTimestamp = Math.floor(Date.now() / 1000);
+          try {
+            const block = await provider.getBlock(event.blockNumber);
+            if (block) {
+              blockTimestamp = block.timestamp;
+            }
+          } catch (blockErr) {
+            console.warn("Failed to fetch block timestamp, using fallback time:", blockErr);
+          }
 
-        const timeline: TimelineEvent[] = [
-          { title: "Proposal Created", timestamp: new Date(Number(p.startTime) * 1000).toISOString(), status: "Proposed" }
-        ];
-        if (status === "Active") {
-          timeline.push({ title: "Voting Phase Active", timestamp: new Date(Number(p.startTime) * 1000).toISOString(), status: "Active" });
-        } else if (status === "Executed") {
-          timeline.push({ title: "Transaction Executed", timestamp: new Date(Number(p.endTime) * 1000).toISOString(), status: "Executed" });
-        } else if (status === "Canceled") {
-          timeline.push({ title: "Proposal Canceled", timestamp: new Date(Number(p.endTime) * 1000).toISOString(), status: "Canceled" });
-        } else if (status === "Defeated") {
-          timeline.push({ title: "Voting Closed & Defeated", timestamp: new Date(Number(p.endTime) * 1000).toISOString(), status: "Defeated" });
-        } else if (status === "Succeeded") {
-          timeline.push({ title: "Voting Closed & Passed", timestamp: new Date(Number(p.endTime) * 1000).toISOString(), status: "Passed" });
-        }
+          const p = await governorContract.getProposal(proposalId);
+          const proposalStateNum = await governorContract.state(proposalId);
 
-        loadedProposals.push({
-          id: `SIP-${p.id}`,
-          title: p.title,
-          description: p.description,
-          proposer: p.proposer,
-          category: p.category,
-          status: status as ProposalStatus,
-          forVotes: forV,
-          againstVotes: againstV,
-          abstainVotes: abstainV,
-          totalVotes: total,
-          participationPercentage: parseFloat(participation.toFixed(1)),
-          treasuryImpactValue: -Number(formatUnits(p.treasuryImpactValue, 6)),
-          treasuryImpact: p.treasuryImpactValue > 0n ? `-${Number(formatUnits(p.treasuryImpactValue, 6)).toLocaleString()} USDC` : "None",
-          timeRemaining: status === "Active" ? `${Math.max(0, Math.ceil((Number(p.endTime) - Date.now() / 1000) / 86400))} days left` : "Ended",
-          createdAt: new Date(Number(p.startTime) * 1000).toISOString(),
-          votingStarts: new Date(Number(p.startTime) * 1000).toISOString(),
-          votingEnds: new Date(Number(p.endTime) * 1000).toISOString(),
-          executionTarget: p.executionTarget,
-          votingDuration: Number(p.votingDuration) / 86400,
-          timeline
-        });
-      }
+          const forV = Number(formatUnits(p.forVotes, 6)); // USDC 6 decimals
+          const againstV = Number(formatUnits(p.againstVotes, 6));
+          const abstainV = Number(formatUnits(p.abstainVotes, 6));
+          const total = forV + againstV + abstainV;
+          const participation = total > 0 ? (total / 15000000) * 100 : 0;
+
+          const statusMap: Record<number, string> = {
+            0: "Pending",
+            1: "Active",
+            2: "Canceled",
+            3: "Defeated",
+            4: "Succeeded",
+            5: "Queued",
+            6: "Expired",
+            7: "Executed"
+          };
+          const status = statusMap[Number(proposalStateNum)] || "Active";
+
+          const timeline: TimelineEvent[] = [
+            { title: "Proposal Created", timestamp: new Date(blockTimestamp * 1000).toISOString(), status: "Proposed" }
+          ];
+          if (status === "Active") {
+            timeline.push({ title: "Voting Phase Active", timestamp: new Date(blockTimestamp * 1000).toISOString(), status: "Active" });
+          } else if (status === "Executed") {
+            timeline.push({ title: "Transaction Executed", timestamp: new Date(Number(p.endTime) * 1000).toISOString(), status: "Executed" });
+          } else if (status === "Canceled") {
+            timeline.push({ title: "Proposal Canceled", timestamp: new Date(Number(p.endTime) * 1000).toISOString(), status: "Canceled" });
+          } else if (status === "Defeated") {
+            timeline.push({ title: "Voting Closed & Defeated", timestamp: new Date(Number(p.endTime) * 1000).toISOString(), status: "Defeated" });
+          } else if (status === "Succeeded") {
+            timeline.push({ title: "Voting Closed & Passed", timestamp: new Date(Number(p.endTime) * 1000).toISOString(), status: "Passed" });
+          }
+
+          return {
+            id: `SIP-${proposalId.toString()}`,
+            title: p.title || descriptionString.split("\n")[0] || "Untitled Proposal",
+            description: p.description || descriptionString,
+            proposer: p.proposer || proposerAddress,
+            category: p.category || "General",
+            status: status as ProposalStatus,
+            state: status,
+            forVotes: forV,
+            againstVotes: againstV,
+            abstainVotes: abstainV,
+            totalVotes: total,
+            participationPercentage: parseFloat(participation.toFixed(1)),
+            treasuryImpactValue: -Number(formatUnits(p.treasuryImpactValue, 6)),
+            treasuryImpact: p.treasuryImpactValue > 0n ? `-${Number(formatUnits(p.treasuryImpactValue, 6)).toLocaleString()} USDC` : "None",
+            timeRemaining: status === "Active" ? `${Math.max(0, Math.ceil((Number(p.endTime) - Date.now() / 1000) / 86400))} days left` : "Ended",
+            createdAt: new Date(blockTimestamp * 1000).toISOString(),
+            votingStarts: new Date(Number(p.startTime) * 1000).toISOString(),
+            votingEnds: new Date(Number(p.endTime) * 1000).toISOString(),
+            executionTarget: p.executionTarget,
+            votingDuration: Number(p.votingDuration) / 86400,
+            timeline
+          };
+        })
+      );
 
       loadedProposals.reverse();
 
@@ -242,14 +264,15 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         metrics: {
           treasuryValue: `$${treasuryVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
           activeProposals: loadedProposals.filter(p => p.status === "Active").length,
+          totalProposals: loadedProposals.length,
           governanceParticipation: avgPart,
-          daoMembers: activeHoldersCount || 1,
+          daoMembers: activeHoldersCount || 0,
           treasuryTransactions: loadedActivities.length,
           proposalExecutionRate: executionRate,
         }
       });
     } catch (e) {
-      console.warn("RPC connection unavailable, falling back to offline high-fidelity mockup data:", e);
+      console.warn("RPC connection unavailable, reset to zero on-chain stats:", e);
       set({
         proposals: [],
         treasuryActivities: [],
@@ -257,8 +280,9 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         metrics: {
           treasuryValue: "$0",
           activeProposals: 0,
+          totalProposals: 0,
           governanceParticipation: "0.0%",
-          daoMembers: 1,
+          daoMembers: 0,
           treasuryTransactions: 0,
           proposalExecutionRate: "100.0%"
         }

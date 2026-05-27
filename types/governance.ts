@@ -33,6 +33,7 @@ export interface Proposal {
 export interface GovernanceMetrics {
   treasuryValue: string;
   activeProposals: number;
+  totalProposals: number;
   governanceParticipation: string;
   daoMembers: number;
   treasuryTransactions: number;

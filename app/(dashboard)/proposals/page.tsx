@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
+import { EmptyState } from "@/components/ui/EmptyState";
 import Link from "next/link";
 import { 
   FileText, 
@@ -86,7 +87,17 @@ export default function ProposalsPage() {
 
         {/* Proposals List */}
         <div className="grid grid-cols-1 gap-6">
-          {filteredProposals.length === 0 ? (
+          {proposals.length === 0 ? (
+            <EmptyState
+              title="No proposals yet"
+              description="Be the first to create a governance proposal for SynArc DAO"
+              action={
+                <Link href="/proposals/create" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)]">
+                  Create Proposal
+                </Link>
+              }
+            />
+          ) : filteredProposals.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-text-tertiary">No proposals found matching your criteria.</p>
             </div>

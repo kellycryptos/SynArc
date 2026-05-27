@@ -14,10 +14,10 @@ export function OverviewCards() {
 
   const cards = [
     { title: "Treasury Value", value: metrics?.treasuryValue || "$0", icon: DollarSign, trend: "+2.4%" },
-    { title: "Active Proposals", value: metrics?.activeProposals || 0, icon: FileText, trend: "Stable" },
-    { title: "Governance Participation", value: metrics?.governanceParticipation || "0%", icon: Activity, trend: "+5.1%" },
-    { title: "DAO Members", value: metrics?.daoMembers || 0, icon: Users, trend: "+124 this week" },
-    { title: "Treasury Transactions", value: metrics?.treasuryTransactions || 0, icon: ArrowRightLeft, trend: "Active" },
+    { title: "Total Proposals", value: metrics?.totalProposals !== undefined ? metrics.totalProposals : 0, icon: FileText, trend: "Live" },
+    { title: "Active Proposals", value: metrics?.activeProposals !== undefined ? metrics.activeProposals : 0, icon: Activity, trend: "Stable" },
+    { title: "Governance Participation", value: metrics?.governanceParticipation || "0%", icon: ArrowRightLeft, trend: "+5.1%" },
+    { title: "DAO Members", value: metrics?.daoMembers !== undefined ? metrics.daoMembers : 0, icon: Users, trend: "Active" },
     { title: "Proposal Execution Rate", value: metrics?.proposalExecutionRate || "0%", icon: CheckCircle2, trend: "High" },
   ];
 
