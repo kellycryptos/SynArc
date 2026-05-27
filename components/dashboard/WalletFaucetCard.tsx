@@ -146,7 +146,11 @@ export function WalletFaucetCard() {
 
   // Faucet Request Action (SYN claim)
   const handleRequestFaucet = async () => {
-    if (!walletAddress || faucetStatus !== "idle") return;
+    if (!isAuthenticated || !walletAddress) {
+      login();
+      return;
+    }
+    if (faucetStatus !== "idle") return;
 
     setFaucetStatus("requesting");
     setSynMsg("");
@@ -236,45 +240,10 @@ export function WalletFaucetCard() {
 
   const IdentityIcon = identityBadge.icon;
 
-  // Unauthenticated rendering (State-of-the-art Glassmorphic Card Invitation)
-  if (!isAuthenticated) {
-    return (
-      <GlassCard className="p-6 md:p-8 relative overflow-hidden group">
-        {/* Animated ambient background shapes */}
-        <div className="absolute -right-16 -bottom-16 w-48 h-48 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-700 animate-pulse-glow" />
-        <div className="absolute left-1/3 top-0 w-32 h-32 bg-cyan-soft/10 rounded-full blur-3xl group-hover:bg-cyan-soft/15 transition-all duration-700" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-3 text-center md:text-left max-w-xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 border border-primary/20 text-primary-glow text-purple-400">
-              <Sparkles className="w-3.5 h-3.5" />
-              Arc Ecosystem Wallet Sync
-            </div>
-            <h2 className="text-2xl font-bold font-heading tracking-tight text-text-primary">
-              Connect to Synchronize Governance Identity
-            </h2>
-            <p className="text-sm text-text-tertiary">
-              Link your secure wallet or social passport via Privy to monitor real-time balance metrics, request gasless developer faucet credits, and verify private voting credentials on Arc Testnet.
-            </p>
-          </div>
-          
-          <button
-            onClick={login}
-            className="w-full md:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-purple-deep via-primary to-arc-blue text-white font-bold hover:shadow-[0_0_25px_rgba(124,58,237,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer shadow-lg shadow-purple-900/35"
-          >
-            <Wallet className="w-5 h-5" />
-            Synchronize Wallet
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      </GlassCard>
-    );
-  }
-
   // Active address formatting
   const formattedAddress = walletAddress 
     ? `${walletAddress.substring(0, 8)}...${walletAddress.substring(walletAddress.length - 8)}`
-    : "No address detected";
+    : "Disconnected";
 
   // Balance display (USDC)
   const activeBalance = realBalance ? parseFloat(realBalance) : 0.00;
@@ -294,10 +263,12 @@ export function WalletFaucetCard() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-sm tracking-tight text-text-primary">Arc Governance Wallet</span>
-                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${identityBadge.color}`}>
-                  <IdentityIcon className="w-3 h-3" />
-                  {identityBadge.label}
-                </span>
+                {isAuthenticated && (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${identityBadge.color}`}>
+                    <IdentityIcon className="w-3 h-3" />
+                    {identityBadge.label}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2 mt-0.5 text-xs text-text-tertiary">
                 {email && <span className="mr-1">{email}</span>}
@@ -314,20 +285,32 @@ export function WalletFaucetCard() {
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Connected
-            </span>
-            <a 
-              href={`https://testnet.arcscan.app/address/${walletAddress}`} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="p-1.5 bg-surface-elevated border border-border-thin rounded-xl text-text-tertiary hover:text-foreground transition-all flex items-center gap-1 text-xs"
-              title="View on ArcScan Explorer"
-            >
-              ArcScan
-              <ExternalLink className="w-3 h-3" />
-            </a>
+            {isAuthenticated ? (
+              <>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Connected
+                </span>
+                <a 
+                  href={`https://testnet.arcscan.app/address/${walletAddress}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="p-1.5 bg-surface-elevated border border-border-thin rounded-xl text-text-tertiary hover:text-foreground transition-all flex items-center gap-1 text-xs"
+                  title="View on ArcScan Explorer"
+                >
+                  ArcScan
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </>
+            ) : (
+              <button
+                onClick={login}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-primary text-white hover:bg-primary/95 transition-all shadow-[0_0_12px_rgba(124,58,237,0.2)] cursor-pointer"
+              >
+                <Wallet className="w-3.5 h-3.5" />
+                Connect Wallet
+              </button>
+            )}
           </div>
         </div>
 

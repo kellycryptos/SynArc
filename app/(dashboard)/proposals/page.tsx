@@ -6,6 +6,8 @@ import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/auth/useAuth";
 import { 
   FileText, 
   Plus, 
@@ -15,6 +17,8 @@ import {
 } from "lucide-react";
 
 export default function ProposalsPage() {
+  const router = useRouter();
+  const { isAuthenticated, login } = useAuth();
   const { proposals, initialized, initializeStore, userVotes } = useGovernanceStore();
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,10 +50,19 @@ export default function ProposalsPage() {
             <h1 className="text-3xl font-bold tracking-tight">Governance Proposals</h1>
             <p className="text-muted mt-1">Review, discuss, and vote on Arc Testnet DAO proposals.</p>
           </div>
-          <Link href="/proposals/create" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)]">
+          <button
+            onClick={() => {
+              if (!isAuthenticated) {
+                login();
+              } else {
+                router.push("/proposals/create");
+              }
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
+          >
             <Plus className="w-4 h-4" />
             Create Proposal
-          </Link>
+          </button>
         </div>
 
         {/* Filters */}
@@ -92,9 +105,18 @@ export default function ProposalsPage() {
               title="No proposals yet"
               description="Be the first to create a governance proposal for SynArc DAO"
               action={
-                <Link href="/proposals/create" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)]">
+                <button
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      login();
+                    } else {
+                      router.push("/proposals/create");
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
+                >
                   Create Proposal
-                </Link>
+                </button>
               }
             />
           ) : filteredProposals.length === 0 ? (

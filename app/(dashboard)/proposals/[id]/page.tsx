@@ -56,7 +56,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   });
 
   const activeBalance = useMemo(() => {
-    if (typeof window !== "undefined" && walletAddress) {
+    if (!walletAddress) return 0.0;
+    if (typeof window !== "undefined") {
       const savedBalance = localStorage.getItem(`synarc_balance_override_${walletAddress}`);
       if (savedBalance) return parseFloat(savedBalance);
     }
@@ -147,6 +148,10 @@ Timestamp: ${timestamp}`;
   };
 
   const handleExecute = async () => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
     try {
       const privy = wallets.find(w => w.walletClientType === "privy");
       if (!privy) {
