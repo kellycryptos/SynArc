@@ -188,7 +188,7 @@ export function useGovernor(): UseGovernorReturn {
         values,
         calldatas,
         formattedDescription,
-        { gasLimit: 500000n } // Manual override fallback prevent estimateGas lockups
+        { gasLimit: 600000n } // Manual override fallback prevent estimateGas lockups
       );
 
       const receipt = await tx.wait();

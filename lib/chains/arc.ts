@@ -18,22 +18,13 @@ export const rpcConfig = fallback([
  */
 export const arcTestnet = defineChain({
   id: 5042002,
-  name: "Arc Testnet",
-  nativeCurrency: { 
-    name: "USDC", 
-    symbol: "USDC", 
-    decimals: 18 
-  },
+  name: 'Arc Testnet',
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 }, // Arc uses 6-decimal native USDC for gas!
   rpcUrls: {
-    // Primary RPC endpoint (personalized from ARC CLI) with fallback endpoints in order
-    default: { 
-      http: getArcRpcUrls()
-    },
+    default: { http: ['https://rpc.testnet.arc.network', 'https://arc-testnet.drpc.org'] },
+    public: { http: ['https://rpc.testnet.arc.network', 'https://arc-testnet.drpc.org'] },
   },
   blockExplorers: {
-    default: { 
-      name: "ArcScan", 
-      url: "https://testnet.arcscan.app" 
-    },
+    default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' },
   },
 });

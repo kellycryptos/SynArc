@@ -1,29 +1,21 @@
 import { createConfig } from '@privy-io/wagmi';
-import { http, fallback } from 'wagmi';
+import { http } from 'wagmi';
+import { fallback } from 'viem';
 import { arcTestnet } from '@/lib/chains/arc';
-import { RPC_URLS, ARC_TESTNET_RPC } from '@/lib/rpc/config';
 
-/**
- * WAGMI Configuration for Arc Testnet
- *
- * Uses viem's fallback() transport so that if the primary Canteen RPC
- * (NEXT_PUBLIC_ARC_RPC_URL) fails, wagmi automatically retries the next
- * URL in the chain — no user-visible error.
- *
- * Priority order:
- *   1. Canteen personalized RPC (NEXT_PUBLIC_ARC_RPC_URL)  ← fastest, preferred
- *   2. https://rpc.testnet.arc.network                      ← official public
- *   3. https://arc-testnet.drpc.org                         ← dRPC mirror
- *   4. https://5042002.rpc.thirdweb.com                     ← thirdweb mirror
- */
-const rpcTransports = RPC_URLS.length > 0
-  ? RPC_URLS.map(url => http(url, { retryCount: 1, retryDelay: 150 }))
-  : [http(ARC_TESTNET_RPC, { retryCount: 2, retryDelay: 150 })];
+const transports = [
+  http('https://rpc.testnet.arc.network'),                       // Core public operational node
+  http('https://arc-testnet.drpc.org'),                          // Highly responsive drpc backup node
+];
+
+if (process.env.NEXT_PUBLIC_ALCHEMY_ARC_URL) {
+  transports.push(http(process.env.NEXT_PUBLIC_ALCHEMY_ARC_URL)); // Alchemy backup slot
+}
 
 export const config = createConfig({
   chains: [arcTestnet],
   transports: {
-    [arcTestnet.id]: fallback(rpcTransports, { rank: false }),
+    [arcTestnet.id]: fallback(transports, { rank: true }),
   },
   ssr: true, // Hydration-safe for Next.js App Router
 });
