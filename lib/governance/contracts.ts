@@ -283,6 +283,20 @@ export const TreasuryABI = [
     stateMutability: 'nonpayable',
   },
   {
+    type: 'function',
+    name: 'depositUSDC',
+    inputs: [{ name: 'amount', type: 'uint256' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'depositEURC',
+    inputs: [{ name: 'amount', type: 'uint256' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
     type: 'event',
     name: 'Withdrawal',
     inputs: [

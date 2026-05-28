@@ -9,8 +9,13 @@ import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useToken } from "@/hooks/useToken";
 import { getResilientProvider } from "@/lib/rpc/config";
 
-import { useBalance } from "wagmi";
+import { useReadContract, useAccount, useWriteContract } from "wagmi";
 import { formatUnits } from "viem";
+import { GovernorABI, ERC20ABI } from "@/lib/governance/contracts";
+import { ARC_GAS_CONFIG } from "@/lib/constants";
+const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
+const SARC_ADDRESS = "0x637cA7788aBC956832F389A7BB895D5249FE757B" as `0x${string}`;
+const GOVERNOR_ABI = GovernorABI;
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -41,6 +46,39 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
   // Live stablecoin treasury balances
   const { usdcBalance: treasuryUSDC, eurcBalance: treasuryEURC } = useTreasury();
+
+  const { address: userAddress } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+
+  // Fetch real-time balances
+  const { data: usdcBalanceRaw } = useReadContract({
+    address: USDC_ADDRESS,
+    abi: ERC20ABI,
+    functionName: "balanceOf",
+    args: userAddress ? [userAddress] : undefined,
+    query: { enabled: !!userAddress },
+  });
+
+  const { data: sarcBalanceRaw } = useReadContract({
+    address: SARC_ADDRESS,
+    abi: ERC20ABI,
+    functionName: "balanceOf",
+    args: userAddress ? [userAddress] : undefined,
+    query: { enabled: !!userAddress },
+  });
+
+  const usdcFormatted = useMemo(() => {
+    return usdcBalanceRaw !== undefined ? formatUnits(usdcBalanceRaw as bigint, 6) : "0";
+  }, [usdcBalanceRaw]);
+
+  const sarcFormatted = useMemo(() => {
+    return sarcBalanceRaw !== undefined ? formatUnits(sarcBalanceRaw as bigint, 18) : "0";
+  }, [sarcBalanceRaw]);
+
+  // Check voting power — either USDC > 0 OR sARC >= 1
+  const hasVotingPower = 
+    (usdcBalanceRaw !== undefined && Number(usdcFormatted) > 0) || 
+    (sarcBalanceRaw !== undefined && Number(sarcFormatted) >= 1);
 
   // AI analysis states
   const [aiLoading, setAiLoading] = useState(false);
@@ -138,54 +176,44 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     checkVoted();
   }, [walletAddress, proposal, voting, initialized]);
 
-  const castVoteOnChain = async (proposalId: string, support: 0 | 1 | 2) => {
-    const usdcVal = usdcBalance ? parseFloat(usdcBalance) : 0;
-    if (usdcVal < 0.01) {
-      setVotingError('You need testnet USDC for gas. Claim from faucet.circle.com');
+  const handleCastVote = async (supportValue: number) => {
+    if (!userAddress) {
+      alert('Please connect your wallet to vote.');
       return;
     }
 
-    setVoting(true);
-    setVotingError(null);
-    setTxHash(null);
-    setStatus('Preparing wallet...');
+    if (!proposal) return;
+
+    if (!hasVotingPower) {
+      alert('Insufficient balance to vote. Your wallet must hold > 0 USDC or >= 1 sARC on Arc Testnet.');
+      return;
+    }
 
     try {
-      const privy = wallets.find(w => w.walletClientType === "privy");
-      if (!privy) {
-        throw new Error("Privy wallet not found");
-      }
-
-      // Force Arc Testnet before transaction
-      const currentChainId = parseInt(privy.chainId.replace("eip155:", ""));
-      if (currentChainId !== 5042002) {
-        await privy.switchChain(5042002);
-      }
-
-      const ethereumProvider = await privy.getEthereumProvider();
-      const provider = new BrowserProvider(ethereumProvider);
-      const signer = await provider.getSigner();
-
-      const governorAddress = process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702";
-      const GOVERNOR_ABI = [
-        "function castVote(uint256 proposalId, uint8 support) external returns (uint256)"
-      ];
-      
-      const governorContract = new Contract(governorAddress, GOVERNOR_ABI, signer);
-      const rawId = Number(proposalId.replace("SIP-", ""));
-
+      setVoting(true);
+      setVotingError(null);
+      setTxHash(null);
       setStatus('Submitting vote on-chain...');
-      const tx = await governorContract.castVote(rawId, support);
-      setTxHash(tx.hash);
-      setStatus('Waiting for transaction mining...');
-      await tx.wait();
+
+      const rawId = BigInt(proposal.id.replace("SIP-", ""));
+      const voteTx = await writeContractAsync({
+        address: (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702") as `0x${string}`,
+        abi: GOVERNOR_ABI,
+        functionName: 'castVote',
+        args: [rawId, supportValue],
+
+        // Force manual gas — bypasses estimateGas simulation crash on Arc Testnet
+        ...ARC_GAS_CONFIG,
+      });
+
+      setTxHash(voteTx);
       setStatus('Vote recorded on-chain! ✅');
-      
       initializeStore();
-    } catch (err: any) {
-      console.error("Failed to cast vote on-chain:", err);
-      setVotingError(err?.reason || err?.message || 'Failed to cast vote');
+
+    } catch (error: any) {
+      console.error('Voting execution failed:', error);
       setStatus(null);
+      setVotingError(error?.shortMessage || error?.message || 'Vote failed. Please try again.');
     } finally {
       setVoting(false);
     }
@@ -400,30 +428,44 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                     </div>
                   ) : (
                     <div className="space-y-3">
+                      {/* Show voting power */}
+                      {hasVotingPower ? (
+                        <p className="text-emerald-400 text-xs font-semibold text-center mb-2">
+                          ✅ Voting power: {usdcFormatted} USDC + {sarcFormatted} sARC
+                        </p>
+                      ) : (
+                        <p className="text-red-400 text-xs font-semibold text-center mb-2">
+                          ⚠️ You need USDC or sARC on Arc Testnet to vote.{" "}
+                          <a href="https://faucet.circle.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold">
+                            Get testnet USDC
+                          </a>
+                        </p>
+                      )}
+
                       <div className="grid grid-cols-3 gap-2">
                         <button
-                          onClick={() => castVoteOnChain(proposal.id, 1)}
-                          disabled={voting}
+                          onClick={() => handleCastVote(1)}
+                          disabled={!hasVotingPower || voting}
                           className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-success/10 hover:border-success/30 hover:text-success text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50"
                         >
                           <ThumbsUp className="w-4 h-4" />
-                          👍 For
+                          {voting ? 'Submitting...' : '👍 For'}
                         </button>
                         <button
-                          onClick={() => castVoteOnChain(proposal.id, 0)}
-                          disabled={voting}
+                          onClick={() => handleCastVote(0)}
+                          disabled={!hasVotingPower || voting}
                           className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-danger/10 hover:border-danger/30 hover:text-danger text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50"
                         >
                           <ThumbsDown className="w-4 h-4" />
-                          👎 Against
+                          {voting ? 'Submitting...' : '👎 Against'}
                         </button>
                         <button
-                          onClick={() => castVoteOnChain(proposal.id, 2)}
-                          disabled={voting}
+                          onClick={() => handleCastVote(2)}
+                          disabled={!hasVotingPower || voting}
                           className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-surface-elevated hover:text-foreground text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50"
                         >
                           <CircleDot className="w-4 h-4" />
-                          ⚪ Abstain
+                          {voting ? 'Submitting...' : '⚪ Abstain'}
                         </button>
                       </div>
 

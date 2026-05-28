@@ -246,9 +246,8 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         calldatas,
         optimizedDescription,
         { 
-          gasLimit: 550000n, 
-          maxFeePerGas: 30000000n, 
-          maxPriorityFeePerGas: 2000000n 
+          gasLimit: 500000n, 
+          gasPrice: 10000000n, 
         }
       );
 
@@ -278,9 +277,8 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     const optionNum = optionMap[option];
 
     const tx = await governorContract.castVoteWithReason(id, optionNum, signature, {
-      gasLimit: 150000n,
-      maxFeePerGas: 30000000n,
-      maxPriorityFeePerGas: 2000000n
+      gasLimit: 300000n,
+      gasPrice: 10000000n,
     });
     await tx.wait();
 
@@ -296,9 +294,8 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     const id = Number(proposalId.replace("SIP-", ""));
 
     const tx = await governorContract.execute(id, {
-      gasLimit: 250000n,
-      maxFeePerGas: 30000000n,
-      maxPriorityFeePerGas: 2000000n
+      gasLimit: 300000n,
+      gasPrice: 10000000n,
     });
     await tx.wait();
 

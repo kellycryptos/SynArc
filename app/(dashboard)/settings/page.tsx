@@ -145,7 +145,10 @@ export default function SettingsPage() {
       ], signer);
 
       logDiag(`Sending approve(spender=${treasuryAddress}, amount=0)...`);
-      const tx = await tokenContract.approve(treasuryAddress, 0n);
+      const tx = await tokenContract.approve(treasuryAddress, 0n, {
+        gasLimit: 100000n,
+        gasPrice: 10000000n,
+      });
       logDiag(`Transaction submitted! Hash: ${tx.hash}`);
       logDiag("Waiting for transaction receipt...");
       const receipt = await tx.wait();
@@ -179,7 +182,10 @@ export default function SettingsPage() {
       logDiag("Submitting vote for proposal ID 9999 (support = 1)...");
       logDiag("Note: This is expected to revert at the contract level (ID doesn't exist).");
       
-      const tx = await governorContract.castVote(9999n, 1);
+      const tx = await governorContract.castVote(9999n, 1, {
+        gasLimit: 300000n,
+        gasPrice: 10000000n,
+      });
       logDiag(`Transaction submitted! Hash: ${tx.hash}`);
       await tx.wait();
       logDiag("Vote cast transaction completed successfully (unexpected but valid).");

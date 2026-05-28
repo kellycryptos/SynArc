@@ -94,7 +94,10 @@ export async function POST(request: Request) {
     }
 
     // --- Send token transfer ---
-    const tx = await tokenContract.transfer(wallet, amount);
+    const tx = await tokenContract.transfer(wallet, amount, {
+      gasLimit: 100000n,
+      gasPrice: 10000000n,
+    });
     await tx.wait();
 
     // --- Record claim time ---

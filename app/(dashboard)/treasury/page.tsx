@@ -8,7 +8,13 @@ import { useEURCBalance } from "@/hooks/useEURCBalance";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets } from "@privy-io/react-auth";
 import { ethers, Contract, parseUnits } from "ethers";
-import { GOVERNANCE_CONTRACTS, ERC20ABI } from "@/lib/governance/contracts";
+import { GOVERNANCE_CONTRACTS, ERC20ABI, TreasuryABI } from "@/lib/governance/contracts";
+import { useWriteContract, useAccount } from "wagmi";
+import { ARC_GAS_CONFIG, ARC_GAS_CONFIG_LOW } from "@/lib/constants";
+import { TreasuryActivity } from "@/types";
+
+const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
+const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as `0x${string}`;
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -34,6 +40,28 @@ export default function TreasuryPage() {
   const { balance: walletEURC, refetch: refetchWalletEURC } = useEURCBalance();
   const { wallets } = useWallets();
   const { isAuthenticated, login } = useAuth();
+
+  const { address: userAddress } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+
+  interface Transaction {
+    id: string
+    description: string
+    amount: number
+    token: 'USDC' | 'EURC'
+    date: string
+    txHash: string // full 66-character hash
+    status: 'pending' | 'confirmed' | 'failed'
+  }
+
+  const [recentActivity, setRecentActivity] = useState<Transaction[]>([]);
+
+  const addTransaction = (tx: Omit<Transaction, 'id'>) => {
+    setRecentActivity(prev => [{
+      ...tx,
+      id: crypto.randomUUID(),
+    }, ...prev]);
+  };
 
   const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
 
@@ -79,7 +107,24 @@ export default function TreasuryPage() {
     return [...points, { date: "Current", balance: combinedTotal }];
   }, [activities, combinedTotal]);
 
-  const recentTransactions = activities.slice(0, 10);
+  const recentTransactions = useMemo(() => {
+    // Map recentActivity to match TreasuryActivity format
+    const localActs: TreasuryActivity[] = recentActivity.map(act => ({
+      id: act.id,
+      type: 'Inflow',
+      amount: act.amount,
+      token: act.token,
+      timestamp: new Date().toISOString(),
+      description: act.description,
+      txHash: act.txHash
+    }));
+    
+    // De-duplicate: if any local tx has the same txHash as an activity from the contract, filter it from the local list
+    const contractHashes = new Set(activities.map(a => a.txHash));
+    const filteredLocal = localActs.filter(a => !contractHashes.has(a.txHash));
+
+    return [...filteredLocal, ...activities].slice(0, 10);
+  }, [recentActivity, activities]);
 
   // Asset Composition details
   const usdcValueInUSD = usdcBalance;
@@ -104,7 +149,7 @@ export default function TreasuryPage() {
   };
 
   const handleDepositSubmit = async () => {
-    if (!activeWallet) {
+    if (!userAddress) {
       setErrorMessage("Wallet not connected.");
       setTxStep("error");
       return;
@@ -121,56 +166,56 @@ export default function TreasuryPage() {
       setTxStep("approving");
       setErrorMessage("");
 
-      // Force Arc Testnet before transaction
-      const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
-      if (currentChainId !== 5042002) {
-        await activeWallet.switchChain(5042002);
-      }
-
-      const privyProvider = await activeWallet.getEthereumProvider();
-      const provider = new ethers.BrowserProvider(privyProvider);
-      const signer = await provider.getSigner();
-
       const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
-      const tokenAddress = selectedToken === "USDC" ? "0x3600000000000000000000000000000000000000" : GOVERNANCE_CONTRACTS.eurc;
-      const amountWei = parseUnits(depositAmount, 6); // Both USDC and EURC use 6 decimals on testnet
+      const tokenAddress = selectedToken === "USDC" ? USDC_ADDRESS : EURC_ADDRESS;
+      const amountBigInt = BigInt(Math.floor(amountNum * 1_000_000)); // Both USDC and EURC use 6 decimals on Arc Testnet
 
-      // 1. Approve contract
-      const tokenContract = new Contract(tokenAddress, ERC20ABI, signer);
+      // 1. Approve contract spend
       console.log(`Approving ${selectedToken}...`);
-      const approveTx = await tokenContract.approve(treasuryAddress, amountWei);
-      await approveTx.wait();
-      console.log(`${selectedToken} Approved!`);
+      const approveTx = await writeContractAsync({
+        address: tokenAddress,
+        abi: ERC20ABI,
+        functionName: 'approve',
+        args: [treasuryAddress, amountBigInt],
+        ...ARC_GAS_CONFIG_LOW, // gas: 100000n, gasPrice: 10000000n
+      });
+      console.log(`${selectedToken} Approved! Tx: ${approveTx}`);
 
-      // 2. Deposit
+      // 2. Deposit to treasury
       setTxStep("depositing");
-      const treasuryContract = new Contract(treasuryAddress, [
-        "function depositUSDC(uint256 amount) external",
-        "function depositEURC(uint256 amount) external"
-      ], signer);
-
-      let tx;
-      if (selectedToken === "USDC") {
-        tx = await treasuryContract.depositUSDC(amountWei);
-      } else {
-        tx = await treasuryContract.depositEURC(amountWei);
-      }
-
       console.log(`Depositing ${selectedToken} on-chain...`);
-      setTxHash(tx.hash);
-      await tx.wait();
+      const depositTx = await writeContractAsync({
+        address: treasuryAddress as `0x${string}`,
+        abi: TreasuryABI,
+        functionName: selectedToken === "USDC" ? "depositUSDC" : "depositEURC",
+        args: [amountBigInt],
+        ...ARC_GAS_CONFIG, // gas: 200000n, gasPrice: 10000000n
+      });
+
+      console.log(`Deposit transaction submitted! Tx: ${depositTx}`);
+      setTxHash(depositTx);
+
+      // 3. Store real tx hash in activity log
+      addTransaction({
+        description: `${selectedToken} Deposit`,
+        amount: amountNum,
+        token: selectedToken,
+        date: new Date().toLocaleDateString('en-GB'),
+        txHash: depositTx, // real hash from chain
+        status: 'confirmed',
+      });
+
       console.log("Deposit Success!");
-      
       setTxStep("success");
       setDepositAmount("");
       
       // Refresh balances
       refetchTreasury();
-      refetchWalletUSDC();
-      refetchWalletEURC();
+      refetchWalletUSDC?.();
+      refetchWalletEURC?.();
     } catch (err: any) {
       console.error("Deposit transaction failed:", err);
-      const errMsg = err?.reason || err?.message || "Transaction failed. Please try again.";
+      const errMsg = err?.shortMessage || err?.message || "Transaction failed. Please try again.";
       if (
         errMsg.toLowerCase().includes("capacity exceeded") ||
         errMsg.toLowerCase().includes("unexpected token") ||
