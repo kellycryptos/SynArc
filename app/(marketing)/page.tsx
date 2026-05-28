@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Shield, Lock, Globe, Grid, X, Send, CheckCircle2, Award, Plus, MessageSquare } from "lucide-react";
+import { ArrowRight, Shield, Lock, Globe, Grid, X, Send, CheckCircle2, Award, Plus, MessageSquare, Bot } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -125,7 +125,7 @@ export default function LandingPage() {
             <p className="text-text-secondary max-w-2xl mx-auto">Built from the ground up to support the scale and privacy requirements of modern on-chain organizations.</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <GlassCard className="p-8">
               <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-6 border border-primary/30">
                 <Shield className="w-6 h-6 text-primary" />
@@ -153,6 +153,16 @@ export default function LandingPage() {
               <h3 className="text-xl font-bold mb-3 text-text-primary">Secure Delegation</h3>
               <p className="text-text-secondary leading-relaxed">
                 Delegate voting power seamlessly using confidential identity proofs that preserve member anonymity.
+              </p>
+            </GlassCard>
+
+            <GlassCard className="p-8">
+              <div className="w-12 h-12 rounded-xl bg-purple-glow/20 flex items-center justify-center mb-6 border border-purple-glow/30">
+                <Bot className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-text-primary">AI-Powered Governance</h3>
+              <p className="text-text-secondary leading-relaxed">
+                Autonomous agents analyze proposals, cast votes, and optimize treasury allocation using on-chain data. Powered by Llama 3.3 via Groq.
               </p>
             </GlassCard>
           </div>

@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo, use } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useTreasury } from "@/hooks/useTreasury";
+
 import { useBalance, useSignMessage } from "wagmi";
 import { formatUnits } from "viem";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,7 +28,10 @@ import {
   AlertCircle,
   ArrowLeft,
   Calendar,
-  Play
+  Play,
+  Bot,
+  Info,
+  Loader2
 } from "lucide-react";
 
 export default function ProposalDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -38,6 +43,60 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
   const { proposals, initialized, initializeStore, userVotes, castVote, executeProposal } = useGovernanceStore();
   const proposal = proposals.find(p => p.id === unwrappedParams.id);
+
+  // Live stablecoin treasury balances
+  const { usdcBalance: treasuryUSDC, eurcBalance: treasuryEURC } = useTreasury();
+
+  // AI analysis states
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiDecision, setAiDecision] = useState<{
+    vote: "FOR" | "AGAINST" | "ABSTAIN";
+    reasoning: string;
+    riskLevel: "LOW" | "MEDIUM" | "HIGH";
+    confidence: number;
+    summary: string;
+    concerns: string;
+  } | null>(null);
+  const [aiError, setAiError] = useState("");
+
+  const handleAIAnalysis = async () => {
+    setAiLoading(true);
+    setAiError("");
+    setAiDecision(null);
+
+    try {
+      const response = await fetch("/api/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "analyze",
+          proposalData: {
+            id: proposal?.id,
+            title: proposal?.title,
+            description: proposal?.description,
+            category: proposal?.category,
+            treasuryImpact: proposal?.treasuryImpactValue,
+          },
+          treasuryData: {
+            usdc: treasuryUSDC || 0,
+            eurc: treasuryEURC || 0,
+          }
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to analyze proposal.");
+      }
+
+      setAiDecision(data.decision);
+    } catch (err: any) {
+      console.error("AI Analysis error:", err);
+      setAiError(err?.message || "Encountered an error fetching AI recommendation.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
   
   useEffect(() => {
     if (!initialized) initializeStore();
@@ -379,6 +438,110 @@ Timestamp: ${timestamp}`;
                   </button>
                 )}
               </div>
+            </GlassCard>
+
+            {/* AI Agent Analysis Card */}
+            <GlassCard className="p-6 space-y-4 border border-primary/20 bg-gradient-to-br from-primary/[0.01] to-transparent relative overflow-hidden">
+              <div className="absolute -top-12 -right-12 w-24 h-24 bg-primary/5 rounded-full blur-xl pointer-events-none" />
+              
+              <h3 className="text-sm font-bold text-text-primary flex items-center gap-2 border-b border-border-thin pb-3">
+                <Bot className="w-4 h-4 text-primary animate-pulse" />
+                AI Agent Governance
+              </h3>
+
+              {aiLoading ? (
+                <div className="py-6 text-center space-y-3">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+                  <p className="text-xs text-text-tertiary font-medium">Agent analyzing proposal...</p>
+                </div>
+              ) : aiError ? (
+                <div className="space-y-3">
+                  <div className="p-3 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>{aiError}</span>
+                  </div>
+                  <button
+                    onClick={handleAIAnalysis}
+                    className="w-full py-2 bg-primary/10 border border-primary/25 hover:bg-primary/20 text-primary text-xs font-bold rounded-xl transition-all cursor-pointer"
+                  >
+                    Retry Analysis
+                  </button>
+                </div>
+              ) : aiDecision ? (
+                <div className="space-y-4 text-xs">
+                  {/* Recommendation Header */}
+                  <div className="flex justify-between items-center bg-surface border border-border-thin rounded-xl p-3">
+                    <span className="text-text-tertiary">Recommendation</span>
+                    <span className={`px-2.5 py-0.5 rounded-full font-bold border flex items-center gap-1.5 uppercase text-[10px] tracking-wider ${
+                      aiDecision.vote === "FOR" ? "bg-success/10 border-success/20 text-success" :
+                      aiDecision.vote === "AGAINST" ? "bg-danger/10 border-danger/20 text-danger" :
+                      "bg-surface-elevated border-border-thin text-text-primary"
+                    }`}>
+                      {aiDecision.vote === "FOR" ? "FOR ✅" :
+                       aiDecision.vote === "AGAINST" ? "AGAINST ❌" :
+                       "ABSTAIN ⚪"}
+                    </span>
+                  </div>
+
+                  {/* Confidence and Risk */}
+                  <div className="grid grid-cols-2 gap-3 text-[11px]">
+                    <div className="space-y-1">
+                      <span className="text-[10px] text-text-tertiary block font-bold uppercase tracking-wider">Confidence</span>
+                      <span className="font-bold text-white font-mono">{aiDecision.confidence}%</span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] text-text-tertiary block font-bold uppercase tracking-wider">Risk Level</span>
+                      <span className={`font-bold ${
+                        aiDecision.riskLevel === "LOW" ? "text-success" :
+                        aiDecision.riskLevel === "MEDIUM" ? "text-warning" :
+                        "text-danger"
+                      }`}>{aiDecision.riskLevel}</span>
+                    </div>
+                  </div>
+
+                  {/* Summary */}
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-text-tertiary block font-bold uppercase tracking-wider">Summary</span>
+                    <p className="text-text-secondary leading-normal">{aiDecision.summary}</p>
+                  </div>
+
+                  {/* Reasoning */}
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-text-tertiary block font-bold uppercase tracking-wider">Reasoning</span>
+                    <p className="text-text-secondary leading-normal bg-surface/30 p-2.5 rounded-xl border border-border-thin italic">
+                      &quot;{aiDecision.reasoning}&quot;
+                    </p>
+                  </div>
+
+                  {/* Concerns if present */}
+                  {aiDecision.concerns && aiDecision.concerns.toLowerCase() !== "none" && (
+                    <div className="space-y-1">
+                      <span className="text-[10px] text-red-400 block font-bold uppercase tracking-wider">Key Concerns</span>
+                      <p className="text-text-secondary font-semibold leading-normal text-red-300 bg-danger/5 border border-danger/10 p-2 rounded-xl">
+                        ⚠️ {aiDecision.concerns}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="border-t border-border-thin pt-3.5 text-[10px] text-text-tertiary leading-normal flex items-start gap-1.5 italic">
+                    <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-muted" />
+                    <span>Note: This is an AI recommendation. Always do your own research.</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3.5">
+                  <p className="text-xs text-text-tertiary leading-normal">
+                    Let SynArc's autonomous agent analyze the treasury impact and risk profile of this proposal.
+                  </p>
+                  <button
+                    onClick={handleAIAnalysis}
+                    className="w-full py-3 bg-primary text-white font-bold text-xs rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Bot className="w-4 h-4" />
+                    Get AI Analysis
+                  </button>
+                </div>
+              )}
             </GlassCard>
 
             <GlassCard className="p-6 space-y-4">

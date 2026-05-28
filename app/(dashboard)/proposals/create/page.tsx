@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useToken } from "@/hooks/useToken";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Send, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown } from "lucide-react";
 import { useWallets } from "@privy-io/react-auth";
 import { BrowserProvider } from "ethers";
 import { parseArcError } from "@/lib/utils";
@@ -21,6 +22,58 @@ export default function CreateProposalPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // AI proposal generator states
+  const [userIdea, setUserIdea] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiGenError, setAiGenError] = useState("");
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+
+  const handleGenerateProposal = async () => {
+    if (!userIdea.trim()) {
+      setAiGenError("Please enter your rough idea first.");
+      return;
+    }
+
+    setAiGenerating(true);
+    setAiGenError("");
+
+    try {
+      const response = await fetch("/api/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "generate",
+          proposalData: {
+            idea: userIdea
+          }
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to generate proposal details.");
+      }
+
+      const generated = data.proposal;
+      setFormData({
+        title: generated.title || "",
+        category: generated.category || "Governance Parameter",
+        description: generated.description || "",
+        treasuryImpactValue: generated.treasuryImpact === "high" ? -100000 : generated.treasuryImpact === "medium" ? -25000 : generated.treasuryImpact === "low" ? -5000 : 0,
+        executionTarget: formData.executionTarget,
+        votingDuration: generated.votingDuration || 7
+      });
+
+      setIsAssistantOpen(false); // Collapse helper box
+      setUserIdea(""); // Clear helper input
+    } catch (err: any) {
+      console.error("AI Proposal Generator error:", err);
+      setAiGenError(err?.message || "Failed to contact AI generator. Please try again.");
+    } finally {
+      setAiGenerating(false);
+    }
+  };
 
   const proposalThreshold = 1;
   const hasEnoughBalance = votingPower >= proposalThreshold;
@@ -120,6 +173,76 @@ export default function CreateProposalPage() {
                 <span>You require a minimum of {proposalThreshold.toLocaleString()} tokens to submit a proposal. Your current balance is {votingPower.toLocaleString()} tokens.</span>
               </div>
             )}
+
+            {/* AI Proposal Assistant Box */}
+            <div className="bg-surface-elevated/40 border border-primary/20 rounded-2xl p-4 overflow-hidden mb-6">
+              <button
+                type="button"
+                onClick={() => setIsAssistantOpen(!isAssistantOpen)}
+                className="w-full flex items-center justify-between text-left font-bold text-white text-sm cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <Bot className="w-5 h-5 text-primary" />
+                  <span>✨ AI Proposal Assistant (Groq Llama 3.3)</span>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-muted transition-transform duration-300 ${isAssistantOpen ? "rotate-180 text-white" : ""}`} />
+              </button>
+
+              <AnimatePresence>
+                {isAssistantOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="space-y-4 pt-4"
+                  >
+                    <p className="text-xs text-text-tertiary leading-relaxed leading-normal">
+                      Rough idea? Write it down in plain English (e.g. &quot;Grant 10,000 USDC to organize a hackathon next month&quot;), and our AI agent will fully draft the titles, categories, voting parameters, and descriptions!
+                    </p>
+
+                    {aiGenError && (
+                      <div className="p-3 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>{aiGenError}</span>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <textarea
+                        value={userIdea}
+                        onChange={(e) => {
+                          setUserIdea(e.target.value);
+                          if (aiGenError) setAiGenError("");
+                        }}
+                        disabled={aiGenerating}
+                        placeholder="Describe your proposal idea here..."
+                        rows={2}
+                        className="flex-1 bg-surface border border-border-thin focus:border-primary rounded-xl px-4 py-3 text-xs text-white outline-none placeholder:text-text-tertiary transition-colors resize-none disabled:opacity-50"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleGenerateProposal}
+                        disabled={aiGenerating || !userIdea}
+                        className="py-3 px-5 bg-primary hover:bg-primary/95 text-white font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                      >
+                        {aiGenerating ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Drafting...
+                          </>
+                        ) : (
+                          <>
+                            <Wand2 className="w-3.5 h-3.5" />
+                            Generate with AI
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             <div className="space-y-4">
               <div>

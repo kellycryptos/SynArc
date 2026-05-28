@@ -15,6 +15,7 @@ import {
   Bell,
   BookOpen,
   ArrowRightLeft,
+  Bot,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { WalletConnectButton } from "@/components/ui/WalletConnectButton";
@@ -25,6 +26,7 @@ import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 const activeLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/daos", label: "DAOs", icon: Grid },
+  { href: "/agents", label: "AI Agents", icon: Bot, isNew: true },
   { href: "/proposals", label: "Proposals", icon: FileText },
   { href: "/treasury", label: "Treasury", icon: Shield },
   { href: "/bridge", label: "Bridge", icon: ArrowRightLeft },
@@ -105,6 +107,11 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
                 )}
               />
               <span>{link.label}</span>
+              {link.isNew && !active && (
+                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-primary/15 border border-primary/25 text-primary tracking-wider animate-pulse">
+                  NEW
+                </span>
+              )}
               {active && (
                 <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(124,58,237,0.8)]" />
               )}
