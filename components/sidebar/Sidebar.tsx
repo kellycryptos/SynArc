@@ -34,7 +34,7 @@ const activeLinks = [
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/faucet", label: "Faucet", icon: Droplets },
   { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/docs", label: "Docs", icon: BookOpen },
+  { href: "https://docs.synarcdao.xyz", label: "Docs", icon: BookOpen },
 ];
 
 const comingSoonLinks: { label: string; icon: any }[] = [];
@@ -48,7 +48,11 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
   // Navigate first, then close the mobile drawer so the drawer unmount
   // doesn't cancel the in-flight route change.
   const handleNavClick = (href: string) => {
-    router.push(href);
+    if (href.startsWith("http")) {
+      window.open(href, "_blank", "noopener,noreferrer");
+    } else {
+      router.push(href);
+    }
     // Small defer allows Next.js to start the navigation before the sidebar
     // overlay is removed from the DOM, preventing the route change from
     // being swallowed on mobile browsers.

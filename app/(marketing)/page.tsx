@@ -108,7 +108,7 @@ export default function LandingPage() {
               Launch Dashboard <ArrowRight className="w-5 h-5" />
             </Link>
             <Link 
-              href="/docs"
+              href="https://docs.synarcdao.xyz"
               className="w-full sm:w-auto px-8 py-4 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg"
             >
               View Docs &rarr;

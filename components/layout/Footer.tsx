@@ -15,7 +15,7 @@ const productLinks = [
 ];
 
 const developerLinks = [
-  { label: "Docs", href: "/docs" },
+  { label: "Docs", href: "https://docs.synarcdao.xyz", external: true },
   { label: "GitHub", href: "https://github.com/kellycryptos/SynArc", external: true },
 ];
 

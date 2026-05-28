@@ -41,7 +41,7 @@ export function MarketingNavbar() {
           <Link href="/#treasury" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
             Treasury
           </Link>
-          <Link href="/docs" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+          <Link href="https://docs.synarcdao.xyz" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
             Docs
           </Link>
           <Link href="/faucet" className="text-sm font-medium text-muted hover:text-foreground transition-colors">

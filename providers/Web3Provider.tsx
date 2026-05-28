@@ -39,10 +39,6 @@ export const config = createConfig({
 const privyConfig: PrivyClientConfig = {
   // Explicitly lock to Google, Email, and Wallet — bypasses any Privy Dashboard cache
   loginMethods: ['google', 'email', 'wallet'],
-  loginMethodsAndOrder: {
-    primary: ['google', 'email'],
-    overflow: ['wallet'],
-  },
   appearance: {
     theme: 'dark',
     accentColor: '#7C3AED', // Brand primary color (#7C3AED violet)

@@ -10,6 +10,20 @@ const nextConfig: NextConfig = {
       ? { exclude: ["error", "warn"] }
       : false,
   },
+  async redirects() {
+    return [
+      {
+        source: '/docs',
+        destination: 'https://docs.synarcdao.xyz',
+        permanent: true,
+      },
+      {
+        source: '/docs/:path*',
+        destination: 'https://docs.synarcdao.xyz/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
