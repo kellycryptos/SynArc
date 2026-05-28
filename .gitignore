@@ -36,7 +36,6 @@ yarn-error.log*
 # Temp
 temp/
 tmp/
-gitbook-export/
 
 # IDE
 .vscode/
