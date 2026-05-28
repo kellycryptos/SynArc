@@ -13,6 +13,8 @@ import {
   type Hex 
 } from "viem";
 
+import { ARC_RPC_URL } from "@/lib/arc/config";
+
 // CCTP Chain Configs matching circlefin's official configuration
 export const SOURCE_CHAINS = {
   ETH_SEPOLIA: {
@@ -63,7 +65,7 @@ const DESTINATION_CHAIN = {
   domain: 7,
   tokenMessenger: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
   messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
-  rpcUrl: "https://rpc.testnet.arc.network",
+  rpcUrl: ARC_RPC_URL,
   nativeCurrency: "USDC"
 };
 

@@ -1,9 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useWallets } from "@privy-io/react-auth";
-import { createPublicClient, http, fallback, parseAbi, formatUnits } from "viem";
-import { arcTestnet } from "@/lib/chains/arc";
+import { parseAbi, formatUnits } from "viem";
+import { arcPublicClient } from "@/lib/arc/config";
 import { GOVERNANCE_CONTRACTS } from "@/lib/governance/contracts";
-import { getArcRpcUrls } from "@/lib/rpc/config";
 
 const EURC_CONTRACT_ADDRESS = GOVERNANCE_CONTRACTS.eurc;
 
@@ -31,20 +30,14 @@ export function useEURCBalance() {
     setIsError(false);
 
     try {
-      const rpcUrls = getArcRpcUrls();
-      const publicClient = createPublicClient({
-        chain: arcTestnet,
-        transport: fallback(rpcUrls.map(url => http(url))),
-      });
-
       const [bal, dec] = await Promise.all([
-        publicClient.readContract({
+        arcPublicClient.readContract({
           address: EURC_CONTRACT_ADDRESS,
           abi: erc20Abi,
           functionName: "balanceOf",
           args: [activeWallet.address as `0x${string}`],
         }),
-        publicClient.readContract({
+        arcPublicClient.readContract({
           address: EURC_CONTRACT_ADDRESS,
           abi: erc20Abi,
           functionName: "decimals",

@@ -1,9 +1,10 @@
 import { NetworkConfig } from "@/types";
+import { ARC_RPC_URL } from "@/lib/arc/config";
 
 export const arcTestnet: NetworkConfig = {
   chainId: 5042002,
   name: "Arc Testnet",
-  rpcUrl: "https://rpc.testnet.arc.network",
+  rpcUrl: ARC_RPC_URL,
   currencySymbol: "USDC",
   blockExplorer: "https://testnet.arcscan.app",
 };

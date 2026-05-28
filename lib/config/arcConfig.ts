@@ -5,6 +5,8 @@
  * This file documents the Arc-native infrastructure setup.
  */
 
+import { ARC_RPC_URL } from "@/lib/arc/config";
+
 export const ARC_CONFIG = {
   // Arc Testnet Chain Information
   chain: {
@@ -20,8 +22,8 @@ export const ARC_CONFIG = {
     // Personalized RPC endpoint (from ARC CLI: arc-canteen rpc-url)
     // Set NEXT_PUBLIC_ARC_RPC_URL in .env.local
     primary: process.env.NEXT_PUBLIC_ARC_RPC_URL,
-    // Public fallback RPC endpoint
-    fallback: 'https://rpc.testnet.arc.network',
+    // Fallback — uses the same centralized URL, no public fallback
+    fallback: ARC_RPC_URL,
     // Health check timeout (ms)
     healthCheckTimeout: 5000,
     // Health check interval (ms)

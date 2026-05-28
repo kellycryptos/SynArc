@@ -27,6 +27,7 @@ import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 import { useTheme } from "@/providers/ThemeProvider";
 import { ethers, Contract, formatUnits } from "ethers";
 import { getResilientProvider } from "@/lib/rpc/config";
+import { ARC_RPC_URL } from "@/lib/arc/config";
 
 export default function SettingsPage() {
   const { walletAddress, isAuthenticated } = useAuth();
@@ -60,9 +61,8 @@ export default function SettingsPage() {
 
     try {
       // Test 1 — RPC connection
-      addLog("Testing RPC connection...");
-      const rpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
-      const provider = new ethers.JsonRpcProvider(rpcUrl);
+      addLog(`Testing RPC connection to: ${ARC_RPC_URL.slice(0, 60)}...`);
+      const provider = new ethers.JsonRpcProvider(ARC_RPC_URL);
       const blockNumber = await provider.getBlockNumber();
       addLog(`✅ RPC connected. Latest block: ${blockNumber}`);
 
@@ -609,8 +609,8 @@ export default function SettingsPage() {
                 <span className="text-white font-medium">5042002</span>
               </div>
               <div className="space-y-1 col-span-2">
-                <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">RPC Endpoint</span>
-                <span className="text-white font-mono break-all">https://rpc.testnet.arc.network</span>
+                <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">RPC Endpoint (Authenticated)</span>
+                <span className="text-white font-mono break-all text-[11px]">{process.env.NEXT_PUBLIC_ARC_RPC_URL || "Not configured"}</span>
               </div>
               <div className="space-y-1 col-span-2">
                 <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Block Explorer</span>

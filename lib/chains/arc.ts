@@ -1,2 +1,2 @@
-import { arcTestnet } from '@/providers/Web3Provider';
+import { arcTestnet } from "@/lib/arc/config";
 export { arcTestnet };

@@ -8,16 +8,10 @@ import { checkRpcHealth } from "./health";
  * Supports personalized RPC URLs from ARC CLI (arc-canteen rpc-url).
  */
 
-export const ARC_TESTNET_RPC = 'https://rpc.testnet.arc.network';
+export const ARC_TESTNET_RPC = process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.network';
 
-// Priority array of RPC endpoints with fallback support
-// Automatically detects rate-limiting and switches to backup nodes
-export const RPC_URLS = [
-  'https://rpc.testnet.arc.network',
-  'https://arc-testnet.drpc.org',
-  'https://testnet.arcscan.app/rpc', // ArcScan reliable fallback
-  'https://5042002.rpc.thirdweb.com'
-].filter(url => url.trim() !== '');
+// Center-locked priority array to ensure single reliable Arc RPC usage consistently
+export const RPC_URLS = [ARC_TESTNET_RPC];
 
 /**
  * Initialize dynamic client-side RPC fallbacks in-place.

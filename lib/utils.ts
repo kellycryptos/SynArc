@@ -9,7 +9,7 @@ export function cn(...inputs: ClassValue[]) {
  * Parses and formats EVM/Arc-specific transaction errors for the UI
  */
 export function parseArcError(err: any): string {
-  const errMsg = (err?.reason || err?.message || "").toLowerCase();
+  const errMsg = (err?.reason || err?.message || err?.toString() || "").toLowerCase();
   
   if (errMsg.includes("insufficient funds") || errMsg.includes("intrinsic transaction cost")) {
     return "Insufficient native USDC for gas. Arc is a stablecoin-native network where transaction fees are paid directly in USDC. Please visit the Faucet to claim testnet gas tokens.";
@@ -20,7 +20,23 @@ export function parseArcError(err: any): string {
   }
   
   if (errMsg.includes("capacity exceeded") || errMsg.includes("rate limit") || errMsg.includes("429") || errMsg.includes("too many requests") || errMsg.includes("unauthorized")) {
-    return "Arc Network RPC node is currently rate-limited or busy. SynArc is attempting failovers, please wait a moment and retry.";
+    return "Arc network temporarily unavailable. Please wait a moment and retry.";
+  }
+
+  // Generic RPC node data errors or network fetch failures
+  if (
+    errMsg.includes("rpc node data error") ||
+    errMsg.includes("rpc error") ||
+    errMsg.includes("failed to fetch") ||
+    errMsg.includes("network request failed") ||
+    errMsg.includes("fetch failed") ||
+    errMsg.includes("econnrefused") ||
+    errMsg.includes("socket hang up") ||
+    errMsg.includes("etimedout") ||
+    errMsg.includes("network error") ||
+    errMsg.includes("could not coalesce error")
+  ) {
+    return "Arc network temporarily unavailable. Please check your connection and try again.";
   }
 
   if (errMsg.includes("call_exception") || errMsg.includes("execution reverted")) {
