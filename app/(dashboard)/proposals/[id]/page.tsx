@@ -5,26 +5,22 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useTreasury } from "@/hooks/useTreasury";
+import { useUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useToken } from "@/hooks/useToken";
+import { getResilientProvider } from "@/lib/rpc/config";
 
-import { useBalance, useSignMessage } from "wagmi";
+import { useBalance } from "wagmi";
 import { formatUnits } from "viem";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useWallets } from "@privy-io/react-auth";
-import { BrowserProvider } from "ethers";
+import { BrowserProvider, Contract } from "ethers";
 import { 
-  FileText, 
   ThumbsUp, 
   ThumbsDown, 
   CircleDot, 
-  Check, 
-  Lock, 
-  X, 
   ShieldCheck, 
-  Coins, 
-  PenTool, 
-  Sparkles, 
   AlertCircle,
   ArrowLeft,
   Calendar,
@@ -39,7 +35,6 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   const router = useRouter();
   const { isAuthenticated, walletAddress, login } = useAuth();
   const { wallets } = useWallets();
-  const { signMessageAsync } = useSignMessage();
 
   const { proposals, initialized, initializeStore, userVotes, castVote, executeProposal } = useGovernanceStore();
   const proposal = proposals.find(p => p.id === unwrappedParams.id);
@@ -109,71 +104,53 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     }
   }, [initialized, proposal, router]);
 
-  // Voting Power Hook
-  const { data: balanceData } = useBalance({
-    address: walletAddress ? (walletAddress as `0x${string}`) : undefined,
-    query: {
-      staleTime: 30000,
-      gcTime: 300000,
-      refetchOnWindowFocus: false,
-    }
-  });
+  const { votingPower: sarcPower } = useToken(walletAddress);
+  const { balance: usdcBalance } = useUSDCBalance();
 
   const activeBalance = useMemo(() => {
     if (!walletAddress) return 0.0;
-    if (typeof window !== "undefined") {
-      const savedBalance = localStorage.getItem(`synarc_balance_override_${walletAddress}`);
-      if (savedBalance) return parseFloat(savedBalance);
+    const usdcPower = usdcBalance ? parseFloat(usdcBalance) : 0;
+    return usdcPower + sarcPower;
+  }, [walletAddress, usdcBalance, sarcPower]);
+  const [voting, setVoting] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [votingError, setVotingError] = useState<string | null>(null);
+  const [hasUserVotedOnChain, setHasUserVotedOnChain] = useState(false);
+
+  useEffect(() => {
+    async function checkVoted() {
+      if (!walletAddress || !proposal) return;
+      try {
+        const provider = await getResilientProvider();
+        const governorAddress = process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702";
+        const GOVERNOR_ABI = [
+          "function hasVoted(uint256 proposalId, address account) external view returns (bool)"
+        ];
+        const governorContract = new Contract(governorAddress, GOVERNOR_ABI, provider);
+        const rawId = Number(proposal.id.replace("SIP-", ""));
+        const voted = await governorContract.hasVoted(rawId, walletAddress);
+        setHasUserVotedOnChain(voted);
+      } catch (err) {
+        console.error("Error checking on-chain voted state:", err);
+      }
     }
-    return balanceData ? parseFloat(formatUnits(balanceData.value, 18)) : 1500.0;
-  }, [walletAddress, balanceData]);
+    checkVoted();
+  }, [walletAddress, proposal, voting, initialized]);
 
-  // Modal and signing UI states
-  const [selectedOption, setSelectedOption] = useState<"For" | "Against" | "Abstain" | null>(null);
-  const [isSigning, setIsSigning] = useState(false);
-  const [signingStep, setSigningStep] = useState<"idle" | "requesting" | "submitting" | "completed" | "error">("idle");
-  const [generatedSignature, setGeneratedSignature] = useState<string>("");
-
-  if (!proposal) return <div className="pt-24 min-h-screen flex items-center justify-center text-text-tertiary">Loading...</div>;
-
-  const totalVotes = proposal.totalVotes;
-  const forPercentage = totalVotes > 0 ? (proposal.forVotes / totalVotes) * 100 : 0;
-  const againstPercentage = totalVotes > 0 ? (proposal.againstVotes / totalVotes) * 100 : 0;
-  const abstainPercentage = totalVotes > 0 ? (proposal.abstainVotes / totalVotes) * 100 : 0;
-  const userVoteRecord = userVotes[proposal.id];
-  const isProposalActive = proposal.status === "Active";
-  const isProposalPassed = (proposal.status !== "Active" && proposal.status !== "Pending" && proposal.status !== "Executed" && proposal.forVotes > proposal.againstVotes);
-
-  // Handle Triggering a Vote
-  const handleVoteClick = (option: "For" | "Against" | "Abstain") => {
-    if (!isAuthenticated) {
-      login();
+  const castVoteOnChain = async (proposalId: string, support: 0 | 1 | 2) => {
+    const usdcVal = usdcBalance ? parseFloat(usdcBalance) : 0;
+    if (usdcVal < 0.01) {
+      setVotingError('You need testnet USDC for gas. Claim from faucet.circle.com');
       return;
     }
-    if (userVoteRecord) return;
 
-    setSelectedOption(option);
-    setSigningStep("idle");
-    setGeneratedSignature("");
-  };
-
-  const handleSignAndSubmit = async () => {
-    if (!selectedOption || !walletAddress) return;
-
-    setIsSigning(true);
-    setSigningStep("requesting");
+    setVoting(true);
+    setVotingError(null);
+    setTxHash(null);
+    setStatus('Preparing wallet...');
 
     try {
-      const timestamp = new Date().toISOString();
-      const message = `SynArc DAO Governance Vote
----------------------------
-Proposal ID: ${proposal.id}
-Proposal Title: ${proposal.title}
-Choice: ${selectedOption}
-Voting Weight: ${activeBalance.toFixed(2)} USDC
-Voter Address: ${walletAddress}
-Timestamp: ${timestamp}`;
-
       const privy = wallets.find(w => w.walletClientType === "privy");
       if (!privy) {
         throw new Error("Privy wallet not found");
@@ -186,38 +163,45 @@ Timestamp: ${timestamp}`;
       }
 
       const ethereumProvider = await privy.getEthereumProvider();
-      const browserProvider = new BrowserProvider(ethereumProvider);
-      const signer = await browserProvider.getSigner();
+      const provider = new BrowserProvider(ethereumProvider);
+      const signer = await provider.getSigner();
 
-      const signature = await signMessageAsync({ message });
-      setSigningStep("submitting");
+      const governorAddress = process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702";
+      const GOVERNOR_ABI = [
+        "function castVote(uint256 proposalId, uint8 support) external returns (uint256)"
+      ];
+      
+      const governorContract = new Contract(governorAddress, GOVERNOR_ABI, signer);
+      const rawId = Number(proposalId.replace("SIP-", ""));
 
-      await castVote(proposal.id, selectedOption, activeBalance, signature, signer);
-
-      setGeneratedSignature(signature);
-      setSigningStep("completed");
+      setStatus('Submitting vote on-chain...');
+      const tx = await governorContract.castVote(rawId, support);
+      setTxHash(tx.hash);
+      setStatus('Waiting for transaction mining...');
+      await tx.wait();
+      setStatus('Vote recorded on-chain! ✅');
+      
+      initializeStore();
     } catch (err: any) {
-      console.error("Cryptographic signing rejected", err);
-      const isExplicitRejection = err?.message?.toLowerCase().includes("rejected") || 
-                                  err?.message?.toLowerCase().includes("user denied") ||
-                                  err?.message?.toLowerCase().includes("user rejected") ||
-                                  err?.code === 4001;
-      if (isExplicitRejection) {
-        setSigningStep("error");
-      } else {
-        setSigningStep("idle");
-      }
+      console.error("Failed to cast vote on-chain:", err);
+      setVotingError(err?.reason || err?.message || 'Failed to cast vote');
+      setStatus(null);
     } finally {
-      setIsSigning(false);
+      setVoting(false);
     }
   };
 
-  const handleCloseModal = () => {
-    if (isSigning) return;
-    setSelectedOption(null);
-    setSigningStep("idle");
-    setGeneratedSignature("");
-  };
+  if (!proposal) return <div className="pt-24 min-h-screen flex items-center justify-center text-text-tertiary">Loading...</div>;
+
+  const totalVotes = proposal.totalVotes;
+  const forPercentage = totalVotes > 0 ? (proposal.forVotes / totalVotes) * 100 : 0;
+  const againstPercentage = totalVotes > 0 ? (proposal.againstVotes / totalVotes) * 100 : 0;
+  const abstainPercentage = totalVotes > 0 ? (proposal.abstainVotes / totalVotes) * 100 : 0;
+  const userVoteRecord = userVotes[proposal.id];
+  const isProposalActive = proposal.status === "Active";
+  const isProposalPassed = (proposal.status !== "Active" && proposal.status !== "Pending" && proposal.status !== "Executed" && proposal.forVotes > proposal.againstVotes);
+
+
 
   const handleExecute = async () => {
     if (!isAuthenticated) {
@@ -397,39 +381,71 @@ Timestamp: ${timestamp}`;
               </div>
 
               {/* Voting Action Area */}
-              <div className="mt-8 pt-6 border-t border-border-subtle">
+              <div className="mt-8 pt-6 border-t border-border-subtle space-y-4">
+                {votingError && (
+                  <div className="p-3 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{votingError}</span>
+                  </div>
+                )}
+
                 {isProposalActive ? (
-                  userVoteRecord ? (
+                  hasUserVotedOnChain ? (
                     <div className="w-full py-3 rounded-xl bg-surface border border-emerald-500/25 flex flex-col items-center justify-center gap-1">
                       <div className="text-sm font-bold text-emerald-400 flex items-center gap-2">
                         <ShieldCheck className="w-4 h-4" />
                         Cast Complete
                       </div>
-                      <span className="text-xs text-text-tertiary">Voted {userVoteRecord.option} with {userVoteRecord.vp.toLocaleString()} VP</span>
+                      <span className="text-xs text-text-tertiary">Your vote is registered on-chain ✅</span>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-2">
-                      <button
-                        onClick={() => handleVoteClick("For")}
-                        className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-success/10 hover:border-success/30 hover:text-success text-sm font-bold transition-all flex flex-col items-center gap-1.5 cursor-pointer"
-                      >
-                        <ThumbsUp className="w-4 h-4" />
-                        For
-                      </button>
-                      <button
-                        onClick={() => handleVoteClick("Against")}
-                        className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-danger/10 hover:border-danger/30 hover:text-danger text-sm font-bold transition-all flex flex-col items-center gap-1.5 cursor-pointer"
-                      >
-                        <ThumbsDown className="w-4 h-4" />
-                        Against
-                      </button>
-                      <button
-                        onClick={() => handleVoteClick("Abstain")}
-                        className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-surface-elevated hover:text-foreground text-sm font-bold transition-all flex flex-col items-center gap-1.5 cursor-pointer"
-                      >
-                        <CircleDot className="w-4 h-4" />
-                        Abstain
-                      </button>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          onClick={() => castVoteOnChain(proposal.id, 1)}
+                          disabled={voting}
+                          className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-success/10 hover:border-success/30 hover:text-success text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          <ThumbsUp className="w-4 h-4" />
+                          👍 For
+                        </button>
+                        <button
+                          onClick={() => castVoteOnChain(proposal.id, 0)}
+                          disabled={voting}
+                          className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-danger/10 hover:border-danger/30 hover:text-danger text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          <ThumbsDown className="w-4 h-4" />
+                          👎 Against
+                        </button>
+                        <button
+                          onClick={() => castVoteOnChain(proposal.id, 2)}
+                          disabled={voting}
+                          className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-surface-elevated hover:text-foreground text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          <CircleDot className="w-4 h-4" />
+                          ⚪ Abstain
+                        </button>
+                      </div>
+
+                      {voting && (
+                        <div className="p-3 bg-primary/10 border border-primary/20 rounded-xl text-xs text-purple-300 animate-pulse flex items-center gap-2 justify-center">
+                          <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                          <span>{status || 'Submitting vote on-chain...'}</span>
+                        </div>
+                      )}
+
+                      {txHash && (
+                        <div className="text-center">
+                          <a 
+                            href={`https://testnet.arcscan.app/tx/${txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-bold"
+                          >
+                            View on ArcScan ✅
+                          </a>
+                        </div>
+                      )}
                     </div>
                   )
                 ) : (
@@ -437,6 +453,18 @@ Timestamp: ${timestamp}`;
                     Voting Terminated
                   </button>
                 )}
+
+                <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl text-xs text-center space-y-1">
+                  <span className="text-text-tertiary">Real on-chain voting requires gas.</span>
+                  <a 
+                    href="https://faucet.circle.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-primary hover:underline font-bold block"
+                  >
+                    🚰 Claim USDC Gas Faucet
+                  </a>
+                </div>
               </div>
             </GlassCard>
 
@@ -571,146 +599,7 @@ Timestamp: ${timestamp}`;
         </div>
       </div>
 
-      {/* Floating Premium Modal (Signing & Authorization) */}
-      <AnimatePresence>
-        {selectedOption && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-background/80 backdrop-blur-md"
-              onClick={handleCloseModal}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              transition={{ duration: 0.3 }}
-              className="relative z-10 w-full max-w-lg glass-elevated rounded-3xl border border-border-thin p-6 md:p-8 flex flex-col gap-6"
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between pb-3 border-b border-border-subtle">
-                <div className="space-y-1">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 border border-primary/20 text-purple-400">
-                    <Sparkles className="w-3 h-3" />
-                    Off-chain Gasless Voting
-                  </div>
-                  <h3 className="text-xl font-bold font-heading text-white">Authorize Governance Vote</h3>
-                </div>
-                <button onClick={handleCloseModal} disabled={isSigning} className="p-1.5 rounded-xl hover:bg-surface-elevated text-text-tertiary hover:text-foreground transition-all cursor-pointer">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
 
-              {/* Vote Details Summary */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">Active Governance Proposal</span>
-                  <div className="p-4 bg-surface rounded-2xl border border-border-thin font-medium text-text-primary text-sm">
-                    {proposal.title}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">Selected Choice</span>
-                    <div className={`p-3.5 rounded-2xl border font-bold text-center text-sm flex items-center justify-center gap-2
-                      ${selectedOption === "For" ? "bg-success/10 border-success/30 text-success" :
-                        selectedOption === "Against" ? "bg-danger/10 border-danger/30 text-danger" :
-                        "bg-surface-elevated border-border-thin text-text-primary"
-                      }`}>
-                      {selectedOption === "For" ? <ThumbsUp className="w-4 h-4" /> :
-                        selectedOption === "Against" ? <ThumbsDown className="w-4 h-4" /> :
-                        <CircleDot className="w-4 h-4" />
-                      }
-                      Vote {selectedOption}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">Voting Weight (VP)</span>
-                    <div className="p-3.5 bg-surface-elevated border border-border-thin rounded-2xl font-bold text-center text-sm text-primary flex items-center justify-center gap-1.5">
-                      <Coins className="w-4 h-4 text-primary" />
-                      {activeBalance.toLocaleString()} VP
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary flex items-center gap-1">
-                    <Lock className="w-3 h-3 text-purple-400" />
-                    Cryptographic Payload to Sign
-                  </span>
-                  <div className="p-4 bg-background font-mono text-[10px] text-text-secondary border border-border-subtle rounded-2xl select-none leading-relaxed whitespace-pre overflow-x-auto">
-{`SynArc Governance Signature Request
----------------------------------------
-Voter: ${walletAddress?.substring(0, 16)}...
-Weight: ${activeBalance.toLocaleString()} USDC
-Proposal ID: ${proposal.id}
-Choice: ${selectedOption}
-Timestamp: ${new Date().toLocaleTimeString()}
----------------------------------------
-Payload verified by Arc Security layers.`}
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4 pt-3 border-t border-border-subtle">
-                {signingStep === "requesting" && (
-                  <div className="p-3.5 bg-primary/10 border border-primary/20 rounded-2xl flex flex-col gap-2 text-xs text-purple-300 animate-pulse">
-                    <div className="flex items-center gap-3">
-                      <PenTool className="w-4 h-4 animate-spin text-purple-400" />
-                      <span className="font-bold">Awaiting signature confirmation...</span>
-                    </div>
-                    <span className="text-[10px] text-purple-400/90 font-semibold pl-7 block">
-                      👉 Please confirm the signature in your wallet/browser extension popup.
-                    </span>
-                  </div>
-                )}
-                {signingStep === "submitting" && (
-                  <div className="p-3.5 bg-cyan-soft/10 border border-cyan-soft/20 rounded-2xl flex items-center gap-3 text-xs text-cyan-300">
-                    <ShieldCheck className="w-4 h-4 animate-pulse text-cyan-soft" />
-                    Broadcasting signed voting weight to Arc Testnet validators...
-                  </div>
-                )}
-                {signingStep === "error" && (
-                  <div className="p-3.5 bg-danger/10 border border-danger/20 rounded-2xl flex items-center gap-3 text-xs text-danger">
-                    <AlertCircle className="w-4 h-4 text-danger" />
-                    Signature rejected or wallet connection lost. Please try again.
-                  </div>
-                )}
-                {signingStep === "completed" && (
-                  <div className="space-y-3.5">
-                    <div className="p-3.5 bg-success/10 border border-success/20 rounded-2xl flex items-center gap-3 text-xs text-success-glow text-emerald-400 font-bold">
-                      <Check className="w-4.5 h-4.5 animate-bounce" />
-                      Vote Cryptographically Sealed & Counted!
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-3 justify-end pt-1">
-                  {signingStep !== "completed" ? (
-                    <>
-                      <button onClick={handleCloseModal} disabled={isSigning} className="px-5 py-2.5 border border-border-thin hover:bg-surface-elevated rounded-xl font-semibold text-sm transition-all cursor-pointer">
-                        Cancel
-                      </button>
-                      <button onClick={handleSignAndSubmit} disabled={isSigning} className="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-sm transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-primary/20">
-                        <Lock className="w-4 h-4" />
-                        Sign & Cast Vote
-                      </button>
-                    </>
-                  ) : (
-                    <button onClick={handleCloseModal} className="px-6 py-2.5 rounded-xl bg-success/20 border border-success/30 hover:bg-success/35 text-success font-bold text-sm transition-all cursor-pointer">
-                      Close Control Sheet
-                    </button>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

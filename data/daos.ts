@@ -36,7 +36,7 @@ export const DAO_REGISTRY: DAOInfo[] = [
     id: 'aave',
     name: 'Aave',
     description: 'Non-custodial liquidity markets to earn interest on supplying and borrowing assets on Arc.',
-    logo: 'https://cdn.prod.website-files.com/68af181813eec5493447a1ae/6900dc93490611b54729de1b_Logomark-dark.svg',
+    logo: 'https://assets.coingecko.com/coins/images/12645/small/AAVE.png',
     status: 'active',
     verified: true,
     category: 'Borrow/Lend',

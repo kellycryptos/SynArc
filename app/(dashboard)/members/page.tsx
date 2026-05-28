@@ -3,17 +3,15 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Shield, Search, AlertCircle, RefreshCw, Users, Calendar, Wallet } from "lucide-react";
-import { ethers, Contract, formatUnits } from "ethers";
+import { ethers, Contract } from "ethers";
 import { GOVERNANCE_CONTRACTS, ERC20ABI } from "@/lib/governance/contracts";
 import { getResilientProvider } from "@/lib/rpc/config";
 
 interface Member {
-  id: string;
   address: string;
-  tokenBalance: number;
+  sarcBalance: number;
   usdcBalance: number;
   joinDate: string;
-  timestamp: number;
 }
 
 export default function MembersPage() {
@@ -28,106 +26,89 @@ export default function MembersPage() {
       setError(null);
 
       const provider = await getResilientProvider();
-
       const tokenAddress = GOVERNANCE_CONTRACTS.token;
-      const tokenContract = new Contract(tokenAddress, ERC20ABI, provider);
-      const usdcContract = new Contract("0x3600000000000000000000000000000000000000", ERC20ABI, provider);
+      const usdcAddress = GOVERNANCE_CONTRACTS.eurc;
 
-      // Scrape Transfer events from Token contract in chunks of 5000 blocks to prevent eth_getLogs range limits
-      const filter = tokenContract.filters.Transfer();
+      const tokenContract = new Contract(tokenAddress, ERC20ABI, provider);
+      const usdcContract = new Contract(usdcAddress, ERC20ABI, provider);
+
       const latestBlock = await provider.getBlockNumber();
       const chunkSize = 5000;
-      const events = [];
-      
-      for (let i = 0; i <= latestBlock; i += chunkSize) {
-        const toBlock = Math.min(i + chunkSize - 1, latestBlock);
-        const chunk = await tokenContract.queryFilter(filter, i, toBlock);
-        events.push(...chunk);
-      }
-      
-      const holders = new Set<string>();
-      const holderFirstBlock = new Map<string, number>();
+      const allEvents: any[] = [];
 
-      events.forEach(event => {
-        const log = event as ethers.EventLog;
-        if (log.args) {
-          const from = log.args[0] as string;
-          const to = log.args[1] as string;
-          const blockNum = event.blockNumber;
-          
-          if (to && to !== ethers.ZeroAddress) {
-            holders.add(to);
-            const current = holderFirstBlock.get(to);
-            if (current === undefined || blockNum < current) {
-              holderFirstBlock.set(to, blockNum);
-            }
-          }
-          if (from && from !== ethers.ZeroAddress) {
-            holders.add(from);
-            const current = holderFirstBlock.get(from);
-            if (current === undefined || blockNum < current) {
-              holderFirstBlock.set(from, blockNum);
-            }
-          }
+      // Fetch Transfer events in chunks of 5000 blocks to avoid RPC timeouts
+      for (let fromBlock = 0; fromBlock <= latestBlock; fromBlock += chunkSize) {
+        const toBlock = Math.min(fromBlock + chunkSize - 1, latestBlock);
+        try {
+          const events = await tokenContract.queryFilter(
+            tokenContract.filters.Transfer(),
+            fromBlock,
+            toBlock
+          );
+          allEvents.push(...events);
+        } catch (err) {
+          console.error(`Error fetching blocks ${fromBlock}-${toBlock}:`, err);
         }
-      });
+      }
 
-      // Fetch block timestamps in parallel
-      const distinctBlockNumbers = Array.from(new Set(Array.from(holderFirstBlock.values())));
+      // Unique recipient addresses (exclude zero address mints from/to)
+      const memberAddresses = [...new Set(
+        allEvents
+          .filter(e => e.args && e.args[1] !== ethers.ZeroAddress)
+          .map(e => e.args[1] as string)
+      )];
+
+      // Fetch block timestamps for accurate join dates (cap at 100 unique blocks)
+      const distinctBlockNumbers = Array.from(new Set(allEvents.map(e => e.blockNumber)));
       const blockMap = new Map<number, number>();
-      
       await Promise.all(
-        distinctBlockNumbers.map(async (blockNum) => {
+        distinctBlockNumbers.slice(0, 100).map(async (blockNum) => {
           try {
             const block = await provider.getBlock(blockNum);
-            if (block) {
-              blockMap.set(blockNum, block.timestamp);
-            }
+            if (block) blockMap.set(blockNum, block.timestamp);
           } catch (err) {
             console.error(`Failed to fetch block ${blockNum}:`, err);
           }
         })
       );
 
-      // Fetch balances for each holder
-      const memberList: Member[] = await Promise.all(
-        Array.from(holders).map(async (holder, idx) => {
-          const [tokenBal, usdcBal] = await Promise.all([
-            tokenContract.balanceOf(holder).catch(() => 0n),
-            usdcContract.balanceOf(holder).catch(() => 0n),
+      // Fetch sARC + USDC balances for each member in parallel
+      const membersList = await Promise.all(
+        memberAddresses.map(async (address) => {
+          const [sarcRaw, usdcRaw] = await Promise.all([
+            tokenContract.balanceOf(address).catch(() => 0n),
+            usdcContract.balanceOf(address).catch(() => 0n),
           ]);
 
-          const tokenBalanceNum = Number(formatUnits(tokenBal, 18));
-          const usdcBalanceNum = Number(formatUnits(usdcBal, 6));
-          
-          const firstBlock = holderFirstBlock.get(holder);
-          const timestamp = firstBlock ? (blockMap.get(firstBlock) || (Date.now() / 1000)) : (Date.now() / 1000);
+          const firstEvent = allEvents.find(e => e.args && e.args[1] === address);
+          const firstBlock = firstEvent?.blockNumber;
+          const timestamp = firstBlock
+            ? (blockMap.get(firstBlock) ?? Date.now() / 1000)
+            : Date.now() / 1000;
+
           const joinDate = new Date(timestamp * 1000).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
+            year: "numeric",
+            month: "short",
+            day: "numeric",
           });
 
           return {
-            id: idx.toString(),
-            address: holder,
-            tokenBalance: tokenBalanceNum,
-            usdcBalance: usdcBalanceNum,
+            address,
+            sarcBalance: Number(sarcRaw) / 1e18,    // sARC uses 18 decimals
+            usdcBalance: Number(usdcRaw) / 1e6,      // USDC/EURC uses 6 decimals
             joinDate,
-            timestamp,
           };
         })
       );
 
-      // Filter out holders with 0 token balance and sort by token balance descending
-      const activeMembers = memberList
-        .filter(m => m.tokenBalance > 0)
-        .sort((a, b) => b.tokenBalance - a.tokenBalance);
+      const activeMembers = membersList
+        .filter(m => m.sarcBalance > 0)
+        .sort((a, b) => b.sarcBalance - a.sarcBalance);
 
       setMembers(activeMembers);
     } catch (err: any) {
-      console.error("Failed to fetch on-chain token holders:", err);
-      setError(err?.message || "Failed to load members. Please try again.");
+      console.error("Failed to fetch members:", err);
+      setError(err?.message || "Failed to load members.");
     } finally {
       setIsLoading(false);
     }
@@ -138,7 +119,7 @@ export default function MembersPage() {
   }, [fetchMembers]);
 
   const filteredMembers = useMemo(() => {
-    return members.filter(m => 
+    return members.filter(m =>
       m.address.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [members, searchTerm]);
@@ -152,7 +133,7 @@ export default function MembersPage() {
             <div className="flex-1">
               <h3 className="font-semibold text-foreground">Failed to load members</h3>
               <p className="text-sm text-muted mt-1">{error}</p>
-              <button 
+              <button
                 onClick={fetchMembers}
                 className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-md bg-warning/10 hover:bg-warning/15 text-warning text-sm font-medium transition-colors cursor-pointer"
               >
@@ -169,19 +150,19 @@ export default function MembersPage() {
   return (
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        
+
         {/* Header & Search */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">DAO Members</h1>
             <p className="text-muted mt-1">Real-time token holders and voters on Arc Testnet.</p>
           </div>
-          
+
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input 
-              type="text" 
-              placeholder="Search by address..." 
+            <input
+              type="text"
+              placeholder="Search by address..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-4 py-2 w-full sm:w-64 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-sm"
@@ -223,7 +204,6 @@ export default function MembersPage() {
           ) : filteredMembers.length > 0 ? (
             filteredMembers.map((member, i) => {
               const truncatedAddress = `${member.address.slice(0, 6)}...${member.address.slice(-4)}`;
-              // Generative background seed based on address
               const avatarGradient = `bg-gradient-to-tr from-purple-deep via-primary/30 to-arc-blue`;
               const initials = member.address.slice(2, 4).toUpperCase();
 
@@ -236,7 +216,7 @@ export default function MembersPage() {
                       </div>
                       <div>
                         <h3 className="font-bold font-mono text-sm" title={member.address}>{truncatedAddress}</h3>
-                        <p className="text-xs text-muted font-mono" title={member.address}>{truncatedAddress}</p>
+                        <p className="text-xs text-muted font-mono" title={member.address}>{member.address}</p>
                       </div>
                     </div>
                   </div>
@@ -245,10 +225,10 @@ export default function MembersPage() {
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-muted flex items-center gap-1.5">
                         <Shield className="w-4 h-4 text-primary" />
-                        SynArcToken Balance
+                        sARC Balance
                       </span>
                       <span className="font-semibold font-mono text-white">
-                        {member.tokenBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} sARC
+                        {member.sarcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} sARC
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
@@ -274,7 +254,9 @@ export default function MembersPage() {
               );
             })
           ) : (
-            <div className="col-span-full py-12 text-center text-text-tertiary">No members found matching that search.</div>
+            <div className="col-span-full py-12 text-center text-text-tertiary">
+              {searchTerm ? "No members found matching that search." : "No active members found on-chain yet."}
+            </div>
           )}
         </div>
 

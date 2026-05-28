@@ -249,7 +249,14 @@ export default function DAOsPage() {
                     : "from-white/10 to-white/5"
                 }`}>
                   {dao.logo ? (
-                    <img src={dao.logo} alt={dao.name} className="w-full h-full object-cover" />
+                    <img 
+                      src={dao.logo} 
+                      alt={dao.name} 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => {
+                        e.currentTarget.src = '/dao-placeholder.png';
+                      }}
+                    />
                   ) : (
                     <span className="text-sm font-extrabold text-white">{logoInitials}</span>
                   )}

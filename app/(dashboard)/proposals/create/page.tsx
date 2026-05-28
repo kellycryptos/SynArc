@@ -1,11 +1,12 @@
 "use client";
-
+import React from "react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useToken } from "@/hooks/useToken";
+import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown } from "lucide-react";
@@ -19,9 +20,10 @@ export default function CreateProposalPage() {
   const { wallets } = useWallets();
   const { submitProposal } = useGovernanceStore();
   const { votingPower, loading: tokenLoading } = useToken(walletAddress);
+  const { balance: usdcBalance } = useUSDCBalance();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<React.ReactNode | null>(null);
 
   // AI proposal generator states
   const [userIdea, setUserIdea] = useState("");
@@ -91,6 +93,25 @@ export default function CreateProposalPage() {
     e.preventDefault();
     if (!isAuthenticated || !walletAddress) {
       login();
+      return;
+    }
+
+    const usdcVal = usdcBalance ? parseFloat(usdcBalance) : 0;
+    if (usdcVal <= 0) {
+      setError(
+        <span>
+          You need testnet USDC for gas. Claim from{" "}
+          <a 
+            href="https://faucet.circle.com" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="underline font-bold text-primary hover:text-purple-300"
+          >
+            faucet
+          </a>{" "}
+          first
+        </span>
+      );
       return;
     }
 

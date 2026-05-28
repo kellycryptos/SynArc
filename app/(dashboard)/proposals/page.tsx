@@ -48,7 +48,18 @@ export default function ProposalsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Governance Proposals</h1>
-            <p className="text-muted mt-1">Review, discuss, and vote on Arc Testnet DAO proposals.</p>
+            <p className="text-muted mt-1 flex flex-wrap items-center gap-1.5 text-sm">
+              <span>Review, discuss, and vote on Arc Testnet DAO proposals.</span>
+              <span className="text-text-tertiary">•</span>
+              <a 
+                href="https://faucet.circle.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-primary hover:underline font-bold"
+              >
+                🚰 Claim USDC Gas Faucet
+              </a>
+            </p>
           </div>
           <button
             onClick={() => {
