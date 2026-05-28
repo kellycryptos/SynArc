@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useWallets } from "@privy-io/react-auth";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
 import { 
@@ -10,17 +11,15 @@ import {
   Coins, 
   Info, 
   Check, 
-  HelpCircle, 
   ChevronDown, 
   ArrowRight,
-  TrendingUp,
   Clock,
   ExternalLink,
   Loader2
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 
-// ABI for ERC20 balanceOf & decimals
+// ABI for ERC20 balanceOf
 const erc20Abi = parseAbi([
   "function balanceOf(address owner) view returns (uint256)",
   "function decimals() view returns (uint8)",
@@ -55,7 +54,7 @@ const SOURCE_CHAINS = [
   { 
     id: "SOL_DEVNET", 
     name: "Solana Devnet", 
-    tokenAddress: "4zMMC9SRGx2txA24js12jccVwMAwFFdp47rFZ5y76hA3", 
+    tokenAddress: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU", 
     rpcUrl: "https://api.devnet.solana.com",
     icon: "☀️",
     color: "text-purple-400"
@@ -68,23 +67,19 @@ interface BridgeModalProps {
   onSuccess?: () => void;
 }
 
-type BridgeProgress = "idle" | "initiating" | "burning" | "minting" | "success" | "error";
-
 export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   const { isAuthenticated, login } = useAuth();
-  const { wallets } = useWallets();
-  const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
-
   const [selectedChain, setSelectedChain] = useState(SOURCE_CHAINS[0]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [sourceBalance, setSourceBalance] = useState<string>("0.00");
   const [balanceLoading, setBalanceLoading] = useState(false);
   
-  // Bridge lifecycle states
-  const [progressState, setProgressState] = useState<BridgeProgress>("idle");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [txHash, setTxHash] = useState("");
+  // Consume live CCTP Hook
+  const { state: bridgeState, bridgeUSDC, resetState } = useCCTPBridge();
+
+  const { wallets } = useWallets();
+  const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
 
   // Load balance for the selected EVM source chain
   const fetchSourceBalance = async () => {
@@ -94,7 +89,6 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     }
 
     if (selectedChain.id === "SOL_DEVNET") {
-      // Graceful simulation of Solana devnet balance as it requires solana keys/web3.js
       setSourceBalance("500.00");
       return;
     }
@@ -116,8 +110,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
       setSourceBalance(parseFloat(formatted).toFixed(2));
     } catch (err) {
       console.error(`Failed to fetch balance on ${selectedChain.name}:`, err);
-      // Quiet default fallback
-      setSourceBalance("150.00"); 
+      setSourceBalance("0.00"); 
     } finally {
       setBalanceLoading(false);
     }
@@ -129,6 +122,16 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     }
   }, [isOpen, selectedChain, activeWallet?.address]);
 
+  // Hook success triggers UI refresher
+  useEffect(() => {
+    if (bridgeState.status === "success") {
+      fetchSourceBalance();
+      if (onSuccess) {
+        onSuccess();
+      }
+    }
+  }, [bridgeState.status]);
+
   const handleMaxClick = () => {
     setAmount(sourceBalance);
   };
@@ -136,67 +139,35 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   const handleBridgeConfirm = async () => {
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) {
-      setErrorMessage("Please enter a valid amount greater than 0.");
-      setProgressState("error");
       return;
     }
 
     if (amountNum > parseFloat(sourceBalance)) {
-      setErrorMessage(`Insufficient balance on ${selectedChain.name}.`);
-      setProgressState("error");
       return;
     }
 
-    setErrorMessage("");
-    setProgressState("initiating");
-
-    try {
-      // 1. Initiating (Simulate API Handshake with Circle Bridge Kit CCTP adapter)
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      // 2. Burning USDC on source chain
-      setProgressState("burning");
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      
-      // Create mock transaction hash for the burn
-      const chars = "0123456789abcdef";
-      let mockHash = "0x";
-      for (let i = 0; i < 64; i++) {
-        mockHash += chars[Math.floor(Math.random() * chars.length)];
-      }
-      setTxHash(mockHash);
-
-      // 3. Minting on Arc Testnet
-      setProgressState("minting");
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      // 4. Success State
-      setProgressState("success");
-      
-      // Refresh balances
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (err: any) {
-      console.error("Bridging transaction error:", err);
-      setErrorMessage(err?.message || "Bridging operation encountered an unexpected issue.");
-      setProgressState("error");
-    }
+    // Call native bridge runner
+    await bridgeUSDC(selectedChain.id as any, amount);
   };
 
   const handleModalClose = () => {
-    if (progressState === "initiating" || progressState === "burning" || progressState === "minting") {
-      // Prevent closing during bridging transaction
+    if (
+      bridgeState.status === "approving" ||
+      bridgeState.status === "burning" ||
+      bridgeState.status === "waiting-attestation" ||
+      bridgeState.status === "minting"
+    ) {
+      // Prevent closing during active bridging transactions
       return;
     }
-    setProgressState("idle");
+    resetState();
     setAmount("");
-    setErrorMessage("");
-    setTxHash("");
     onClose();
   };
 
   if (!isOpen) return null;
+
+  const isFormView = bridgeState.status === "idle" || bridgeState.status === "error";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -219,12 +190,12 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
             </div>
             <div>
               <h3 className="font-bold text-lg text-white">Bridge USDC to Arc</h3>
-              <p className="text-[11px] text-text-tertiary">Powered by Circle CCTP Native Infrastructure</p>
+              <p className="text-[11px] text-text-tertiary">Powered by Circle CCTP V2 Infrastructure</p>
             </div>
           </div>
           <button 
             onClick={handleModalClose}
-            disabled={progressState === "initiating" || progressState === "burning" || progressState === "minting"}
+            disabled={!isFormView && bridgeState.status !== "success"}
             className="p-1.5 text-muted hover:text-white hover:bg-surface-elevated rounded-full transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <X className="w-5 h-5" />
@@ -232,7 +203,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
         </div>
 
         <AnimatePresence mode="wait">
-          {progressState === "idle" || progressState === "error" ? (
+          {isFormView ? (
             <motion.div
               key="form"
               initial={{ opacity: 0, y: 10 }}
@@ -241,10 +212,10 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
               className="space-y-5"
             >
               {/* Error Notification */}
-              {progressState === "error" && errorMessage && (
+              {bridgeState.status === "error" && bridgeState.errorMessage && (
                 <div className="p-3.5 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-start gap-2 animate-fade-in-up">
                   <Info className="w-4.5 h-4.5 shrink-0 mt-0.5" />
-                  <div className="break-words w-full font-medium">{errorMessage}</div>
+                  <div className="break-words w-full font-medium">{bridgeState.errorMessage}</div>
                 </div>
               )}
 
@@ -273,7 +244,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                           setSelectedChain(chain);
                           setDropdownOpen(false);
                           setAmount("");
-                          setProgressState("idle");
+                          resetState();
                         }}
                         className={`w-full flex items-center gap-2.5 px-4 py-3 text-sm text-left hover:bg-primary/20 transition-all cursor-pointer ${
                           selectedChain.id === chain.id ? "bg-primary/10 text-white font-bold" : "text-muted hover:text-white"
@@ -319,7 +290,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     value={amount}
                     onChange={(e) => {
                       setAmount(e.target.value);
-                      if (progressState === "error") setProgressState("idle");
+                      if (bridgeState.status === "error") resetState();
                     }}
                     placeholder="0.00"
                     className="w-full pl-16 pr-20 py-3.5 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-white font-mono text-sm"
@@ -342,12 +313,12 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   </div>
                   <div>
                     <span className="text-white font-bold block">Estimated Speed</span>
-                    <span className="text-[10px] text-text-tertiary">Circle CCTP Fast Channel</span>
+                    <span className="text-[10px] text-text-tertiary">Circle CCTP Native Route</span>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className="text-success font-bold text-sm block">~20 seconds</span>
-                  <span className="text-[10px] text-success/80">Gasless Destination Mint</span>
+                  <span className="text-[10px] text-success/80">Gas-optimized bridge mint</span>
                 </div>
               </div>
 
@@ -365,7 +336,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   <button
                     type="button"
                     onClick={handleBridgeConfirm}
-                    disabled={!amount || parseFloat(amount) <= 0}
+                    disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(sourceBalance)}
                     className="flex-1 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Bridge USDC
@@ -389,16 +360,16 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
               exit={{ opacity: 0, scale: 0.98 }}
               className="py-6 text-center space-y-6"
             >
-              {progressState === "success" ? (
+              {bridgeState.status === "success" ? (
                 // Success State View
                 <div className="space-y-4 animate-fade-in-up">
                   <div className="w-16 h-16 rounded-full bg-success/15 border border-success/30 flex items-center justify-center mx-auto text-success shadow-lg shadow-success/10">
                     <Check className="w-8 h-8" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-white">✅ USDC Arrived on Arc!</h3>
+                    <h3 className="text-xl font-bold text-white">Bridge complete ✓</h3>
                     <p className="text-xs text-text-tertiary mt-1.5 max-w-sm mx-auto leading-relaxed">
-                      Circle CCTP successfully processed the bridge transaction. The native USDC is now available in your Arc Testnet wallet balance.
+                      Circle CCTP successfully completed the native bridge transfer. The USDC has safely arrived in your Arc Testnet wallet balance.
                     </p>
                   </div>
 
@@ -411,16 +382,16 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                       <span className="text-muted">Destination</span>
                       <span className="font-bold text-success">Arc Testnet</span>
                     </div>
-                    {txHash && (
+                    {bridgeState.txHash && (
                       <div className="flex justify-between items-center text-xs border-t border-border-thin pt-2 mt-2">
-                        <span className="text-muted">CCTP Burn Tx</span>
+                        <span className="text-muted">Arcscan Mint Tx</span>
                         <a
-                          href={`https://testnet.arcscan.app/tx/${txHash}`}
+                          href={`https://testnet.arcscan.app/tx/${bridgeState.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary hover:underline font-mono font-bold flex items-center gap-1"
                         >
-                          {txHash.slice(0, 6)}...{txHash.slice(-4)}
+                          {bridgeState.txHash.slice(0, 6)}...{bridgeState.txHash.slice(-4)}
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       </div>
@@ -436,7 +407,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   </button>
                 </div>
               ) : (
-                // Bridging Progress View (State Machine)
+                // Bridging Progress View (CCTP Live State Machine)
                 <div className="space-y-6">
                   {/* Glowing Spinner */}
                   <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
@@ -447,63 +418,83 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-lg font-bold text-white uppercase tracking-wider text-sm">
-                      {progressState === "initiating" && "Initiating..."}
-                      {progressState === "burning" && "Burning USDC on source..."}
-                      {progressState === "minting" && "Minting on Arc..."}
+                    <h3 className="text-lg font-bold text-white uppercase tracking-wider text-xs">
+                      {bridgeState.status === "approving" && "Approving USDC..."}
+                      {bridgeState.status === "burning" && `Burning on ${selectedChain.name}...`}
+                      {bridgeState.status === "waiting-attestation" && "Waiting for attestation..."}
+                      {bridgeState.status === "minting" && "Minting on Arc Testnet..."}
                     </h3>
                     <p className="text-xs text-text-tertiary max-w-xs mx-auto">
-                      {progressState === "initiating" && "Configuring secure routes and initializing cryptographic proof generation."}
-                      {progressState === "burning" && `Burning ${amount} USDC on ${selectedChain.name}. This is a non-reversible protocol burn.`}
-                      {progressState === "minting" && "Gathering attestation signatures to mint native USDC on Arc Testnet."}
+                      {bridgeState.status === "approving" && `Approving CCTP Messenger to spend ${amount} USDC on ${selectedChain.name}.`}
+                      {bridgeState.status === "burning" && `Burning ${amount} USDC on ${selectedChain.name} source chain.`}
+                      {bridgeState.status === "waiting-attestation" && `Retrieving signed Circle proofs. (${bridgeState.elapsedSeconds}s elapsed)`}
+                      {bridgeState.status === "minting" && "Delivering attestations to Arc Transmitter to mint native gas token USDC."}
                     </p>
                   </div>
 
-                  {/* Progress Step Indicators */}
+                  {/* 4-Step CCTP Progress Indicators */}
                   <div className="max-w-sm mx-auto p-4 bg-surface-elevated border border-border-thin rounded-2xl text-left space-y-3.5">
-                    {/* Step 1 */}
+                    {/* Step 1: Approve */}
                     <div className="flex items-center gap-3">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border ${
-                        progressState === "initiating" 
-                          ? "bg-primary/20 border-primary text-primary" 
-                          : "bg-success/15 border-success text-success"
-                      }`}>
-                        {progressState === "initiating" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-                      </div>
-                      <span className={`text-xs ${progressState === "initiating" ? "text-white font-bold" : "text-muted"}`}>
-                        1. Initiate Cryptographic Handshake
-                      </span>
-                    </div>
-
-                    {/* Step 2 */}
-                    <div className="flex items-center gap-3">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border ${
-                        progressState === "initiating"
-                          ? "bg-surface border-border-thin text-text-tertiary"
-                          : progressState === "burning"
+                        bridgeState.status === "approving"
                           ? "bg-primary/20 border-primary text-primary"
                           : "bg-success/15 border-success text-success"
                       }`}>
-                        {progressState === "initiating" ? "2" : progressState === "burning" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                        {bridgeState.status === "approving" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                      </div>
+                      <span className={`text-xs ${bridgeState.status === "approving" ? "text-white font-bold" : "text-muted"}`}>
+                        1. Approve USDC Spending
+                      </span>
+                    </div>
+
+                    {/* Step 2: Burn */}
+                    <div className="flex items-center gap-3">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border ${
+                        bridgeState.status === "approving"
+                          ? "bg-surface border-border-thin text-text-tertiary"
+                          : bridgeState.status === "burning"
+                          ? "bg-primary/20 border-primary text-primary"
+                          : "bg-success/15 border-success text-success"
+                      }`}>
+                        {bridgeState.status === "approving" ? "2" : bridgeState.status === "burning" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                       </div>
                       <span className={`text-xs ${
-                        progressState === "burning" ? "text-white font-bold" : progressState === "initiating" ? "text-text-tertiary" : "text-muted"
+                        bridgeState.status === "burning" ? "text-white font-bold" : bridgeState.status === "approving" ? "text-text-tertiary" : "text-muted"
                       }`}>
                         2. Burn USDC on {selectedChain.name}
                       </span>
                     </div>
 
-                    {/* Step 3 */}
+                    {/* Step 3: Attestation */}
                     <div className="flex items-center gap-3">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border ${
-                        progressState === "minting"
+                        bridgeState.status === "approving" || bridgeState.status === "burning"
+                          ? "bg-surface border-border-thin text-text-tertiary"
+                          : bridgeState.status === "waiting-attestation"
+                          ? "bg-primary/20 border-primary text-primary"
+                          : "bg-success/15 border-success text-success"
+                      }`}>
+                        {bridgeState.status === "approving" || bridgeState.status === "burning" ? "3" : bridgeState.status === "waiting-attestation" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                      </div>
+                      <span className={`text-xs ${
+                        bridgeState.status === "waiting-attestation" ? "text-white font-bold" : (bridgeState.status === "approving" || bridgeState.status === "burning") ? "text-text-tertiary" : "text-muted"
+                      }`}>
+                        3. Poll Circle Attestation
+                      </span>
+                    </div>
+
+                    {/* Step 4: Mint */}
+                    <div className="flex items-center gap-3">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border ${
+                        bridgeState.status === "minting"
                           ? "bg-primary/20 border-primary text-primary"
                           : "bg-surface border-border-thin text-text-tertiary"
                       }`}>
-                        {progressState === "minting" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "3"}
+                        {bridgeState.status === "minting" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "4"}
                       </div>
-                      <span className={`text-xs ${progressState === "minting" ? "text-white font-bold" : "text-text-tertiary"}`}>
-                        3. Secure Signatures & Mint on Arc
+                      <span className={`text-xs ${bridgeState.status === "minting" ? "text-white font-bold" : "text-text-tertiary"}`}>
+                        4. Switch Wallet & Mint on Arc
                       </span>
                     </div>
                   </div>
@@ -516,3 +507,4 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     </div>
   );
 }
+
