@@ -30,10 +30,6 @@ export const arcTransport = http(ARC_RPC_URL, {
   retryCount: 3,
   retryDelay: 1000,
   timeout: 15000,
-  batch: {
-    batchSize: 100,
-    wait: 16,
-  },
 });
 
 // Centralized Viem Public Client

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useWallets } from "@privy-io/react-auth";
-import { parseAbi, formatUnits } from "viem";
-import { arcPublicClient } from "@/lib/arc/config";
+import { createPublicClient, http, parseAbi, formatUnits } from "viem";
+import { arcTestnet, ARC_RPC_URL } from "@/lib/arc/config";
 import { GOVERNANCE_CONTRACTS } from "@/lib/governance/contracts";
 
 const EURC_CONTRACT_ADDRESS = GOVERNANCE_CONTRACTS.eurc;
@@ -10,6 +10,18 @@ const erc20Abi = parseAbi([
   "function balanceOf(address owner) view returns (uint256)",
   "function decimals() view returns (uint8)",
 ]);
+
+// Simple non-batched client — avoids JSON-RPC batch issues with public RPC
+function getReadClient() {
+  return createPublicClient({
+    chain: arcTestnet,
+    transport: http(ARC_RPC_URL, {
+      retryCount: 3,
+      retryDelay: 1000,
+      timeout: 15000,
+    }),
+  });
+}
 
 export function useEURCBalance() {
   const { wallets, ready: walletsReady } = useWallets();
@@ -30,24 +42,18 @@ export function useEURCBalance() {
     setIsError(false);
 
     try {
-      const [bal, dec] = await Promise.all([
-        arcPublicClient.readContract({
+      const client = getReadClient();
+
+      const [bal] = await Promise.all([
+        client.readContract({
           address: EURC_CONTRACT_ADDRESS,
           abi: erc20Abi,
           functionName: "balanceOf",
           args: [activeWallet.address as `0x${string}`],
         }),
-        arcPublicClient.readContract({
-          address: EURC_CONTRACT_ADDRESS,
-          abi: erc20Abi,
-          functionName: "decimals",
-        }).catch(() => 6),
       ]);
 
-      console.log("Raw EURC balance response:", bal.toString());
-      console.log("Decimals response from contract:", dec);
-
-      // Force 6 decimals as EURC uses 6 decimals
+      // EURC uses 6 decimals
       const formatted = formatUnits(bal, 6);
       setBalance(formatted);
       setIsError(false);

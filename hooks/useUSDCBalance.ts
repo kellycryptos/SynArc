@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useWallets } from "@privy-io/react-auth";
-import { parseAbi, formatUnits } from "viem";
-import { arcPublicClient } from "@/lib/arc/config";
+import { createPublicClient, http, parseAbi, formatUnits } from "viem";
+import { arcTestnet, ARC_RPC_URL } from "@/lib/arc/config";
 
 const USDC_CONTRACT_ADDRESS = "0x3600000000000000000000000000000000000000";
 
@@ -9,6 +9,18 @@ const erc20Abi = parseAbi([
   "function balanceOf(address owner) view returns (uint256)",
   "function decimals() view returns (uint8)",
 ]);
+
+// Simple non-batched client — avoids JSON-RPC batch issues with public RPC
+function getReadClient() {
+  return createPublicClient({
+    chain: arcTestnet,
+    transport: http(ARC_RPC_URL, {
+      retryCount: 3,
+      retryDelay: 1000,
+      timeout: 15000,
+    }),
+  });
+}
 
 export function useUSDCBalance() {
   const { wallets, ready: walletsReady } = useWallets();
@@ -29,31 +41,25 @@ export function useUSDCBalance() {
     setIsError(false);
 
     try {
-      const [bal, dec] = await Promise.all([
-        arcPublicClient.readContract({
+      const client = getReadClient();
+
+      const [bal] = await Promise.all([
+        client.readContract({
           address: USDC_CONTRACT_ADDRESS,
           abi: erc20Abi,
           functionName: "balanceOf",
           args: [activeWallet.address as `0x${string}`],
         }),
-        arcPublicClient.readContract({
-          address: USDC_CONTRACT_ADDRESS,
-          abi: erc20Abi,
-          functionName: "decimals",
-        }).catch(() => 6),
       ]);
 
-      console.log("Raw USDC balance response:", bal.toString());
-      console.log("Decimals response from contract:", dec);
-
-      // Force 6 decimals as requested
+      // Arc USDC always uses 6 decimals
       const formatted = formatUnits(bal, 6);
       setBalance(formatted);
       setIsError(false);
     } catch (error) {
       console.error("Error fetching USDC balance from Arc Testnet:", error);
       setIsError(true);
-      // Don't wipe balance if we had a previous successful fetch
+      // Don't wipe a previously loaded balance
     } finally {
       setIsLoading(false);
     }
