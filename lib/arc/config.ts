@@ -1,35 +1,38 @@
 import { defineChain, createPublicClient, http } from "viem";
 import { JsonRpcProvider } from "ethers";
 
-// Centralized custom RPC URL from environment variable, fallback to default Arc node
-export const ARC_RPC_URL = process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network";
+// Public fallback — always works even if env var is not set on Vercel
+const PUBLIC_ARC_RPC = "https://rpc.testnet.arc.network";
 
-// Center-locked Arc Testnet Chain Definition
+// Custom authenticated RPC (optional upgrade — set NEXT_PUBLIC_ARC_RPC_URL in Vercel)
+export const ARC_RPC_URL = process.env.NEXT_PUBLIC_ARC_RPC_URL || PUBLIC_ARC_RPC;
+
+// Arc Testnet Chain Definition — public RPC hardcoded so Vercel always loads
 export const arcTestnet = defineChain({
   id: 5042002,
   name: "Arc Testnet",
   nativeCurrency: { 
     name: "USD Coin", 
     symbol: "USDC", 
-    decimals: 6 // Forces browser wallets to interpret gas at 6 decimals!
+    decimals: 6 // Arc is stablecoin-native: gas fees paid in USDC
   },
   rpcUrls: {
-    default: { http: [ARC_RPC_URL] },
-    public: { http: [ARC_RPC_URL] },
+    default: { http: [PUBLIC_ARC_RPC] },
+    public:  { http: [PUBLIC_ARC_RPC] },
   },
   blockExplorers: {
     default: { name: "ArcScan", url: "https://testnet.arcscan.app" },
   },
 });
 
-// Centralized stable HTTP transport with retry logic and batching
+// Stable HTTP transport — uses custom RPC if available, falls back to public
 export const arcTransport = http(ARC_RPC_URL, {
   retryCount: 3,
   retryDelay: 1000,
-  timeout: 15000, // 15s timeout for maximum network stability
+  timeout: 15000,
   batch: {
-    batchSize: 100, // Max 100 calls per batch
-    wait: 16,       // 16ms debounce window — ~1 frame, keeps UX snappy
+    batchSize: 100,
+    wait: 16,
   },
 });
 
@@ -39,12 +42,12 @@ export const arcPublicClient = createPublicClient({
   transport: arcTransport,
 });
 
-// Resilient Ethers JSON-RPC Provider helper
+// Ethers.js provider helper
 export function getArcEthersProvider(): JsonRpcProvider {
   return new JsonRpcProvider(ARC_RPC_URL, undefined, { staticNetwork: true });
 }
 
-// Wallet client helper: automatically checks and requests network switch or adds the network
+// Wallet helper: switch or add Arc Testnet in MetaMask/OKX/etc.
 export async function ensureArcNetwork(ethereumProvider: any): Promise<void> {
   const chainIdHex = "0x4cef52"; // 5042002 in hex
   try {
@@ -67,7 +70,7 @@ export async function ensureArcNetwork(ethereumProvider: any): Promise<void> {
           {
             chainId: chainIdHex,
             chainName: "Arc Testnet",
-            rpcUrls: [ARC_RPC_URL],
+            rpcUrls: [PUBLIC_ARC_RPC],
             nativeCurrency: {
               name: "USDC",
               symbol: "USDC",
@@ -77,7 +80,6 @@ export async function ensureArcNetwork(ethereumProvider: any): Promise<void> {
           },
         ],
       });
-      // Switch again after adding
       await ethereumProvider.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: chainIdHex }],
