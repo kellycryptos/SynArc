@@ -14,6 +14,7 @@ import {
   Settings,
   Bell,
   BookOpen,
+  ArrowRightLeft,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { WalletConnectButton } from "@/components/ui/WalletConnectButton";
@@ -26,6 +27,7 @@ const activeLinks = [
   { href: "/daos", label: "DAOs", icon: Grid },
   { href: "/proposals", label: "Proposals", icon: FileText },
   { href: "/treasury", label: "Treasury", icon: Shield },
+  { href: "/bridge", label: "Bridge", icon: ArrowRightLeft },
   { href: "/members", label: "Members", icon: Users },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/faucet", label: "Faucet", icon: Droplets },
