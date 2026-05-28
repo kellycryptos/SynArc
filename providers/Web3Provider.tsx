@@ -37,7 +37,12 @@ export const config = createConfig({
 });
 
 const privyConfig: PrivyClientConfig = {
-  loginMethods: ['email', 'google', 'twitter', 'discord', 'wallet'],
+  // Explicitly lock to Google, Email, and Wallet — bypasses any Privy Dashboard cache
+  loginMethods: ['google', 'email', 'wallet'],
+  loginMethodsAndOrder: {
+    primary: ['google', 'email'],
+    overflow: ['wallet'],
+  },
   appearance: {
     theme: 'dark',
     accentColor: '#7C3AED', // Brand primary color (#7C3AED violet)
@@ -45,7 +50,7 @@ const privyConfig: PrivyClientConfig = {
   },
   embeddedWallets: {
     ethereum: {
-      createOnLogin: 'all-users', // Automatically initializes embedded wallets on user login
+      createOnLogin: 'users-without-wallets', // Only creates embedded wallet if user has none
     },
     showWalletUIs: false, // Prevents annoying signing popups for smooth on-chain DAO participation
   },
