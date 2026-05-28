@@ -17,6 +17,8 @@ import {
 import { 
   ArrowUpRight, ArrowDownRight, Activity, Wallet, Shield, PieChart, Coins, Info, PlusCircle, X, Check
 } from "lucide-react";
+import { BridgeModal } from "@/components/BridgeModal";
+
 
 export default function TreasuryPage() {
   const { 
@@ -37,6 +39,7 @@ export default function TreasuryPage() {
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
+  const [showBridge, setShowBridge] = useState(false);
   const [selectedToken, setSelectedToken] = useState<"USDC" | "EURC">("USDC");
   const [depositAmount, setDepositAmount] = useState("");
   const [txStep, setTxStep] = useState<"idle" | "approving" | "depositing" | "success" | "error">("idle");
@@ -205,9 +208,19 @@ export default function TreasuryPage() {
             <button 
               onClick={() => {
                 if (!isAuthenticated) { login(); return; }
+                setShowBridge(true);
+              }}
+              className="px-5 py-2.5 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-white font-semibold text-sm transition-all border border-border-thin flex items-center gap-2 cursor-pointer hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] shrink-0"
+            >
+              🌉 Bridge USDC to Arc
+            </button>
+
+            <button 
+              onClick={() => {
+                if (!isAuthenticated) { login(); return; }
                 setModalOpen(true);
               }}
-              className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer shrink-0"
             >
               <PlusCircle className="w-4.5 h-4.5" />
               Deposit Assets
@@ -543,6 +556,16 @@ export default function TreasuryPage() {
           </GlassCard>
         </div>
       )}
+
+      {/* Bridge Modal */}
+      <BridgeModal 
+        isOpen={showBridge} 
+        onClose={() => setShowBridge(false)} 
+        onSuccess={() => {
+          refetchWalletUSDC();
+          refetchTreasury();
+        }}
+      />
     </div>
   );
 }

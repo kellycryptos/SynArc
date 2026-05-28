@@ -24,6 +24,8 @@ import {
   History
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { BridgeModal } from "@/components/BridgeModal";
+
 
 interface FaucetTx {
   hash: string;
@@ -67,6 +69,7 @@ function CooldownTimer({ nextClaimAt }: { nextClaimAt: string }) {
 export function WalletFaucetCard() {
   const { isAuthenticated, walletAddress, email, authMethod, login } = useAuth();
   const [copied, setCopied] = useState(false);
+  const [showBridge, setShowBridge] = useState(false);
   const [faucetStatus, setFaucetStatus] = useState<"idle" | "requesting" | "success" | "error" | "cooldown">("idle");
   const [currentTxHash, setCurrentTxHash] = useState<string>("");
   const [synMsg, setSynMsg] = useState("");
@@ -413,7 +416,7 @@ export function WalletFaucetCard() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Option 1 — SynArc Token (SYN) */}
           <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-primary/30 transition-all duration-300">
             <div className="flex items-center gap-3">
@@ -516,8 +519,32 @@ export function WalletFaucetCard() {
               rel="noopener noreferrer"
               className="w-full py-2.5 px-4 rounded-xl bg-purple-500/10 border border-purple-400/20 text-purple-300 hover:bg-purple-500/20 hover:border-purple-400/40 text-center font-bold text-xs flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all duration-300"
             >
-              Claim EURC &rarr;
             </a>
+          </div>
+
+          {/* Option 4 — Bridge USDC */}
+          <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-primary/30 transition-all duration-300">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl select-none">🌉</span>
+              <div>
+                <h4 className="font-bold text-white text-sm">Bridge USDC</h4>
+                <p className="text-[10px] text-muted font-mono">Circle Bridge Kit</p>
+              </div>
+            </div>
+            
+            <p className="text-xs text-text-tertiary leading-relaxed flex-grow">
+              Already have USDC on another chain? Bridge it to Arc Testnet instantly.
+            </p>
+
+            <button
+              onClick={() => {
+                if (!isAuthenticated) { login(); return; }
+                setShowBridge(true);
+              }}
+              className="w-full py-2.5 px-4 rounded-xl bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 hover:border-primary/40 text-center font-bold text-xs flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(124,58,237,0.15)] transition-all duration-300 cursor-pointer"
+            >
+              Bridge USDC &rarr;
+            </button>
           </div>
         </div>
         
@@ -546,6 +573,13 @@ export function WalletFaucetCard() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Bridge Modal */}
+        <BridgeModal 
+          isOpen={showBridge} 
+          onClose={() => setShowBridge(false)} 
+          onSuccess={refetchUSDC} 
+        />
       </GlassCard>
     </div>
   );
