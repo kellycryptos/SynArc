@@ -432,7 +432,7 @@ export default function SettingsPage() {
             {/* Diagnostic Log Output */}
             <div className="mt-4">
               <span className="text-xs font-semibold text-muted uppercase tracking-wider block mb-2">Diagnostics Log Output</span>
-              <pre className="w-full bg-surface-dark border border-border-thin rounded-xl p-4 font-mono text-xs text-text-secondary h-48 overflow-y-auto whitespace-pre-wrap">
+              <pre className="w-full bg-surface-dark border border-border-thin rounded-xl p-4 font-mono text-xs text-text-secondary h-48 overflow-y-auto whitespace-pre-wrap diagnostics-log">
                 {diagLog}
               </pre>
             </div>

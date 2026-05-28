@@ -466,3 +466,63 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   color: #374151 !important;
 }
 
+/* ── Light Mode Overrides (SynArc Premium) ── */
+
+/* Glass cards override */
+.light .glass-card {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Diagnostics log terminal box override */
+.light .diagnostics-log {
+  background: #F3F4F6 !important;
+  color: #111827 !important;
+  border: 1px solid #E5E7EB !important;
+}
+
+/* Global text contrast fix: maps hardcoded text-white to readable dark gray/black,
+   excluding elements on purple/accent/dark banners, gradients, and custom keeping rules. */
+.light .text-white:not(.bg-primary):not(.bg-accent):not(.bg-danger):not(.bg-success):not(.bg-purple-deep):not([class*="bg-gradient"]):not(a.bg-primary):not(.text-white-keep) {
+  color: var(--text-primary) !important;
+}
+
+/* Map hardcoded dark-mode translucencies to light mode alternatives */
+.light .bg-white\/5,
+.light .bg-white\/10,
+.light .bg-white\/20 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+.light .bg-white\/\[0\.01\] {
+  background-color: rgba(0, 0, 0, 0.01) !important;
+}
+.light .bg-white\/\[0\.03\] {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+.light .bg-white\/\[0\.05\] {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Resolve text purple-300 / purple-400 / emerald-400 contrast in light mode */
+.light .text-purple-300 {
+  color: var(--accent-purple) !important;
+}
+.light .text-purple-400 {
+  color: var(--accent-purple) !important;
+}
+.light .text-emerald-400 {
+  color: var(--success) !important;
+}
+
+/* Make card borders fully visible in light mode */
+.light .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Override glass header navigation wrapper to keep links visible */
+.light .glass {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+

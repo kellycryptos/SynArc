@@ -70,7 +70,7 @@ export function useTreasury(customTreasuryAddress?: string): UseTreasuryReturn {
         token: act.tokenSymbol || "USDC",
         timestamp: new Date(Number(act.timestamp) * 1000).toISOString(),
         description: act.description,
-        txHash: "0x" + Math.random().toString(16).substring(2, 10) + "..."
+        txHash: "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("")
       }));
 
       setActivities(formattedActivities.reverse());
