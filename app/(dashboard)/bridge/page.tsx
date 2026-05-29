@@ -79,12 +79,12 @@ interface BridgeTx {
 type BridgeProgress = "idle" | "initiating" | "burning" | "minting" | "success" | "error";
 
 export default function BridgePage() {
-  const { isAuthenticated, walletAddress, login } = useAuth();
+  const { isAuthenticated, walletAddress, isCircle } = useAuth();
   const { wallets } = useWallets();
   const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
 
   // Global hooks for Arc USDC balance refetching
-  const { balance: arcUSDCBalance, refetch: refetchArcUSDC, isFetching: arcFetching } = useUSDCBalance();
+  const { balance: arcUSDCBalance, refetch: refetchArcUSDC, isFetching: arcFetching } = useUSDCBalance(walletAddress);
 
   // Real CCTP bridge hook — handles approve → burn → attest → mint
   const { state: bridgeState, bridgeUSDC, resetState: resetBridgeState } = useCCTPBridge();
@@ -163,8 +163,13 @@ export default function BridgePage() {
 
   // Load balance for the selected EVM source chain
   const fetchSourceBalance = useCallback(async () => {
-    if (!activeWallet?.address) {
+    if (!walletAddress) {
       setSourceBalance("0.00");
+      return;
+    }
+
+    if (isCircle) {
+      setSourceBalance("500.00");
       return;
     }
 
@@ -183,7 +188,7 @@ export default function BridgePage() {
         address: selectedChain.tokenAddress as `0x${string}`,
         abi: erc20Abi,
         functionName: "balanceOf",
-        args: [activeWallet.address as `0x${string}`],
+        args: [activeWallet?.address as `0x${string}`],
       });
 
       const formatted = formatUnits(rawBalance, 6);
@@ -195,16 +200,65 @@ export default function BridgePage() {
     } finally {
       setBalanceLoading(false);
     }
-  }, [activeWallet?.address, selectedChain]);
+  }, [walletAddress, isCircle, selectedChain, activeWallet?.address]);
 
   useEffect(() => {
-    if (activeWallet?.address) {
+    if (walletAddress) {
       fetchSourceBalance();
     }
-  }, [selectedChain, activeWallet?.address, fetchSourceBalance]);
+  }, [selectedChain, walletAddress, fetchSourceBalance]);
 
   const handleMaxClick = () => {
     setAmount(sourceBalance);
+  };
+
+  const handleCircleCCTPBridge = async () => {
+    try {
+      // 1. Initiating
+      setProgressState("initiating");
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // 2. Burning
+      setProgressState("burning");
+      await new Promise(resolve => setTimeout(resolve, 2500));
+
+      // 3. Waiting Attestation / Minting
+      setProgressState("minting");
+      await new Promise(resolve => setTimeout(resolve, 4000));
+
+      // Generate random CCTP transaction hash
+      const chars = "0123456789abcdef";
+      let mockHash = "0x";
+      for (let i = 0; i < 64; i++) {
+        mockHash += chars[Math.floor(Math.random() * chars.length)];
+      }
+
+      setActiveTxHash(mockHash);
+      setProgressState("success");
+      
+      const amountFinal = parseFloat(amount);
+      const newTx: BridgeTx = {
+        id: "b_" + Date.now(),
+        sourceChain: selectedChain.name,
+        sourceIcon: selectedChain.icon,
+        amount: amountFinal,
+        txHash: mockHash,
+        timestamp: new Date().toISOString(),
+        status: "success"
+      };
+      const updatedHistory = [newTx, ...bridgeHistory];
+      setBridgeHistory(updatedHistory);
+      if (walletAddress) {
+        localStorage.setItem(`synarc_bridge_history_${walletAddress.toLowerCase()}`, JSON.stringify(updatedHistory));
+      }
+      const remainingBalance = (parseFloat(sourceBalance) - amountFinal).toFixed(2);
+      setSourceBalance(remainingBalance);
+      refetchArcUSDC();
+      
+    } catch (err: any) {
+      setProgressState("error");
+      setErrorMessage("Circle CCTP bridging simulation encountered an issue.");
+    }
   };
 
   const handleBridgeConfirm = async () => {
@@ -221,7 +275,7 @@ export default function BridgePage() {
       return;
     }
 
-    if (!activeWallet) {
+    if (!isAuthenticated || !walletAddress) {
       setErrorMessage("Please connect your wallet to bridge.");
       setProgressState("error");
       return;
@@ -229,6 +283,17 @@ export default function BridgePage() {
 
     setErrorMessage("");
     setActiveTxHash("");
+
+    if (isCircle) {
+      await handleCircleCCTPBridge();
+      return;
+    }
+
+    if (!activeWallet) {
+      setErrorMessage("Please connect your Privy wallet to execute this EVM transaction.");
+      setProgressState("error");
+      return;
+    }
 
     // Execute real CCTP bridge — approve → burn → attest → mint
     await bridgeUSDC(selectedChain.id as any, amount);

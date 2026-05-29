@@ -44,8 +44,8 @@ const comingSoonLinks: { label: string; icon: any }[] = [];
 export function Sidebar({ className, onClick }: { className?: string; onClick?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
-  const { balance, isLoading, isError } = useUSDCBalance();
+  const { isAuthenticated, walletAddress, isCircle } = useAuth();
+  const { balance, isLoading, isError } = useUSDCBalance(walletAddress);
 
   // Navigate first, then close the mobile drawer so the drawer unmount
   // doesn't cancel the in-flight route change.
@@ -177,9 +177,16 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
                 Error
               </span>
             ) : balance !== null ? (
-              <span className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-purple-300 font-bold">
-                {parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
-              </span>
+              isCircle ? (
+                <span className="px-2 py-0.5 rounded-full bg-pink-500/20 border border-pink-500/30 text-pink-400 font-bold flex items-center gap-1">
+                  <span>{parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC</span>
+                  <span className="text-[9px] font-extrabold px-1 py-0.2 rounded bg-pink-500/30 text-pink-300 animate-pulse">⚡</span>
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-purple-300 font-bold">
+                  {parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                </span>
+              )
             ) : null}
           </div>
 

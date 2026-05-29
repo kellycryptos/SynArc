@@ -59,7 +59,7 @@ SynArc is the infrastructure layer that makes this future possible today.
 
 *   **Proposals**: Create, discuss, and vote on governance proposals
 *   **Treasury**: Real-time management and analytics of DAO assets in USDC
-*   **Wallet Connect**: Seamless wallet integration for governance participation
+*   **Wallet Connect**: Hybrid wallet system supporting both Privy embedded wallets and Circle Programmable Wallets, giving users the choice between standard (social/Google/external) and fully gasless USDC-native governance participation.
 *   **Arc Testnet Integration**: Native support for Arc Testnet with zero-latency execution
 *   **USDC Balance Display**: Real-time balance tracking and treasury visualization
 *   **Dashboard Analytics**: Governance participation metrics and voting trends

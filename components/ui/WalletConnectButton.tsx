@@ -2,11 +2,13 @@
 
 import { useAuth } from "@/hooks/auth/useAuth";
 import { Wallet, LogOut, Copy, ExternalLink, ChevronUp, ChevronDown } from "lucide-react";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
+import { WalletConnectModal } from "@/components/ui/WalletConnectModal";
 
 export function WalletConnectButton() {
-  const { isAuthenticated, walletAddress, login, logout, ready } = useAuth();
+  const { isAuthenticated, walletAddress, logout, ready } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -49,12 +51,12 @@ export function WalletConnectButton() {
     );
   }
 
-  // If disconnected, trigger the Privy auth modal on click
+  // If disconnected, trigger our custom hybrid WalletConnectModal
   if (!isAuthenticated || !walletAddress) {
     return (
       <div className="space-y-3 w-full">
         <button 
-          onClick={login}
+          onClick={() => setModalOpen(true)}
           className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer"
         >
           <Wallet className="w-5 h-5" />
@@ -66,6 +68,8 @@ export function WalletConnectButton() {
           {" "}&amp;{" "}
           <a href="/privacy" className="text-primary hover:underline transition-all">Privacy</a>
         </p>
+
+        <WalletConnectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
       </div>
     );
   }

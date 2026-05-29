@@ -4,9 +4,10 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 import { Bell, Search, Menu, LogOut, Wallet } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { usePrivy } from "@privy-io/react-auth";
+import { WalletConnectModal } from "@/components/ui/WalletConnectModal";
 
 /**
  * DashboardNavbar Component
@@ -19,9 +20,9 @@ import { usePrivy } from "@privy-io/react-auth";
  * - Notification bell and logout button
  */
 export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
-  const { isAuthenticated, walletAddress, email, user, login, logout } = useAuth();
-  const { user: privyUser } = usePrivy();
-  const activeWalletAddress = privyUser?.wallet?.address || walletAddress;
+  const { isAuthenticated, walletAddress, email, user, logout, isCircle } = useAuth();
+  const [modalOpen, setModalOpen] = useState(false);
+  const activeWalletAddress = walletAddress;
   const { balance, loading, error } = useUSDCBalance(activeWalletAddress);
 
   // Create a shortened representation of the wallet address (e.g. 0x12...abcd)
@@ -99,10 +100,15 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
             <div className="flex items-center gap-2 bg-surface-elevated border border-border-thin rounded-full pl-2 pr-3 py-1 hover:border-primary/20 transition-all duration-300">
               {/* Premium Generative Avatar */}
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-extrabold text-white shadow-md ${avatarGradient}`}>
-                {initials}
+                {isCircle ? "⭕" : initials}
               </div>
-              <span className="text-xs font-semibold tracking-tight text-text-secondary">
+              <span className="text-xs font-semibold tracking-tight text-text-secondary flex items-center gap-1.5">
                 {shortAddress}
+                {isCircle && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-pink-500/20 border border-pink-500/30 text-[9px] font-extrabold text-pink-400 tracking-wide uppercase animate-pulse">
+                    ⚡ Gasless
+                  </span>
+                )}
               </span>
             </div>
 
@@ -122,7 +128,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
               Public Explorer
             </span>
             <button
-              onClick={login}
+              onClick={() => setModalOpen(true)}
               className="group px-4 py-1.5 rounded-full bg-primary hover:bg-primary/90 text-white font-medium text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] flex items-center gap-2 cursor-pointer"
             >
               <Wallet className="w-4 h-4 group-hover:scale-110 transition-transform" />
@@ -135,6 +141,8 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-background" />
         </button>
+
+        <WalletConnectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
       </div>
 
       {/* Hamburger Menu (Mobile Only) */}
