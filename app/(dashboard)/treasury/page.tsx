@@ -12,6 +12,9 @@ import { GOVERNANCE_CONTRACTS, ERC20ABI, TreasuryABI } from "@/lib/governance/co
 import { useWriteContract, useAccount } from "wagmi";
 import { ARC_GAS_CONFIG, ARC_GAS_CONFIG_LOW } from "@/lib/constants";
 import { TreasuryActivity } from "@/types";
+import { getWorkingRPC, arcTestnetChain } from "@/lib/rpc";
+import { createPublicClient, createWalletClient, http, custom } from "viem";
+import { toast } from "react-hot-toast";
 
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
 const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as `0x${string}`;
@@ -160,30 +163,41 @@ export default function TreasuryPage() {
       setTxStep("approving");
       setErrorMessage("");
 
-      const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
-      const tokenAddress = selectedToken === "USDC" ? USDC_ADDRESS : EURC_ADDRESS;
+      const treasuryAddress = GOVERNANCE_CONTRACTS.treasury as `0x${string}`;
+      const tokenAddress = (selectedToken === "USDC" ? USDC_ADDRESS : EURC_ADDRESS) as `0x${string}`;
       const amountBigInt = BigInt(Math.floor(amountNum * 1_000_000)); // Both USDC and EURC use 6 decimals on Arc Testnet
 
-      // Get provider from connected wallet — works for both Privy and external
+      // 1. Get working RPC automatically
+      console.log("Resolving responsive RPC node...");
+      const rpcUrl = await getWorkingRPC();
+      console.log(`Connected to Arc RPC: ${rpcUrl}`);
+
+      // 2. Get signer provider from connected wallet
       let provider;
       if (wallets && wallets.length > 0) {
-        // Privy wallet
         const privyWallet = wallets[0];
         provider = await privyWallet.getEthereumProvider();
       } else if (typeof window !== "undefined" && (window as any).ethereum) {
-        // External wallet (MetaMask, Rabby, OKX)
         provider = (window as any).ethereum;
       } else {
         throw new Error("No wallet connected. Please connect your wallet first.");
       }
 
-      const ethersProvider = new ethers.BrowserProvider(provider);
-      const signer = await ethersProvider.getSigner();
+      // 3. Initialize Viem Wallet and Public Clients
+      const walletClient = createWalletClient({
+        chain: arcTestnetChain,
+        transport: custom(provider)
+      });
+
+      const publicClient = createPublicClient({
+        chain: arcTestnetChain,
+        transport: http(rpcUrl)
+      });
 
       // Ensure network is switched to Arc Testnet (chainId 5042002)
       try {
-        const network = await ethersProvider.getNetwork();
-        if (Number(network.chainId) !== 5042002) {
+        const currentChainId = await walletClient.getChainId();
+        if (currentChainId !== 5042002) {
           console.log("Switching chain to Arc Testnet...");
           const chainIdHex = "0x4cef52"; // 5042002 in hex
           await provider.request({
@@ -217,46 +231,45 @@ export default function TreasuryPage() {
         }
       }
 
-      // 1. Approve contract spend
+      // 4. Approve contract spend
       console.log(`Approving ${selectedToken}...`);
-      const tokenContract = new ethers.Contract(tokenAddress, ERC20ABI, signer);
-      const approveTx = await tokenContract.approve(
-        treasuryAddress,
-        amountBigInt,
-        {
-          gasLimit: 100000n,
-          gasPrice: 10000000n // Arc Testnet uses fixed 10M gasPrice (10 gwei-equivalent in USDC)
-        }
-      );
-      console.log(`${selectedToken} Approval transaction submitted: ${approveTx.hash}`);
-      await approveTx.wait();
+      const approveTx = await walletClient.writeContract({
+        account: userAddress as `0x${string}`,
+        address: tokenAddress,
+        abi: ERC20ABI,
+        functionName: 'approve',
+        args: [treasuryAddress, amountBigInt],
+        gas: 100000n,
+      });
+
+      console.log(`${selectedToken} Approval transaction submitted: ${approveTx}`);
+      await publicClient.waitForTransactionReceipt({ hash: approveTx });
       console.log(`${selectedToken} Approved!`);
 
-      // 2. Deposit to treasury
+      // 5. Deposit to treasury
       setTxStep("depositing");
       console.log(`Depositing ${selectedToken} on-chain...`);
-      const treasuryContract = new ethers.Contract(treasuryAddress, TreasuryABI, signer);
-      
-      const depositTx = await treasuryContract[selectedToken === "USDC" ? "depositUSDC" : "depositEURC"](
-        amountBigInt,
-        {
-          gasLimit: 200000n,
-          gasPrice: 10000000n
-        }
-      );
+      const depositTx = await walletClient.writeContract({
+        account: userAddress as `0x${string}`,
+        address: treasuryAddress,
+        abi: TreasuryABI,
+        functionName: selectedToken === "USDC" ? "depositUSDC" : "depositEURC",
+        args: [amountBigInt],
+        gas: 200000n,
+      });
 
-      console.log(`Deposit transaction submitted! Tx: ${depositTx.hash}`);
-      setTxHash(depositTx.hash);
+      console.log(`Deposit transaction submitted! Tx: ${depositTx}`);
+      setTxHash(depositTx);
 
-      await depositTx.wait();
+      await publicClient.waitForTransactionReceipt({ hash: depositTx });
 
-      // 3. Store real tx hash in activity log
+      // 6. Store real tx hash in activity log
       addTransaction({
         description: `${selectedToken} Deposit`,
         amount: amountNum,
         token: selectedToken,
         date: new Date().toLocaleDateString('en-GB'),
-        txHash: depositTx.hash, // real hash from chain
+        txHash: depositTx, // real hash from chain
         status: 'confirmed',
       });
 
@@ -268,21 +281,35 @@ export default function TreasuryPage() {
       refetchTreasury();
       refetchWalletUSDC?.();
       refetchWalletEURC?.();
+      
+      toast.success(`Deposited ${amountNum} ${selectedToken} to treasury`);
     } catch (err: any) {
       console.error("Deposit transaction failed:", err);
-      const errMsg = err?.reason || err?.shortMessage || err?.message || "Transaction failed. Please try again.";
-      if (
-        errMsg.toLowerCase().includes("capacity exceeded") ||
-        errMsg.toLowerCase().includes("unexpected token") ||
-        errMsg.toLowerCase().includes("coalesce") ||
-        errMsg.toLowerCase().includes("monthly ca")
-      ) {
-        setErrorMessage("Network provider busy, retrying... (RPC rate limited)");
-      } else {
-        setErrorMessage(errMsg);
-      }
+      const errMessageText = getRPCErrorMessage(err);
+      setErrorMessage(errMessageText);
       setTxStep("error");
+      
+      if (errMessageText.includes("busy") || errMessageText.includes("timeout")) {
+        toast.error("Network busy — please wait or retry");
+      } else {
+        toast.error(err?.shortMessage || err?.message || "Deposit failed");
+      }
     }
+  };
+
+  const getRPCErrorMessage = (error: any): string => {
+    const msg = error?.message || '';
+    
+    if (msg.includes('rate limit') || msg.includes('429') || msg.toLowerCase().includes('capacity exceeded') || msg.toLowerCase().includes('coalesce')) {
+      return 'Arc network is busy — switching to backup node...';
+    }
+    if (msg.includes('timeout')) {
+      return 'Connection timeout — retrying with backup node...';
+    }
+    if (msg.toLowerCase().includes('insufficient')) {
+      return `Insufficient ${selectedToken} for this transaction`;
+    }
+    return 'Transaction failed — please try again';
   };
 
   const handleModalClose = () => {
@@ -598,9 +625,22 @@ export default function TreasuryPage() {
 
             {/* Error Message */}
             {errorMessage && (
-              <div className="p-3 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-start gap-2 mb-6 animate-fade-in-up">
-                <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                <span className="break-words w-full">{errorMessage}</span>
+              <div className="p-3 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex flex-col gap-2 mb-6 animate-fade-in-up">
+                <div className="flex items-start gap-2 w-full">
+                  <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span className="break-words w-full">{errorMessage}</span>
+                </div>
+                {(errorMessage.includes("busy") || errorMessage.includes("timeout") || errorMessage.includes("failed") || errorMessage.includes("again")) && (
+                  <button 
+                    onClick={() => {
+                      setErrorMessage("");
+                      handleDepositSubmit();
+                    }}
+                    className="self-end px-3 py-1.5 rounded-lg bg-danger/20 border border-danger/30 hover:bg-danger/30 text-xs font-bold text-danger transition-colors cursor-pointer flex items-center gap-1 mt-1"
+                  >
+                    🔄 Retry Deposit
+                  </button>
+                )}
               </div>
             )}
 

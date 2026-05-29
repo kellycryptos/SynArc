@@ -4,15 +4,21 @@ import { ReactNode, useState, useEffect } from 'react';
 import { PrivyProvider, PrivyClientConfig } from '@privy-io/react-auth';
 import { WagmiProvider, createConfig } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { arcTestnet, arcTransport } from '@/lib/arc/config';
+import { arcTestnet } from '@/lib/arc/config';
 import { initializeResilientRpc } from '@/lib/rpc/config';
+import { http, fallback } from 'wagmi';
 
 export { arcTestnet };
 
 export const config = createConfig({
   chains: [arcTestnet],
   transports: {
-    [arcTestnet.id]: arcTransport,
+    [arcTestnet.id]: fallback([
+      http(process.env.NEXT_PUBLIC_ARC_RPC_URL || ''),
+      http('https://rpc.testnet.arc.network'),
+      http('https://arc-testnet.drpc.org'),
+      http('https://5042002.rpc.thirdweb.com'),
+    ]),
   },
   ssr: true, // Hydration-safe for Next.js App Router
 });
