@@ -10,10 +10,15 @@ import { checkRpcHealth } from "./health";
 
 export const ARC_TESTNET_RPC = process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.network';
 
-// Falls back to public Arc node so the site always loads on Vercel
-export const RPC_URLS = [ARC_TESTNET_RPC, 'https://rpc.testnet.arc.network'].filter(
-  (url, index, arr) => arr.indexOf(url) === index // deduplicate if env var = public url
-);
+// Centralized resilient fallbacks to ensure zero rate limit failures
+export const RPC_URLS = [
+  ARC_TESTNET_RPC,
+  'https://rpc.testnet.arc.network',
+  'https://arc-testnet.drpc.org',
+  'https://5042002.rpc.thirdweb.com',
+].filter(Boolean).filter(
+  (url, index, arr) => arr.indexOf(url) === index // deduplicate
+) as string[];
 
 /**
  * Initialize dynamic client-side RPC fallbacks in-place.

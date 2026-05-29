@@ -16,8 +16,13 @@ export const initCircleWallet = async (userToken: string, encryptionKey: string)
     throw new Error('Circle Web SDK can only be initialized on the client side.')
   }
   
+  const rawAppId = process.env.NEXT_PUBLIC_CIRCLE_APP_ID;
+  const appId = !rawAppId || rawAppId === 'mock_circle_app_id_123456' || rawAppId.includes('your_')
+    ? '21fe3b25-388d-5cbc-a14a-e62d92a6d2d8' // Resilient fallback to configured real App ID
+    : rawAppId;
+
   client.setAppSettings({
-    appId: process.env.NEXT_PUBLIC_CIRCLE_APP_ID!
+    appId
   })
 
   client.setAuthentication({

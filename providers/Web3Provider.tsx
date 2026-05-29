@@ -1,19 +1,23 @@
 "use client";
 
 import { ReactNode, useState, useEffect } from 'react';
-import { PrivyProvider, PrivyClientConfig } from '@privy-io/react-auth';
+import { PrivyProvider, PrivyClientConfig, addRpcUrlOverrideToChain } from '@privy-io/react-auth';
 import { WagmiProvider, createConfig } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { arcTestnet } from '@/lib/arc/config';
 import { initializeResilientRpc } from '@/lib/rpc/config';
 import { http, fallback } from 'wagmi';
 
-export { arcTestnet };
+// Build a resilient chain override to bypass rate-limited dashboard RPCs
+const customRpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.network';
+export const overriddenArcTestnet = addRpcUrlOverrideToChain(arcTestnet, customRpcUrl);
+
+export { overriddenArcTestnet as arcTestnet };
 
 export const config = createConfig({
-  chains: [arcTestnet],
+  chains: [overriddenArcTestnet],
   transports: {
-    [arcTestnet.id]: fallback([
+    [overriddenArcTestnet.id]: fallback([
       http(process.env.NEXT_PUBLIC_ARC_RPC_URL || ''),
       http('https://rpc.testnet.arc.network'),
       http('https://arc-testnet.drpc.org'),
@@ -37,8 +41,8 @@ const privyConfig: PrivyClientConfig = {
     },
     showWalletUIs: false, // Prevents annoying signing popups for smooth on-chain DAO participation
   },
-  supportedChains: [arcTestnet],
-  defaultChain: arcTestnet,
+  supportedChains: [overriddenArcTestnet],
+  defaultChain: overriddenArcTestnet,
 };
 
 export function Web3Provider({ children }: { children: ReactNode }) {
