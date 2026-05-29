@@ -9,7 +9,7 @@ import { useToken } from "@/hooks/useToken";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown, Wallet } from "lucide-react";
+import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown, Wallet, Check } from "lucide-react";
 import { useWallets } from "@privy-io/react-auth";
 import { BrowserProvider } from "ethers";
 import { parseArcError } from "@/lib/utils";
@@ -97,19 +97,17 @@ export default function CreateProposalPage() {
     }
 
     const usdcVal = usdcBalance ? parseFloat(usdcBalance) : 0;
-    if (usdcVal <= 0) {
+    if (usdcVal < 0.01) {
       setError(
         <span>
-          You need testnet USDC for gas. Claim from{" "}
-          <a 
-            href="https://faucet.circle.com" 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          Insufficient USDC for gas. Please claim from{" "}
+          <Link 
+            href="/faucet" 
             className="underline font-bold text-primary hover:text-purple-300"
           >
             faucet
-          </a>{" "}
-          first
+          </Link>{" "}
+          first.
         </span>
       );
       return;
@@ -193,6 +191,37 @@ export default function CreateProposalPage() {
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>You require a minimum of {proposalThreshold.toLocaleString()} tokens to submit a proposal. Your current balance is {votingPower.toLocaleString()} tokens.</span>
               </div>
+            )}
+
+            {/* USDC Gas Status Banner */}
+            {isAuthenticated && walletAddress && (
+              <>
+                {parseFloat(usdcBalance || "0") < 0.01 ? (
+                  <div className="p-4 bg-danger/10 border border-danger/20 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-danger animate-fade-in-up">
+                    <div className="flex items-center gap-3">
+                      <AlertCircle className="w-5 h-5 shrink-0 text-danger animate-pulse" />
+                      <div>
+                        <span className="font-bold">Insufficient USDC for gas.</span>
+                        <p className="text-xs text-muted/80 mt-0.5 font-semibold">You need at least 0.01 USDC to pay for gas fees on Arc Testnet.</p>
+                      </div>
+                    </div>
+                    <Link 
+                      href="/faucet" 
+                      className="px-3.5 py-1.5 rounded-lg bg-danger/20 border border-danger/30 hover:bg-danger/30 text-xs font-bold text-danger transition-colors text-center cursor-pointer shrink-0"
+                    >
+                      Claim Faucet USDC →
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-success/10 border border-success/20 rounded-xl flex items-center gap-3 text-sm text-success animate-fade-in-up">
+                    <Check className="w-5 h-5 shrink-0 text-success" />
+                    <div>
+                      <span className="font-bold">Wallet Gas Ready</span>
+                      <p className="text-xs text-muted/80 mt-0.5 font-semibold">✅ {usdcBalance} USDC is available in your wallet for transaction fees.</p>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {/* AI Proposal Assistant Box */}
