@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useCircleWallet } from '@/hooks/useCircleWallet';
-import { X, Mail, ArrowRight, Shield, Zap, AlertCircle } from 'lucide-react';
+import { X, Mail, ArrowRight, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface WalletConnectModalProps {
@@ -16,81 +16,116 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
   const { connectCircleWallet, loading } = useCircleWallet();
   const [emailInput, setEmailInput] = useState('');
   const [showCircleInput, setShowCircleInput] = useState(false);
-  const [circleConnError, setCircleConnError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleCircleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!emailInput || !emailInput.includes('@')) {
-      setCircleConnError('Please enter a valid email address.');
+    setErrorMessage(null);
+
+    // 1. Verify App ID and environment variables exist
+    const appId = process.env.NEXT_PUBLIC_CIRCLE_APP_ID;
+    if (!appId || appId === 'mock_circle_app_id_123456' || appId.includes('your_')) {
+      console.error('[Circle Auth] App ID environment variable is missing or unconfigured.');
+      setErrorMessage('Circle Wallet is temporarily unavailable. Please try again later.');
       return;
     }
-    setCircleConnError(null);
+
+    if (!emailInput || !emailInput.includes('@')) {
+      setErrorMessage('Please enter a valid email address.');
+      return;
+    }
+
     try {
+      // 2. Attempt usercontrolled wallet creation & session setup
       await connectCircleWallet(emailInput);
+      
+      // 3. Save explicitly on success
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('synarc_wallet_type', 'circle');
+      }
+      
       onClose();
     } catch (err: any) {
-      setCircleConnError(err?.message || 'Failed to connect Circle wallet.');
+      // 4. Log raw errors strictly in console & display clean fallback to user
+      console.error('[Circle SDK Connection Error]:', err);
+      setErrorMessage('Circle Wallet is temporarily unavailable. Please try again later.');
     }
+  };
+
+  const handleCircleInitCheck = () => {
+    setErrorMessage(null);
+    
+    // Check App ID environment variables configuration
+    const appId = process.env.NEXT_PUBLIC_CIRCLE_APP_ID;
+    if (!appId || appId === 'mock_circle_app_id_123456' || appId.includes('your_')) {
+      console.error('[Circle Auth] Initialization Check Failed: App ID is unconfigured.');
+      setErrorMessage('Circle Wallet is temporarily unavailable. Please try again later.');
+      return;
+    }
+    
+    setShowCircleInput(true);
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      {/* Sleek Overlay Backdrop */}
+      {/* Sleek Overlay Backdrop supporting light/dark theme opacity */}
       <div 
-        className="fixed inset-0 bg-background/80 backdrop-blur-md transition-opacity" 
+        className="fixed inset-0 bg-background/80 dark:bg-background/90 backdrop-blur-md transition-opacity" 
         onClick={onClose}
       />
 
-      {/* Reduced Width Minimal Modal */}
-      <div className="w-full max-w-sm bg-background-surface/90 border border-border-thin rounded-2xl shadow-2xl relative z-10 overflow-hidden glass p-6 animate-fade-in-up">
+      {/* Reduced Width Centered Modal (max-w-[520px]) */}
+      <div className="w-full max-w-[520px] bg-card border border-card-border rounded-2xl shadow-2xl relative z-10 overflow-hidden glass-card p-6 md:p-8 animate-fade-in-up text-left">
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute right-4 top-4 p-1 text-muted hover:text-white rounded-full transition-colors cursor-pointer"
+          className="absolute right-4 top-4 p-1.5 text-muted hover:text-foreground rounded-full transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* Modal Header */}
-        <div className="space-y-1 mb-6 text-left pr-4">
-          <h2 className="text-lg font-bold text-white tracking-tight">Choose how to continue</h2>
-          <p className="text-xs text-muted leading-relaxed">
-            Browse SynArc freely. Connect only when you want to participate.
+        <div className="space-y-1 mb-8">
+          <h2 className="text-xl font-extrabold text-foreground tracking-tight">Connect Wallet</h2>
+          <p className="text-xs text-muted leading-relaxed font-semibold">
+            Choose how you want to participate in SynArc governance.
           </p>
         </div>
 
-        {/* Options */}
-        <div className="space-y-4 mb-6">
-          
-          {/* Option 1: Circle Wallet (Primary) */}
-          <div className="p-4 rounded-xl border border-pink-500/30 bg-pink-500/5 hover:border-pink-500/50 hover:bg-pink-500/10 transition-all duration-300 relative group overflow-hidden">
-            <div className="absolute right-3 top-3">
-              <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-pink-500/20 text-pink-400 border border-pink-500/30">
-                Recommended
-              </span>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-pink-500/25 rounded-lg text-pink-400">
-                  <Zap className="w-4 h-4" />
-                </div>
-                <h3 className="text-xs font-bold text-white">Circle Wallet</h3>
-              </div>
-              
-              <p className="text-[11px] text-text-secondary leading-relaxed">
-                Create a gasless Arc wallet using your email.
-              </p>
+        {/* Dynamic Error Messaging (No raw API leakage) */}
+        {errorMessage && (
+          <div className="p-3.5 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-start gap-2 mb-6 animate-fade-in-up">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span className="break-words w-full font-medium">{errorMessage}</span>
+          </div>
+        )}
 
+        {/* Two Options with Equal Card Sizes */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+          
+          {/* Option 1: Circle Wallet */}
+          <div className="flex flex-col justify-between p-5 rounded-xl border border-card-border bg-surface hover:border-primary/30 transition-all duration-300 group">
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <span>⭕</span>
+                <span>Continue with Circle Wallet</span>
+              </h3>
+              
+              <p className="text-[11px] text-muted leading-relaxed font-medium">
+                Gasless governance and native USDC experience on Arc.
+              </p>
+            </div>
+
+            <div className="mt-6">
               <AnimatePresence mode="wait">
                 {!showCircleInput ? (
                   <button
-                    onClick={() => setShowCircleInput(true)}
-                    className="w-full py-2 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all mt-2"
+                    onClick={handleCircleInitCheck}
+                    className="w-full py-2.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-all"
                   >
-                    <span>Continue with Circle Wallet</span>
+                    <span>Continue with Circle</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 ) : (
@@ -99,41 +134,35 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     onSubmit={handleCircleSubmit}
-                    className="space-y-2 mt-2"
+                    className="space-y-2"
                   >
                     <div className="relative">
                       <input
                         type="email"
                         value={emailInput}
                         onChange={(e) => setEmailInput(e.target.value)}
-                        placeholder="Enter your email"
+                        placeholder="Enter email"
                         required
                         disabled={loading}
-                        className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-background border border-border-thin focus:border-pink-500 outline-none text-[11px] text-white placeholder:text-muted disabled:opacity-50 font-mono"
+                        className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-background border border-card-border focus:border-pink-500 outline-none text-[11px] text-foreground placeholder:text-muted disabled:opacity-50 font-mono"
                       />
                       <Mail className="w-3.5 h-3.5 text-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
                     </div>
-                    {circleConnError && (
-                      <div className="flex items-center gap-1 text-[10px] text-danger bg-danger/10 border border-danger/20 p-2 rounded-lg">
-                        <AlertCircle className="w-3 h-3 shrink-0" />
-                        <span>{circleConnError}</span>
-                      </div>
-                    )}
-                    <div className="flex gap-2 text-[10px]">
+                    <div className="flex gap-1.5 text-[10px]">
                       <button
                         type="button"
                         onClick={() => setShowCircleInput(false)}
                         disabled={loading}
-                        className="px-2.5 py-1.5 rounded-lg border border-border-thin text-muted hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                        className="px-2 py-1.5 rounded-lg border border-card-border text-muted hover:text-foreground transition-colors cursor-pointer"
                       >
                         Back
                       </button>
                       <button
                         type="submit"
                         disabled={loading}
-                        className="flex-1 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white font-bold flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+                        className="flex-1 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white font-bold flex items-center justify-center gap-1 cursor-pointer"
                       >
-                        {loading ? 'Connecting...' : 'Confirm'}
+                        {loading ? 'Wait...' : 'Confirm'}
                       </button>
                     </div>
                   </motion.form>
@@ -142,54 +171,31 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
             </div>
           </div>
 
-          {/* Option 2: Privy */}
-          <div className="p-4 rounded-xl border border-border-thin bg-surface hover:border-primary/40 hover:bg-surface-elevated transition-all duration-300 group">
+          {/* Option 2: Privy Wallet */}
+          <div className="flex flex-col justify-between p-5 rounded-xl border border-card-border bg-surface hover:border-primary/30 transition-all duration-300 group">
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-primary/15 rounded-lg text-primary">
-                  <Shield className="w-4 h-4" />
-                </div>
-                <h3 className="text-xs font-bold text-white">Privy Account</h3>
-              </div>
-
-              <p className="text-[11px] text-text-secondary leading-relaxed">
-                Use Google, Email, or an existing wallet.
-              </p>
-
-              <button
-                onClick={() => {
-                  login();
-                  onClose();
-                }}
-                className="w-full py-2 rounded-lg bg-surface-elevated border border-border-thin hover:border-primary/30 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all mt-2"
-              >
+              <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <span>🔐</span>
                 <span>Continue with Privy</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              </h3>
+
+              <p className="text-[11px] text-muted leading-relaxed font-medium">
+                Continue with email, Google, or an external wallet.
+              </p>
             </div>
+
+            <button
+              onClick={() => {
+                login();
+                onClose();
+              }}
+              className="w-full py-2.5 rounded-lg bg-surface-elevated border border-card-border hover:border-primary/30 text-foreground text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all mt-6"
+            >
+              <span>Continue with Privy</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
-        </div>
-
-        {/* Footer Note */}
-        <div className="border-t border-border-thin pt-4 space-y-2 text-left">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted/60">
-            Wallet connection is only required for:
-          </p>
-          <ul className="grid grid-cols-2 gap-x-2 gap-y-1 text-[9px] text-muted/80 font-medium">
-            <li className="flex items-center gap-1">
-              <span className="text-primary">•</span> Creating proposals
-            </li>
-            <li className="flex items-center gap-1">
-              <span className="text-primary">•</span> Voting
-            </li>
-            <li className="flex items-center gap-1">
-              <span className="text-primary">•</span> Treasury actions
-            </li>
-            <li className="flex items-center gap-1">
-              <span className="text-primary">•</span> Campaign contributions
-            </li>
-          </ul>
         </div>
 
       </div>

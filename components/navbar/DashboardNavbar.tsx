@@ -97,17 +97,20 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
             ) : null}
 
             {/* User Profile Card */}
-            <div className="flex items-center gap-2 bg-surface-elevated border border-border-thin rounded-full pl-2 pr-3 py-1 hover:border-primary/20 transition-all duration-300">
-              {/* Premium Generative Avatar */}
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-extrabold text-white shadow-md ${avatarGradient}`}>
-                {isCircle ? "⭕" : initials}
-              </div>
-              <span className="text-xs font-semibold tracking-tight text-text-secondary flex items-center gap-1.5">
-                {shortAddress}
-                {isCircle && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-pink-500/20 border border-pink-500/30 text-[9px] font-extrabold text-pink-400 tracking-wide uppercase animate-pulse">
-                    ⚡ Gasless
-                  </span>
+            <div className="flex items-center gap-2 bg-surface-elevated border border-border-thin rounded-full px-3 py-1.5 hover:border-primary/20 transition-all duration-300">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                {isCircle ? (
+                  <>
+                    <span>⭕</span>
+                    <span>Circle Wallet</span>
+                    <span className="text-[10px] font-mono text-muted/80 font-medium">({shortAddress})</span>
+                  </>
+                ) : (
+                  <>
+                    <span>🔐</span>
+                    <span>Privy Wallet</span>
+                    <span className="text-[10px] font-mono text-muted/80 font-medium">({shortAddress})</span>
+                  </>
                 )}
               </span>
             </div>
