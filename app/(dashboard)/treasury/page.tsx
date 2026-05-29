@@ -149,12 +149,6 @@ export default function TreasuryPage() {
   };
 
   const handleDepositSubmit = async () => {
-    if (!userAddress) {
-      setErrorMessage("Wallet not connected.");
-      setTxStep("error");
-      return;
-    }
-    
     const amountNum = parseFloat(depositAmount);
     if (isNaN(amountNum) || amountNum <= 0) {
       setErrorMessage("Please enter a valid amount greater than 0.");
@@ -170,30 +164,91 @@ export default function TreasuryPage() {
       const tokenAddress = selectedToken === "USDC" ? USDC_ADDRESS : EURC_ADDRESS;
       const amountBigInt = BigInt(Math.floor(amountNum * 1_000_000)); // Both USDC and EURC use 6 decimals on Arc Testnet
 
+      // Get provider from connected wallet — works for both Privy and external
+      let provider;
+      if (wallets && wallets.length > 0) {
+        // Privy wallet
+        const privyWallet = wallets[0];
+        provider = await privyWallet.getEthereumProvider();
+      } else if (typeof window !== "undefined" && (window as any).ethereum) {
+        // External wallet (MetaMask, Rabby, OKX)
+        provider = (window as any).ethereum;
+      } else {
+        throw new Error("No wallet connected. Please connect your wallet first.");
+      }
+
+      const ethersProvider = new ethers.BrowserProvider(provider);
+      const signer = await ethersProvider.getSigner();
+
+      // Ensure network is switched to Arc Testnet (chainId 5042002)
+      try {
+        const network = await ethersProvider.getNetwork();
+        if (Number(network.chainId) !== 5042002) {
+          console.log("Switching chain to Arc Testnet...");
+          const chainIdHex = "0x4cef52"; // 5042002 in hex
+          await provider.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: chainIdHex }],
+          });
+        }
+      } catch (switchErr: any) {
+        console.warn("Chain switch check failed or was rejected:", switchErr);
+        // Try adding the chain as fallback
+        try {
+          const chainIdHex = "0x4cef52";
+          await provider.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: chainIdHex,
+                chainName: "Arc Testnet",
+                rpcUrls: ["https://rpc.testnet.arc.network"],
+                nativeCurrency: {
+                  name: "USDC",
+                  symbol: "USDC",
+                  decimals: 6,
+                },
+                blockExplorerUrls: ["https://testnet.arcscan.app"],
+              },
+            ],
+          });
+        } catch (addErr) {
+          console.error("Failed to add network:", addErr);
+        }
+      }
+
       // 1. Approve contract spend
       console.log(`Approving ${selectedToken}...`);
-      const approveTx = await writeContractAsync({
-        address: tokenAddress,
-        abi: ERC20ABI,
-        functionName: 'approve',
-        args: [treasuryAddress, amountBigInt],
-        ...ARC_GAS_CONFIG_LOW, // gas: 100000n, gasPrice: 10000000n
-      });
-      console.log(`${selectedToken} Approved! Tx: ${approveTx}`);
+      const tokenContract = new ethers.Contract(tokenAddress, ERC20ABI, signer);
+      const approveTx = await tokenContract.approve(
+        treasuryAddress,
+        amountBigInt,
+        {
+          gasLimit: 100000n,
+          gasPrice: 10000000n // Arc Testnet uses fixed 10M gasPrice (10 gwei-equivalent in USDC)
+        }
+      );
+      console.log(`${selectedToken} Approval transaction submitted: ${approveTx.hash}`);
+      await approveTx.wait();
+      console.log(`${selectedToken} Approved!`);
 
       // 2. Deposit to treasury
       setTxStep("depositing");
       console.log(`Depositing ${selectedToken} on-chain...`);
-      const depositTx = await writeContractAsync({
-        address: treasuryAddress as `0x${string}`,
-        abi: TreasuryABI,
-        functionName: selectedToken === "USDC" ? "depositUSDC" : "depositEURC",
-        args: [amountBigInt],
-        ...ARC_GAS_CONFIG, // gas: 200000n, gasPrice: 10000000n
-      });
+      const treasuryContract = new ethers.Contract(treasuryAddress, TreasuryABI, signer);
+      
+      const depositTx = await treasuryContract[selectedToken === "USDC" ? "depositUSDC" : "depositEURC"](
+        amountBigInt,
+        {
+          gasLimit: 200000n,
+          gasPrice: 10000000n
+        }
+      );
 
-      console.log(`Deposit transaction submitted! Tx: ${depositTx}`);
-      setTxHash(depositTx);
+      console.log(`Deposit transaction submitted! Tx: ${depositTx.hash}`);
+      setTxHash(depositTx.hash);
+
+      await depositTx.wait();
 
       // 3. Store real tx hash in activity log
       addTransaction({
@@ -201,7 +256,7 @@ export default function TreasuryPage() {
         amount: amountNum,
         token: selectedToken,
         date: new Date().toLocaleDateString('en-GB'),
-        txHash: depositTx, // real hash from chain
+        txHash: depositTx.hash, // real hash from chain
         status: 'confirmed',
       });
 
@@ -215,7 +270,7 @@ export default function TreasuryPage() {
       refetchWalletEURC?.();
     } catch (err: any) {
       console.error("Deposit transaction failed:", err);
-      const errMsg = err?.shortMessage || err?.message || "Transaction failed. Please try again.";
+      const errMsg = err?.reason || err?.shortMessage || err?.message || "Transaction failed. Please try again.";
       if (
         errMsg.toLowerCase().includes("capacity exceeded") ||
         errMsg.toLowerCase().includes("unexpected token") ||
