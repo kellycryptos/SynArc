@@ -3,7 +3,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { useWallets } from "@privy-io/react-auth"
 
 // Arc Testnet USDC contract from deployments/arcTestnet.json
-const USDC_ADDRESS = '0x637cA7788aBC956832F389A7BB895D5249FE757B'
+const USDC_ADDRESS = '0x3600000000000000000000000000000000000000'
+
 
 const arcTestnet = {
   id: 5042002,
