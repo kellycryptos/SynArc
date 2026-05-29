@@ -6,6 +6,7 @@ import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 import { Bell, Search, Menu, LogOut, Wallet } from "lucide-react";
 import { useMemo } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
+import { usePrivy } from "@privy-io/react-auth";
 
 /**
  * DashboardNavbar Component
@@ -19,7 +20,9 @@ import { SynArcLogo } from "@/components/ui/SynArcLogo";
  */
 export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { isAuthenticated, walletAddress, email, user, login, logout } = useAuth();
-  const { balance, isLoading, isError } = useUSDCBalance();
+  const { user: privyUser } = usePrivy();
+  const activeWalletAddress = privyUser?.wallet?.address || walletAddress;
+  const { balance, loading, error } = useUSDCBalance(activeWalletAddress);
 
   // Create a shortened representation of the wallet address (e.g. 0x12...abcd)
   const shortAddress = useMemo(() => {
@@ -80,11 +83,11 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
             <NetworkStatusBadge />
 
             {/* USDC Balance Display */}
-            {isLoading ? (
+            {loading ? (
               <div className="h-7 w-24 bg-surface-elevated animate-pulse rounded-full border border-border-thin shrink-0" />
-            ) : isError ? (
+            ) : error ? (
               <span className="hidden xs:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-danger/10 border border-danger/20 text-danger shrink-0" title="Failed to fetch balance from Arc RPC">
-                Error USDC
+                -- USDC
               </span>
             ) : balance !== null ? (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/20 text-primary-glow text-purple-300 shrink-0">

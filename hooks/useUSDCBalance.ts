@@ -1,89 +1,107 @@
-import { useEffect, useState, useCallback } from "react";
-import { useWallets } from "@privy-io/react-auth";
-import { createPublicClient, http, parseAbi, formatUnits } from "viem";
-import { arcTestnet, ARC_RPC_URL } from "@/lib/arc/config";
+import { createPublicClient, http } from 'viem'
+import { useEffect, useState, useCallback } from 'react'
+import { useWallets } from "@privy-io/react-auth"
 
-const USDC_CONTRACT_ADDRESS = "0x3600000000000000000000000000000000000000";
+// Arc Testnet USDC contract from deployments/arcTestnet.json
+const USDC_ADDRESS = '0x637cA7788aBC956832F389A7BB895D5249FE757B'
 
-const erc20Abi = parseAbi([
-  "function balanceOf(address owner) view returns (uint256)",
-  "function decimals() view returns (uint8)",
-]);
-
-// Simple non-batched client — avoids JSON-RPC batch issues with public RPC
-function getReadClient() {
-  return createPublicClient({
-    chain: arcTestnet,
-    transport: http(ARC_RPC_URL, {
-      retryCount: 3,
-      retryDelay: 1000,
-      timeout: 15000,
-    }),
-  });
+const arcTestnet = {
+  id: 5042002,
+  name: 'Arc Testnet',
+  network: 'arc-testnet',
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
+  rpcUrls: {
+    default: { http: [process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.network'] },
+    public: { http: [process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.network'] },
+  },
 }
 
-export function useUSDCBalance() {
-  const { wallets, ready: walletsReady } = useWallets();
-  const [balance, setBalance] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
+// ERC20 balanceOf ABI
+const ERC20_ABI = [
+  {
+    name: 'balanceOf',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+] as const
 
-  const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+export const useUSDCBalance = (walletAddress?: string | undefined) => {
+  const { wallets } = useWallets()
+  const activeAddress = walletAddress || (wallets && wallets.length > 0 ? wallets[0]?.address : undefined)
+
+  const [balance, setBalance] = useState<string>('0.00')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchBalance = useCallback(async () => {
-    if (!activeWallet?.address) {
-      setBalance(null);
-      setIsError(false);
-      return;
+    if (!activeAddress) {
+      setBalance('0.00')
+      setLoading(false)
+      setError(null)
+      return
     }
 
-    setIsLoading(true);
-    setIsError(false);
+    setLoading(true)
+    setError(null)
+    
+    // Try primary RPC first then fallbacks
+    const rpcUrls = [
+      process.env.NEXT_PUBLIC_ARC_RPC_URL,
+      'https://rpc.testnet.arc.network',
+      'https://arc-testnet.drpc.org',
+      'https://5042002.rpc.thirdweb.com',
+    ].filter(Boolean) as string[]
 
-    try {
-      const client = getReadClient();
+    for (const rpcUrl of rpcUrls) {
+      try {
+        const client = createPublicClient({
+          chain: arcTestnet,
+          transport: http(rpcUrl),
+        })
 
-      const [bal] = await Promise.all([
-        client.readContract({
-          address: USDC_CONTRACT_ADDRESS,
-          abi: erc20Abi,
-          functionName: "balanceOf",
-          args: [activeWallet.address as `0x${string}`],
-        }),
-      ]);
+        const raw = await client.readContract({
+          address: USDC_ADDRESS as `0x${string}`,
+          abi: ERC20_ABI,
+          functionName: 'balanceOf',
+          args: [activeAddress as `0x${string}`],
+        })
 
-      // Arc USDC always uses 6 decimals
-      const formatted = formatUnits(bal, 6);
-      setBalance(formatted);
-      setIsError(false);
-    } catch (error) {
-      console.error("Error fetching USDC balance from Arc Testnet:", error);
-      setIsError(true);
-      // Don't wipe a previously loaded balance
-    } finally {
-      setIsLoading(false);
+        // USDC has 6 decimals
+        const formatted = (Number(raw) / 1_000_000).toFixed(2)
+        setBalance(formatted)
+        setLoading(false)
+        return // Success — stop trying fallbacks
+        
+      } catch (err) {
+        console.warn(`RPC failed: ${rpcUrl}`, err)
+        continue // Try next RPC
+      }
     }
-  }, [activeWallet?.address]);
+
+    // All RPCs failed
+    setError('Error fetching balance')
+    setLoading(false)
+  }, [activeAddress])
 
   useEffect(() => {
-    if (walletsReady && activeWallet?.address) {
-      fetchBalance();
-
-      // Poll every 15 seconds to keep the balance fresh
-      const interval = setInterval(fetchBalance, 15000);
-      return () => clearInterval(interval);
-    } else if (walletsReady && !activeWallet) {
-      setBalance(null);
-      setIsLoading(false);
-      setIsError(false);
-    }
-  }, [activeWallet?.address, walletsReady, fetchBalance]);
+    fetchBalance()
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchBalance, 30_000)
+    return () => clearInterval(interval)
+    
+  }, [fetchBalance])
 
   return {
     balance,
-    isLoading: isLoading && balance === null,
-    isFetching: isLoading,
-    isError,
+    loading,
+    error,
+    // Backward-compatible fields:
+    isLoading: loading && balance === '0.00',
+    isFetching: loading,
+    isError: !!error,
     refetch: fetchBalance,
-  };
+  }
 }
