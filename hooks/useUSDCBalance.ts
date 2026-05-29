@@ -51,7 +51,6 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
       process.env.NEXT_PUBLIC_ARC_RPC_URL,
       'https://rpc.testnet.arc.network',
       'https://arc-testnet.drpc.org',
-      'https://5042002.rpc.thirdweb.com',
     ].filter(Boolean) as string[]
 
     for (const rpcUrl of rpcUrls) {

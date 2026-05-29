@@ -9,7 +9,7 @@ import { useToken } from "@/hooks/useToken";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown } from "lucide-react";
+import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown, Wallet } from "lucide-react";
 import { useWallets } from "@privy-io/react-auth";
 import { BrowserProvider } from "ethers";
 import { parseArcError } from "@/lib/utils";
@@ -350,23 +350,34 @@ export default function CreateProposalPage() {
             </div>
 
             <div className="pt-6 border-t border-border-subtle flex justify-end">
-              <button
-                type="submit"
-                disabled={isSubmitting || (!tokenLoading && !hasEnoughBalance)}
-                className="px-6 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Deploying Proposal...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    Submit Proposal
-                  </>
-                )}
-              </button>
+              {!isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={login}
+                  className="px-6 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer"
+                >
+                  <Wallet className="w-4 h-4" />
+                  Connect wallet to continue
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={isSubmitting || (!tokenLoading && !hasEnoughBalance)}
+                  className="px-6 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                      Deploying Proposal...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Submit Proposal
+                    </>
+                  )}
+                </button>
+              )}
             </div>
             
           </form>

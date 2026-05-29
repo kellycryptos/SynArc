@@ -32,7 +32,8 @@ import {
   Play,
   Bot,
   Info,
-  Loader2
+  Loader2,
+  Wallet
 } from "lucide-react";
 
 export default function ProposalDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -417,7 +418,15 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                   </div>
                 )}
 
-                {isProposalActive ? (
+                {!isAuthenticated ? (
+                  <button
+                    onClick={login}
+                    className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-sm shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Wallet className="w-4 h-4" />
+                    Connect wallet to vote
+                  </button>
+                ) : isProposalActive ? (
                   hasUserVotedOnChain ? (
                     <div className="w-full py-3 rounded-xl bg-surface border border-emerald-500/25 flex flex-col items-center justify-center gap-1">
                       <div className="text-sm font-bold text-emerald-400 flex items-center gap-2">

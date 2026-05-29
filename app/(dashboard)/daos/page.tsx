@@ -11,7 +11,7 @@ import { ethers, Contract, formatUnits } from "ethers";
 import { getResilientProvider } from "@/lib/rpc/config";
 
 export default function DAOsPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, login } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     daoName: "",
@@ -192,7 +192,13 @@ export default function DAOsPage() {
         </div>
 
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            if (!isAuthenticated) {
+              login();
+              return;
+            }
+            setIsModalOpen(true);
+          }}
           className="md:self-start shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer text-sm"
         >
           <Plus className="w-4 h-4" />

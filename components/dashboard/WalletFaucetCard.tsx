@@ -519,6 +519,7 @@ export function WalletFaucetCard() {
               rel="noopener noreferrer"
               className="w-full py-2.5 px-4 rounded-xl bg-purple-500/10 border border-purple-400/20 text-purple-300 hover:bg-purple-500/20 hover:border-purple-400/40 text-center font-bold text-xs flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all duration-300"
             >
+              Claim EURC &rarr;
             </a>
           </div>
 

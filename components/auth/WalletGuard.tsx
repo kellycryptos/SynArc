@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { ShieldAlert, Wallet, Sparkles } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 
-const PROTECTED_ROUTES = ['/proposals', '/treasury', '/bridge', '/members', '/analytics', '/faucet', '/settings'];
+const PROTECTED_ROUTES = ['/bridge', '/settings'];
 
 export function WalletGuard({ children }: { children: ReactNode }) {
   const { isAuthenticated, ready, login } = useAuth();

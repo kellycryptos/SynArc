@@ -250,26 +250,32 @@ export default function TreasuryPage() {
           </div>
           
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => {
-                if (!isAuthenticated) { login(); return; }
-                setShowBridge(true);
-              }}
-              className="px-5 py-2.5 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-white font-semibold text-sm transition-all border border-border-thin flex items-center gap-2 cursor-pointer hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] shrink-0"
-            >
-              🌉 Bridge USDC to Arc
-            </button>
+            {!isAuthenticated ? (
+              <button 
+                onClick={login}
+                className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer shrink-0"
+              >
+                <Wallet className="w-4.5 h-4.5" />
+                Connect Wallet to Deposit
+              </button>
+            ) : (
+              <>
+                <button 
+                  onClick={() => setShowBridge(true)}
+                  className="px-5 py-2.5 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-white font-semibold text-sm transition-all border border-border-thin flex items-center gap-2 cursor-pointer hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] shrink-0"
+                >
+                  🌉 Bridge USDC to Arc
+                </button>
 
-            <button 
-              onClick={() => {
-                if (!isAuthenticated) { login(); return; }
-                setModalOpen(true);
-              }}
-              className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer shrink-0"
-            >
-              <PlusCircle className="w-4.5 h-4.5" />
-              Deposit Assets
-            </button>
+                <button 
+                  onClick={() => setModalOpen(true)}
+                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer shrink-0"
+                >
+                  <PlusCircle className="w-4.5 h-4.5" />
+                  Deposit Assets
+                </button>
+              </>
+            )}
             
             <div className="bg-surface-elevated border border-border-thin px-4 py-2 rounded-xl flex items-center gap-3 shadow-md shrink-0">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
