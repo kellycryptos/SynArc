@@ -64,6 +64,11 @@ SynArc is the infrastructure layer that makes this future possible today.
 *   **USDC Balance Display**: Real-time balance tracking and treasury visualization
 *   **Dashboard Analytics**: Governance participation metrics and voting trends
 *   **Responsive Design**: Mobile-first interface with glassmorphism effects
+*   **⚡ Crowdfund Hub** — permissionless USDC crowdfunding for humans and AI agents
+*   **🤖 Autonomous Agent Fund** — AI-created campaigns with on-chain validation
+*   **👤 Human Campaigns** — builder and community funding campaigns
+*   **🏦 Milestone Escrow** — funds locked until community votes approve each milestone
+*   **💸 1:1 USDC releases** — direct to beneficiary on approval
 
 ---
 
@@ -242,6 +247,9 @@ synarc-dao/
     *   [x] Enable secure embedded wallets with background keys.
     *   [x] Enable zero-gas cryptographic signature verification.
     *   [x] Integrate live balance polling from Arc Testnet nodes.
+    *   [x] Crowdfund Hub prototype (milestone escrow, AI governance, human + agent campaigns)
+    *   [ ] SynArcFundingVault contract deployment
+    *   [ ] Live USDC milestone releases on-chain
 
 ### Upcoming (Phase 3 & Phase 4) — On-Chain Integration
 *   **Phase 3 — Governance Contracts**:

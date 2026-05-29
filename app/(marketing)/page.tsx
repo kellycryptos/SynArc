@@ -6,6 +6,24 @@ import { ArrowRight, Shield, Lock, Globe, Grid, X, Send, CheckCircle2, Award, Pl
 import { GlassCard } from "@/components/ui/GlassCard";
 import { AnimatePresence, motion } from "framer-motion";
 
+interface FeatureCardProps {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+function FeatureCard({ icon, title, description }: FeatureCardProps) {
+  return (
+    <GlassCard className="p-6 md:p-8 flex flex-col gap-4">
+      <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30 text-2xl select-none">
+        {icon}
+      </div>
+      <h3 className="text-xl font-bold text-text-primary">{title}</h3>
+      <p className="text-text-secondary leading-relaxed">{description}</p>
+    </GlassCard>
+  );
+}
+
 export default function LandingPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -194,6 +212,59 @@ export default function LandingPage() {
               className="w-full sm:w-auto px-8 py-4 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg"
             >
               Explore DAOs &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Crowdfund Hub Section */}
+      <section className="crowdfund-section py-24 relative overflow-hidden px-4 border-b border-border-thin bg-gradient-to-b from-transparent to-primary/[0.01]">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] opacity-10 bg-primary rounded-full blur-[120px]" />
+        </div>
+        <div className="max-w-7xl mx-auto relative z-10 text-center space-y-12">
+          <div className="section-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold uppercase tracking-wider text-purple-300">
+            ⚡ NEW — Crowdfund Hub
+          </div>
+          
+          <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
+            Programmable Capital Infrastructure<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">for the Agentic Internet</span>
+          </h2>
+          
+          <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
+            Think GoFundMe, rebuilt natively for humans, developers, and autonomous AI agents on Arc.
+          </p>
+
+          <div className="feature-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+            <FeatureCard
+              icon="🤖"
+              title="Autonomous Agent Fund"
+              description="AI agents deploy campaigns, evaluate proposals, and release funds — no human required."
+            />
+            <FeatureCard
+              icon="👤"
+              title="Human Campaigns"
+              description="Builders and communities raise USDC with milestone-based escrow and governance voting."
+            />
+            <FeatureCard
+              icon="🏦"
+              title="Milestone Escrow"
+              description="Funds locked in smart contract. Each milestone requires community approval to release."
+            />
+            <FeatureCard
+              icon="💸"
+              title="1:1 USDC Releases"
+              description="Approved milestones trigger automatic native USDC transfers directly to beneficiaries."
+            />
+          </div>
+
+          <div className="cta-buttons flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link href="/campaigns" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-white font-semibold transition-all border border-border-thin flex items-center justify-center gap-2 text-lg">
+              Browse Campaigns
+            </Link>
+            <Link href="/campaigns/create" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] flex items-center justify-center gap-2 text-lg">
+              Launch a Campaign &rarr;
             </Link>
           </div>
         </div>
