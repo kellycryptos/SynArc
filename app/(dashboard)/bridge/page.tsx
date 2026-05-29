@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets } from "@privy-io/react-auth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -85,17 +86,41 @@ export default function BridgePage() {
   // Global hooks for Arc USDC balance refetching
   const { balance: arcUSDCBalance, refetch: refetchArcUSDC, isFetching: arcFetching } = useUSDCBalance();
 
+  // Real CCTP bridge hook — handles approve → burn → attest → mint
+  const { state: bridgeState, bridgeUSDC, resetState: resetBridgeState } = useCCTPBridge();
+
   const [selectedChain, setSelectedChain] = useState(SOURCE_CHAINS[0]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [sourceBalance, setSourceBalance] = useState<string>("0.00");
   const [balanceLoading, setBalanceLoading] = useState(false);
   
-  // Bridge panel states
+  // Bridge panel display state (derived from hook state)
   const [progressState, setProgressState] = useState<BridgeProgress>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [activeTxHash, setActiveTxHash] = useState("");
   const [bridgeHistory, setBridgeHistory] = useState<BridgeTx[]>([]);
+
+  // Sync real CCTP hook state → page display state
+  useEffect(() => {
+    const s = bridgeState.status;
+    if (s === "idle") {
+      setProgressState("idle");
+    } else if (s === "approving") {
+      setProgressState("initiating");
+    } else if (s === "burning") {
+      setProgressState("burning");
+    } else if (s === "waiting-attestation" || s === "minting") {
+      setProgressState("minting");
+    } else if (s === "success") {
+      setProgressState("success");
+      if (bridgeState.txHash) setActiveTxHash(bridgeState.txHash);
+      refetchArcUSDC();
+    } else if (s === "error") {
+      setProgressState("error");
+      setErrorMessage(bridgeState.errorMessage || "Bridge transaction failed.");
+    }
+  }, [bridgeState.status, bridgeState.txHash, bridgeState.errorMessage, refetchArcUSDC]);
 
   // Load transaction history and populate with mock data on first load if empty
   useEffect(() => {
@@ -196,63 +221,42 @@ export default function BridgePage() {
       return;
     }
 
+    if (!activeWallet) {
+      setErrorMessage("Please connect your wallet to bridge.");
+      setProgressState("error");
+      return;
+    }
+
     setErrorMessage("");
-    setProgressState("initiating");
+    setActiveTxHash("");
 
-    try {
-      // 1. Initiating API Handshake
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      // 2. Burning USDC
-      setProgressState("burning");
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      
-      const chars = "0123456789abcdef";
-      let mockHash = "0x";
-      for (let i = 0; i < 64; i++) {
-        mockHash += chars[Math.floor(Math.random() * chars.length)];
-      }
-      setActiveTxHash(mockHash);
+    // Execute real CCTP bridge — approve → burn → attest → mint
+    await bridgeUSDC(selectedChain.id as any, amount);
 
-      // 3. Minting on Arc Testnet
-      setProgressState("minting");
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      // Create new transaction object
+    // On success, append to bridge history (hook state sync handles the rest)
+    const amountFinal = parseFloat(amount);
+    if (bridgeState.status !== "error") {
       const newTx: BridgeTx = {
         id: "b_" + Date.now(),
         sourceChain: selectedChain.name,
         sourceIcon: selectedChain.icon,
-        amount: amountNum,
-        txHash: mockHash,
+        amount: amountFinal,
+        txHash: bridgeState.txHash || activeTxHash,
         timestamp: new Date().toISOString(),
         status: "success"
       };
-
       const updatedHistory = [newTx, ...bridgeHistory];
       setBridgeHistory(updatedHistory);
       if (walletAddress) {
         localStorage.setItem(`synarc_bridge_history_${walletAddress.toLowerCase()}`, JSON.stringify(updatedHistory));
       }
-
-      // 4. Success State
-      setProgressState("success");
-      
-      // Refresh Arc Testnet balance
-      refetchArcUSDC();
-      
-      // Reset source balance
-      const remainingBalance = (parseFloat(sourceBalance) - amountNum).toFixed(2);
+      const remainingBalance = (parseFloat(sourceBalance) - amountFinal).toFixed(2);
       setSourceBalance(remainingBalance);
-
-    } catch (err: any) {
-      console.error("Bridging transaction error:", err);
-      setErrorMessage(err?.message || "Bridging operation encountered an unexpected issue.");
-      setProgressState("error");
     }
   };
 
   const handleResetForm = () => {
+    resetBridgeState();
     setProgressState("idle");
     setAmount("");
     setErrorMessage("");
@@ -534,14 +538,20 @@ export default function BridgePage() {
 
                       <div className="space-y-2">
                         <h3 className="text-lg font-bold text-white uppercase tracking-wider text-sm">
-                          {progressState === "initiating" && "Initiating Secure Router..."}
+                          {progressState === "initiating" && (bridgeState.status === "approving" ? "Approving USDC Spend..." : "Initiating Secure Router...")}
                           {progressState === "burning" && "Burning USDC on Source Chain..."}
-                          {progressState === "minting" && "Gathering Attestations & Minting..."}
+                          {progressState === "minting" && (bridgeState.status === "waiting-attestation"
+                            ? `Waiting for Circle Attestation... (${bridgeState.elapsedSeconds}s)`
+                            : "Minting USDC on Arc Testnet...")}
                         </h3>
                         <p className="text-xs text-text-tertiary max-w-xs mx-auto leading-relaxed">
-                          {progressState === "initiating" && "Contacting Circle iris consensus relay to authenticate the transfer path."}
+                          {progressState === "initiating" && (bridgeState.status === "approving"
+                            ? `Authorising TokenMessenger to spend ${amount} USDC on ${selectedChain.name}.`
+                            : "Contacting Circle iris consensus relay to authenticate the transfer path.")}
                           {progressState === "burning" && `Burning ${amount} USDC on ${selectedChain.name}. Generating cryptographic receipt.`}
-                          {progressState === "minting" && "Broadcasting attestations to Arc node network. Minting native stablecoin."}
+                          {progressState === "minting" && (bridgeState.status === "waiting-attestation"
+                            ? "Polling Circle Iris API for burn attestation. This typically takes 15–30 seconds."
+                            : "Broadcasting attestation to Arc node network. Minting native USDC.")}
                         </p>
                       </div>
 
