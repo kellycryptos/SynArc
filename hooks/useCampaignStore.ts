@@ -5,7 +5,7 @@ interface CampaignState {
   campaigns: Campaign[];
   initialized: boolean;
   initializeStore: () => void;
-  addCampaign: (campaignData: Omit<Campaign, 'id' | 'raised' | 'contributors' | 'state' | 'votes' | 'aiAnalysis'>) => string;
+  addCampaign: (campaignData: Omit<Campaign, 'id' | 'raised' | 'contributors' | 'state' | 'votes' | 'aiAnalysis' | 'agentType' | 'executionScope' | 'strategy' | 'fundingSources' | 'proposalNumber' | 'escrowAddress' | 'sybilProtection'>) => string;
   contribute: (campaignId: string, amount: number) => void;
   castVote: (campaignId: string, choice: 'FOR' | 'AGAINST' | 'ABSTAIN', count?: number) => void;
   setAIAnalysis: (campaignId: string, analysis: CampaignAIAnalysis) => void;
@@ -38,6 +38,8 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
 
   addCampaign: (campaignData) => {
     const id = `camp-${String(get().campaigns.length + 1).padStart(3, '0')}`;
+    
+    // Create new campaign with all required upgraded mock parameters
     const newCampaign: Campaign = {
       ...campaignData,
       id,
@@ -45,7 +47,22 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
       contributors: 0,
       state: 'Active',
       votes: { for: 0, against: 0, abstain: 0 },
-      aiAnalysis: null
+      aiAnalysis: null,
+      
+      // Upgrade metadata
+      agentType: campaignData.isAgent ? 'Treasury Optimization Agent' : undefined,
+      executionScope: campaignData.isAgent ? 'Ecosystem Grant Allocation' : undefined,
+      strategy: campaignData.isAgent ? 'On-chain yield scans & DeFi automation' : undefined,
+      fundingSources: campaignData.isAgent 
+        ? ['individual', 'dao_treasury', 'ai_agents'] 
+        : ['individual', 'dao_treasury'],
+      proposalNumber: Math.floor(Math.random() * 50) + 16,
+      escrowAddress: `0xEscrow${Math.floor(Math.random() * 899) + 100}VaultAddress`,
+      sybilProtection: {
+        aiScanned: true,
+        reputationChecked: false,
+        stakeRequired: false
+      }
     };
 
     const updated = [...get().campaigns, newCampaign];
@@ -58,12 +75,14 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
     const updated = get().campaigns.map((c) => {
       if (c.id === campaignId) {
         const newRaised = c.raised + amount;
-        // If raised matches or exceeds goal, set state to Funded (unless active milestone is voting)
         const newContributors = c.contributors + 1;
         let newState = c.state;
+        
+        // Advance to Voting (milestone release review phase) if goal is completed
         if (newRaised >= c.goal && c.state === 'Active') {
-          newState = 'Voting'; // Enter voting for the first milestone on completion
+          newState = 'Voting';
         }
+        
         return {
           ...c,
           raised: newRaised,
@@ -86,29 +105,31 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
         if (choice === 'AGAINST') newVotes.against += count;
         if (choice === 'ABSTAIN') newVotes.abstain += count;
 
-        // Auto-complete or advance milestone status for demonstration if votes are high
         let newMilestones = [...c.milestones];
         let newState = c.state;
 
-        // If FOR votes are highly dominant, let's execute and release milestone
+        // Progress milestone statuses if FOR votes are highly dominant
         if (newVotes.for > newVotes.against + 5000) {
-          // Find the active or pending milestone to progress
           const activeIndex = newMilestones.findIndex(m => m.status === 'active');
           if (activeIndex !== -1) {
             newMilestones[activeIndex].status = 'completed';
-            // Move next pending to active
+            
+            // Move next pending milestone to active
             const nextPending = newMilestones.findIndex(m => m.status === 'pending');
             if (nextPending !== -1) {
               newMilestones[nextPending].status = 'active';
+              newState = 'Voting'; // remains in Voting since next milestone needs release approval
             } else {
-              // No more milestones, campaign is fully funded and complete
-              newState = 'Funded';
+              // No more milestones left - campaign is fully Completed!
+              newState = 'Completed';
             }
           } else {
-            // Find first pending or check if we can make it active
+            // No currently active, try to trigger the first pending milestone
             const firstPending = newMilestones.findIndex(m => m.status === 'pending');
             if (firstPending !== -1) {
               newMilestones[firstPending].status = 'active';
+            } else {
+              newState = 'Completed';
             }
           }
         }

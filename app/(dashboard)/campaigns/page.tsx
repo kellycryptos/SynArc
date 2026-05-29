@@ -17,8 +17,15 @@ import {
   Users, 
   Clock, 
   ArrowRight,
-  TrendingUp,
-  Award
+  Sparkles,
+  ShieldAlert,
+  ShieldCheck,
+  Grid,
+  Bot,
+  Briefcase,
+  GitBranch,
+  Globe,
+  RefreshCw
 } from "lucide-react";
 
 export default function CampaignsPage() {
@@ -37,7 +44,7 @@ export default function CampaignsPage() {
   const totalCampaigns = campaigns.length;
   const totalUSDCPercent = campaigns.reduce((acc, curr) => acc + curr.raised, 0);
   const activeCount = campaigns.filter(c => c.state === 'Active' || c.state === 'Voting').length;
-  const fundedCount = campaigns.filter(c => c.state === 'Funded').length;
+  const fundedCount = campaigns.filter(c => c.state === 'Funded' || c.state === 'Completed').length;
 
   // Filter campaigns
   const filteredCampaigns = campaigns.filter((c) => {
@@ -62,6 +69,53 @@ export default function CampaignsPage() {
     const diff = deadline.getTime() - Date.now();
     const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
     return days > 0 ? `${days}d remaining` : "Ended";
+  };
+
+  // AI Reviewed Badge System
+  const getAIBadge = (recommendation?: string) => {
+    if (recommendation === 'FUND') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+          🤖 AI Reviewed — Recommended ✅
+        </span>
+      );
+    }
+    if (recommendation === 'REVIEW') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide bg-amber-500/10 border border-amber-500/20 text-amber-400">
+          🤖 AI Reviewed — Needs Review ⚠️
+        </span>
+      );
+    }
+    if (recommendation === 'REJECT') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide bg-red-500/10 border border-red-500/20 text-red-400">
+          🤖 AI Reviewed — High Risk ❌
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide bg-white/[0.04] border border-white/[0.08] text-muted/80">
+        🤖 AI Review Pending...
+      </span>
+    );
+  };
+
+  const getLifecycleStateBadge = (state: string) => {
+    const configs: Record<string, { color: string; icon: string }> = {
+      Draft: { color: 'bg-white/10 border-white/20 text-muted', icon: '📝' },
+      Active: { color: 'bg-blue-500/10 border-blue-400/20 text-blue-300', icon: '🚀' },
+      Voting: { color: 'bg-purple-500/10 border-purple-400/20 text-purple-300 animate-pulse', icon: '🗳️' },
+      Funded: { color: 'bg-emerald-500/10 border-emerald-400/20 text-emerald-300', icon: '✅' },
+      Failed: { color: 'bg-red-500/10 border-red-400/20 text-red-300', icon: '❌' },
+      Completed: { color: 'bg-amber-500/10 border-amber-400/25 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.15)]', icon: '🏆' }
+    };
+    const c = configs[state] || configs['Active'];
+    return (
+      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${c.color}`}>
+        <span>{c.icon}</span> {state}
+      </span>
+    );
   };
 
   return (
@@ -99,6 +153,41 @@ export default function CampaignsPage() {
           </button>
         </div>
 
+        {/* 9. Visual Architecture Separation Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-elevated/40 border border-border-thin rounded-2xl p-6 relative overflow-hidden backdrop-blur-md">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.01] to-purple-glow/[0.01] pointer-events-none" />
+          
+          <div className="space-y-2 flex flex-col justify-between h-full">
+            <div>
+              <h4 className="text-sm font-bold text-text-primary flex items-center gap-2">
+                <span className="p-1 rounded bg-blue-500/10 border border-blue-400/20 text-blue-400">🏛</span>
+                SynArc Governance
+              </h4>
+              <p className="text-xs text-muted leading-relaxed mt-1">
+                Protocol-wide governance upgrades, parameter alterations, delegate listings, and core DAO treasury allocations.
+              </p>
+            </div>
+            <Link href="/proposals" className="text-xs font-bold text-primary hover:text-primary-glow flex items-center gap-1 pt-3">
+              View Proposals <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          
+          <div className="space-y-2 md:pl-6 md:border-l md:border-border-thin flex flex-col justify-between h-full">
+            <div>
+              <h4 className="text-sm font-bold text-purple-300 flex items-center gap-2">
+                <span className="p-1 rounded bg-purple-500/15 border border-purple-400/20 text-purple-300">⚡</span>
+                Crowdfund Hub
+              </h4>
+              <p className="text-xs text-muted leading-relaxed mt-1">
+                Permissionless coordinate platforms, dynamic milestone-locked escrows, and automated AI Risk due diligence.
+              </p>
+            </div>
+            <Link href="/campaigns" className="text-xs font-bold text-purple-300 hover:text-purple-200 flex items-center gap-1 pt-3">
+              Browse Campaigns <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <GlassCard className="p-5 flex flex-col gap-1 border border-border-thin" hover={false}>
@@ -128,7 +217,7 @@ export default function CampaignsPage() {
             <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar w-full sm:w-auto">
               <Filter className="w-4 h-4 text-text-tertiary shrink-0" />
               <div className="flex gap-2">
-                {["All", "Active", "Voting", "Funded", "Failed"].map((status) => (
+                {["All", "Active", "Voting", "Funded", "Failed", "Completed"].map((status) => (
                   <button
                     key={status}
                     onClick={() => setFilter(status)}
@@ -221,25 +310,25 @@ export default function CampaignsPage() {
 
                   <div className="space-y-4">
                     {/* Badge */}
-                    <div className="flex items-center justify-between">
-                      {isAgent ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider bg-purple-500/15 border border-purple-400/25 text-purple-300 animate-pulse">
-                          🤖 AUTONOMOUS AGENT FUND
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider bg-blue-500/15 border border-blue-400/25 text-blue-300">
-                          👤 HUMAN CAMPAIGN
-                        </span>
-                      )}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        {isAgent ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider bg-purple-500/15 border border-purple-400/25 text-purple-300 animate-pulse">
+                            🤖 AUTONOMOUS AGENT FUND
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider bg-blue-500/15 border border-blue-400/25 text-blue-300">
+                            👤 HUMAN CAMPAIGN
+                          </span>
+                        )}
 
-                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                        campaign.state === 'Active' ? 'bg-success/15 border border-success/30 text-success' :
-                        campaign.state === 'Voting' ? 'bg-amber-500/15 border border-amber-400/30 text-amber-400' :
-                        campaign.state === 'Funded' ? 'bg-arc-blue/15 border border-arc-blue/30 text-arc-blue' :
-                        'bg-surface-elevated border border-border-thin text-muted'
-                      }`}>
-                        {campaign.state}
-                      </span>
+                        {getLifecycleStateBadge(campaign.state)}
+                      </div>
+
+                      {/* 2. AI Reviewed Badge System on Cards */}
+                      <div>
+                        {getAIBadge(campaign.aiAnalysis?.recommendation)}
+                      </div>
                     </div>
 
                     {/* Title & Category */}
@@ -256,6 +345,12 @@ export default function CampaignsPage() {
                     <p className="text-muted text-sm leading-relaxed line-clamp-3">
                       {campaign.description}
                     </p>
+
+                    {/* 1. Escrow Trust Notice */}
+                    <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[10.5px] text-purple-300 leading-normal flex items-start gap-2">
+                      <span className="shrink-0 text-xs">🔒</span>
+                      <span>Funds are escrowed until governance approves milestone completion. Treasury cannot arbitrarily drain funds.</span>
+                    </div>
                   </div>
 
                   {/* Funding stats & Progress */}
@@ -307,6 +402,54 @@ export default function CampaignsPage() {
             })}
           </div>
         )}
+
+        {/* 10. Agentic Capital Vision Section */}
+        <div className="pt-8">
+          <GlassCard className="p-8 border border-primary/20 bg-gradient-to-b from-primary/[0.01] to-primary/[0.03] space-y-6 text-center overflow-hidden relative" hover={false}>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.06),transparent_60%)] pointer-events-none" />
+            
+            <div className="space-y-2 relative z-10">
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-heading text-text-primary">
+                🌐 The Future — Agentic Capital Coordination
+              </h2>
+              <p className="text-sm text-muted max-w-2xl mx-auto leading-relaxed">
+                SynArc campaigns are evolving into autonomous economic actors. Each campaign will eventually transform into a self-governing subDAO with its own:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left relative z-10 pt-4 max-w-4xl mx-auto">
+              {[
+                { icon: "💼", title: "Campaign Treasury Wallet", desc: "Independent secure multisigs holding locked collateral", status: "Coming Soon" },
+                { icon: "🏛", title: "Campaign Governance", desc: "Local consensus layers voting on operational changes", status: "Coming Soon" },
+                { icon: "🤖", title: "AI-Managed Allocations", desc: "Yield optimization filters executed dynamically", status: "Coming Soon" },
+                { icon: "🔄", title: "Recurring Milestone Voting", desc: "Continuous streams disbursed based on cycle approvals", status: "Coming Soon" },
+                { icon: "🔗", title: "SubDAO Formation", desc: "Modular framework spawning child organizations on Arc", status: "Planned" },
+                { icon: "🌐", title: "Cross-chain Campaign Funding", desc: "Interoperable stablecoin deposits via Circle CCTP", status: "Planned" }
+              ].map((item, idx) => (
+                <div key={idx} className="p-4 rounded-xl border border-border-thin bg-surface/30 space-y-2 flex flex-col justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl select-none">{item.icon}</span>
+                      <span className={`text-[8.5px] px-2 py-0.2 rounded font-extrabold uppercase tracking-widest ${
+                        item.status === 'Coming Soon' 
+                          ? 'bg-primary/10 border border-primary/20 text-purple-300' 
+                          : 'bg-white/[0.04] border border-white/[0.08] text-muted'
+                      }`}>
+                        {item.status}
+                      </span>
+                    </div>
+                    <h4 className="text-xs font-bold text-text-primary pt-1">{item.title}</h4>
+                    <p className="text-[11px] text-muted leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs font-bold italic text-purple-300 tracking-wider relative z-10 pt-4">
+              SynArc is becoming programmable capital infrastructure for the agentic internet. Built on Arc. Powered by USDC.
+            </p>
+          </GlassCard>
+        </div>
 
       </div>
     </div>

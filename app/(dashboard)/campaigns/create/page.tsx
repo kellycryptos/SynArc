@@ -15,7 +15,9 @@ import {
   Loader2, 
   Wallet,
   CheckCircle,
-  HelpCircle
+  HelpCircle,
+  ShieldAlert,
+  Coins
 } from "lucide-react";
 import Link from "next/link";
 
@@ -23,6 +25,25 @@ interface MilestoneInput {
   title: string;
   amount: number;
   description: string;
+}
+
+function ProtectionItem({ icon, title, description, status }: { icon: string; title: string; description: string; status: string }) {
+  return (
+    <div className="p-3.5 rounded-xl border border-border-thin bg-surface/30 space-y-1.5">
+      <div className="flex items-center justify-between">
+        <span className="text-lg select-none">{icon}</span>
+        <span className={`text-[8.5px] px-2 py-0.2 rounded font-extrabold uppercase tracking-widest ${
+          status === 'Active' 
+            ? 'bg-success/15 border border-success/35 text-success' 
+            : 'bg-white/[0.04] border border-white/[0.08] text-muted'
+        }`}>
+          {status}
+        </span>
+      </div>
+      <h4 className="text-xs font-bold text-text-primary pt-0.5">{title}</h4>
+      <p className="text-[10.5px] text-muted leading-relaxed">{description}</p>
+    </div>
+  );
 }
 
 export default function CreateCampaignPage() {
@@ -246,7 +267,7 @@ export default function CreateCampaignPage() {
   }
 
   return (
-    <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-8">
+    <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
       
       {/* Return Link */}
       <Link href="/campaigns" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-foreground font-semibold transition-colors">
@@ -270,304 +291,354 @@ export default function CreateCampaignPage() {
         </div>
       )}
 
-      {/* Main Grid */}
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2.5">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Launch a Campaign</span>
-          </h1>
-          <p className="text-muted text-sm mt-1">
-            Deploy milestone-locked crowdfunding escrows in USDC. Funds are released based on community voting.
-          </p>
+      {/* Title Header */}
+      <div>
+        <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2.5">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Launch a Campaign</span>
+        </h1>
+        <p className="text-muted text-sm mt-1">
+          Deploy milestone-locked crowdfunding escrows in USDC. Funds are released based on community voting.
+        </p>
+      </div>
+
+      {/* Two-Column Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left Column: Form & Milestones (2/3 width) */}
+        <div className="lg:col-span-2">
+          <form onSubmit={handleSubmit}>
+            <GlassCard className="p-8 space-y-6 border border-border-thin" hover={false}>
+              {formError && (
+                <div className="p-4 rounded-xl border border-danger/20 bg-danger/5 text-danger text-xs font-semibold flex items-start gap-2 animate-pulse">
+                  <AlertTriangle className="w-4.5 h-4.5 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
+
+              {/* Campaign Type Selector */}
+              <div className="space-y-2">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80">Campaign Type</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsAgent(false)}
+                    className={`py-3.5 px-4 rounded-xl border font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                      !isAgent 
+                        ? "bg-blue-500/10 border-blue-500/30 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.1)]" 
+                        : "bg-surface border-border-thin text-text-secondary hover:text-foreground hover:bg-surface-elevated"
+                    }`}
+                  >
+                    👤 Human Campaign
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsAgent(true)}
+                    className={`py-3.5 px-4 rounded-xl border font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                      isAgent 
+                        ? "bg-purple-500/10 border-purple-500/30 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.1)] animate-pulse" 
+                        : "bg-surface border-border-thin text-text-secondary hover:text-foreground hover:bg-surface-elevated"
+                    }`}
+                  >
+                    🤖 Autonomous Agent Fund
+                  </button>
+                </div>
+              </div>
+
+              {/* Title */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80">Campaign Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Arc Ecosystem Developer Grant"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white transition-colors"
+                />
+              </div>
+
+              {/* Category and Goal/Duration */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80">Category</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white select-custom transition-colors"
+                  >
+                    <option>Ecosystem Grant</option>
+                    <option>AI Infrastructure</option>
+                    <option>Product Development</option>
+                    <option>Protocol Upgrade</option>
+                    <option>Community Initiative</option>
+                    <option>Research</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80 flex items-center gap-1">
+                    Funding Goal <span className="text-primary font-bold">(USDC)</span>
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="5000"
+                    value={goal || ""}
+                    onChange={(e) => setGoal(Number(e.target.value))}
+                    required
+                    min={1}
+                    className="w-full px-4 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80">Duration <span className="text-muted font-bold">(Days)</span></label>
+                  <input
+                    type="number"
+                    placeholder="30"
+                    value={duration || ""}
+                    onChange={(e) => setDuration(Number(e.target.value))}
+                    required
+                    min={1}
+                    className="w-full px-4 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Recipient Wallet Address */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80 flex items-center gap-1.5">
+                  Recipient Wallet Address 
+                  <span className="text-[10px] text-muted font-normal uppercase tracking-normal">(USDC Destination on approval)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="0x..."
+                  value={recipient}
+                  onChange={(e) => setRecipient(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white font-mono transition-colors"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80">Description</label>
+                <textarea
+                  placeholder="Describe your campaign goals, milestones, and how it aligns with the Arc Network..."
+                  rows={5}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white resize-none transition-colors"
+                />
+              </div>
+
+              {/* Milestone escrow builder */}
+              <div className="border-t border-border-thin/40 pt-6 space-y-4">
+                <div>
+                  <h3 className="text-lg font-bold font-heading text-text-primary flex items-center gap-1.5">
+                    Campaign Milestones
+                  </h3>
+                  <p className="text-xs text-muted mt-1 leading-relaxed">
+                    Break your campaign into funded deliverables. USDC is locked in smart contract escrow and released only after community milestone votes pass.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {milestones.map((m, index) => (
+                    <div key={index} className="p-4 rounded-xl border border-border-thin/60 bg-surface/30 space-y-3 relative group/row">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-extrabold text-primary uppercase">Milestone {index + 1}</span>
+                        {milestones.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeMilestone(index)}
+                            className="p-1 rounded text-muted hover:text-danger hover:bg-danger/10 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                        <div className="sm:col-span-3 space-y-1">
+                          <input
+                            type="text"
+                            placeholder="Milestone title (e.g. Design & Alpha Specs)"
+                            value={m.title}
+                            onChange={(e) => handleMilestoneChange(index, "title", e.target.value)}
+                            className="w-full bg-surface border border-border-thin rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <input
+                            type="number"
+                            placeholder="USDC Amount"
+                            value={m.amount || ""}
+                            onChange={(e) => handleMilestoneChange(index, "amount", Number(e.target.value))}
+                            className="w-full bg-surface border border-border-thin rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <input
+                          type="text"
+                          placeholder="What gets delivered? (e.g. Technical layout doc, Figma mockup link)"
+                          value={m.description}
+                          onChange={(e) => handleMilestoneChange(index, "description", e.target.value)}
+                          className="w-full bg-surface border border-border-thin rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Action buttons inside builder */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                  <button
+                    type="button"
+                    onClick={addMilestone}
+                    className="px-4 py-2 rounded-xl bg-surface border border-border-thin hover:border-white/10 hover:bg-surface-elevated text-text-primary text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    + Add Milestone
+                  </button>
+
+                  {/* Total indicators with mismatch checks */}
+                  <div className={`px-4 py-2 rounded-xl border flex items-center gap-2 text-xs font-bold ${
+                    milestoneGoalMismatch 
+                      ? "bg-danger/10 border-danger/20 text-danger" 
+                      : "bg-success/15 border-success/35 text-success"
+                  }`}>
+                    {milestoneGoalMismatch ? (
+                      <AlertTriangle className="w-4 h-4 animate-bounce" />
+                    ) : (
+                      <CheckCircle className="w-4 h-4" />
+                    )}
+                    <span>
+                      Total: {totalMilestoneAmount.toLocaleString()} of {goal.toLocaleString()} USDC
+                      {milestoneGoalMismatch && " (Must equal campaign goal)"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Launch button */}
+              <div className="pt-6 border-t border-border-thin flex justify-end">
+                <button
+                  type="submit"
+                  disabled={submitting || milestoneGoalMismatch}
+                  className="px-6 py-3.5 rounded-xl bg-primary text-white font-extrabold text-sm hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.35)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Deploying Escrows...
+                    </>
+                  ) : (
+                    <>
+                      <Rocket className="w-4 h-4" />
+                      🚀 Launch Campaign
+                    </>
+                  )}
+                </button>
+              </div>
+
+            </GlassCard>
+          </form>
         </div>
 
-        {/* AI proposal creation banner */}
-        <GlassCard className="p-5 border border-primary/20 bg-primary/[0.02] overflow-hidden relative" hover={false}>
-          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl pointer-events-none" />
-          <div className="space-y-3.5">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-              <h3 className="text-sm font-bold text-text-primary uppercase tracking-wide">✨ Generate Campaign with AI</h3>
-            </div>
-            <p className="text-xs text-muted leading-relaxed">
-              Describe your project idea in plain English (e.g., "Build a USDC yield harvester aggregator agent"). Our AI governor agent will populate your title, category, full description, and logical milestone splits!
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Describe your idea briefly (e.g. Yield aggregator agent)..."
+        {/* Right Column: AI Prompt & Sybil Protection (1/3 width) */}
+        <div className="space-y-6">
+          
+          {/* AI proposal creation banner */}
+          <GlassCard className="p-6 border border-primary/20 bg-primary/[0.01] overflow-hidden relative" hover={false}>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl pointer-events-none" />
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary animate-pulse shrink-0" />
+                <h3 className="text-sm font-extrabold text-text-primary uppercase tracking-wide">✨ AI Campaign Draft</h3>
+              </div>
+              <p className="text-xs text-muted leading-relaxed">
+                Describe your project idea in plain English (e.g. "Build a USDC yield harvester aggregator agent"). Our AI risk auditor will draft a complete, professional proposal outline for you in seconds!
+              </p>
+              
+              <textarea
+                placeholder="Describe your idea briefly (e.g. USDC Yield rebalancing agent)..."
                 value={aiIdea}
                 onChange={(e) => setAiIdea(e.target.value)}
                 disabled={generatingWithAi}
-                className="flex-1 bg-surface border border-border-thin focus:border-primary/50 text-xs rounded-xl px-4 py-2.5 outline-none text-white transition-colors"
+                rows={3}
+                className="w-full bg-surface border border-border-thin focus:border-primary/50 text-xs rounded-xl px-4 py-3 outline-none text-white resize-none transition-colors"
               />
+
               <button
                 type="button"
                 onClick={generateWithAI}
                 disabled={generatingWithAi}
-                className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-60 transition-all"
+                className="w-full py-3 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)]"
               >
                 {generatingWithAi ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    Generating...
+                    Generating Draft...
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-3.5 h-3.5" />
-                    AI Generate
+                    AI Generate Outline
                   </>
                 )}
               </button>
+
+              {aiError && (
+                <span className="text-[11px] font-semibold text-danger block">{aiError}</span>
+              )}
             </div>
-            {aiError && (
-              <span className="text-[11px] font-semibold text-danger block">{aiError}</span>
-            )}
-          </div>
-        </GlassCard>
-
-        {/* Campaign Submission Form */}
-        <form onSubmit={handleSubmit}>
-          <GlassCard className="p-8 space-y-6 border border-border-thin" hover={false}>
-            {formError && (
-              <div className="p-4 rounded-xl border border-danger/20 bg-danger/5 text-danger text-xs font-semibold flex items-start gap-2 animate-pulse">
-                <AlertTriangle className="w-4.5 h-4.5 shrink-0" />
-                <span>{formError}</span>
-              </div>
-            )}
-
-            {/* Campaign Type Selector */}
-            <div className="space-y-2">
-              <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80">Campaign Type</label>
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => setIsAgent(false)}
-                  className={`py-3.5 px-4 rounded-xl border font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                    !isAgent 
-                      ? "bg-blue-500/10 border-blue-500/30 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.1)]" 
-                      : "bg-surface border-border-thin text-text-secondary hover:text-foreground hover:bg-surface-elevated"
-                  }`}
-                >
-                  👤 Human Campaign
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsAgent(true)}
-                  className={`py-3.5 px-4 rounded-xl border font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                    isAgent 
-                      ? "bg-purple-500/10 border-purple-500/30 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.1)] animate-pulse" 
-                      : "bg-surface border-border-thin text-text-secondary hover:text-foreground hover:bg-surface-elevated"
-                  }`}
-                >
-                  🤖 Autonomous Agent Fund
-                </button>
-              </div>
-            </div>
-
-            {/* Title */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80">Campaign Title</label>
-              <input
-                type="text"
-                placeholder="e.g. Arc Ecosystem Developer Grant"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                className="w-full px-4 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white transition-colors"
-              />
-            </div>
-
-            {/* Category and Goal/Duration */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80">Category</label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white select-custom transition-colors"
-                >
-                  <option>Ecosystem Grant</option>
-                  <option>AI Infrastructure</option>
-                  <option>Product Development</option>
-                  <option>Protocol Upgrade</option>
-                  <option>Community Initiative</option>
-                  <option>Research</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80 flex items-center gap-1">
-                  Funding Goal <span className="text-primary font-bold">(USDC)</span>
-                </label>
-                <input
-                  type="number"
-                  placeholder="5000"
-                  value={goal || ""}
-                  onChange={(e) => setGoal(Number(e.target.value))}
-                  required
-                  min={1}
-                  className="w-full px-4 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white transition-colors"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80">Duration <span className="text-muted font-bold">(Days)</span></label>
-                <input
-                  type="number"
-                  placeholder="30"
-                  value={duration || ""}
-                  onChange={(e) => setDuration(Number(e.target.value))}
-                  required
-                  min={1}
-                  className="w-full px-4 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* Recipient Wallet Address */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80 flex items-center gap-1.5">
-                Recipient Wallet Address 
-                <span className="text-[10px] text-muted font-normal uppercase tracking-normal">(USDC Destination on approval)</span>
-              </label>
-              <input
-                type="text"
-                placeholder="0x..."
-                value={recipient}
-                onChange={(e) => setRecipient(e.target.value)}
-                required
-                className="w-full px-4 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white font-mono transition-colors"
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-extrabold uppercase tracking-wider text-muted/80">Description</label>
-              <textarea
-                placeholder="Describe your campaign goals, milestones, and how it aligns with the Arc Network..."
-                rows={5}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-                className="w-full px-4 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white resize-none transition-colors"
-              />
-            </div>
-
-            {/* Milestone escrow builder */}
-            <div className="border-t border-border-thin/40 pt-6 space-y-4">
-              <div>
-                <h3 className="text-lg font-bold font-heading text-text-primary flex items-center gap-1.5">
-                  Campaign Milestones
-                </h3>
-                <p className="text-xs text-muted mt-1 leading-relaxed">
-                  Break your campaign into funded deliverables. USDC is locked in smart contract escrow and released only after community milestone votes pass.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                {milestones.map((m, index) => (
-                  <div key={index} className="p-4 rounded-xl border border-border-thin/60 bg-surface/30 space-y-3 relative group/row">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-primary uppercase">Milestone {index + 1}</span>
-                      {milestones.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeMilestone(index)}
-                          className="p-1 rounded text-muted hover:text-danger hover:bg-danger/10 transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                      <div className="sm:col-span-3 space-y-1">
-                        <input
-                          type="text"
-                          placeholder="Milestone title (e.g. Design & Alpha Specs)"
-                          value={m.title}
-                          onChange={(e) => handleMilestoneChange(index, "title", e.target.value)}
-                          className="w-full bg-surface border border-border-thin rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <input
-                          type="number"
-                          placeholder="USDC Amount"
-                          value={m.amount || ""}
-                          onChange={(e) => handleMilestoneChange(index, "amount", Number(e.target.value))}
-                          className="w-full bg-surface border border-border-thin rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <input
-                        type="text"
-                        placeholder="What gets delivered? (e.g. Technical layout doc, Figma mockup link)"
-                        value={m.description}
-                        onChange={(e) => handleMilestoneChange(index, "description", e.target.value)}
-                        className="w-full bg-surface border border-border-thin rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Action buttons inside builder */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-                <button
-                  type="button"
-                  onClick={addMilestone}
-                  className="px-4 py-2 rounded-xl bg-surface border border-border-thin hover:border-white/10 hover:bg-surface-elevated text-text-primary text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  + Add Milestone
-                </button>
-
-                {/* Total indicators with mismatch checks */}
-                <div className={`px-4 py-2 rounded-xl border flex items-center gap-2 text-xs font-bold ${
-                  milestoneGoalMismatch 
-                    ? "bg-danger/10 border-danger/20 text-danger" 
-                    : "bg-success/15 border-success/30 text-success"
-                }`}>
-                  {milestoneGoalMismatch ? (
-                    <AlertTriangle className="w-4 h-4 animate-bounce" />
-                  ) : (
-                    <CheckCircle className="w-4 h-4" />
-                  )}
-                  <span>
-                    Total: {totalMilestoneAmount.toLocaleString()} of {goal.toLocaleString()} USDC
-                    {milestoneGoalMismatch && " (Must equal campaign goal)"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Launch button */}
-            <div className="pt-6 border-t border-border-thin flex justify-end">
-              <button
-                type="submit"
-                disabled={submitting || milestoneGoalMismatch}
-                className="px-6 py-3.5 rounded-xl bg-primary text-white font-extrabold text-sm hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.35)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Deploying Escrows...
-                  </>
-                ) : (
-                  <>
-                    <Rocket className="w-4 h-4" />
-                    🚀 Launch Campaign
-                  </>
-                )}
-              </button>
-            </div>
-
           </GlassCard>
-        </form>
+
+          {/* 3. Anti-Spam / Sybil Protection Placeholder Section */}
+          <GlassCard className="p-6 border border-border-thin space-y-4" hover={false}>
+            <div className="space-y-1">
+              <h3 className="text-sm font-extrabold uppercase tracking-wider text-text-primary flex items-center gap-1.5">
+                <span>🛡️</span> Campaign Protection
+              </h3>
+              <p className="text-[11px] text-muted leading-relaxed">
+                SynArc uses layered cryptographic anti-spam controls to enforce quality and block malicious proposals.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 pt-2">
+              <ProtectionItem
+                icon="💰"
+                title="Staking Requirements"
+                description="Requires a temporary USDC stake to deploy milestone escrow vaults."
+                status="Soon"
+              />
+              <ProtectionItem
+                icon="⭐"
+                title="Reputation Scores"
+                description="Checks proposer governance record and on-chain vote participation scores."
+                status="Soon"
+              />
+              <ProtectionItem
+                icon="🤖"
+                title="AI Fraud Detection"
+                description="Autonomous risk engine scans description metadata for exploit patterns."
+                status="Active"
+              />
+              <ProtectionItem
+                icon="🏛"
+                title="Governance Moderation"
+                description="DAO delegates hold priority veto override consensus powers."
+                status="Active"
+              />
+            </div>
+          </GlassCard>
+
+        </div>
+
       </div>
 
     </div>

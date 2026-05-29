@@ -18,7 +18,14 @@ import {
   ThumbsDown,
   Info,
   Calendar,
-  Sparkles
+  Sparkles,
+  Award,
+  Lock,
+  Compass,
+  ArrowRight,
+  TrendingUp,
+  Brain,
+  ShieldAlert
 } from "lucide-react";
 import Link from "next/link";
 
@@ -26,8 +33,39 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+const LIFECYCLE_STATES = ['Draft', 'Active', 'Voting', 'Funded', 'Completed'] as const;
+
+const STATE_CONFIG = {
+  Draft: { color: 'text-gray-400', bg: 'bg-white/5 border-white/10', icon: '📝', description: 'Campaign being prepared' },
+  Active: { color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-400/20', icon: '🚀', description: 'Accepting USDC contributions' },
+  Voting: { color: 'text-purple-300', bg: 'bg-purple-500/10 border-purple-400/20', icon: '🗳️', description: 'Community voting on milestone release' },
+  Funded: { color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-400/20', icon: '✅', description: 'Milestone approved and USDC released' },
+  Failed: { color: 'text-red-400', bg: 'bg-red-500/10 border-red-400/20', icon: '❌', description: 'Campaign did not reach goal' },
+  Completed: { color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-400/25 shadow-[0_0_10px_rgba(245,158,11,0.15)]', icon: '🏆', description: 'All milestones successfully completed' },
+};
+
+function FundingSourceItem({ icon, title, description, status }: { icon: string; title: string; description: string; status: string }) {
+  return (
+    <div className="p-3.5 rounded-xl border border-border-thin bg-surface/30 space-y-1.5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-base select-none">{icon}</span>
+          <h4 className="text-xs font-bold text-text-primary">{title}</h4>
+        </div>
+        <span className={`text-[8.5px] px-2 py-0.2 rounded font-extrabold uppercase tracking-widest ${
+          status === 'Active' 
+            ? 'bg-success/15 border border-success/35 text-success' 
+            : 'bg-white/[0.04] border border-white/[0.08] text-muted'
+        }`}>
+          {status}
+        </span>
+      </div>
+      <p className="text-[10.5px] text-muted leading-relaxed pl-6">{description}</p>
+    </div>
+  );
+}
+
 export default function CampaignDetailPage({ params }: PageProps) {
-  // Resolve params asynchronously for Next.js 15 compatibility
   const resolvedParams = use(params);
   const campaignId = resolvedParams.id;
 
@@ -112,6 +150,9 @@ export default function CampaignDetailPage({ params }: PageProps) {
   const againstPercent = totalVotes > 0 ? (campaign.votes.against / totalVotes) * 100 : 0;
   const abstainPercent = totalVotes > 0 ? (campaign.votes.abstain / totalVotes) * 100 : 0;
 
+  // Active milestone for governance votes
+  const activeMilestone = campaign.milestones.find(m => m.status === 'active') || campaign.milestones[0];
+
   const handleContribute = async () => {
     if (contributionAmount <= 0) return;
     
@@ -154,7 +195,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
     // Contract: deploy contracts/SynArcFundingVault.sol
     console.log('Mock milestone vote cast payload:', { campaignId, choice });
 
-    castVote(campaignId, choice, 10000); // cast 10k mock voting power weights
+    castVote(campaignId, choice, 12000); // cast 12k mock voting power weights
     setVoting(false);
     setVoteSuccess(true);
 
@@ -163,18 +204,86 @@ export default function CampaignDetailPage({ params }: PageProps) {
     }, 4000);
   };
 
+  // AI Reviewed Badge System helper
+  const getAIBadge = (recommendation?: string) => {
+    if (recommendation === 'FUND') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+          🤖 AI Reviewed — Recommended ✅
+        </span>
+      );
+    }
+    if (recommendation === 'REVIEW') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-500/10 border border-amber-500/20 text-amber-400">
+          🤖 AI Reviewed — Needs Review ⚠️
+        </span>
+      );
+    }
+    if (recommendation === 'REJECT') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-red-500/10 border border-red-500/20 text-red-400">
+          🤖 AI Reviewed — High Risk ❌
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-white/[0.04] border border-white/[0.08] text-muted/80">
+        🤖 AI Review Pending...
+      </span>
+    );
+  };
+
   return (
-    <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-8">
+    <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-8 animate-fade-in">
       
       {/* Return Link */}
       <Link href="/campaigns" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-foreground font-semibold transition-colors">
         <ArrowLeft className="w-3.5 h-3.5" /> Back to Crowdfund Hub
       </Link>
 
+      {/* 4. Lifecycle Progress Stepper Bar */}
+      <GlassCard className="p-6 border border-border-thin flex flex-col md:flex-row items-center justify-between gap-6" hover={false}>
+        <div className="space-y-1 text-center md:text-left shrink-0">
+          <span className="text-[10px] uppercase font-extrabold text-muted tracking-widest block">Lifecycle Track</span>
+          <span className="text-sm font-bold text-text-primary flex items-center gap-2 justify-center md:justify-start">
+            <span>{STATE_CONFIG[campaign.state]?.icon}</span>
+            {campaign.state} Phase
+          </span>
+        </div>
+        
+        {/* Step bars */}
+        <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 w-full max-w-xl text-xs font-bold text-muted">
+          {LIFECYCLE_STATES.map((st, idx) => {
+            const isCurrent = campaign.state === st;
+            // Finished if index is lower than current index (Completed is last)
+            const currentIndex = LIFECYCLE_STATES.indexOf(campaign.state as any);
+            const isCompleted = currentIndex > idx || campaign.state === 'Completed';
+            
+            return (
+              <div key={st} className="flex items-center gap-2">
+                <span className={`px-3 py-1.5 rounded-full transition-all border ${
+                  isCurrent 
+                    ? "bg-primary border-primary text-white shadow-[0_0_10px_rgba(124,58,237,0.3)]" 
+                    : isCompleted 
+                      ? "bg-success/15 border-success/30 text-success" 
+                      : "bg-surface/50 border-border-thin text-text-tertiary"
+                }`}>
+                  {st}
+                </span>
+                {idx < LIFECYCLE_STATES.length - 1 && (
+                  <span className="text-text-tertiary select-none">→</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </GlassCard>
+
       {/* Main Layout Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Left Column: Stats & Actions */}
+        {/* Left Column: Stats, Description, Timeline (2/3 width) */}
         <div className="lg:col-span-2 space-y-6">
           
           {/* Header Card */}
@@ -190,14 +299,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
                 </span>
               )}
 
-              <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                campaign.state === 'Active' ? 'bg-success/15 border border-success/30 text-success' :
-                campaign.state === 'Voting' ? 'bg-amber-500/15 border border-amber-400/30 text-amber-400' :
-                campaign.state === 'Funded' ? 'bg-arc-blue/15 border border-arc-blue/30 text-arc-blue' :
-                'bg-surface-elevated border border-border-thin text-muted'
-              }`}>
-                {campaign.state}
-              </span>
+              {getAIBadge(campaign.aiAnalysis?.recommendation)}
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-text-primary leading-tight">
@@ -205,7 +307,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
             </h1>
 
             <div className="flex flex-wrap gap-4 items-center text-xs text-text-secondary">
-              <span className="font-bold uppercase tracking-widest bg-surface border border-border-thin px-2 py-0.5 rounded">
+              <span className="font-bold uppercase tracking-widest bg-surface border border-border-thin px-2.5 py-1 rounded">
                 {campaign.category}
               </span>
               <span className="text-text-tertiary">•</span>
@@ -213,6 +315,21 @@ export default function CampaignDetailPage({ params }: PageProps) {
                 <Calendar className="w-3.5 h-3.5" />
                 Deadline: {campaign.deadline}
               </span>
+              <span className="text-text-tertiary">•</span>
+              <span className="font-mono text-text-tertiary bg-surface border border-border-thin px-2 py-0.5 rounded">
+                Escrow: {campaign.escrowAddress.slice(0, 6)}...{campaign.escrowAddress.slice(-4)}
+              </span>
+            </div>
+
+            {/* 1. Add Escrow Trust Messaging */}
+            <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/10 text-xs text-purple-300 leading-normal flex items-start gap-3">
+              <Lock className="w-5 h-5 shrink-0 text-primary mt-0.5" />
+              <div>
+                <strong className="block text-purple-200">🔒 Vault-Locked Security Guarantee</strong>
+                <span className="block mt-0.5 text-muted leading-relaxed text-[11px]">
+                  USDC contributed to this campaign is secured directly within decentralized milestone escrow vaults. SynArc DAO treasury cannot arbitrarily drain or redirect these funds — capital release requires cryptographic proof of deliverable approval.
+                </span>
+              </div>
             </div>
           </GlassCard>
 
@@ -321,12 +438,12 @@ export default function CampaignDetailPage({ params }: PageProps) {
           </GlassCard>
         </div>
 
-        {/* Right Column: Interaction Cards & AI Governance */}
+        {/* Right Column: Escrows, Voting, AI Risk Audit & Agent Details (1/3 width) */}
         <div className="space-y-6">
 
           {/* Backer escrow Card (Active status) */}
           {campaign.state === 'Active' && (
-            <GlassCard className="p-6 border border-primary/20 bg-primary/[0.01] space-y-4" hover={false}>
+            <GlassCard className="p-6 border border-primary/20 bg-primary/[0.01] space-y-4 relative" hover={false}>
               <h3 className="text-sm font-extrabold uppercase tracking-wider text-primary">Back this Campaign</h3>
               <p className="text-xs text-muted leading-relaxed">
                 Contribute USDC gas-free. Funds are securely locked in milestone-based smart contract escrows.
@@ -354,7 +471,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
                   <button
                     onClick={handleContribute}
                     disabled={contributing || contributionAmount <= 0}
-                    className="w-full py-3 rounded-xl bg-primary text-white font-extrabold text-sm hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3 rounded-xl bg-primary text-white font-extrabold text-sm hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer group"
                   >
                     {contributing ? (
                       <>
@@ -370,20 +487,28 @@ export default function CampaignDetailPage({ params }: PageProps) {
                   </button>
                 </div>
               )}
-              <div className="flex items-start gap-1.5 text-[10px] text-muted leading-relaxed">
-                <Info className="w-3.5 h-3.5 shrink-0 text-text-tertiary" />
-                <span>Escrow mechanism locks funds: releases are strictly governed by delegate milestone votes.</span>
+              
+              {/* 1. Tooltip / Notice Info Block */}
+              <div className="p-3 rounded-xl bg-surface/30 border border-border-thin text-[10.5px] text-muted space-y-1">
+                <span className="text-purple-300 font-bold block">🔒 Escrow Vault Locks:</span>
+                <span className="block leading-relaxed">
+                  Your USDC is locked in a smart contract escrow vault. Funds only release when the community votes to approve each milestone. You can claim a refund if the campaign fails.
+                </span>
               </div>
             </GlassCard>
           )}
 
-          {/* Community Milestone Release Voting widget */}
+          {/* 6. Community Milestone Release Voting widget (Real Governor Hook Labels) */}
           {campaign.state === 'Voting' && (
-            <GlassCard className="p-6 border border-amber-500/20 bg-amber-500/[0.01] space-y-5" hover={false}>
+            <GlassCard className="p-6 border border-amber-500/20 bg-amber-500/[0.01] space-y-5 animate-fade-in" hover={false}>
               <div>
-                <h3 className="text-sm font-extrabold uppercase tracking-wider text-amber-400">Community Milestone Vote</h3>
+                <span className="text-[9px] px-2 py-0.2 rounded font-extrabold bg-amber-500/10 border border-amber-500/30 text-amber-400 uppercase tracking-widest block w-fit mb-1.5">Governor Hook Active</span>
+                <h3 className="text-sm font-extrabold uppercase tracking-wider text-amber-400">🏛 Milestone Proposal #{campaign.proposalNumber}</h3>
                 <p className="text-[11px] text-muted leading-relaxed mt-1">
-                  Active vote to release locked escrow funds for the current in-progress milestone.
+                  Proposal to release <strong>{activeMilestone?.amount.toLocaleString()} USDC</strong> for:
+                </p>
+                <p className="text-xs text-text-primary font-bold mt-1 pl-2 border-l-2 border-amber-500">
+                  {activeMilestone?.title}
                 </p>
               </div>
 
@@ -426,6 +551,10 @@ export default function CampaignDetailPage({ params }: PageProps) {
                       </div>
                     </div>
                   </div>
+
+                  <p className="text-[10.5px] text-muted leading-relaxed pl-2 border-l border-border-thin">
+                    This vote is recorded on the SynArc Governor contract. Requires a majority FOR votes to release locked milestone escrows.
+                  </p>
 
                   {/* Actions */}
                   <div className="grid grid-cols-1 gap-2 pt-2">
@@ -489,79 +618,109 @@ export default function CampaignDetailPage({ params }: PageProps) {
             </GlassCard>
           )}
 
-          {/* AI Governance Audit Analysis */}
+          {/* 7. Upgraded AI Risk Analysis Card */}
           <GlassCard className="p-6 border border-purple-500/20 bg-purple-500/[0.01] space-y-4 overflow-hidden relative" hover={false}>
             <div className="absolute top-0 right-0 w-16 h-16 bg-purple-glow/5 rounded-full blur-lg pointer-events-none" />
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-purple-glow animate-pulse shrink-0" />
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-purple-300">AI Governance Audit</h3>
+              <h3 className="text-sm font-extrabold uppercase tracking-wider text-purple-300">🔍 AI Risk Analysis</h3>
             </div>
             
             {analyzing ? (
               <div className="py-8 text-center space-y-3">
                 <Loader2 className="w-6 h-6 animate-spin text-purple-300 mx-auto" />
-                <p className="text-[10px] text-muted uppercase font-semibold tracking-wider">AI Agent auditing campaign logs...</p>
+                <p className="text-[10px] text-muted uppercase font-semibold tracking-wider animate-pulse">Scanning metadata logs...</p>
               </div>
             ) : campaign.aiAnalysis ? (
               <div className="space-y-4">
-                {/* Recommendation badge */}
+                
+                {/* Score indicators grid */}
+                <div className="space-y-3">
+                  <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider block">Due Diligence Indices</span>
+                  
+                  <div className="grid grid-cols-2 gap-3 text-left">
+                    {[
+                      { label: "Legitimacy", val: campaign.aiAnalysis.scores.legitimacy },
+                      { label: "Impact", val: campaign.aiAnalysis.scores.impact },
+                      { label: "Arc Alignment", val: campaign.aiAnalysis.scores.arcAlignment },
+                      { label: "Feasibility", val: campaign.aiAnalysis.scores.executionFeasibility },
+                      { label: "Milestone Realism", val: campaign.aiAnalysis.scores.milestoneRealism },
+                      { label: "Gov Alignment", val: campaign.aiAnalysis.scores.governanceAlignment }
+                    ].map((sc, idx) => (
+                      <div key={idx} className="space-y-1.5 p-2 rounded bg-surface/30 border border-border-thin/40">
+                        <div className="flex justify-between text-[10px] font-semibold text-text-secondary">
+                          <span>{sc.label}</span>
+                          <span className="text-text-primary font-bold">{sc.val}%</span>
+                        </div>
+                        <div className="w-full h-1 bg-surface-elevated rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-300" style={{ width: `${sc.val}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Treasury Risk classification */}
                 <div className="flex items-center justify-between bg-surface-elevated/40 p-2.5 rounded-xl border border-border-thin/60">
-                  <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">Verdict</span>
-                  <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                    campaign.aiAnalysis.recommendation === 'FUND' ? 'bg-success/15 border border-success/30 text-success' :
-                    campaign.aiAnalysis.recommendation === 'REJECT' ? 'bg-danger/15 border border-danger/30 text-danger' :
-                    'bg-amber-500/15 border border-amber-400/30 text-amber-400'
+                  <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">Treasury Risk Level</span>
+                  <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border ${
+                    campaign.aiAnalysis.treasuryRisk === 'LOW' ? 'bg-success/15 border-success/30 text-success' :
+                    campaign.aiAnalysis.treasuryRisk === 'HIGH' ? 'bg-danger/15 border-danger/30 text-danger animate-pulse' :
+                    'bg-amber-500/15 border-amber-400/30 text-amber-400'
                   }`}>
-                    {campaign.aiAnalysis.recommendation}
+                    {campaign.aiAnalysis.treasuryRisk} Risk
                   </span>
                 </div>
 
-                {/* Score Grid */}
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 rounded-lg bg-surface/30 border border-border-thin/50">
-                    <span className="text-[9px] text-muted block uppercase tracking-wide">Legitimacy</span>
-                    <span className="text-sm font-extrabold text-white mt-0.5 block">{campaign.aiAnalysis.legitimacyScore}%</span>
-                  </div>
-                  <div className="p-2 rounded-lg bg-surface/30 border border-border-thin/50">
-                    <span className="text-[9px] text-muted block uppercase tracking-wide">Impact</span>
-                    <span className="text-sm font-extrabold text-white mt-0.5 block">{campaign.aiAnalysis.impactScore}%</span>
-                  </div>
-                  <div className="p-2 rounded-lg bg-surface/30 border border-border-thin/50">
-                    <span className="text-[9px] text-muted block uppercase tracking-wide">Arc Align</span>
-                    <span className="text-sm font-extrabold text-purple-300 mt-0.5 block">{campaign.aiAnalysis.arcAlignmentScore}%</span>
-                  </div>
-                </div>
-
-                {/* Reasoning */}
-                <div className="space-y-1">
-                  <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider block">AI Evaluation</span>
-                  <p className="text-xs text-muted leading-relaxed pl-2 border-l border-border-thin">
-                    {campaign.aiAnalysis.reasoning}
-                  </p>
-                </div>
-
-                {/* Verdict Summary */}
-                <div className="space-y-1 bg-purple-glow/[0.02] p-2.5 rounded-xl border border-purple-500/10">
-                  <span className="text-[9px] font-extrabold text-purple-300 uppercase tracking-wider block">Summarized Verdict</span>
-                  <p className="text-[11px] text-purple-200 italic leading-relaxed">
+                {/* Recommendation summary */}
+                <div className="space-y-1 bg-purple-glow/[0.02] p-2.5 rounded-xl border border-purple-500/10 text-center">
+                  <span className="text-[9px] font-extrabold text-purple-300 uppercase tracking-wider block">AI Decision Verdict</span>
+                  <p className="text-[11px] text-purple-200 italic leading-relaxed mt-1">
                     "{campaign.aiAnalysis.verdict}"
                   </p>
                 </div>
 
+                {/* Strengths Grid */}
+                {campaign.aiAnalysis.strengths && campaign.aiAnalysis.strengths.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-extrabold text-success uppercase tracking-wider block">Positive Signals (Strengths)</span>
+                    <ul className="space-y-1 pl-1">
+                      {campaign.aiAnalysis.strengths.map((str, idx) => (
+                        <li key={idx} className="text-[10px] text-emerald-300 leading-relaxed flex items-start gap-1">
+                          <CheckCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-success" />
+                          <span>{str}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 {/* Risk Flags list */}
                 {campaign.aiAnalysis.riskFlags && campaign.aiAnalysis.riskFlags.length > 0 && (
                   <div className="space-y-1.5">
-                    <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider block">Risk Logs</span>
+                    <span className="text-[10px] font-extrabold text-amber-400 uppercase tracking-wider block">Identified Risks & Concerns</span>
                     <ul className="space-y-1 pl-1">
                       {campaign.aiAnalysis.riskFlags.map((risk, idx) => (
                         <li key={idx} className="text-[10px] text-amber-300 leading-normal flex items-start gap-1">
-                          <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" />
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                           <span>{risk}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                 )}
+
+                {/* Detailed Diligence notes */}
+                <div className="space-y-1">
+                  <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider block">Due Diligence Audit Log</span>
+                  <p className="text-[10.5px] text-muted leading-relaxed pl-2 border-l border-border-thin whitespace-pre-wrap">
+                    {campaign.aiAnalysis.dueDiligenceNotes}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-border-thin/40 text-[9px] text-muted leading-normal italic text-center">
+                  ⚠️ AI Risk Analysis is advisory only. Always perform comprehensive due diligence.
+                </div>
               </div>
             ) : (
               <div className="py-4 text-center">
@@ -575,7 +734,94 @@ export default function CampaignDetailPage({ params }: PageProps) {
             )}
           </GlassCard>
 
-          {/* Identity Creator Card */}
+          {/* 8. Agent Wallet Identity Card (Only visible when isAgent === true) */}
+          {campaign.isAgent && (
+            <GlassCard className="p-6 border border-purple-500/25 bg-purple-500/[0.02] space-y-4 animate-fade-in" hover={false}>
+              <div className="flex items-center gap-2">
+                <Brain className="w-4 h-4 text-purple-300 animate-pulse" />
+                <h3 className="text-sm font-extrabold uppercase tracking-wider text-purple-300">🤖 Autonomous Agent Details</h3>
+              </div>
+
+              <div className="space-y-3.5 text-xs text-text-secondary">
+                <div className="flex justify-between items-center pb-2 border-b border-border-thin/40">
+                  <span className="text-[10.5px] text-muted font-medium">Agent Type</span>
+                  <span className="font-bold text-text-primary">{campaign.agentType}</span>
+                </div>
+
+                <div className="flex justify-between items-center pb-2 border-b border-border-thin/40">
+                  <span className="text-[10.5px] text-muted font-medium">Execution Scope</span>
+                  <span className="font-bold text-text-primary text-right leading-tight max-w-[150px]">{campaign.executionScope}</span>
+                </div>
+
+                <div className="flex justify-between items-center pb-2 border-b border-border-thin/40">
+                  <span className="text-[10.5px] text-muted font-medium">Automation Level</span>
+                  <span className="font-bold text-purple-glow text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-purple-500/10 border border-purple-400/20">Fully Autonomous</span>
+                </div>
+
+                <div className="flex justify-between items-center pb-2 border-b border-border-thin/40">
+                  <span className="text-[10.5px] text-muted font-medium">Governance Controlled</span>
+                  <span className="font-bold text-emerald-400 text-[10px] uppercase px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-400/20">Yes — Override Active</span>
+                </div>
+
+                <div className="space-y-1 pb-2 border-b border-border-thin/40">
+                  <span className="text-[10.5px] text-muted font-medium block">On-chain Strategy Rules</span>
+                  <p className="text-[11px] text-purple-200 italic leading-relaxed pt-0.5">
+                    "{campaign.strategy}"
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[10.5px] text-muted font-medium block">Agent Wallet Address</span>
+                  <span className="font-mono text-text-primary text-[10px] break-all block bg-surface/30 p-2 rounded border border-border-thin">{campaign.creator}</span>
+                </div>
+
+                <p className="text-[10.5px] text-muted leading-relaxed bg-purple-500/5 p-3 rounded-xl border border-purple-500/10">
+                  ℹ️ This campaign was autonomously compiled and launched by an AI agent based on on-chain treasury analysis. All milestone disbursements are safely gated and require community governor consensus to release.
+                </p>
+              </div>
+            </GlassCard>
+          )}
+
+          {/* 5. Treasury Funding Sources Card */}
+          <GlassCard className="p-6 border border-border-thin space-y-4" hover={false}>
+            <div>
+              <h3 className="text-sm font-extrabold uppercase tracking-wider text-text-primary flex items-center gap-1.5">
+                <span>💰</span> Funding Sources
+              </h3>
+              <p className="text-[11px] text-muted mt-1 leading-relaxed">
+                This crowdfund campaign is eligible to receive deposits in USDC from multiple coordination vectors:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              <FundingSourceItem
+                icon="👤"
+                title="Individual Contributors"
+                description="Anyone on Arc Testnet can back campaigns directly using stablecoins."
+                status="Active"
+              />
+              <FundingSourceItem
+                icon="🏛"
+                title="DAO Treasury Allocation"
+                description="SynArc DAO can allocate matching treasury blocks via governor proposals."
+                status="Active"
+              />
+              <FundingSourceItem
+                icon="🤖"
+                title="AI Treasury Agents"
+                description="Autonomous liquidity agents can deposit based on yield parameters."
+                status="Active"
+              />
+              <FundingSourceItem
+                icon="🌐"
+                title="Ecosystem Grants"
+                description="Direct capital matches from Arc chain developer ecosystems."
+                status="Soon"
+              />
+            </div>
+          </GlassCard>
+
+          {/* Metadata Creator Card */}
           <GlassCard className="p-6 border border-border-thin space-y-4" hover={false}>
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted/80">Identity Metadata</h3>
             
@@ -589,14 +835,37 @@ export default function CampaignDetailPage({ params }: PageProps) {
                 )}
               </div>
 
-              <div className="space-y-1 pt-1.5 border-t border-border-thin/40">
+              {/* Sybil protection indications */}
+              <div className="space-y-1.5 pt-2 border-t border-border-thin/40 text-[10.5px]">
+                <span className="text-[10px] uppercase font-bold text-muted block mb-1">Sybil Security Checked</span>
+                <div className="flex justify-between items-center">
+                  <span>AI Scanned</span>
+                  <span className={campaign.sybilProtection.aiScanned ? "text-success font-bold" : "text-muted"}>
+                    {campaign.sybilProtection.aiScanned ? "✅ Active" : "⏳ Pending"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Reputation Verified</span>
+                  <span className={campaign.sybilProtection.reputationChecked ? "text-success font-bold" : "text-muted"}>
+                    {campaign.sybilProtection.reputationChecked ? "✅ Active" : "⏳ Pending"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Stake Deposited</span>
+                  <span className={campaign.sybilProtection.stakeRequired ? "text-success font-bold" : "text-muted"}>
+                    {campaign.sybilProtection.stakeRequired ? "✅ Active" : "⏳ Pending"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-1 pt-2 border-t border-border-thin/40">
                 <span className="text-[10px] uppercase font-bold text-muted block">Escrow Creator Address</span>
-                <span className="font-mono text-text-primary text-[10px] break-all block">{campaign.creator}</span>
+                <span className="font-mono text-text-primary text-[10px] break-all block bg-surface/30 p-2 rounded border border-border-thin">{campaign.creator}</span>
               </div>
 
               <div className="space-y-1 pt-1.5 border-t border-border-thin/40">
                 <span className="text-[10px] uppercase font-bold text-muted block">USDC Recipient Address</span>
-                <span className="font-mono text-text-primary text-[10px] break-all block">{campaign.recipient}</span>
+                <span className="font-mono text-text-primary text-[10px] break-all block bg-surface/30 p-2 rounded border border-border-thin">{campaign.recipient}</span>
               </div>
             </div>
           </GlassCard>

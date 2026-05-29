@@ -160,37 +160,71 @@ export async function POST(req: NextRequest) {
       }
 
       if (isMockKey) {
-        // High-fidelity mock campaign analysis based on the campaign inputs
+        // High-fidelity mock campaign risk analysis based on the campaign inputs
         const isAgent = !!campaignData.isAgent;
         const title = campaignData.title || "Ecosystem Proposal";
         
         let recommendation: 'FUND' | 'REJECT' | 'REVIEW' = "FUND";
-        let legitimacyScore = 85;
-        let impactScore = 80;
-        let arcAlignmentScore = 90;
-        let reasoning = "This campaign displays a highly aligned initiative for the Arc Network. The milestones are structured progressively and offer transparent deliverable timelines.";
-        let riskFlags = ["Developer identity verification pending on-chain."];
+        let scores = {
+          legitimacy: 88,
+          impact: 85,
+          arcAlignment: 90,
+          executionFeasibility: 82,
+          milestoneRealism: 85,
+          governanceAlignment: 89
+        };
+        let riskFlags = ["Developer wallet history is relatively young, though active on-chain."];
+        let strengths = [
+          "Provides open source tooling to accelerate Arc testnet coordination.",
+          "Milestone structure is progressively weighted and locked securely in escrow."
+        ];
         let milestoneFeedback = "Excellent division of capital. Milestones are properly scoped relative to developer delivery expectations.";
-        let verdict = "Highly viable, recommended for DAO backing and immediate capital release on milestones.";
+        let treasuryRisk: 'LOW' | 'MEDIUM' | 'HIGH' = "LOW";
+        let verdict = "Highly viable, recommended for DAO backing and immediate milestone escrow release.";
+        let dueDiligenceNotes = "Proposer has high Discord participation. The milestones are realistic and correspond properly to deliverables. Recommended for individual and treasury backing.";
 
         if (title.toLowerCase().includes("malicious") || title.toLowerCase().includes("exploit") || title.toLowerCase().includes("hack")) {
           recommendation = "REJECT";
-          legitimacyScore = 15;
-          impactScore = 5;
-          arcAlignmentScore = 10;
-          reasoning = "The campaign description lists parameters indicating high exposure to exploit vectors. Funding this proposal presents severe security risks to the treasury.";
-          riskFlags = ["High risk exploit patterns detected in description.", "Unverified smart contract execution modules."];
+          scores = {
+            legitimacy: 15,
+            impact: 10,
+            arcAlignment: 12,
+            executionFeasibility: 20,
+            milestoneRealism: 15,
+            governanceAlignment: 10
+          };
+          riskFlags = [
+            "Severe security pattern detected in execution target address.",
+            "Lack of developer identity and anonymous multisig locks."
+          ];
+          strengths = [];
           milestoneFeedback = "Unclear milestones. High front-loading of capital with zero safety parameters.";
+          treasuryRisk = "HIGH";
           verdict = "Severe safety risk. Immediate rejection recommended.";
+          dueDiligenceNotes = "High probability of treasury drain or smart contract exploit. Governance must veto this proposal immediately.";
         } else if (isAgent) {
           recommendation = "FUND";
-          legitimacyScore = 95;
-          impactScore = 92;
-          arcAlignmentScore = 98;
-          reasoning = "Autonomous agent campaigns native to Arc represent the next step in decentralization. This agent provides automatic, verifiable liquidity rebalancing yielding high utility.";
-          riskFlags = ["Escrow safety depends on external protocol parameters.", "Gas optimization limits for frequent state execution."];
+          scores = {
+            legitimacy: 95,
+            impact: 94,
+            arcAlignment: 98,
+            executionFeasibility: 90,
+            milestoneRealism: 92,
+            governanceAlignment: 96
+          };
+          riskFlags = [
+            "Liquidity relies on external protocol pool yields.",
+            "Gas transaction limits for frequent state rebalancing."
+          ];
+          strengths = [
+            "Fully autonomous agent rebalancing yields superior stablecoin yields.",
+            "Staked developer deposit holds active collateral in governor contract.",
+            "Includes secure multisig override triggers for DAO delegates."
+          ];
           milestoneFeedback = "Milestone disbursements are split correctly between deployment and actual operational audits.";
+          treasuryRisk = "LOW";
           verdict = "Highly innovative agent design. Represents standard ecosystem integration path.";
+          dueDiligenceNotes = "Autonomous neural logic contains zero malicious parameters. Hardcoded slippage safety triggers ensure safe execution limits.";
         }
 
         // Artificial latency to feel real
@@ -199,50 +233,58 @@ export async function POST(req: NextRequest) {
           success: true,
           decision: {
             recommendation,
-            legitimacyScore,
-            impactScore,
-            arcAlignmentScore,
-            reasoning,
+            scores,
             riskFlags,
+            strengths,
             milestoneFeedback,
-            verdict
+            treasuryRisk,
+            verdict,
+            dueDiligenceNotes
           }
         });
       }
 
-      // Real Groq API Completion call for Campaign Analysis
+      // Real Groq API Completion call for Campaign Analysis (Upgraded Risk Engine!)
       const response = await groq.chat.completions.create({
         model: "llama-3.3-70b-versatile",
         messages: [
           {
             role: "system",
-            content: "You are SynArc AI governance agent. Analyze crowdfunding campaigns on Arc Network. Evaluate legitimacy, impact, and value. Respond ONLY in valid JSON."
+            content: "You are SynArc AI Risk Engine. Perform comprehensive due diligence on crowdfunding campaigns. Respond ONLY in valid JSON."
           },
           {
             role: "user",
             content: `
               Campaign: ${campaignData.title}
-              Type: ${campaignData.isAgent ? 'AI Agent Campaign' : 'Human Campaign'}
+              Type: ${campaignData.isAgent ? 'AI Agent' : 'Human'}
               Description: ${campaignData.description}
               Goal: ${campaignData.goal} USDC
               Category: ${campaignData.category}
               Milestones: ${JSON.stringify(campaignData.milestones)}
+              Creator wallet: ${campaignData.creator}
               
-              Respond in JSON:
+              Perform full risk assessment:
               {
                 "recommendation": "FUND" or "REJECT" or "REVIEW",
-                "legitimacyScore": 0-100,
-                "impactScore": 0-100,
-                "arcAlignmentScore": 0-100,
-                "reasoning": "detailed explanation",
-                "riskFlags": ["list of concerns"],
+                "scores": {
+                  "legitimacy": 0-100,
+                  "impact": 0-100,
+                  "arcAlignment": 0-100,
+                  "executionFeasibility": 0-100,
+                  "milestoneRealism": 0-100,
+                  "governanceAlignment": 0-100
+                },
+                "riskFlags": ["list of specific concerns"],
+                "strengths": ["list of positive signals"],
                 "milestoneFeedback": "feedback on milestone structure",
-                "verdict": "one sentence summary"
+                "treasuryRisk": "LOW" or "MEDIUM" or "HIGH",
+                "verdict": "one sentence summary",
+                "dueDiligenceNotes": "detailed analysis paragraph"
               }
             `
           }
         ],
-        max_tokens: 800,
+        max_tokens: 1000,
         temperature: 0.3
       });
 
