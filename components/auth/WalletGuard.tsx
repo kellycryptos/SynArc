@@ -1,16 +1,18 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { usePathname } from "next/navigation";
 import { ShieldAlert, Wallet, Sparkles } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { WalletConnectModal } from "@/components/ui/WalletConnectModal";
 
 const PROTECTED_ROUTES = ['/bridge', '/settings'];
 
 export function WalletGuard({ children }: { children: ReactNode }) {
-  const { isAuthenticated, ready, login } = useAuth();
+  const { isAuthenticated, ready } = useAuth();
   const pathname = usePathname();
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Prevent app render flash while Privy is computing auth cookies
   if (!ready) {
@@ -52,13 +54,15 @@ export function WalletGuard({ children }: { children: ReactNode }) {
           </div>
 
           <button 
-            onClick={login}
+            onClick={() => setModalOpen(true)}
             className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-deep via-primary to-arc-blue text-white font-bold hover:shadow-[0_0_25px_rgba(124,58,237,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-purple-900/35"
           >
             <Wallet className="w-5 h-5" />
             Connect Wallet to Participate
           </button>
         </GlassCard>
+
+        <WalletConnectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
       </div>
     );
   }
