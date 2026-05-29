@@ -16,6 +16,7 @@ import {
   BookOpen,
   ArrowRightLeft,
   Bot,
+  Rocket,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { WalletConnectButton } from "@/components/ui/WalletConnectButton";
@@ -27,6 +28,7 @@ const activeLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/daos", label: "DAOs", icon: Grid },
   { href: "/agents", label: "AI Agents", icon: Bot, isNew: true },
+  { href: "/campaigns", label: "Crowdfund Hub", icon: Rocket, isNew: true },
   { href: "/proposals", label: "Proposals", icon: FileText },
   { href: "/treasury", label: "Treasury", icon: Shield },
   { href: "/bridge", label: "Bridge", icon: ArrowRightLeft },
