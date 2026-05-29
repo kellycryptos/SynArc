@@ -177,26 +177,26 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 .glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: all 0.2s ease;
 }
 
-/* Dark mode glass */
-.dark .glass-card {
+.glass-card:hover {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border-color: rgba(124, 58, 237, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(124, 58, 237, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Light mode glass */
-.light .glass-card {
-  background: rgba(255, 255, 255, 0.45) !important;
-  border: 1px solid rgba(15, 17, 26, 0.08) !important;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-}
 
 /* De-intensify home screen lighting effects in light mode */
 .light .hero-glow-effect {
@@ -238,7 +238,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 
 /* ── Gradient Text ── */
 .gradient-text {
-  background: linear-gradient(135deg, #a855f7 0%, #3b82f6 50%, #22d3ee 100%);
+  background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 50%, #06B6D4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -250,6 +250,20 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+.gradient-border {
+  border: 1px solid transparent;
+  background: 
+    linear-gradient(#0A0A0F, #0A0A0F) padding-box,
+    linear-gradient(135deg, #7C3AED, #3B82F6) border-box;
+}
+
+.gradient-glow {
+  box-shadow: 
+    0 0 40px rgba(124, 58, 237, 0.15),
+    0 0 80px rgba(59, 130, 246, 0.08);
+}
+
 
 /* ── Glow Effects ── */
 .glow-purple {

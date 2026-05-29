@@ -8,6 +8,7 @@ import { useTreasury } from "@/hooks/useTreasury";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useToken } from "@/hooks/useToken";
 import { getResilientProvider } from "@/lib/rpc/config";
+import { toast } from "react-hot-toast";
 
 import { useReadContract, useAccount, useWriteContract } from "wagmi";
 import { formatUnits } from "viem";
@@ -92,6 +93,15 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     concerns: string;
   } | null>(null);
   const [aiError, setAiError] = useState("");
+  
+  // Optimistic UI state for votes
+  const [optimisticVotes, setOptimisticVotes] = useState<{
+    forVotes: number;
+    againstVotes: number;
+    abstainVotes: number;
+    totalVotes: number;
+  } | null>(null);
+  const [optimisticHasVoted, setOptimisticHasVoted] = useState<boolean | null>(null);
 
   const handleAIAnalysis = async () => {
     setAiLoading(true);
@@ -190,11 +200,34 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       return;
     }
 
+    // Capture original state for rolling back
+    const originalVotes = {
+      forVotes: proposal.forVotes,
+      againstVotes: proposal.againstVotes,
+      abstainVotes: proposal.abstainVotes,
+      totalVotes: proposal.totalVotes,
+    };
+    
+    // Apply optimistic updates immediately
+    const voteWeight = activeBalance || 1;
+    const nextFor = supportValue === 1 ? originalVotes.forVotes + voteWeight : originalVotes.forVotes;
+    const nextAgainst = supportValue === 0 ? originalVotes.againstVotes + voteWeight : originalVotes.againstVotes;
+    const nextAbstain = supportValue === 2 ? originalVotes.abstainVotes + voteWeight : originalVotes.abstainVotes;
+    
+    setOptimisticVotes({
+      forVotes: nextFor,
+      againstVotes: nextAgainst,
+      abstainVotes: nextAbstain,
+      totalVotes: nextFor + nextAgainst + nextAbstain,
+    });
+    setOptimisticHasVoted(true);
+    toast.success('Vote submitted optimistically! Syncing with Arc...');
+
     try {
       setVoting(true);
       setVotingError(null);
       setTxHash(null);
-      setStatus('Submitting vote on-chain...');
+      setStatus('Confirming vote on Arc blockchain...');
 
       const rawId = BigInt(proposal.id.replace("SIP-", ""));
       const voteTx = await writeContractAsync({
@@ -208,13 +241,18 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       });
 
       setTxHash(voteTx);
-      setStatus('Vote recorded on-chain! ✅');
+      setStatus('Vote confirmed on-chain! ✅');
+      toast.success('Vote confirmed on-chain!');
       initializeStore();
 
     } catch (error: any) {
       console.error('Voting execution failed:', error);
+      // Revert optimistic update
+      setOptimisticVotes(null);
+      setOptimisticHasVoted(false);
       setStatus(null);
       setVotingError(error?.shortMessage || error?.message || 'Vote failed. Please try again.');
+      toast.error('On-chain confirmation failed — reverted vote');
     } finally {
       setVoting(false);
     }
@@ -222,10 +260,16 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
   if (!proposal) return <div className="pt-24 min-h-screen flex items-center justify-center text-text-tertiary">Loading...</div>;
 
-  const totalVotes = proposal.totalVotes;
-  const forPercentage = totalVotes > 0 ? (proposal.forVotes / totalVotes) * 100 : 0;
-  const againstPercentage = totalVotes > 0 ? (proposal.againstVotes / totalVotes) * 100 : 0;
-  const abstainPercentage = totalVotes > 0 ? (proposal.abstainVotes / totalVotes) * 100 : 0;
+  const forVotesDisplay = optimisticVotes ? optimisticVotes.forVotes : (proposal.forVotes || 0);
+  const againstVotesDisplay = optimisticVotes ? optimisticVotes.againstVotes : (proposal.againstVotes || 0);
+  const abstainVotesDisplay = optimisticVotes ? optimisticVotes.abstainVotes : (proposal.abstainVotes || 0);
+  const totalVotesDisplay = optimisticVotes ? optimisticVotes.totalVotes : (proposal.totalVotes || 0);
+  const hasUserVotedDisplay = optimisticHasVoted !== null ? optimisticHasVoted : hasUserVotedOnChain;
+
+  const forPercentage = totalVotesDisplay > 0 ? (forVotesDisplay / totalVotesDisplay) * 100 : 0;
+  const againstPercentage = totalVotesDisplay > 0 ? (againstVotesDisplay / totalVotesDisplay) * 100 : 0;
+  const abstainPercentage = totalVotesDisplay > 0 ? (abstainVotesDisplay / totalVotesDisplay) * 100 : 0;
+  
   const userVoteRecord = userVotes[proposal.id];
   const isProposalActive = proposal.status === "Active";
   const isProposalPassed = (proposal.status !== "Active" && proposal.status !== "Pending" && proposal.status !== "Executed" && proposal.forVotes > proposal.againstVotes);
@@ -379,7 +423,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-sm font-semibold">
                     <span className="text-success flex items-center gap-1">For</span>
-                    <span className="text-text-primary">{(proposal.forVotes / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k VP ({forPercentage.toFixed(1)}%)</span>
+                    <span className="text-text-primary">{(forVotesDisplay / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k VP ({forPercentage.toFixed(1)}%)</span>
                   </div>
                   <div className="w-full bg-surface-elevated border border-border-subtle h-2 rounded-full overflow-hidden">
                     <div className="bg-success h-full transition-all duration-500" style={{ width: `${forPercentage}%` }} />
@@ -390,7 +434,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-sm font-semibold">
                     <span className="text-danger flex items-center gap-1">Against</span>
-                    <span className="text-text-primary">{(proposal.againstVotes / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k VP ({againstPercentage.toFixed(1)}%)</span>
+                    <span className="text-text-primary">{(againstVotesDisplay / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k VP ({againstPercentage.toFixed(1)}%)</span>
                   </div>
                   <div className="w-full bg-surface-elevated border border-border-subtle h-2 rounded-full overflow-hidden">
                     <div className="bg-danger h-full transition-all duration-500" style={{ width: `${againstPercentage}%` }} />
@@ -401,7 +445,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-sm font-semibold">
                     <span className="text-muted flex items-center gap-1">Abstain</span>
-                    <span className="text-text-primary">{(proposal.abstainVotes / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k VP ({abstainPercentage.toFixed(1)}%)</span>
+                    <span className="text-text-primary">{(abstainVotesDisplay / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k VP ({abstainPercentage.toFixed(1)}%)</span>
                   </div>
                   <div className="w-full bg-surface-elevated border border-border-subtle h-2 rounded-full overflow-hidden">
                     <div className="bg-muted h-full transition-all duration-500" style={{ width: `${abstainPercentage}%` }} />
@@ -427,7 +471,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                     Connect wallet to vote
                   </button>
                 ) : isProposalActive ? (
-                  hasUserVotedOnChain ? (
+                  hasUserVotedDisplay ? (
                     <div className="w-full py-3 rounded-xl bg-surface border border-emerald-500/25 flex flex-col items-center justify-center gap-1">
                       <div className="text-sm font-bold text-emerald-400 flex items-center gap-2">
                         <ShieldCheck className="w-4 h-4" />
@@ -642,7 +686,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary">Total VP</span>
-                  <span className="text-text-primary font-mono">{totalVotes.toLocaleString()}</span>
+                  <span className="text-text-primary font-mono">{totalVotesDisplay.toLocaleString()}</span>
                 </div>
               </div>
             </GlassCard>
