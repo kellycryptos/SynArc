@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets } from "@privy-io/react-auth";
 import { ethers, Contract, parseUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, TreasuryABI } from "@/lib/governance/contracts";
-import { useWriteContract, useAccount } from "wagmi";
+import { useWriteContract, useAccount, usePublicClient } from "wagmi";
 import { ARC_GAS_CONFIG, ARC_GAS_CONFIG_LOW } from "@/lib/constants";
 import { TreasuryActivity } from "@/types";
 import { getWorkingRPC, arcTestnetChain } from "@/lib/rpc";
@@ -46,6 +46,7 @@ export default function TreasuryPage() {
 
   const { address: userAddress } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
 
   interface Transaction {
     id: string
@@ -159,6 +160,12 @@ export default function TreasuryPage() {
       return;
     }
 
+    if (!userAddress) {
+      setErrorMessage("Wallet not connected. Please connect your wallet first.");
+      setTxStep("error");
+      return;
+    }
+
     try {
       setTxStep("approving");
       setErrorMessage("");
@@ -167,103 +174,43 @@ export default function TreasuryPage() {
       const tokenAddress = (selectedToken === "USDC" ? USDC_ADDRESS : EURC_ADDRESS) as `0x${string}`;
       const amountBigInt = BigInt(Math.floor(amountNum * 1_000_000)); // Both USDC and EURC use 6 decimals on Arc Testnet
 
-      // 1. Get working RPC automatically
-      console.log("Resolving responsive RPC node...");
-      const rpcUrl = await getWorkingRPC();
-      console.log(`Connected to Arc RPC: ${rpcUrl}`);
-
-      // 2. Get signer provider from connected wallet
-      let provider;
-      if (wallets && wallets.length > 0) {
-        const privyWallet = wallets[0];
-        provider = await privyWallet.getEthereumProvider();
-      } else if (typeof window !== "undefined" && (window as any).ethereum) {
-        provider = (window as any).ethereum;
-      } else {
-        throw new Error("No wallet connected. Please connect your wallet first.");
-      }
-
-      // 3. Initialize Viem Wallet and Public Clients
-      const walletClient = createWalletClient({
-        chain: arcTestnetChain,
-        transport: custom(provider)
-      });
-
-      const publicClient = createPublicClient({
-        chain: arcTestnetChain,
-        transport: http(rpcUrl)
-      });
-
-      // Ensure network is switched to Arc Testnet (chainId 5042002)
-      try {
-        const currentChainId = await walletClient.getChainId();
-        if (currentChainId !== 5042002) {
-          console.log("Switching chain to Arc Testnet...");
-          const chainIdHex = "0x4cef52"; // 5042002 in hex
-          await provider.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: chainIdHex }],
-          });
-        }
-      } catch (switchErr: any) {
-        console.warn("Chain switch check failed or was rejected:", switchErr);
-        // Try adding the chain as fallback
-        try {
-          const chainIdHex = "0x4cef52";
-          await provider.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: chainIdHex,
-                chainName: "Arc Testnet",
-                rpcUrls: ["https://rpc.testnet.arc.network"],
-                nativeCurrency: {
-                  name: "USDC",
-                  symbol: "USDC",
-                  decimals: 6,
-                },
-                blockExplorerUrls: ["https://testnet.arcscan.app"],
-              },
-            ],
-          });
-        } catch (addErr) {
-          console.error("Failed to add network:", addErr);
-        }
-      }
-
-      // 4. Approve contract spend
+      // 1. Approve contract spend using WAGMI writeContractAsync
       console.log(`Approving ${selectedToken}...`);
-      const approveTx = await walletClient.writeContract({
-        account: userAddress as `0x${string}`,
+      const approveTx = await writeContractAsync({
         address: tokenAddress,
         abi: ERC20ABI,
         functionName: 'approve',
         args: [treasuryAddress, amountBigInt],
-        gas: 100000n,
+        // Force manual gas overrides for Arc Testnet 6-decimal USDC fee model
+        ...ARC_GAS_CONFIG_LOW,
       });
 
       console.log(`${selectedToken} Approval transaction submitted: ${approveTx}`);
-      await publicClient.waitForTransactionReceipt({ hash: approveTx });
+      if (publicClient) {
+        await publicClient.waitForTransactionReceipt({ hash: approveTx });
+      }
       console.log(`${selectedToken} Approved!`);
 
-      // 5. Deposit to treasury
+      // 2. Deposit to treasury using WAGMI writeContractAsync
       setTxStep("depositing");
       console.log(`Depositing ${selectedToken} on-chain...`);
-      const depositTx = await walletClient.writeContract({
-        account: userAddress as `0x${string}`,
+      const depositTx = await writeContractAsync({
         address: treasuryAddress,
         abi: TreasuryABI,
         functionName: selectedToken === "USDC" ? "depositUSDC" : "depositEURC",
         args: [amountBigInt],
-        gas: 200000n,
+        // Force manual gas overrides for Arc Testnet 6-decimal USDC fee model
+        ...ARC_GAS_CONFIG,
       });
 
       console.log(`Deposit transaction submitted! Tx: ${depositTx}`);
       setTxHash(depositTx);
 
-      await publicClient.waitForTransactionReceipt({ hash: depositTx });
+      if (publicClient) {
+        await publicClient.waitForTransactionReceipt({ hash: depositTx });
+      }
 
-      // 6. Store real tx hash in activity log
+      // 3. Store real tx hash in activity log
       addTransaction({
         description: `${selectedToken} Deposit`,
         amount: amountNum,
