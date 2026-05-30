@@ -1,8 +1,11 @@
 "use client";
-
+ 
 import { useState, useEffect, useRef } from "react";
 import { useSendTransaction, useWallets } from "@privy-io/react-auth";
-import { useSwitchChain } from "wagmi";
+import { useSwitchChain, useAccount, useConfig } from "wagmi";
+import { sepolia } from "wagmi/chains";
+import { arcTestnet } from "@/lib/chains/arc";
+import { toast } from "react-hot-toast";
 import { 
   createPublicClient, 
   http, 
@@ -12,9 +15,9 @@ import {
   keccak256, 
   type Hex 
 } from "viem";
-
+ 
 import { ARC_RPC_URL } from "@/lib/arc/config";
-
+ 
 // CCTP Chain Configs matching circlefin's official configuration
 export const SOURCE_CHAINS = {
   ETH_SEPOLIA: {
@@ -58,9 +61,9 @@ export const SOURCE_CHAINS = {
     icon: "☀️"
   }
 };
-
+ 
 const DESTINATION_CHAIN = {
-  id: 1303, // Arc Testnet decimal chainId
+  id: 5042002, // ALWAYS use actual Arc chain ID!
   name: "Arc Testnet",
   domain: 7,
   tokenMessenger: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
@@ -104,6 +107,8 @@ export function useCCTPBridge() {
   const { sendTransaction } = useSendTransaction();
   const { wallets } = useWallets();
   const { switchChainAsync } = useSwitchChain();
+  const { chain } = useAccount();
+  const wagmiConfig = useConfig();
 
   const [state, setState] = useState<BridgeState>({
     status: "idle",
@@ -170,6 +175,11 @@ export function useCCTPBridge() {
       return;
     }
 
+    // Logging for debugging mismatches
+    console.log('Current chain:', chain);
+    console.log('Requested source chain:', chainConfig);
+    console.log('Configured chains:', wagmiConfig.chains);
+
     try {
       // ==========================================
       // STEP 1 — Approve USDC
@@ -180,9 +190,18 @@ export function useCCTPBridge() {
       try {
         const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
         if (currentChainId !== chainConfig.id) {
-          await switchChainAsync({ chainId: chainConfig.id });
+          const supportedChains: number[] = [arcTestnet.id, sepolia.id];
+          if (!supportedChains.includes(chainConfig.id)) {
+            toast.error("Please connect to Arc Testnet or Ethereum Sepolia");
+            throw new Error("Source network is not configured in SynArc");
+          }
+          await switchChainAsync({ chainId: chainConfig.id as any });
         }
       } catch (err: any) {
+        const errMsg = err?.message || String(err);
+        if (errMsg.toLowerCase().includes("chain not configured") || errMsg.toLowerCase().includes("not configured")) {
+          throw new Error("Source network is not configured in SynArc");
+        }
         throw new Error(`Failed to switch wallet to ${chainConfig.name}: ${err?.message || err}`);
       }
 
@@ -328,9 +347,9 @@ export function useCCTPBridge() {
       // ==========================================
       setState(prev => ({ ...prev, status: "minting" }));
 
-      // Switch chain to Arc Testnet (1303)
+      // Switch chain to Arc Testnet
       try {
-        await switchChainAsync({ chainId: DESTINATION_CHAIN.id });
+        await switchChainAsync({ chainId: DESTINATION_CHAIN.id as any });
       } catch (switchError: any) {
         // Fallback: request wallet to add Arc Testnet
         try {
@@ -339,7 +358,7 @@ export function useCCTPBridge() {
             method: "wallet_addEthereumChain",
             params: [
               {
-                chainId: "0x517", // 1303 hex
+                chainId: "0x4cef52", // 5042002 hex
                 chainName: DESTINATION_CHAIN.name,
                 rpcUrls: [DESTINATION_CHAIN.rpcUrl],
                 nativeCurrency: {
@@ -352,9 +371,9 @@ export function useCCTPBridge() {
             ]
           });
           // Switch after adding
-          await switchChainAsync({ chainId: DESTINATION_CHAIN.id });
+          await switchChainAsync({ chainId: DESTINATION_CHAIN.id as any });
         } catch (addError: any) {
-          throw new Error(`Failed to add or switch to Arc Testnet (0x517): ${addError?.message || addError}`);
+          throw new Error(`Failed to add or switch to Arc Testnet (0x4cef52): ${addError?.message || addError}`);
         }
       }
 

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useWallets } from "@privy-io/react-auth";
+import { useSwitchChain } from "wagmi";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
 import { 
   X, 
@@ -15,7 +16,8 @@ import {
   ArrowRight,
   Clock,
   ExternalLink,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 
@@ -77,6 +79,56 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   
   // Consume live CCTP Hook
   const { state: bridgeState, bridgeUSDC, resetState } = useCCTPBridge();
+  
+  const [switchingNetwork, setSwitchingNetwork] = useState(false);
+  const { switchChainAsync } = useSwitchChain();
+
+  const handleSwitchNetwork = async () => {
+    setSwitchingNetwork(true);
+    try {
+      const targetChainId = selectedChain.id === "ETH_SEPOLIA" ? 11155111 : selectedChain.id === "BASE_SEPOLIA" ? 84532 : selectedChain.id === "AVAX_FUJI" ? 43113 : 0;
+      if (targetChainId > 0) {
+        await switchChainAsync({ chainId: targetChainId });
+        resetState();
+      }
+    } catch (err) {
+      console.error("Manual network switch failed:", err);
+    } finally {
+      setSwitchingNetwork(false);
+    }
+  };
+
+  const handleAddNetwork = async () => {
+    setSwitchingNetwork(true);
+    try {
+      if (!activeWallet) return;
+      const provider = await activeWallet.getEthereumProvider();
+      
+      let chainParams: any = null;
+      if (selectedChain.id === "ETH_SEPOLIA") {
+        chainParams = {
+          chainId: "0xaa36a7", // 11155111 hex
+          chainName: "Ethereum Sepolia",
+          rpcUrls: ["https://rpc.ankr.com/eth_sepolia"],
+          nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
+          blockExplorerUrls: ["https://sepolia.etherscan.io"],
+        };
+      }
+      
+      if (chainParams) {
+        await provider.request({
+          method: "wallet_addEthereumChain",
+          params: [chainParams],
+        });
+        await switchChainAsync({ chainId: parseInt(chainParams.chainId, 16) });
+        resetState();
+      }
+    } catch (err) {
+      console.error("Manual network add failed:", err);
+    } finally {
+      setSwitchingNetwork(false);
+    }
+  };
 
   const { wallets } = useWallets();
   const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
@@ -213,10 +265,52 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
             >
               {/* Error Notification */}
               {bridgeState.status === "error" && bridgeState.errorMessage && (
-                <div className="p-3.5 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-start gap-2 animate-fade-in-up">
-                  <Info className="w-4.5 h-4.5 shrink-0 mt-0.5" />
-                  <div className="break-words w-full font-medium">{bridgeState.errorMessage}</div>
-                </div>
+                (() => {
+                  const isNetworkConfigError = 
+                    bridgeState.errorMessage.toLowerCase().includes("not configured") ||
+                    bridgeState.errorMessage.toLowerCase().includes("unsupported chain") ||
+                    bridgeState.errorMessage.toLowerCase().includes("network configuration");
+                  
+                  if (isNetworkConfigError) {
+                    console.warn("SynArc Bridge Switch Config Error:", bridgeState.errorMessage);
+                    return (
+                      <div className="p-4 bg-warning/10 border border-warning/30 rounded-2xl space-y-3 animate-fade-in-up text-left">
+                        <div className="flex items-center gap-2 text-warning font-bold text-sm">
+                          <AlertCircle className="w-5 h-5 text-warning shrink-0 animate-pulse" />
+                          <span>⚠️ Network Configuration Required</span>
+                        </div>
+                        <p className="text-xs text-text-secondary leading-normal">
+                          {selectedChain.name} has not been added to your wallet or is not configured.
+                        </p>
+                        <div className="flex gap-2.5 pt-1">
+                          <button
+                            type="button"
+                            onClick={handleSwitchNetwork}
+                            disabled={switchingNetwork}
+                            className="px-4 py-2 bg-warning/20 border border-warning/30 hover:bg-warning/30 text-warning text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                          >
+                            {switchingNetwork ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Switch Network"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleAddNetwork}
+                            disabled={switchingNetwork}
+                            className="px-4 py-2 bg-surface border border-border-thin hover:bg-surface-elevated text-text-primary text-xs font-bold rounded-xl transition-all cursor-pointer"
+                          >
+                            Add Network
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="p-3.5 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-start gap-2 animate-fade-in-up">
+                      <Info className="w-4.5 h-4.5 shrink-0 mt-0.5" />
+                      <div className="break-words w-full font-medium">{bridgeState.errorMessage}</div>
+                    </div>
+                  );
+                })()
               )}
 
               {/* Source Chain Selector */}
