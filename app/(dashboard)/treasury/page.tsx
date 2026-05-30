@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets } from "@privy-io/react-auth";
 import { ethers, Contract, parseUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, TreasuryABI } from "@/lib/governance/contracts";
-import { useWriteContract, useAccount, usePublicClient } from "wagmi";
+import { useWriteContract, useAccount, usePublicClient, useSwitchChain } from "wagmi";
 import { ARC_GAS_CONFIG, ARC_GAS_CONFIG_LOW } from "@/lib/constants";
 import { TreasuryActivity } from "@/types";
 import { getWorkingRPC, arcTestnetChain } from "@/lib/rpc";
@@ -47,6 +47,7 @@ export default function TreasuryPage() {
   const { address: userAddress } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
+  const { switchChainAsync } = useSwitchChain();
 
   interface Transaction {
     id: string
@@ -169,6 +170,22 @@ export default function TreasuryPage() {
     try {
       setTxStep("approving");
       setErrorMessage("");
+
+      // Force Arc Testnet before transaction
+      try {
+        const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+        if (activeWallet) {
+          const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
+          if (currentChainId !== 5042002) {
+            console.log("Switching network to Arc Testnet...");
+            await activeWallet.switchChain(5042002);
+          }
+        } else if (switchChainAsync) {
+          await switchChainAsync({ chainId: 5042002 });
+        }
+      } catch (switchErr) {
+        console.warn("Failed to switch network to Arc Testnet:", switchErr);
+      }
 
       const treasuryAddress = GOVERNANCE_CONTRACTS.treasury as `0x${string}`;
       const tokenAddress = (selectedToken === "USDC" ? USDC_ADDRESS : EURC_ADDRESS) as `0x${string}`;

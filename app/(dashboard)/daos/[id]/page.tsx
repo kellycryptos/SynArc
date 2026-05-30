@@ -244,18 +244,18 @@ export default function DAODetailsPage() {
 
     try {
       setSubmittingProposal(true);
-      const privy = wallets.find(w => w.walletClientType === "privy");
-      if (!privy) {
-        throw new Error("Privy wallet not found");
+      const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+      if (!activeWallet) {
+        throw new Error("Active wallet not found");
       }
 
       // Force Arc Testnet before transaction
-      const currentChainId = parseInt(privy.chainId.replace("eip155:", ""));
+      const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
       if (currentChainId !== 5042002) {
-        await privy.switchChain(5042002);
+        await activeWallet.switchChain(5042002);
       }
 
-      const ethereumProvider = await privy.getEthereumProvider();
+      const ethereumProvider = await activeWallet.getEthereumProvider();
       const provider = new BrowserProvider(ethereumProvider);
       const signer = await provider.getSigner();
 
@@ -297,18 +297,18 @@ export default function DAODetailsPage() {
     try {
       setDepositing(true);
       setDepositError("");
-      const privy = wallets.find(w => w.walletClientType === "privy");
-      if (!privy) {
-        throw new Error("Privy wallet not found");
+      const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+      if (!activeWallet) {
+        throw new Error("Active wallet not found");
       }
 
       // Force Arc Testnet before transaction
-      const currentChainId = parseInt(privy.chainId.replace("eip155:", ""));
+      const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
       if (currentChainId !== 5042002) {
-        await privy.switchChain(5042002);
+        await activeWallet.switchChain(5042002);
       }
 
-      const ethereumProvider = await privy.getEthereumProvider();
+      const ethereumProvider = await activeWallet.getEthereumProvider();
       const provider = new BrowserProvider(ethereumProvider);
       const signer = await provider.getSigner();
 

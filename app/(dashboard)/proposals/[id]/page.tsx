@@ -11,7 +11,7 @@ import { getResilientProvider } from "@/lib/rpc/config";
 import { arcPublicClient } from "@/lib/arc/config";
 import { toast } from "react-hot-toast";
 
-import { useReadContract, useAccount, useWriteContract } from "wagmi";
+import { useReadContract, useAccount, useWriteContract, useSwitchChain } from "wagmi";
 import { formatUnits } from "viem";
 import { GovernorABI, ERC20ABI } from "@/lib/governance/contracts";
 import { ARC_GAS_CONFIG } from "@/lib/constants";
@@ -55,6 +55,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
   const { address: userAddress } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const { switchChainAsync } = useSwitchChain();
 
   // Fetch real-time balances
   const { data: usdcBalanceRaw } = useReadContract({
@@ -255,6 +256,22 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       setTxHash(null);
       setStatus('Confirming vote on Arc blockchain...');
 
+      // Force Arc Testnet before transaction
+      try {
+        const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+        if (activeWallet) {
+          const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
+          if (currentChainId !== 5042002) {
+            console.log("Switching network to Arc Testnet...");
+            await activeWallet.switchChain(5042002);
+          }
+        } else if (switchChainAsync) {
+          await switchChainAsync({ chainId: 5042002 });
+        }
+      } catch (switchErr) {
+        console.warn("Failed to switch network to Arc Testnet:", switchErr);
+      }
+
       const rawId = BigInt(proposal.id.replace("SIP-", ""));
       const voteTx = await writeContractAsync({
         address: (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702") as `0x${string}`,
@@ -319,18 +336,18 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       return;
     }
     try {
-      const privy = wallets.find(w => w.walletClientType === "privy");
-      if (!privy) {
-        throw new Error("Privy wallet not found");
+      const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+      if (!activeWallet) {
+        throw new Error("Active wallet not found");
       }
 
       // Force Arc Testnet before transaction
-      const currentChainId = parseInt(privy.chainId.replace("eip155:", ""));
+      const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
       if (currentChainId !== 5042002) {
-        await privy.switchChain(5042002);
+        await activeWallet.switchChain(5042002);
       }
 
-      const ethereumProvider = await privy.getEthereumProvider();
+      const ethereumProvider = await activeWallet.getEthereumProvider();
       const browserProvider = new BrowserProvider(ethereumProvider);
       const signer = await browserProvider.getSigner();
 
