@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
+import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -43,6 +44,9 @@ export default function ProposalsPage() {
         
         {/* Non-blocking auth prompt */}
         <AuthPromptBanner action="vote or create proposals" />
+
+        {/* RPC Health Banner */}
+        <RpcHealthBanner hasLoadedBalance={proposals.length > 0} />
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

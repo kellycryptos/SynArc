@@ -251,13 +251,36 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         }
       );
 
-      await tx.wait();
+      const receipt = await tx.wait();
+
+      // Extract the real proposalId from ProposalCreated event logs
+      let finalProposalId = `SIP-${get().proposals.length}`; // fallback
+      try {
+        if (receipt && receipt.logs) {
+          for (const log of receipt.logs) {
+            try {
+              const parsed = governorContract.interface.parseLog({
+                topics: [...log.topics],
+                data: log.data
+              });
+              if (parsed && parsed.name === "ProposalCreated") {
+                finalProposalId = `SIP-${parsed.args.proposalId.toString()}`;
+                break;
+              }
+            } catch {
+              // skip unparseable logs
+            }
+          }
+        }
+      } catch (eventErr) {
+        console.error("Failed to parse on-chain ProposalCreated event log:", eventErr);
+      }
 
       set({ initialized: false });
       const currentDao = get().currentDao;
       await get().initializeStore(currentDao || undefined);
 
-      return `SIP-${get().proposals.length}`;
+      return finalProposalId;
     } catch (err: any) {
       const message = err?.reason || err?.message || 'Failed to create proposal';
       throw new Error(message);

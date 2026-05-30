@@ -8,6 +8,7 @@ import { useTreasury } from "@/hooks/useTreasury";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useToken } from "@/hooks/useToken";
 import { getResilientProvider } from "@/lib/rpc/config";
+import { arcPublicClient } from "@/lib/arc/config";
 import { toast } from "react-hot-toast";
 
 import { useReadContract, useAccount, useWriteContract } from "wagmi";
@@ -22,6 +23,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useWallets } from "@privy-io/react-auth";
 import { BrowserProvider, Contract } from "ethers";
+import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
+import { useArcRpcHealth } from "@/hooks/useArcRpcHealth";
 import { 
   ThumbsUp, 
   ThumbsDown, 
@@ -42,6 +45,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   const router = useRouter();
   const { isAuthenticated, walletAddress, login } = useAuth();
   const { wallets } = useWallets();
+  const { currentBlock } = useArcRpcHealth();
 
   const { proposals, initialized, initializeStore, userVotes, castVote, executeProposal } = useGovernanceStore();
   const proposal = proposals.find(p => p.id === unwrappedParams.id);
@@ -146,6 +150,28 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     if (!initialized) initializeStore();
   }, [initialized, initializeStore]);
 
+  // 15-second background polling while proposal details page is active (Phase 7)
+  useEffect(() => {
+    const pollInterval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        initializeStore();
+      }
+    }, 15000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        initializeStore();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(pollInterval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [initializeStore]);
+
   // Handle redirect if not found
   useEffect(() => {
     if (initialized && !proposal) {
@@ -241,9 +267,20 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       });
 
       setTxHash(voteTx);
-      setStatus('Vote confirmed on-chain! ✅');
-      toast.success('Vote confirmed on-chain!');
-      initializeStore();
+      setStatus('⏳ Waiting for confirmation...');
+
+      // Wait for the block confirmation on-chain (Phase 4)
+      await arcPublicClient.waitForTransactionReceipt({ hash: voteTx });
+
+      setStatus('✅ Vote recorded on Arc');
+      toast.success('Vote recorded on Arc!');
+      
+      // Reactive refetch without reload
+      await initializeStore();
+
+      // Clear optimistic states once store is synchronized
+      setOptimisticVotes(null);
+      setOptimisticHasVoted(null);
 
     } catch (error: any) {
       console.error('Voting execution failed:', error);
@@ -306,6 +343,9 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   return (
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-8">
+        
+        {/* RPC Health Banner */}
+        <RpcHealthBanner hasLoadedBalance={usdcBalanceRaw !== undefined || sarcBalanceRaw !== undefined} />
         
         {/* Navigation & Header */}
         <div className="space-y-4">
@@ -692,9 +732,29 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
             </GlassCard>
           </div>
         </div>
+
+        {/* Developer Debug Panel (Phase 8) */}
+        {(process.env.NODE_ENV === "development" || (typeof window !== "undefined" && window.location.search.includes("debug=true"))) && (
+          <GlassCard className="p-6 border border-warning/20 bg-warning/5 rounded-2xl mt-8">
+            <div className="flex items-center gap-2 mb-4 text-warning font-bold text-sm">
+              <ShieldCheck className="w-5 h-5 text-warning animate-pulse" />
+              <span>🛠 Arc Developer Debug Panel</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+              <div className="space-y-1.5">
+                <div><span className="text-text-tertiary">Governor Address:</span> <span className="text-white">{process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702"}</span></div>
+                <div><span className="text-text-tertiary">RPC URL:</span> <span className="text-white">{process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network"}</span></div>
+                <div><span className="text-text-tertiary">Current Block:</span> <span className="text-primary font-bold">{currentBlock || "Loading..."}</span></div>
+              </div>
+              <div className="space-y-1.5">
+                <div><span className="text-text-tertiary">Wallet Address:</span> <span className="text-white">{walletAddress || "Not Connected"}</span></div>
+                <div><span className="text-text-tertiary">Voting Power:</span> <span className="text-success font-bold">{activeBalance.toFixed(2)} USDC/sARC</span></div>
+                <div><span className="text-text-tertiary">Proposal State:</span> <span className="text-white font-bold">{proposal.status}</span></div>
+              </div>
+            </div>
+          </GlassCard>
+        )}
       </div>
-
-
     </div>
   );
 }

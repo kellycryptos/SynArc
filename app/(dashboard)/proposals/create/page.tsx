@@ -13,6 +13,8 @@ import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDow
 import { useWallets } from "@privy-io/react-auth";
 import { BrowserProvider } from "ethers";
 import { parseArcError } from "@/lib/utils";
+import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
+import { toast } from "react-hot-toast";
 
 export default function CreateProposalPage() {
   const router = useRouter();
@@ -23,6 +25,7 @@ export default function CreateProposalPage() {
   const { balance: usdcBalance } = useUSDCBalance();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successProposalId, setSuccessProposalId] = useState<string | null>(null);
   const [error, setError] = useState<React.ReactNode | null>(null);
 
   // AI proposal generator states
@@ -152,7 +155,12 @@ export default function CreateProposalPage() {
         proposer: walletAddress
       }, signer);
 
-      router.push(`/proposals/${proposalId}`);
+      setSuccessProposalId(proposalId);
+      toast.success("Proposal created successfully!");
+
+      setTimeout(() => {
+        router.push(`/proposals/${proposalId}`);
+      }, 3000);
     } catch (err: any) {
       console.error("Proposal submission error details:", err);
       setError(parseArcError(err));
@@ -165,7 +173,33 @@ export default function CreateProposalPage() {
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto space-y-8">
         
-        <div className="space-y-4">
+        {/* RPC Health Banner */}
+        <RpcHealthBanner hasLoadedBalance={!tokenLoading && usdcBalance !== undefined} />
+        
+        {successProposalId ? (
+          <GlassCard className="p-8 text-center space-y-6 max-w-xl mx-auto animate-fade-in-up">
+            <div className="w-16 h-16 bg-success/15 border border-success/30 rounded-full flex items-center justify-center mx-auto text-success shadow-[0_0_20px_rgba(34,197,94,0.2)] animate-bounce">
+              <Check className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold text-white">✅ Proposal created successfully</h2>
+              <p className="text-muted text-sm">Your governance action has been broadcast and confirmed on the Arc Testnet.</p>
+            </div>
+            <div className="bg-surface-elevated/40 border border-border-thin rounded-xl p-4 font-mono text-sm text-text-primary">
+              <span className="text-text-tertiary">Proposal ID: </span>
+              <span className="text-primary font-bold">{successProposalId}</span>
+            </div>
+            <p className="text-xs text-text-tertiary">Redirecting to proposal details in a few seconds...</p>
+            <Link 
+              href={`/proposals/${successProposalId}`} 
+              className="inline-flex items-center justify-center w-full py-3 px-5 bg-primary hover:bg-primary/95 text-white font-bold text-sm rounded-xl transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
+            >
+              Go to Proposal Details →
+            </Link>
+          </GlassCard>
+        ) : (
+          <>
+            <div className="space-y-4">
           <Link href="/proposals" className="inline-flex items-center gap-2 text-text-tertiary hover:text-primary transition-colors text-sm font-semibold">
             <ArrowLeft className="w-4 h-4" />
             Back to Proposals
@@ -411,6 +445,8 @@ export default function CreateProposalPage() {
             
           </form>
         </GlassCard>
+          </>
+        )}
       </div>
     </div>
   );
