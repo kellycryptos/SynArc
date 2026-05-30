@@ -1,3 +1,5 @@
+import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
+
 export const ARC_RPC_URLS = [
   process.env.NEXT_PUBLIC_ARC_RPC_URL,
   'https://rpc.testnet.arc.network',
@@ -33,4 +35,11 @@ export const ARC_GAS = {
   approve: 100000n,
   bridge: 300000n,
   gasPrice: 10000000n,
+} as const
+
+export const EVM_BRIDGE_CHAINS: Record<number, any> = {
+  11155111: sepolia,
+  84532: baseSepolia,
+  43113: avalancheFuji,
+  5042002: ARC_CHAIN
 } as const

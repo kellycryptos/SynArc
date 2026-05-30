@@ -185,6 +185,7 @@ export default function TreasuryPage() {
           abi: ERC20ABI,
           functionName: 'approve',
           args: [treasuryAddress, amountBigInt],
+          account: userAddress as `0x${string}`,
           gas: ARC_GAS.approve,
           gasPrice: ARC_GAS.gasPrice,
         });
@@ -204,6 +205,7 @@ export default function TreasuryPage() {
           abi: TreasuryABI,
           functionName: selectedToken === "USDC" ? "depositUSDC" : "depositEURC",
           args: [amountBigInt],
+          account: userAddress as `0x${string}`,
           gas: ARC_GAS.deposit,
           gasPrice: ARC_GAS.gasPrice,
         });

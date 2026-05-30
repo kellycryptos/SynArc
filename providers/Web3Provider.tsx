@@ -6,7 +6,7 @@ import { WagmiProvider } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ARC_CHAIN } from '@/lib/arc-config';
 import { initializeResilientRpc } from '@/lib/rpc/config';
-import { sepolia } from 'wagmi/chains';
+import { sepolia, baseSepolia, avalancheFuji } from 'wagmi/chains';
 import { wagmiConfig as config } from '@/lib/wagmi';
 
 // Build a resilient chain override to bypass rate-limited dashboard RPCs
@@ -29,7 +29,7 @@ const privyConfig: PrivyClientConfig = {
     },
     showWalletUIs: false, // Prevents annoying signing popups for smooth on-chain DAO participation
   },
-  supportedChains: [overriddenArcTestnet, sepolia],
+  supportedChains: [overriddenArcTestnet, sepolia, baseSepolia, avalancheFuji],
   defaultChain: overriddenArcTestnet,
 };
 

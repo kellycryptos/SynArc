@@ -149,6 +149,7 @@ export default function CreateProposalPage() {
             ['0x'],
             `${formData.title}\n\n${formData.description}\n\nCategory: ${formData.category}`
           ],
+          account: walletAddress as `0x${string}`,
           gas: ARC_GAS.propose,
           gasPrice: ARC_GAS.gasPrice,
         });

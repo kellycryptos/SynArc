@@ -19,6 +19,7 @@ import {
  
 import { ARC_RPC_URL } from "@/lib/arc/config";
 import { getSigner } from "@/lib/tx-helper";
+import { EVM_BRIDGE_CHAINS } from "@/lib/arc-config";
  
 // CCTP Chain Configs matching circlefin's official configuration
 export const SOURCE_CHAINS = {
@@ -191,9 +192,9 @@ export function useCCTPBridge() {
       try {
         const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
         if (currentChainId !== chainConfig.id) {
-          const supportedChains: number[] = [arcTestnet.id, sepolia.id];
+          const supportedChains = Object.keys(EVM_BRIDGE_CHAINS).map(Number);
           if (!supportedChains.includes(chainConfig.id)) {
-            toast.error("Please connect to Arc Testnet or Ethereum Sepolia");
+            toast.error("Please connect to a supported network");
             throw new Error("Source network is not configured in SynArc");
           }
           await switchChainAsync({ chainId: chainConfig.id as any });
@@ -206,7 +207,8 @@ export function useCCTPBridge() {
         throw new Error(`Failed to switch wallet to ${chainConfig.name}: ${err?.message || err}`);
       }
 
-      const { walletClient, address } = await getSigner(wallets);
+      const targetChainObj = EVM_BRIDGE_CHAINS[chainConfig.id];
+      const { walletClient, address } = await getSigner(wallets, targetChainObj);
 
       const approveData = encodeFunctionData({
         abi: erc20Abi,
@@ -219,7 +221,8 @@ export function useCCTPBridge() {
         approveTxHash = await walletClient.sendTransaction({
           to: chainConfig.usdcAddress as `0x${string}`,
           data: approveData,
-          account: address
+          account: address,
+          chain: targetChainObj
         });
       } catch (err: any) {
         throw new Error(`USDC Approval rejected by user: ${err?.message || err}`);
@@ -276,7 +279,8 @@ export function useCCTPBridge() {
         burnTxHash = await walletClient.sendTransaction({
           to: chainConfig.tokenMessenger as `0x${string}`,
           data: burnData,
-          account: address
+          account: address,
+          chain: targetChainObj
         });
       } catch (err: any) {
         throw new Error(`CCTP Burn transaction rejected: ${err?.message || err}`);
@@ -407,11 +411,13 @@ export function useCCTPBridge() {
       // Submit mint transaction on Arc Testnet with explicit gas overrides
       let mintTxHash: string;
       try {
-        const { walletClient: destWalletClient, address: destAddress } = await getSigner(wallets);
+        const targetDestChain = EVM_BRIDGE_CHAINS[DESTINATION_CHAIN.id];
+        const { walletClient: destWalletClient, address: destAddress } = await getSigner(wallets, targetDestChain);
         mintTxHash = await destWalletClient.sendTransaction({
           to: DESTINATION_CHAIN.messageTransmitter as `0x${string}`,
           data: mintData,
           account: destAddress,
+          chain: targetDestChain,
           gas: 300000n,
           gasPrice: 10000000n
         } as any);

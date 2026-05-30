@@ -265,6 +265,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
           abi: GOVERNOR_ABI,
           functionName: 'castVote',
           args: [rawId, supportValue],
+          account: userAddress as `0x${string}`,
           gas: ARC_GAS.vote,
           gasPrice: ARC_GAS.gasPrice,
         });
