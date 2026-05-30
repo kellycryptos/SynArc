@@ -1,0 +1,36 @@
+export const ARC_RPC_URLS = [
+  process.env.NEXT_PUBLIC_ARC_RPC_URL,
+  'https://rpc.testnet.arc.network',
+  'https://arc-testnet.drpc.org',
+  'https://5042002.rpc.thirdweb.com',
+].filter(Boolean) as string[]
+
+export const ARC_CHAIN = {
+  id: 5042002,
+  name: 'Arc Testnet',
+  network: 'arc-testnet',
+  nativeCurrency: { 
+    name: 'USDC', 
+    symbol: 'USDC', 
+    decimals: 6 
+  },
+  rpcUrls: {
+    default: { http: ARC_RPC_URLS },
+    public: { http: ARC_RPC_URLS },
+  },
+  blockExplorers: {
+    default: { 
+      name: 'ArcScan', 
+      url: 'https://testnet.arcscan.app' 
+    }
+  }
+} as const
+
+export const ARC_GAS = {
+  propose: 500000n,
+  vote: 300000n,
+  deposit: 200000n,
+  approve: 100000n,
+  bridge: 300000n,
+  gasPrice: 10000000n,
+} as const

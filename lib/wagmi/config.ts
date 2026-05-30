@@ -1,2 +1,2 @@
-import { config } from '@/providers/Web3Provider';
+import { wagmiConfig as config } from '@/lib/wagmi';
 export { config };

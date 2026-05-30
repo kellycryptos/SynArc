@@ -2,45 +2,18 @@
 
 import { ReactNode, useState, useEffect } from 'react';
 import { PrivyProvider, PrivyClientConfig, addRpcUrlOverrideToChain } from '@privy-io/react-auth';
-import { WagmiProvider, createConfig } from '@privy-io/wagmi';
+import { WagmiProvider } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { arcTestnet } from '@/lib/arc/config';
+import { ARC_CHAIN } from '@/lib/arc-config';
 import { initializeResilientRpc } from '@/lib/rpc/config';
-import { http, fallback } from 'wagmi';
-import { injected, metaMask } from 'wagmi/connectors';
 import { sepolia } from 'wagmi/chains';
+import { wagmiConfig as config } from '@/lib/wagmi';
 
 // Build a resilient chain override to bypass rate-limited dashboard RPCs
 const customRpcUrl = process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.network';
-export const overriddenArcTestnet = addRpcUrlOverrideToChain(arcTestnet, customRpcUrl);
+export const overriddenArcTestnet = addRpcUrlOverrideToChain(ARC_CHAIN as any, customRpcUrl);
 
 export { overriddenArcTestnet as arcTestnet };
-
-export const config = createConfig({
-  chains: [overriddenArcTestnet, sepolia],
-  transports: {
-    [overriddenArcTestnet.id]: fallback([
-      http(process.env.NEXT_PUBLIC_ARC_RPC_URL || ''),
-      http('https://rpc.testnet.arc.network'),
-      http('https://arc-testnet.drpc.org'),
-      http('https://5042002.rpc.thirdweb.com'),
-    ], {
-      rank: true // automatically use fastest working RPC
-    }),
-    [sepolia.id]: fallback([
-      http(process.env.NEXT_PUBLIC_ALCHEMY_KEY ? `https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_KEY}` : ''),
-      http('https://rpc.ankr.com/eth_sepolia'),
-      http('https://ethereum-sepolia-rpc.publicnode.com'),
-    ], {
-      rank: true // automatically use fastest working RPC
-    }),
-  },
-  connectors: [
-    injected(), // Rabby, MetaMask, OKX on PC
-    metaMask(),
-  ],
-  ssr: true, // Hydration-safe for Next.js App Router
-});
 
 const privyConfig: PrivyClientConfig = {
   // Explicitly lock to Google, Email, and Wallet — bypasses any Privy Dashboard cache
@@ -73,7 +46,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
   }));
 
   useEffect(() => {
-    initializeResilientRpc(arcTestnet);
+    initializeResilientRpc(overriddenArcTestnet);
   }, []);
 
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "clt57262n00ldmp0fhz113qep"; 

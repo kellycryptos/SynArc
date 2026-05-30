@@ -15,6 +15,8 @@ import { useReadContract, useAccount, useWriteContract, useSwitchChain } from "w
 import { formatUnits } from "viem";
 import { GovernorABI, ERC20ABI } from "@/lib/governance/contracts";
 import { ARC_GAS_CONFIG } from "@/lib/constants";
+import { writeWithRetry, getSigner } from "@/lib/tx-helper";
+import { ARC_GAS } from "@/lib/arc-config";
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
 const SARC_ADDRESS = "0x637cA7788aBC956832F389A7BB895D5249FE757B" as `0x${string}`;
 const GOVERNOR_ABI = GovernorABI;
@@ -256,38 +258,23 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       setTxHash(null);
       setStatus('Confirming vote on Arc blockchain...');
 
-      // Force Arc Testnet before transaction
-      try {
-        const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
-        if (activeWallet) {
-          const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
-          if (currentChainId !== 5042002) {
-            console.log("Switching network to Arc Testnet...");
-            await activeWallet.switchChain(5042002);
-          }
-        } else if (switchChainAsync) {
-          await switchChainAsync({ chainId: 5042002 });
-        }
-      } catch (switchErr) {
-        console.warn("Failed to switch network to Arc Testnet:", switchErr);
-      }
-
       const rawId = BigInt(proposal.id.replace("SIP-", ""));
-      const voteTx = await writeContractAsync({
-        address: (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702") as `0x${string}`,
-        abi: GOVERNOR_ABI,
-        functionName: 'castVote',
-        args: [rawId, supportValue],
-
-        // Force manual gas — bypasses estimateGas simulation crash on Arc Testnet
-        ...ARC_GAS_CONFIG,
+      const voteTx = await writeWithRetry(wallets, async (walletClient) => {
+        return await walletClient.writeContract({
+          address: (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702") as `0x${string}`,
+          abi: GOVERNOR_ABI,
+          functionName: 'castVote',
+          args: [rawId, supportValue],
+          gas: ARC_GAS.vote,
+          gasPrice: ARC_GAS.gasPrice,
+        });
       });
 
       setTxHash(voteTx);
       setStatus('⏳ Waiting for confirmation...');
 
-      // Wait for the block confirmation on-chain (Phase 4)
-      await arcPublicClient.waitForTransactionReceipt({ hash: voteTx });
+      const { publicClient } = await getSigner(wallets);
+      await publicClient.waitForTransactionReceipt({ hash: voteTx as `0x${string}` });
 
       setStatus('✅ Vote recorded on Arc');
       toast.success('Vote recorded on Arc!');
@@ -305,8 +292,14 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       setOptimisticVotes(null);
       setOptimisticHasVoted(false);
       setStatus(null);
-      setVotingError(error?.shortMessage || error?.message || 'Vote failed. Please try again.');
-      toast.error('On-chain confirmation failed — reverted vote');
+      const msg = error?.message || '';
+      if (msg.includes('User rejected') || msg.includes('user rejected')) {
+        setVotingError('Vote cancelled');
+        toast.error('Vote cancelled');
+      } else {
+        setVotingError(error?.shortMessage || error?.message || 'Vote failed. Please try again.');
+        toast.error('On-chain confirmation failed — reverted vote');
+      }
     } finally {
       setVoting(false);
     }

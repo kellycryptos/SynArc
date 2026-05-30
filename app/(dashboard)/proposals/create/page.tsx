@@ -15,6 +15,9 @@ import { BrowserProvider } from "ethers";
 import { parseArcError } from "@/lib/utils";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
 import { toast } from "react-hot-toast";
+import { writeWithRetry } from "@/lib/tx-helper";
+import { ARC_GAS } from "@/lib/arc-config";
+import { GovernorABI } from "@/lib/governance/contracts";
 
 export default function CreateProposalPage() {
   const router = useRouter();
@@ -135,35 +138,36 @@ export default function CreateProposalPage() {
     setError(null);
 
     try {
-      const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
-      if (!activeWallet) {
-        throw new Error("Active wallet not found");
-      }
+      const txHash = await writeWithRetry(wallets, async (walletClient) => {
+        return await walletClient.writeContract({
+          address: (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702") as `0x${string}`,
+          abi: GovernorABI,
+          functionName: 'propose',
+          args: [
+            ['0x0000000000000000000000000000000000000000'],
+            [0n],
+            ['0x'],
+            `${formData.title}\n\n${formData.description}\n\nCategory: ${formData.category}`
+          ],
+          gas: ARC_GAS.propose,
+          gasPrice: ARC_GAS.gasPrice,
+        });
+      });
 
-      // Force Arc Testnet before transaction
-      const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
-      if (currentChainId !== 5042002) {
-        await activeWallet.switchChain(5042002);
-      }
-
-      const ethereumProvider = await activeWallet.getEthereumProvider();
-      const browserProvider = new BrowserProvider(ethereumProvider);
-      const signer = await browserProvider.getSigner();
-
-      const proposalId = await submitProposal({
-        ...formData,
-        proposer: walletAddress
-      }, signer);
-
-      setSuccessProposalId(proposalId);
-      toast.success("Proposal created successfully!");
+      toast.success('Proposal submitted! ✅');
+      setSuccessProposalId(txHash);
 
       setTimeout(() => {
-        router.push(`/proposals/${proposalId}`);
+        router.push('/proposals');
       }, 3000);
     } catch (err: any) {
       console.error("Proposal submission error details:", err);
-      setError(parseArcError(err));
+      const msg = err?.message || '';
+      if (msg.includes('User rejected') || msg.includes('user rejected')) {
+        setError('Transaction cancelled');
+      } else {
+        setError(err?.shortMessage || msg || 'Failed to submit proposal');
+      }
     } finally {
       setIsSubmitting(false);
     }

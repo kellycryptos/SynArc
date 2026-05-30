@@ -1,7 +1,7 @@
 "use client";
  
 import { useState, useEffect, useRef } from "react";
-import { useSendTransaction, useWallets } from "@privy-io/react-auth";
+import { useWallets } from "@privy-io/react-auth";
 import { useSwitchChain, useAccount, useConfig } from "wagmi";
 import { sepolia } from "wagmi/chains";
 import { arcTestnet } from "@/lib/chains/arc";
@@ -18,6 +18,7 @@ import {
 } from "viem";
  
 import { ARC_RPC_URL } from "@/lib/arc/config";
+import { getSigner } from "@/lib/tx-helper";
  
 // CCTP Chain Configs matching circlefin's official configuration
 export const SOURCE_CHAINS = {
@@ -105,7 +106,6 @@ export interface BridgeState {
 }
 
 export function useCCTPBridge() {
-  const { sendTransaction } = useSendTransaction();
   const { wallets } = useWallets();
   const { switchChainAsync } = useSwitchChain();
   const { chain } = useAccount();
@@ -206,6 +206,8 @@ export function useCCTPBridge() {
         throw new Error(`Failed to switch wallet to ${chainConfig.name}: ${err?.message || err}`);
       }
 
+      const { walletClient, address } = await getSigner(wallets);
+
       const approveData = encodeFunctionData({
         abi: erc20Abi,
         functionName: "approve",
@@ -214,11 +216,11 @@ export function useCCTPBridge() {
 
       let approveTxHash: string;
       try {
-        const res = await sendTransaction({
+        approveTxHash = await walletClient.sendTransaction({
           to: chainConfig.usdcAddress as `0x${string}`,
-          data: approveData
+          data: approveData,
+          account: address
         });
-        approveTxHash = res.hash;
       } catch (err: any) {
         throw new Error(`USDC Approval rejected by user: ${err?.message || err}`);
       }
@@ -271,11 +273,11 @@ export function useCCTPBridge() {
 
       let burnTxHash: string;
       try {
-        const res = await sendTransaction({
+        burnTxHash = await walletClient.sendTransaction({
           to: chainConfig.tokenMessenger as `0x${string}`,
-          data: burnData
+          data: burnData,
+          account: address
         });
-        burnTxHash = res.hash;
       } catch (err: any) {
         throw new Error(`CCTP Burn transaction rejected: ${err?.message || err}`);
       }
@@ -405,14 +407,14 @@ export function useCCTPBridge() {
       // Submit mint transaction on Arc Testnet with explicit gas overrides
       let mintTxHash: string;
       try {
-        const res = await sendTransaction({
+        const { walletClient: destWalletClient, address: destAddress } = await getSigner(wallets);
+        mintTxHash = await destWalletClient.sendTransaction({
           to: DESTINATION_CHAIN.messageTransmitter as `0x${string}`,
           data: mintData,
-          // Explicit gas overrides for Arc Testnet 6-decimal native gas model
-          gasLimit: 300000n,
+          account: destAddress,
+          gas: 300000n,
           gasPrice: 10000000n
         } as any);
-        mintTxHash = res.hash;
       } catch (err: any) {
         throw new Error(`Minting transaction rejected: ${err?.message || err}`);
       }

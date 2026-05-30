@@ -23,7 +23,7 @@ export const RPC_URLS = [
 /**
  * Initialize dynamic client-side RPC fallbacks in-place.
  * 
- * Verifies health of the primary RPC (Alchemy or Canteen). If offline, rate-limited,
+ * Verifies health of the primary RPC. If offline, rate-limited,
  * or returning raw non-JSON error pages, it re-orders the RPC priority array in the
  * chain configuration to prevent Privy embedded wallet crashes.
  */

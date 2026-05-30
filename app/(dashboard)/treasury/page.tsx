@@ -15,6 +15,8 @@ import { TreasuryActivity } from "@/types";
 import { getWorkingRPC, arcTestnetChain } from "@/lib/rpc";
 import { createPublicClient, createWalletClient, http, custom } from "viem";
 import { toast } from "react-hot-toast";
+import { writeWithRetry, getSigner } from "@/lib/tx-helper";
+import { ARC_GAS } from "@/lib/arc-config";
 
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
 const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as `0x${string}`;
@@ -171,61 +173,46 @@ export default function TreasuryPage() {
       setTxStep("approving");
       setErrorMessage("");
 
-      // Force Arc Testnet before transaction
-      try {
-        const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
-        if (activeWallet) {
-          const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
-          if (currentChainId !== 5042002) {
-            console.log("Switching network to Arc Testnet...");
-            await activeWallet.switchChain(5042002);
-          }
-        } else if (switchChainAsync) {
-          await switchChainAsync({ chainId: 5042002 });
-        }
-      } catch (switchErr) {
-        console.warn("Failed to switch network to Arc Testnet:", switchErr);
-      }
-
       const treasuryAddress = GOVERNANCE_CONTRACTS.treasury as `0x${string}`;
       const tokenAddress = (selectedToken === "USDC" ? USDC_ADDRESS : EURC_ADDRESS) as `0x${string}`;
       const amountBigInt = BigInt(Math.floor(amountNum * 1_000_000)); // Both USDC and EURC use 6 decimals on Arc Testnet
 
-      // 1. Approve contract spend using WAGMI writeContractAsync
+      // 1. Approve contract spend
       console.log(`Approving ${selectedToken}...`);
-      const approveTx = await writeContractAsync({
-        address: tokenAddress,
-        abi: ERC20ABI,
-        functionName: 'approve',
-        args: [treasuryAddress, amountBigInt],
-        // Force manual gas overrides for Arc Testnet 6-decimal USDC fee model
-        ...ARC_GAS_CONFIG_LOW,
+      const approveTx = await writeWithRetry(wallets, async (walletClient) => {
+        return await walletClient.writeContract({
+          address: tokenAddress,
+          abi: ERC20ABI,
+          functionName: 'approve',
+          args: [treasuryAddress, amountBigInt],
+          gas: ARC_GAS.approve,
+          gasPrice: ARC_GAS.gasPrice,
+        });
       });
 
       console.log(`${selectedToken} Approval transaction submitted: ${approveTx}`);
-      if (publicClient) {
-        await publicClient.waitForTransactionReceipt({ hash: approveTx });
-      }
+      const { publicClient } = await getSigner(wallets);
+      await publicClient.waitForTransactionReceipt({ hash: approveTx as `0x${string}` });
       console.log(`${selectedToken} Approved!`);
 
-      // 2. Deposit to treasury using WAGMI writeContractAsync
+      // 2. Deposit to treasury
       setTxStep("depositing");
       console.log(`Depositing ${selectedToken} on-chain...`);
-      const depositTx = await writeContractAsync({
-        address: treasuryAddress,
-        abi: TreasuryABI,
-        functionName: selectedToken === "USDC" ? "depositUSDC" : "depositEURC",
-        args: [amountBigInt],
-        // Force manual gas overrides for Arc Testnet 6-decimal USDC fee model
-        ...ARC_GAS_CONFIG,
+      const depositTx = await writeWithRetry(wallets, async (walletClient) => {
+        return await walletClient.writeContract({
+          address: treasuryAddress,
+          abi: TreasuryABI,
+          functionName: selectedToken === "USDC" ? "depositUSDC" : "depositEURC",
+          args: [amountBigInt],
+          gas: ARC_GAS.deposit,
+          gasPrice: ARC_GAS.gasPrice,
+        });
       });
 
       console.log(`Deposit transaction submitted! Tx: ${depositTx}`);
       setTxHash(depositTx);
 
-      if (publicClient) {
-        await publicClient.waitForTransactionReceipt({ hash: depositTx });
-      }
+      await publicClient.waitForTransactionReceipt({ hash: depositTx as `0x${string}` });
 
       // 3. Store real tx hash in activity log
       addTransaction({
@@ -249,14 +236,16 @@ export default function TreasuryPage() {
       toast.success(`Deposited ${amountNum} ${selectedToken} to treasury`);
     } catch (err: any) {
       console.error("Deposit transaction failed:", err);
-      const errMessageText = getRPCErrorMessage(err);
-      setErrorMessage(errMessageText);
-      setTxStep("error");
-      
-      if (errMessageText.includes("busy") || errMessageText.includes("timeout")) {
-        toast.error("Network busy — please wait or retry");
+      const msg = err?.message || '';
+      if (msg.includes('User rejected') || msg.includes('user rejected')) {
+        toast.error('Transaction cancelled');
+        setErrorMessage('Transaction cancelled');
+        setTxStep("error");
       } else {
-        toast.error(err?.shortMessage || err?.message || "Deposit failed");
+        const errMessageText = getRPCErrorMessage(err);
+        setErrorMessage(errMessageText);
+        setTxStep("error");
+        toast.error(err?.shortMessage || msg || "Deposit failed");
       }
     }
   };
