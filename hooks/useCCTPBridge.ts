@@ -9,6 +9,7 @@ import { toast } from "react-hot-toast";
 import { 
   createPublicClient, 
   http, 
+  fallback,
   parseAbi, 
   encodeFunctionData, 
   decodeEventLog, 
@@ -222,9 +223,27 @@ export function useCCTPBridge() {
         throw new Error(`USDC Approval rejected by user: ${err?.message || err}`);
       }
 
-      // Wait for approval confirmation
+      // Wait for approval confirmation with dynamic, resilient fallback RPCs to prevent delays
+      const rpcUrls = [
+        chainConfig.rpcUrl,
+      ];
+      if (chainConfig.id === 11155111) { // Sepolia fallbacks
+        rpcUrls.push("https://ethereum-sepolia-rpc.publicnode.com");
+        rpcUrls.push("https://sepolia.gateway.tenderly.co");
+        rpcUrls.push("https://rpc.borderless.xyz/sepolia");
+      } else if (chainConfig.id === 84532) { // Base Sepolia fallbacks
+        rpcUrls.push("https://base-sepolia-rpc.publicnode.com");
+        rpcUrls.push("https://sepolia.base.org");
+      } else if (chainConfig.id === 43113) { // Avalanche Fuji fallbacks
+        rpcUrls.push("https://avalanche-fuji-c-chain-rpc.publicnode.com");
+      }
+
       const sourcePublicClient = createPublicClient({
-        transport: http(chainConfig.rpcUrl)
+        chain: chainConfig.id === 11155111 ? sepolia : undefined,
+        transport: fallback(
+          rpcUrls.map(url => http(url, { timeout: 10000 })),
+          { rank: true }
+        )
       });
 
       await sourcePublicClient.waitForTransactionReceipt({
