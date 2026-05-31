@@ -16,8 +16,9 @@ import { parseArcError } from "@/lib/utils";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
 import { toast } from "react-hot-toast";
 import { writeWithRetry } from "@/lib/tx-helper";
-import { ARC_GAS } from "@/lib/arc-config";
+import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS } from "@/lib/arc-config";
 import { GovernorABI } from "@/lib/governance/contracts";
+import { createWalletClient, createPublicClient, custom, fallback, http } from "viem";
 
 export default function CreateProposalPage() {
   const router = useRouter();
@@ -138,22 +139,100 @@ export default function CreateProposalPage() {
     setError(null);
 
     try {
-      const txHash = await writeWithRetry(wallets, async (walletClient) => {
-        return await walletClient.writeContract({
-          address: (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702") as `0x${string}`,
+      // Get provider — Privy wallet OR external wallet
+      let provider
+      if (wallets && wallets.length > 0) {
+        const activeWallet = wallets[0];
+        try {
+          if (typeof activeWallet.switchChain === 'function') {
+            await activeWallet.switchChain(5042002);
+          }
+        } catch (switchError) {
+          console.warn("Chain switch error, attempting to proceed:", switchError);
+        }
+        provider = typeof activeWallet.getEthereumProvider === 'function'
+          ? await activeWallet.getEthereumProvider()
+          : await (activeWallet as any).getEip1193Provider();
+      } else if (typeof window !== 'undefined' && window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' })
+        provider = window.ethereum
+      } else {
+        throw new Error('No wallet connected. Please connect your wallet first.')
+      }
+
+      const walletClient = createWalletClient({
+        chain: ARC_CHAIN,
+        transport: custom(provider)
+      })
+
+      const publicClient = createPublicClient({
+        chain: ARC_CHAIN,
+        transport: fallback(ARC_RPC_URLS.map(url => http(url)))
+      })
+
+      const [address] = await walletClient.getAddresses()
+      const targetAddress = (formData.executionTarget && formData.executionTarget.startsWith('0x'))
+        ? (formData.executionTarget as `0x${string}`)
+        : '0x0000000000000000000000000000000000000000';
+
+      const votingDurationSecs = BigInt(formData.votingDuration) * 86400n;
+      const absoluteImpactValue = BigInt(Math.abs(formData.treasuryImpactValue)) * 1000000n;
+      const governorAddress = (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702") as `0x${string}`;
+
+      // Dynamically estimate fees
+      let gasParams: any = {}
+      try {
+        const fees = await publicClient.estimateFeesPerGas()
+        if (fees.maxFeePerGas && fees.maxPriorityFeePerGas) {
+          gasParams.maxFeePerGas = (fees.maxFeePerGas * 130n) / 100n
+          gasParams.maxPriorityFeePerGas = (fees.maxPriorityFeePerGas * 130n) / 100n
+        } else {
+          const gasPrice = await publicClient.getGasPrice()
+          gasParams.gasPrice = (gasPrice * 130n) / 100n
+        }
+      } catch (err) {
+        console.warn('Fee estimation failed, falling back to legacy gas price:', err)
+        const gasPrice = await publicClient.getGasPrice().catch(() => ARC_GAS.gasPrice)
+        gasParams.gasPrice = (gasPrice * 130n) / 100n
+      }
+
+      let estimatedProposeGas: bigint = ARC_GAS.propose
+      try {
+        estimatedProposeGas = await publicClient.estimateContractGas({
+          address: governorAddress,
           abi: GovernorABI,
           functionName: 'propose',
           args: [
-            ['0x0000000000000000000000000000000000000000'],
-            [0n],
-            ['0x'],
-            `${formData.title}\n\n${formData.description}\n\nCategory: ${formData.category}`
+            formData.title,
+            formData.description,
+            formData.category,
+            votingDurationSecs,
+            absoluteImpactValue,
+            targetAddress
           ],
-          account: walletAddress as `0x${string}`,
-          gas: ARC_GAS.propose,
-          gasPrice: ARC_GAS.gasPrice,
-        });
-      });
+          account: address,
+        })
+        estimatedProposeGas = (estimatedProposeGas * 120n) / 100n
+      } catch (e) {
+        console.warn('Propose gas estimation failed:', e)
+      }
+
+      const txHash = await walletClient.writeContract({
+        address: governorAddress,
+        abi: GovernorABI,
+        functionName: 'propose',
+        args: [
+          formData.title,
+          formData.description,
+          formData.category,
+          votingDurationSecs,
+          absoluteImpactValue,
+          targetAddress
+        ],
+        account: address,
+        gas: estimatedProposeGas,
+        ...gasParams,
+      })
 
       toast.success('Proposal submitted! ✅');
       setSuccessProposalId(txHash);

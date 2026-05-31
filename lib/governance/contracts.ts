@@ -29,10 +29,12 @@ export const GovernorABI = [
     type: 'function',
     name: 'propose',
     inputs: [
-      { name: 'targets', type: 'address[]' },
-      { name: 'values', type: 'uint256[]' },
-      { name: 'calldatas', type: 'bytes[]' },
+      { name: 'title', type: 'string' },
       { name: 'description', type: 'string' },
+      { name: 'category', type: 'string' },
+      { name: 'votingDuration', type: 'uint256' },
+      { name: 'treasuryImpactValue', type: 'uint256' },
+      { name: 'executionTarget', type: 'address' },
     ],
     outputs: [{ name: '', type: 'uint256' }],
     stateMutability: 'nonpayable',
@@ -62,10 +64,7 @@ export const GovernorABI = [
     type: 'function',
     name: 'execute',
     inputs: [
-      { name: 'targets', type: 'address[]' },
-      { name: 'values', type: 'uint256[]' },
-      { name: 'calldatas', type: 'bytes[]' },
-      { name: 'descriptionHash', type: 'bytes32' },
+      { name: 'proposalId', type: 'uint256' }
     ],
     outputs: [],
     stateMutability: 'payable',

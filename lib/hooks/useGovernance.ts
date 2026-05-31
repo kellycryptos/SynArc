@@ -167,10 +167,6 @@ export function useCastVote() {
   };
 }
 
-/**
- * Hook: useCreateProposal
- * Create a new governance proposal
- */
 export function useCreateProposal() {
   const { 
     data: hash, 
@@ -184,18 +180,19 @@ export function useCreateProposal() {
   });
 
   const createProposal = (
-    targets: `0x${string}`[],
-    values: bigint[],
-    calldatas: `0x${string}`[],
-    description: string
+    title: string,
+    description: string,
+    category: string,
+    votingDuration: bigint,
+    treasuryImpactValue: bigint,
+    executionTarget: `0x${string}`
   ) => {
-    const optimizedDescription = description.trim();
     writeContract({
       chainId: arcTestnet.id,
       address: GOVERNANCE_CONTRACTS.governor,
       abi: GovernorABI,
       functionName: 'propose',
-      args: [targets, values, calldatas, optimizedDescription],
+      args: [title, description, category, votingDuration, treasuryImpactValue, executionTarget],
       gas: 550000n,                         // Sets a predictable manual execution ceiling
       maxFeePerGas: 30000000n,              // 6-Decimal max base fee parameter
       maxPriorityFeePerGas: 2000000n,       // 6-Decimal priority tip setting
@@ -229,17 +226,14 @@ export function useExecuteProposal() {
   });
 
   const executeProposal = (
-    targets: `0x${string}`[],
-    values: bigint[],
-    calldatas: `0x${string}`[],
-    descriptionHash: `0x${string}`
+    proposalId: bigint
   ) => {
     writeContract({
       chainId: arcTestnet.id,
       address: GOVERNANCE_CONTRACTS.governor,
       abi: GovernorABI,
       functionName: 'execute',
-      args: [targets, values, calldatas, descriptionHash],
+      args: [proposalId],
       gas: 250000n,                         // Standard lightweight execute execution ceiling
       maxFeePerGas: 30000000n,              // 6-Decimal max base fee parameter
       maxPriorityFeePerGas: 2000000n,       // 6-Decimal tip priority parameter

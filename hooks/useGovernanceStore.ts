@@ -235,16 +235,17 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const governorAddress = get().activeContracts.governor;
       const governorContract = new Contract(governorAddress, GovernorABI, signer);
 
-      const targets = [ethers.ZeroAddress]; // placeholder target
-      const values = [0n];                   // no ETH value
-      const calldatas = ['0x'];              // empty calldata
-      const optimizedDescription = `${proposalData.title.trim()}\n\n${proposalData.description.trim()}\n\nCategory: ${proposalData.category.trim()}`;
+      const votingDurationSecs = BigInt(proposalData.votingDuration) * 86400n;
+      const absoluteImpactValue = BigInt(Math.abs(proposalData.treasuryImpactValue)) * 1000000n;
+      const targetAddress = proposalData.executionTarget || ethers.ZeroAddress;
 
       const tx = await governorContract.propose(
-        targets,
-        values,
-        calldatas,
-        optimizedDescription,
+        proposalData.title.trim(),
+        proposalData.description.trim(),
+        proposalData.category.trim(),
+        votingDurationSecs,
+        absoluteImpactValue,
+        targetAddress,
         { 
           gasLimit: 500000n, 
           gasPrice: 10000000n, 
