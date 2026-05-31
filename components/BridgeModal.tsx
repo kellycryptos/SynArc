@@ -102,7 +102,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     setSwitchingNetwork(true);
     try {
       if (!activeWallet) return;
-      const provider = await activeWallet.getEthereumProvider();
+      const provider = await (activeWallet.getEthereumProvider?.() || (activeWallet as any).getProvider?.() || (activeWallet as any).getEip1193Provider?.());
       
       let chainParams: any = null;
       if (selectedChain.id === "ETH_SEPOLIA") {

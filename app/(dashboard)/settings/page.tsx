@@ -134,7 +134,7 @@ export default function SettingsPage() {
     logDiag("Initiating lightweight contract write (USDC.approve)...");
     try {
       const privy = wallets.find(w => w.walletClientType === "privy") || wallets[0];
-      const privyProvider = await privy.getEthereumProvider();
+      const privyProvider = await (privy.getEthereumProvider?.() || (privy as any).getProvider?.() || (privy as any).getEip1193Provider?.());
       const provider = new ethers.BrowserProvider(privyProvider);
       const signer = await provider.getSigner();
 
@@ -170,7 +170,7 @@ export default function SettingsPage() {
     logDiag("Initiating mock vote write on Governor (castVote)...");
     try {
       const privy = wallets.find(w => w.walletClientType === "privy") || wallets[0];
-      const privyProvider = await privy.getEthereumProvider();
+      const privyProvider = await (privy.getEthereumProvider?.() || (privy as any).getProvider?.() || (privy as any).getEip1193Provider?.());
       const provider = new ethers.BrowserProvider(privyProvider);
       const signer = await provider.getSigner();
 

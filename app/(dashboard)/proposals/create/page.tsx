@@ -150,9 +150,7 @@ export default function CreateProposalPage() {
         } catch (switchError) {
           console.warn("Chain switch error, attempting to proceed:", switchError);
         }
-        provider = typeof activeWallet.getEthereumProvider === 'function'
-          ? await activeWallet.getEthereumProvider()
-          : await (activeWallet as any).getEip1193Provider();
+        provider = await (activeWallet.getEthereumProvider?.() || (activeWallet as any).getProvider?.() || (activeWallet as any).getEip1193Provider?.());
       } else if (typeof window !== 'undefined' && window.ethereum) {
         await window.ethereum.request({ method: 'eth_requestAccounts' })
         provider = window.ethereum

@@ -34,8 +34,11 @@ export function Web3Provider({ children }: { children: ReactNode }) {
           accentColor: '#7C3AED',
         },
         embeddedWallets: {
+          createOnLogin: 'users-without-wallets',
+          showWalletUIs: false,
           ethereum: {
             createOnLogin: 'users-without-wallets',
+            showWalletUIs: false,
             waitForUserConfirmation: 'never',
           },
           waitForUserConfirmation: 'never',

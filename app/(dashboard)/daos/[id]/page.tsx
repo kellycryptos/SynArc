@@ -255,7 +255,7 @@ export default function DAODetailsPage() {
         await activeWallet.switchChain(5042002);
       }
 
-      const ethereumProvider = await activeWallet.getEthereumProvider();
+      const ethereumProvider = await (activeWallet.getEthereumProvider?.() || (activeWallet as any).getProvider?.() || (activeWallet as any).getEip1193Provider?.());
       const provider = new BrowserProvider(ethereumProvider);
       const signer = await provider.getSigner();
 
@@ -308,7 +308,7 @@ export default function DAODetailsPage() {
         await activeWallet.switchChain(5042002);
       }
 
-      const ethereumProvider = await activeWallet.getEthereumProvider();
+      const ethereumProvider = await (activeWallet.getEthereumProvider?.() || (activeWallet as any).getProvider?.() || (activeWallet as any).getEip1193Provider?.());
       const provider = new BrowserProvider(ethereumProvider);
       const signer = await provider.getSigner();
 
