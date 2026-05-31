@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createWalletClient, createPublicClient, http, fallback } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { ARC_CHAIN } from '@/lib/arc-config'
+import { ARC_CHAIN, ARC_GAS } from '@/lib/arc-config'
 
 const TOKEN_ABI = [
   {
@@ -129,23 +129,23 @@ export async function POST(req: NextRequest) {
     console.log('Faucet tx confirmed:', receipt.status)
 
     if (receipt.status !== 'success') {
-      console.error('Faucet transaction reverted on-chain:', receipt)
       return NextResponse.json(
-        { error: 'Faucet transaction failed on-chain' },
+        { error: 'Transaction failed on-chain' },
         { status: 500 }
       )
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       txHash,
+      explorerUrl: `https://testnet.arcscan.app/tx/${txHash}`,
       message: '1 sARC sent successfully'
     })
 
   } catch (error: any) {
     console.error('Faucet error:', error)
     return NextResponse.json(
-      { error: error?.message || 'Faucet failed' }, 
+      { error: error?.message || 'Faucet failed' },
       { status: 500 }
     )
   }

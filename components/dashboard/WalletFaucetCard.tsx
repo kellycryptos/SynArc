@@ -163,7 +163,7 @@ export function WalletFaucetCard() {
       const res = await fetch("/api/faucet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wallet: walletAddress }),
+        body: JSON.stringify({ walletAddress: walletAddress, wallet: walletAddress }),
       });
       const data = await res.json();
 
@@ -178,6 +178,10 @@ export function WalletFaucetCard() {
         throw new Error(data.error || "Faucet request failed.");
       }
 
+      if (!data.txHash) {
+        throw new Error("Faucet failed — no transaction hash returned");
+      }
+
       // Success — store timestamp in localStorage
       localStorage.setItem(
         `${COOLDOWN_KEY}_${walletAddress.toLowerCase()}`,
@@ -185,7 +189,7 @@ export function WalletFaucetCard() {
       );
       const nextAt = new Date(Date.now() + COOLDOWN_MS).toISOString();
       setNextClaimAt(nextAt);
-      const txHashValue = data.txHash || generateTxHash();
+      const txHashValue = data.txHash;
       setCurrentTxHash(txHashValue);
 
       const newTx: FaucetTx = {

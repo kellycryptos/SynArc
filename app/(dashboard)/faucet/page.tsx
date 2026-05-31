@@ -100,7 +100,7 @@ export default function FaucetPage() {
       const res = await fetch("/api/faucet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wallet: walletAddress }),
+        body: JSON.stringify({ walletAddress, wallet: walletAddress }),
       });
       const data = await res.json();
 
