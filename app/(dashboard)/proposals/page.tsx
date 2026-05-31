@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
@@ -14,8 +14,42 @@ import {
   Plus, 
   Check, 
   Search,
-  Filter
+  Filter,
+  RefreshCw
 } from "lucide-react";
+
+// Skeleton card for loading state
+function ProposalSkeleton() {
+  return (
+    <GlassCard className="p-6">
+      <div className="flex flex-col md:flex-row gap-6 justify-between animate-pulse">
+        <div className="flex-1 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="h-6 w-20 bg-surface-elevated rounded-full" />
+            <div className="h-6 w-28 bg-surface-elevated rounded-full" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-6 w-3/4 bg-surface-elevated rounded" />
+            <div className="h-4 w-full bg-surface-elevated rounded" />
+            <div className="h-4 w-5/6 bg-surface-elevated rounded" />
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="h-4 w-32 bg-surface-elevated rounded" />
+            <div className="h-4 w-24 bg-surface-elevated rounded" />
+          </div>
+        </div>
+        <div className="w-full md:w-72 space-y-4 md:border-l md:border-border-thin md:pl-6">
+          <div className="space-y-3">
+            <div className="h-4 bg-surface-elevated rounded" />
+            <div className="h-2 bg-surface-elevated rounded-full" />
+            <div className="h-4 bg-surface-elevated rounded" />
+            <div className="h-2 bg-surface-elevated rounded-full" />
+          </div>
+        </div>
+      </div>
+    </GlassCard>
+  );
+}
 
 export default function ProposalsPage() {
   const router = useRouter();
@@ -23,12 +57,21 @@ export default function ProposalsPage() {
   const { proposals, initialized, initializeStore, userVotes } = useGovernanceStore();
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     if (!initialized) {
       initializeStore();
     }
   }, [initialized, initializeStore]);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    // Force re-fetch by clearing the cache timestamp via direct store access
+    useGovernanceStore.setState({ initialized: false, lastFetched: null });
+    await initializeStore();
+    setIsRefreshing(false);
+  }, [initializeStore]);
 
   // Filtering and Sorting
   const filteredProposals = proposals.filter((p) => {
@@ -37,6 +80,8 @@ export default function ProposalsPage() {
                           p.id.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
+
+  const isLoading = !initialized;
 
   return (
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
@@ -65,19 +110,31 @@ export default function ProposalsPage() {
               </a>
             </p>
           </div>
-          <button
-            onClick={() => {
-              if (!isAuthenticated) {
-                login();
-              } else {
-                router.push("/proposals/create");
-              }
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            Create Proposal
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Refresh button */}
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing || isLoading}
+              title="Refresh proposals"
+              className="p-2.5 rounded-xl bg-surface-elevated border border-border-thin text-muted hover:text-white hover:bg-surface transition-colors disabled:opacity-40 cursor-pointer"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            </button>
+
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  login();
+                } else {
+                  router.push("/proposals/create");
+                }
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              Create Proposal
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -115,7 +172,12 @@ export default function ProposalsPage() {
 
         {/* Proposals List */}
         <div className="grid grid-cols-1 gap-6">
-          {proposals.length === 0 ? (
+          {isLoading ? (
+            // Skeleton loading state — 3 placeholder cards
+            <>
+              {[0, 1, 2].map((i) => <ProposalSkeleton key={i} />)}
+            </>
+          ) : proposals.length === 0 ? (
             <EmptyState
               title="No proposals yet"
               description="Be the first to create a governance proposal for SynArc DAO"
@@ -143,7 +205,6 @@ export default function ProposalsPage() {
               const totalVotes = proposal.totalVotes;
               const forPercentage = totalVotes > 0 ? (proposal.forVotes / totalVotes) * 100 : 0;
               const againstPercentage = totalVotes > 0 ? (proposal.againstVotes / totalVotes) * 100 : 0;
-              const abstainPercentage = totalVotes > 0 ? (proposal.abstainVotes / totalVotes) * 100 : 0;
               
               const userVoteRecord = userVotes[proposal.id];
               const isProposalActive = proposal.status === "Active";
@@ -159,10 +220,10 @@ export default function ProposalsPage() {
                     <div className="flex flex-col md:flex-row gap-6 justify-between">
                       {/* Left Column: Details */}
                       <div className="flex-1 space-y-4">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <span className={`text-xs px-3 py-1 rounded-full font-semibold border ${
                             proposal.status === 'Active' ? 'bg-success/10 border-success/20 text-success' :
-                            proposal.status === 'Executed' ? 'bg-primary/10 border-primary/20 text-primary-glow text-purple-400' :
+                            proposal.status === 'Executed' ? 'bg-primary/10 border-primary/20 text-purple-400' :
                             'bg-surface-elevated border-border-thin text-muted'
                           }`}>
                             {proposal.status}
@@ -178,7 +239,7 @@ export default function ProposalsPage() {
                           )}
                         </div>
                         <div>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 flex-wrap">
                             <h2 className="text-xl font-bold font-heading text-text-primary group-hover:text-primary transition-colors duration-300">
                               {proposal.title}
                             </h2>

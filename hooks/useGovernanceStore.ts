@@ -12,6 +12,7 @@ interface GovernanceState {
   treasuryActivities: TreasuryActivity[];
   userVotes: Record<string, { option: "For" | "Against" | "Abstain"; sig: string; vp: number }>;
   initialized: boolean;
+  lastFetched: number | null;
   currentDaoId: string | null;
   currentDao: { id: string; governorAddress: string; treasuryAddress: string; tokenAddress: string } | null;
   activeContracts: {
@@ -52,6 +53,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   treasuryActivities: [],
   userVotes: {},
   initialized: false,
+  lastFetched: null,
   currentDaoId: null,
   currentDao: null,
   activeContracts: {
@@ -62,7 +64,17 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
   initializeStore: async (customDao) => {
     const activeDaoId = customDao?.id || 'synarc';
-    if (get().initialized && get().currentDaoId === activeDaoId) return;
+    const STALE_MS = 30_000; // 30-second cache
+    const state = get();
+    const now = Date.now();
+
+    // Skip re-fetch if data is fresh and DAO hasn't changed
+    if (
+      state.initialized &&
+      state.currentDaoId === activeDaoId &&
+      state.lastFetched !== null &&
+      now - state.lastFetched < STALE_MS
+    ) return;
 
     // Reset store state for new DAO load
     const contracts = customDao ? {
@@ -201,6 +213,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         proposals: loadedProposals,
         treasuryActivities: loadedActivities,
         initialized: true,
+        lastFetched: Date.now(),
         metrics: {
           treasuryValue: `$${treasuryVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
           activeProposals: loadedProposals.filter(p => p.status === "Active").length,
@@ -217,6 +230,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         proposals: [],
         treasuryActivities: [],
         initialized: true,
+        lastFetched: Date.now(),
         metrics: {
           treasuryValue: "$0",
           activeProposals: 0,

@@ -242,31 +242,31 @@ export default function AnalyticsPage() {
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Header and Filter */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">DAO Analytics</h1>
-            <p className="text-muted mt-1">Real-time charts and metrics retrieved directly from Arc Testnet contracts.</p>
+            <p className="text-muted mt-1 text-sm">Real-time charts and metrics retrieved directly from Arc Testnet contracts.</p>
           </div>
           
-          <div className="flex items-center gap-3 bg-surface border border-border-thin rounded-2xl p-1.5 shrink-0 self-start sm:self-auto">
+          <div className="flex items-center gap-2 bg-surface border border-border-thin rounded-2xl p-1.5 self-start">
             {(["7d", "30d", "all"] as const).map((range) => (
               <button
                 key={range}
                 onClick={() => setDateFilter(range)}
-                className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+                className={`px-3 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
                   dateFilter === range
                     ? "bg-primary text-white shadow-[0_0_15px_rgba(124,58,237,0.25)]"
                     : "text-muted hover:text-foreground hover:bg-surface-elevated"
                 }`}
               >
-                {range === "7d" ? "7 Days" : range === "30d" ? "30 Days" : "All Time"}
+                {range === "7d" ? "7D" : range === "30d" ? "30D" : "All"}
               </button>
             ))}
           </div>
         </div>
 
         {/* Overview Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <GlassCard className="p-6">
             <div className="flex items-center gap-3 mb-2">
               <Activity className="w-5 h-5 text-primary" />
@@ -329,10 +329,10 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           
           {/* Line Chart — Treasury balance over time */}
-          <GlassCard className="p-6 col-span-1 lg:col-span-2 h-[400px] flex flex-col">
+          <GlassCard className="p-4 sm:p-6 col-span-1 lg:col-span-2 h-[280px] sm:h-[400px] flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-white text-base">Treasury Balance Over Time</h3>
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-purple-300">USDC</span>
@@ -358,7 +358,7 @@ export default function AnalyticsPage() {
           </GlassCard>
 
           {/* Pie Chart — Vote distribution */}
-          <GlassCard className="p-6 h-[400px] flex flex-col">
+          <GlassCard className="p-4 sm:p-6 h-[280px] sm:h-[400px] flex flex-col">
             <h3 className="font-bold text-white mb-6 text-base">Vote Distribution</h3>
             <div className="flex-1 w-full min-h-0 relative flex items-center justify-center">
               {mounted ? (
@@ -391,8 +391,8 @@ export default function AnalyticsPage() {
           </GlassCard>
 
           {/* Bar Chart — Proposals per month */}
-          <GlassCard className="p-6 col-span-1 lg:col-span-2 h-[380px] flex flex-col">
-            <h3 className="font-bold text-white mb-6 text-base">Proposals Created per Month</h3>
+          <GlassCard className="p-4 sm:p-6 col-span-1 lg:col-span-2 h-[280px] sm:h-[380px] flex flex-col">
+            <h3 className="font-bold text-white mb-4 sm:mb-6 text-sm sm:text-base">Proposals Created per Month</h3>
             <div className="flex-1 w-full min-h-0">
               {mounted ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -414,7 +414,7 @@ export default function AnalyticsPage() {
           </GlassCard>
 
           {/* Active Voters Listing */}
-          <GlassCard className="p-6 h-[380px] flex flex-col">
+          <GlassCard className="p-4 sm:p-6 h-[280px] sm:h-[380px] flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-white text-base">Most Active Voters</h3>
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent flex items-center gap-1">
