@@ -204,7 +204,7 @@ export function WalletFaucetCard() {
       localStorage.setItem(`synarc_sarc_faucet_history_${walletAddress}`, JSON.stringify(updatedHistory));
 
       setFaucetStatus("success");
-      setSynMsg(data.message || "1 sARC Token sent to your wallet!");
+      setSynMsg(data.message || "1000 sARC Tokens sent to your wallet!");
 
       // Refetch sARC token balance
       try {
@@ -376,7 +376,7 @@ export function WalletFaucetCard() {
                 >
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-text-primary">+1.00 sARC</span>
+                      <span className="text-xs font-bold text-text-primary">+1000.00 sARC</span>
                       <span className="inline-flex items-center px-1.5 py-0.2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[9px] font-bold">
                         Success
                       </span>
@@ -427,12 +427,12 @@ export function WalletFaucetCard() {
               <span className="text-2xl select-none">🪙</span>
               <div>
                 <h4 className="font-bold text-white text-sm">SynArc Token (SYN)</h4>
-                <p className="text-[10px] text-muted font-mono">SYN · 1 per day</p>
+                <p className="text-[10px] text-muted font-mono">sARC · 1000 per claim</p>
               </div>
             </div>
             
             <p className="text-xs text-text-tertiary leading-relaxed flex-grow">
-              Claim 1 SYN token per day to participate in governance and voting.
+              Claim 1000 sARC tokens daily for governance and voting power.
             </p>
 
             {faucetStatus === "cooldown" && nextClaimAt ? (
@@ -472,7 +472,7 @@ export function WalletFaucetCard() {
                 ) : (
                   <>
                     <Coins className="w-3.5 h-3.5" />
-                    Claim SYN Token
+                    Claim 1000 sARC Tokens
                   </>
                 )}
               </button>

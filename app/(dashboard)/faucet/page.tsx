@@ -123,7 +123,7 @@ export default function FaucetPage() {
       );
       setNextClaimAt(new Date(Date.now() + COOLDOWN_MS).toISOString());
       setSarcStatus("success");
-      setSarcMsg(data.message || "1 sARC Token sent to your wallet!");
+      setSarcMsg(data.message || "1000 sARC Tokens sent to your wallet!");
       setSarcTxHash(data.txHash || "");
     } catch (err: any) {
       setSarcStatus("error");
@@ -163,7 +163,7 @@ export default function FaucetPage() {
             </div>
             <div>
               <h2 className="font-extrabold text-white text-lg leading-tight">SynArc Token</h2>
-              <p className="text-xs text-muted font-mono">sARC · 1 per day</p>
+              <p className="text-xs text-muted font-mono">sARC · 1000 per claim</p>
             </div>
           </div>
 
@@ -240,7 +240,7 @@ export default function FaucetPage() {
               ) : (
                 <>
                   <Coins className="w-4 h-4" />
-                  {isAuthenticated ? "Claim 1 sARC Token" : "Connect Wallet to Claim"}
+                  {isAuthenticated ? "Claim 1000 sARC Tokens" : "Connect Wallet to Claim"}
                 </>
               )}
             </button>

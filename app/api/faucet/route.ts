@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
         address: CONTRACTS.token,
         abi: TOKEN_ABI,
         functionName: 'transfer',
-        args: [walletAddress as `0x${string}`, BigInt(1e18)],
+        args: [walletAddress as `0x${string}`, BigInt(1000) * BigInt(1e18)],
         account,
       })
       finalGasLimit = (estimatedGas * 120n) / 100n
@@ -131,12 +131,12 @@ export async function POST(req: NextRequest) {
       console.warn('Failed to estimate gas for faucet:', e)
     }
 
-    // Send 1 sARC (18 decimals)
+    // Send 1000 sARC (18 decimals)
     const txHash = await walletClient.writeContract({
       address: CONTRACTS.token,
       abi: TOKEN_ABI,
       functionName: 'transfer',
-      args: [walletAddress as `0x${string}`, BigInt(1e18)],
+      args: [walletAddress as `0x${string}`, BigInt(1000) * BigInt(1e18)],
       gas: finalGasLimit,
       ...gasParams,
     })
@@ -156,6 +156,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      message: "1000 sARC claimed successfully!",
       txHash,
       explorerUrl: `https://testnet.arcscan.app/tx/${txHash}`
     })
