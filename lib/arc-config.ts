@@ -1,34 +1,24 @@
+import { defineChain } from 'viem'
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 
 export const ARC_RPC_URLS = [
-  process.env.NEXT_PUBLIC_ARC_RPC_URL,
+  'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f',
   'https://rpc.testnet.arc.network',
   'https://arc-testnet.drpc.org',
-  'https://5042002.rpc.thirdweb.com',
-].filter(Boolean) as string[]
+]
 
-export const ARC_CHAIN = {
+export const arcTestnet = defineChain({
   id: 5042002,
   name: 'Arc Testnet',
-  network: 'arc-testnet',
-  nativeCurrency: {
-    name: 'USDC',
-    symbol: 'USDC',
-    decimals: 6
-  },
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
   rpcUrls: {
     default: { http: ARC_RPC_URLS },
-    public: { http: ARC_RPC_URLS },
+    public: { http: ARC_RPC_URLS }
   },
-  blockExplorers: {
-    default: {
-      name: 'ArcScan',
-      url: 'https://testnet.arcscan.app'
-    }
-  }
-} as const
+  blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
+})
 
-export const arcTestnet = ARC_CHAIN;
+export const ARC_CHAIN = arcTestnet;
 
 export const ARC_GAS = {
   propose: 500000n,

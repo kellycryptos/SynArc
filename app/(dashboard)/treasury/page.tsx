@@ -216,6 +216,13 @@ export default function TreasuryPage() {
       let provider
       if (wallets && wallets.length > 0) {
         const activeWallet = wallets[0];
+        try {
+          if (typeof activeWallet.switchChain === 'function') {
+            await activeWallet.switchChain(5042002);
+          }
+        } catch (switchError) {
+          console.warn("Chain switch error, attempting to proceed:", switchError);
+        }
         provider = typeof activeWallet.getEthereumProvider === 'function'
           ? await activeWallet.getEthereumProvider()
           : await (activeWallet as any).getEip1193Provider();
