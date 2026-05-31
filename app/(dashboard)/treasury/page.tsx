@@ -16,7 +16,37 @@ import { getWorkingRPC, arcTestnetChain } from "@/lib/rpc";
 import { createPublicClient, createWalletClient, http, custom, fallback } from "viem";
 import { toast } from "react-hot-toast";
 import { writeWithRetry, getSigner } from "@/lib/tx-helper";
-import { ARC_GAS, ARC_CHAIN } from "@/lib/arc-config";
+import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
+
+const ERC20_ABI = [
+  {
+    name: 'approve',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'spender', type: 'address' },
+      { name: 'amount', type: 'uint256' }
+    ],
+    outputs: [{ name: '', type: 'bool' }]
+  }
+] as const
+
+const TREASURY_ABI = [
+  {
+    name: 'depositUSDC',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'amount', type: 'uint256' }],
+    outputs: []
+  },
+  {
+    name: 'depositEURC',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'amount', type: 'uint256' }],
+    outputs: []
+  }
+] as const
 
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
 const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as `0x${string}`;
@@ -80,6 +110,19 @@ export default function TreasuryPage() {
   const [txStep, setTxStep] = useState<"idle" | "approving" | "depositing" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [txHash, setTxHash] = useState("");
+  const [depositStatus, _setDepositStatus] = useState("");
+  const setDepositStatus = (status: string) => {
+    _setDepositStatus(status);
+    if (status.includes("Preparing") || status.includes("Approving")) {
+      setTxStep("approving");
+    } else if (status.includes("Depositing")) {
+      setTxStep("depositing");
+    } else if (status.includes("successful")) {
+      setTxStep("success");
+    } else if (status === "") {
+      setTxStep("error");
+    }
+  };
 
   const currentWalletBalance = useMemo(() => {
     return selectedToken === "USDC" ? walletUSDC || "0.00" : walletEURC || "0.00";
@@ -156,32 +199,28 @@ export default function TreasuryPage() {
   };
 
   const handleDepositSubmit = async () => {
-    const amountNum = parseFloat(depositAmount);
-    if (isNaN(amountNum) || amountNum <= 0) {
+    const amount = parseFloat(depositAmount);
+    const token = selectedToken;
+    
+    if (isNaN(amount) || amount <= 0) {
       setErrorMessage("Please enter a valid amount greater than 0.");
       setTxStep("error");
       return;
     }
 
-    if (!userAddress) {
-      setErrorMessage("Wallet not connected. Please connect your wallet first.");
-      setTxStep("error");
-      return;
-    }
+    setDepositStatus('Preparing...')
+    setErrorMessage("");
 
     try {
-      setTxStep("approving");
-      setErrorMessage("");
-
-      // Get provider — works for both Privy and external wallets
+      // Get provider — Privy wallet OR external wallet
       let provider
       if (wallets && wallets.length > 0) {
         provider = await (wallets[0] as any).getEip1193Provider()
       } else if (typeof window !== 'undefined' && window.ethereum) {
-        provider = window.ethereum
         await window.ethereum.request({ method: 'eth_requestAccounts' })
+        provider = window.ethereum
       } else {
-        throw new Error('No wallet connected')
+        throw new Error('No wallet connected. Please connect your wallet first.')
       }
 
       const walletClient = createWalletClient({
@@ -191,93 +230,69 @@ export default function TreasuryPage() {
 
       const publicClient = createPublicClient({
         chain: ARC_CHAIN,
-        transport: fallback([
-          http(process.env.NEXT_PUBLIC_ARC_RPC_URL || ''),
-          http('https://rpc.testnet.arc.network'),
-          http('https://arc-testnet.drpc.org'),
-        ])
+        transport: fallback(ARC_RPC_URLS.map(url => http(url)))
       })
 
       const [address] = await walletClient.getAddresses()
-      const tokenAddress = selectedToken === 'USDC' 
-        ? USDC_ADDRESS 
-        : EURC_ADDRESS
-      const amountRaw = BigInt(Math.floor(amountNum * 1_000_000))
+      const tokenAddress = token === 'USDC' ? USDC_ADDRESS : CONTRACTS.eurc
+      const amountRaw = BigInt(Math.floor(amount * 1_000_000))
 
       // Step 1 — Approve
-      console.log(`Approving ${selectedToken}...`);
+      setDepositStatus(`Approving ${token}...`)
       const approveTx = await walletClient.writeContract({
         address: tokenAddress as `0x${string}`,
-        abi: ERC20ABI,
+        abi: ERC20_ABI,
         functionName: 'approve',
-        args: [
-          (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || GOVERNANCE_CONTRACTS.treasury) as `0x${string}`,
-          amountRaw
-        ],
+        args: [CONTRACTS.treasury, amountRaw],
         account: address,
         gas: ARC_GAS.approve,
         gasPrice: ARC_GAS.gasPrice,
       })
-
-      console.log(`${selectedToken} Approval transaction submitted: ${approveTx}`);
       await publicClient.waitForTransactionReceipt({ hash: approveTx })
-      console.log(`${selectedToken} Approved!`);
 
       // Step 2 — Deposit
-      setTxStep("depositing");
-      console.log(`Depositing ${selectedToken} on-chain...`);
-      const depositFn = selectedToken === 'USDC' ? 'depositUSDC' : 'depositEURC'
-
+      setDepositStatus(`Depositing ${token}...`)
       const depositTx = await walletClient.writeContract({
-        address: (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || GOVERNANCE_CONTRACTS.treasury) as `0x${string}`,
-        abi: TreasuryABI,
-        functionName: depositFn,
+        address: CONTRACTS.treasury,
+        abi: TREASURY_ABI,
+        functionName: token === 'USDC' ? 'depositUSDC' : 'depositEURC',
         args: [amountRaw],
         account: address,
         gas: ARC_GAS.deposit,
         gasPrice: ARC_GAS.gasPrice,
       })
-
-      console.log(`Deposit transaction submitted! Tx: ${depositTx}`);
       setTxHash(depositTx);
-
       await publicClient.waitForTransactionReceipt({ hash: depositTx })
 
-      // 3. Store real tx hash in activity log
+      setDepositStatus('✅ Deposit successful!')
+      toast.success(`${amount} ${token} deposited to treasury`)
+      
+      // Store in activity log
       addTransaction({
-        description: `${selectedToken} Deposit`,
-        amount: amountNum,
-        token: selectedToken,
+        description: `${token} Deposit`,
+        amount: amount,
+        token: token,
         date: new Date().toLocaleDateString('en-GB'),
         txHash: depositTx,
         status: 'confirmed',
       });
 
-      console.log("Deposit Success!");
-      setTxStep("success");
       setDepositAmount("");
-      
-      // Refresh balances
       refetchTreasury();
       refetchWalletUSDC?.();
       refetchWalletEURC?.();
-      
-      toast.success(`${amountNum} ${selectedToken} deposited to treasury`);
 
     } catch (error: any) {
-      console.error("Deposit transaction failed:", error);
+      setDepositStatus('')
       setTxStep("error");
       const msg = error?.message || ''
       if (msg.includes('User rejected') || msg.includes('user rejected')) {
         toast.error('Transaction cancelled')
         setErrorMessage('Transaction cancelled');
-      } else if (msg.includes('rate limit') || msg.includes('429')) {
-        toast.error('Network busy — please try again in 30 seconds')
-        setErrorMessage('Network busy — please try again in 30 seconds');
       } else {
-        const errMessageText = getRPCErrorMessage(error);
-        setErrorMessage(errMessageText);
-        toast.error(error?.shortMessage || msg || 'Deposit failed')
+        const errorText = error?.shortMessage || msg || 'Deposit failed — please try again';
+        setErrorMessage(errorText);
+        toast.error(errorText)
       }
     }
   };

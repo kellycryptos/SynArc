@@ -12,11 +12,11 @@ import { arcPublicClient } from "@/lib/arc/config";
 import { toast } from "react-hot-toast";
 
 import { useReadContract, useAccount, useWriteContract, useSwitchChain } from "wagmi";
-import { formatUnits } from "viem";
+import { formatUnits, createWalletClient, createPublicClient, fallback, custom, http } from "viem";
 import { GovernorABI, ERC20ABI } from "@/lib/governance/contracts";
 import { ARC_GAS_CONFIG } from "@/lib/constants";
 import { writeWithRetry, getSigner } from "@/lib/tx-helper";
-import { ARC_GAS } from "@/lib/arc-config";
+import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
 const SARC_ADDRESS = "0x637cA7788aBC956832F389A7BB895D5249FE757B" as `0x${string}`;
 const GOVERNOR_ABI = GovernorABI;
@@ -84,10 +84,10 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     return sarcBalanceRaw !== undefined ? formatUnits(sarcBalanceRaw as bigint, 18) : "0";
   }, [sarcBalanceRaw]);
 
-  // Check voting power — either USDC > 0 OR sARC >= 1
+  // Check voting power — either USDC > 0 OR sARC > 0
   const hasVotingPower = 
     (usdcBalanceRaw !== undefined && Number(usdcFormatted) > 0) || 
-    (sarcBalanceRaw !== undefined && Number(sarcFormatted) >= 1);
+    (sarcBalanceRaw !== undefined && Number(sarcFormatted) > 0);
 
   // AI analysis states
   const [aiLoading, setAiLoading] = useState(false);
@@ -224,9 +224,13 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
     if (!proposal) return;
 
-    if (!hasVotingPower) {
-      alert('Insufficient balance to vote. Your wallet must hold > 0 USDC or >= 1 sARC on Arc Testnet.');
-      return;
+    // Check voting power — anyone with USDC or sARC can vote
+    const usdcBal = Number(usdcFormatted) || 0
+    const sarcBal = Number(sarcFormatted) || 0
+
+    if (usdcBal <= 0 && sarcBal <= 0) {
+      toast.error('You need USDC or sARC tokens to vote')
+      return
     }
 
     // Capture original state for rolling back
@@ -258,27 +262,46 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       setTxHash(null);
       setStatus('Confirming vote on Arc blockchain...');
 
+      let provider
+      if (wallets && wallets.length > 0) {
+        provider = await (wallets[0] as any).getEip1193Provider()
+      } else if (typeof window !== 'undefined' && window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' })
+        provider = window.ethereum
+      } else {
+        throw new Error('No wallet connected')
+      }
+
+      const walletClient = createWalletClient({
+        chain: ARC_CHAIN,
+        transport: custom(provider)
+      })
+
+      const publicClient = createPublicClient({
+        chain: ARC_CHAIN,
+        transport: fallback(ARC_RPC_URLS.map(url => http(url)))
+      })
+
+      const [address] = await walletClient.getAddresses()
       const rawId = BigInt(proposal.id.replace("SIP-", ""));
-      const voteTx = await writeWithRetry(wallets, async (walletClient) => {
-        return await walletClient.writeContract({
-          address: (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702") as `0x${string}`,
-          abi: GOVERNOR_ABI,
-          functionName: 'castVote',
-          args: [rawId, supportValue],
-          account: userAddress as `0x${string}`,
-          gas: ARC_GAS.vote,
-          gasPrice: ARC_GAS.gasPrice,
-        });
-      });
+
+      const voteTx = await walletClient.writeContract({
+        address: CONTRACTS.governor,
+        abi: GOVERNOR_ABI,
+        functionName: 'castVote',
+        args: [rawId, supportValue],
+        account: address,
+        gas: ARC_GAS.vote,
+        gasPrice: ARC_GAS.gasPrice,
+      })
 
       setTxHash(voteTx);
       setStatus('⏳ Waiting for confirmation...');
 
-      const { publicClient } = await getSigner(wallets);
-      await publicClient.waitForTransactionReceipt({ hash: voteTx as `0x${string}` });
+      await publicClient.waitForTransactionReceipt({ hash: voteTx })
 
       setStatus('✅ Vote recorded on Arc');
-      toast.success('Vote recorded on Arc!');
+      toast.success('Vote recorded on-chain! ✅');
       
       // Reactive refetch without reload
       await initializeStore();
@@ -298,8 +321,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         setVotingError('Vote cancelled');
         toast.error('Vote cancelled');
       } else {
-        setVotingError(error?.shortMessage || error?.message || 'Vote failed. Please try again.');
-        toast.error('On-chain confirmation failed — reverted vote');
+        setVotingError(error?.shortMessage || 'Vote failed — please try again');
+        toast.error(error?.shortMessage || 'Vote failed — please try again');
       }
     } finally {
       setVoting(false);

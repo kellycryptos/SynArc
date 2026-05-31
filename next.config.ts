@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
       ? { exclude: ["error", "warn"] }
       : false,
   },
+  experimental: {
+    optimizeCss: true,
+  },
   async redirects() {
     return [
       {
