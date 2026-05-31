@@ -13,10 +13,10 @@ import { useWriteContract, useAccount, usePublicClient, useSwitchChain } from "w
 import { ARC_GAS_CONFIG, ARC_GAS_CONFIG_LOW } from "@/lib/constants";
 import { TreasuryActivity } from "@/types";
 import { getWorkingRPC, arcTestnetChain } from "@/lib/rpc";
-import { createPublicClient, createWalletClient, http, custom } from "viem";
+import { createPublicClient, createWalletClient, http, custom, fallback } from "viem";
 import { toast } from "react-hot-toast";
 import { writeWithRetry, getSigner } from "@/lib/tx-helper";
-import { ARC_GAS } from "@/lib/arc-config";
+import { ARC_GAS, ARC_CHAIN } from "@/lib/arc-config";
 
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
 const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as `0x${string}`;
@@ -173,48 +173,75 @@ export default function TreasuryPage() {
       setTxStep("approving");
       setErrorMessage("");
 
-      const treasuryAddress = GOVERNANCE_CONTRACTS.treasury as `0x${string}`;
-      const tokenAddress = (selectedToken === "USDC" ? USDC_ADDRESS : EURC_ADDRESS) as `0x${string}`;
-      const amountBigInt = BigInt(Math.floor(amountNum * 1_000_000)); // Both USDC and EURC use 6 decimals on Arc Testnet
+      // Get provider — works for both Privy and external wallets
+      let provider
+      if (wallets && wallets.length > 0) {
+        provider = await (wallets[0] as any).getEip1193Provider()
+      } else if (typeof window !== 'undefined' && window.ethereum) {
+        provider = window.ethereum
+        await window.ethereum.request({ method: 'eth_requestAccounts' })
+      } else {
+        throw new Error('No wallet connected')
+      }
 
-      // 1. Approve contract spend
+      const walletClient = createWalletClient({
+        chain: ARC_CHAIN,
+        transport: custom(provider)
+      })
+
+      const publicClient = createPublicClient({
+        chain: ARC_CHAIN,
+        transport: fallback([
+          http(process.env.NEXT_PUBLIC_ARC_RPC_URL || ''),
+          http('https://rpc.testnet.arc.network'),
+          http('https://arc-testnet.drpc.org'),
+        ])
+      })
+
+      const [address] = await walletClient.getAddresses()
+      const tokenAddress = selectedToken === 'USDC' 
+        ? USDC_ADDRESS 
+        : EURC_ADDRESS
+      const amountRaw = BigInt(Math.floor(amountNum * 1_000_000))
+
+      // Step 1 — Approve
       console.log(`Approving ${selectedToken}...`);
-      const approveTx = await writeWithRetry(wallets, async (walletClient) => {
-        return await walletClient.writeContract({
-          address: tokenAddress,
-          abi: ERC20ABI,
-          functionName: 'approve',
-          args: [treasuryAddress, amountBigInt],
-          account: userAddress as `0x${string}`,
-          gas: ARC_GAS.approve,
-          gasPrice: ARC_GAS.gasPrice,
-        });
-      });
+      const approveTx = await walletClient.writeContract({
+        address: tokenAddress as `0x${string}`,
+        abi: ERC20ABI,
+        functionName: 'approve',
+        args: [
+          (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || GOVERNANCE_CONTRACTS.treasury) as `0x${string}`,
+          amountRaw
+        ],
+        account: address,
+        gas: ARC_GAS.approve,
+        gasPrice: ARC_GAS.gasPrice,
+      })
 
       console.log(`${selectedToken} Approval transaction submitted: ${approveTx}`);
-      const { publicClient } = await getSigner(wallets);
-      await publicClient.waitForTransactionReceipt({ hash: approveTx as `0x${string}` });
+      await publicClient.waitForTransactionReceipt({ hash: approveTx })
       console.log(`${selectedToken} Approved!`);
 
-      // 2. Deposit to treasury
+      // Step 2 — Deposit
       setTxStep("depositing");
       console.log(`Depositing ${selectedToken} on-chain...`);
-      const depositTx = await writeWithRetry(wallets, async (walletClient) => {
-        return await walletClient.writeContract({
-          address: treasuryAddress,
-          abi: TreasuryABI,
-          functionName: selectedToken === "USDC" ? "depositUSDC" : "depositEURC",
-          args: [amountBigInt],
-          account: userAddress as `0x${string}`,
-          gas: ARC_GAS.deposit,
-          gasPrice: ARC_GAS.gasPrice,
-        });
-      });
+      const depositFn = selectedToken === 'USDC' ? 'depositUSDC' : 'depositEURC'
+
+      const depositTx = await walletClient.writeContract({
+        address: (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || GOVERNANCE_CONTRACTS.treasury) as `0x${string}`,
+        abi: TreasuryABI,
+        functionName: depositFn,
+        args: [amountRaw],
+        account: address,
+        gas: ARC_GAS.deposit,
+        gasPrice: ARC_GAS.gasPrice,
+      })
 
       console.log(`Deposit transaction submitted! Tx: ${depositTx}`);
       setTxHash(depositTx);
 
-      await publicClient.waitForTransactionReceipt({ hash: depositTx as `0x${string}` });
+      await publicClient.waitForTransactionReceipt({ hash: depositTx })
 
       // 3. Store real tx hash in activity log
       addTransaction({
@@ -222,7 +249,7 @@ export default function TreasuryPage() {
         amount: amountNum,
         token: selectedToken,
         date: new Date().toLocaleDateString('en-GB'),
-        txHash: depositTx, // real hash from chain
+        txHash: depositTx,
         status: 'confirmed',
       });
 
@@ -235,19 +262,22 @@ export default function TreasuryPage() {
       refetchWalletUSDC?.();
       refetchWalletEURC?.();
       
-      toast.success(`Deposited ${amountNum} ${selectedToken} to treasury`);
-    } catch (err: any) {
-      console.error("Deposit transaction failed:", err);
-      const msg = err?.message || '';
+      toast.success(`${amountNum} ${selectedToken} deposited to treasury`);
+
+    } catch (error: any) {
+      console.error("Deposit transaction failed:", error);
+      setTxStep("error");
+      const msg = error?.message || ''
       if (msg.includes('User rejected') || msg.includes('user rejected')) {
-        toast.error('Transaction cancelled');
+        toast.error('Transaction cancelled')
         setErrorMessage('Transaction cancelled');
-        setTxStep("error");
+      } else if (msg.includes('rate limit') || msg.includes('429')) {
+        toast.error('Network busy — please try again in 30 seconds')
+        setErrorMessage('Network busy — please try again in 30 seconds');
       } else {
-        const errMessageText = getRPCErrorMessage(err);
+        const errMessageText = getRPCErrorMessage(error);
         setErrorMessage(errMessageText);
-        setTxStep("error");
-        toast.error(err?.shortMessage || msg || "Deposit failed");
+        toast.error(error?.shortMessage || msg || 'Deposit failed')
       }
     }
   };

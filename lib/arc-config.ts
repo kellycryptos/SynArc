@@ -1,5 +1,9 @@
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 
+export const ARC_RPC_URL = 
+  process.env.NEXT_PUBLIC_ARC_RPC_URL || 
+  'https://rpc.testnet.arc.network'
+
 export const ARC_RPC_URLS = [
   process.env.NEXT_PUBLIC_ARC_RPC_URL,
   'https://rpc.testnet.arc.network',
@@ -17,8 +21,20 @@ export const ARC_CHAIN = {
     decimals: 6 
   },
   rpcUrls: {
-    default: { http: ARC_RPC_URLS },
-    public: { http: ARC_RPC_URLS },
+    default: { 
+      http: [
+        process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.network',
+        'https://arc-testnet.drpc.org',
+        'https://5042002.rpc.thirdweb.com',
+      ] 
+    },
+    public: { 
+      http: [
+        process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.network',
+        'https://arc-testnet.drpc.org',
+        'https://5042002.rpc.thirdweb.com',
+      ] 
+    },
   },
   blockExplorers: {
     default: { 
@@ -33,7 +49,6 @@ export const ARC_GAS = {
   vote: 300000n,
   deposit: 200000n,
   approve: 100000n,
-  bridge: 300000n,
   gasPrice: 10000000n,
 } as const
 

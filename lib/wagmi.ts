@@ -1,32 +1,19 @@
-import { createConfig } from '@privy-io/wagmi'
-import { http, fallback } from 'wagmi'
+import { createConfig, http, fallback } from 'wagmi'
 import { injected, metaMask } from 'wagmi/connectors'
-import { ARC_CHAIN, ARC_RPC_URLS } from './arc-config'
-import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
+import { ARC_CHAIN } from './arc-config'
 
 export const wagmiConfig = createConfig({
-  chains: [ARC_CHAIN, sepolia, baseSepolia, avalancheFuji],
+  chains: [ARC_CHAIN],
   transports: {
-    [ARC_CHAIN.id]: fallback(
-      ARC_RPC_URLS.map(url => http(url)),
-      { rank: true }
-    ),
-    [sepolia.id]: fallback([
-      http('https://rpc.ankr.com/eth_sepolia'),
-      http('https://ethereum-sepolia-rpc.publicnode.com'),
-    ], { rank: true }),
-    [baseSepolia.id]: fallback([
-      http('https://sepolia.base.org'),
-      http('https://base-sepolia-rpc.publicnode.com'),
-    ], { rank: true }),
-    [avalancheFuji.id]: fallback([
-      http('https://api.avax-test.network/ext/bc/C/rpc'),
-      http('https://avalanche-fuji-c-chain-rpc.publicnode.com'),
-    ], { rank: true }),
+    [ARC_CHAIN.id]: fallback([
+      http(process.env.NEXT_PUBLIC_ARC_RPC_URL || ''),
+      http('https://rpc.testnet.arc.network'),
+      http('https://arc-testnet.drpc.org'),
+      http('https://5042002.rpc.thirdweb.com'),
+    ])
   },
   connectors: [
     injected(),
     metaMask(),
-  ],
-  ssr: true,
+  ]
 })
