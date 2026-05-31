@@ -104,7 +104,7 @@ export default function CreateProposalPage() {
     }
 
     const usdcVal = usdcBalance ? parseFloat(usdcBalance) : 0;
-    if (usdcVal < 0.01) {
+    if (usdcVal < 0.05) {
       setError(
         <span>
           Insufficient USDC for gas. Please claim from{" "}
@@ -312,13 +312,13 @@ export default function CreateProposalPage() {
             {/* USDC Gas Status Banner */}
             {isAuthenticated && walletAddress && (
               <>
-                {parseFloat(usdcBalance || "0") < 0.01 ? (
+                {parseFloat(usdcBalance || "0") < 0.05 ? (
                   <div className="p-4 bg-danger/10 border border-danger/20 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-danger animate-fade-in-up">
                     <div className="flex items-center gap-3">
                       <AlertCircle className="w-5 h-5 shrink-0 text-danger animate-pulse" />
                       <div>
                         <span className="font-bold">Insufficient USDC for gas.</span>
-                        <p className="text-xs text-muted/80 mt-0.5 font-semibold">You need at least 0.01 USDC to pay for gas fees on Arc Testnet.</p>
+                        <p className="text-xs text-muted/80 mt-0.5 font-semibold">You need at least 0.05 USDC to pay for gas fees on Arc Testnet.</p>
                       </div>
                     </div>
                     <Link 
