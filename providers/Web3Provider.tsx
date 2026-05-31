@@ -36,8 +36,10 @@ export function Web3Provider({ children }: { children: ReactNode }) {
         embeddedWallets: {
           ethereum: {
             createOnLogin: 'users-without-wallets',
-          }
-        },
+            waitForUserConfirmation: 'never',
+          },
+          waitForUserConfirmation: 'never',
+        } as any
       }}
     >
       <QueryClientProvider client={queryClient}>
