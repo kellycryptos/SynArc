@@ -16,25 +16,78 @@ const TOKEN_ABI = [
   }
 ] as const
 
-export async function POST(req: NextRequest) {
+const COOLDOWN_MS = 24 * 60 * 60 * 1000 // 24 hours
+const claims = new Map<string, number>()
+
+export async function GET(req: NextRequest) {
   try {
-    const body = await req.json()
-    const walletAddress = body.walletAddress || body.wallet
+    const { searchParams } = new URL(req.url)
+    const walletAddress = searchParams.get('wallet')?.toLowerCase()
 
     if (!walletAddress || !walletAddress.startsWith('0x')) {
       return NextResponse.json({ error: 'Invalid wallet address' }, { status: 400 })
     }
 
-    if (!process.env.FAUCET_PRIVATE_KEY) {
+    const lastClaim = claims.get(walletAddress)
+    const now = Date.now()
+
+    if (lastClaim && now - lastClaim < COOLDOWN_MS) {
+      const nextClaimAt = new Date(lastClaim + COOLDOWN_MS).toISOString()
+      const cooldownSecs = Math.ceil((lastClaim + COOLDOWN_MS - now) / 1000)
+      const hours = Math.floor(cooldownSecs / 3600)
+      const minutes = Math.floor((cooldownSecs % 3600) / 60)
+      return NextResponse.json({
+        eligible: false,
+        nextClaimAt,
+        cooldown: `${hours}h ${minutes}m`
+      })
+    }
+
+    return NextResponse.json({ eligible: true })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const walletAddress = (body.walletAddress || body.wallet)?.toLowerCase()
+
+    if (!walletAddress || !walletAddress.startsWith('0x')) {
+      return NextResponse.json({ error: 'Invalid wallet address' }, { status: 400 })
+    }
+
+    const lastClaim = claims.get(walletAddress)
+    const now = Date.now()
+
+    if (lastClaim && now - lastClaim < COOLDOWN_MS) {
+      const nextClaimAt = new Date(lastClaim + COOLDOWN_MS).toISOString()
+      const cooldownSecs = Math.ceil((lastClaim + COOLDOWN_MS - now) / 1000)
+      const hours = Math.floor(cooldownSecs / 3600)
+      const minutes = Math.floor((cooldownSecs % 3600) / 60)
+      return NextResponse.json(
+        {
+          error: 'Already claimed today',
+          eligible: false,
+          nextClaimAt,
+          cooldown: `${hours}h ${minutes}m`
+        },
+        { status: 429 }
+      )
+    }
+
+    const rawKey = process.env.FAUCET_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY
+
+    if (!rawKey || rawKey === '""' || rawKey === "''") {
       return NextResponse.json({ error: 'Faucet not configured' }, { status: 500 })
     }
 
-    const privateKey = process.env.FAUCET_PRIVATE_KEY.startsWith('0x')
-      ? (process.env.FAUCET_PRIVATE_KEY as `0x${string}`)
-      : (`0x${process.env.FAUCET_PRIVATE_KEY}` as `0x${string}`)
+    const privateKey = rawKey.startsWith('0x')
+      ? (rawKey as `0x${string}`)
+      : (`0x${rawKey}` as `0x${string}`)
 
     const account = privateKeyToAccount(privateKey)
-
     const transport = fallback(ARC_RPC_URLS.map(url => http(url)))
 
     const walletClient = createWalletClient({
@@ -48,14 +101,44 @@ export async function POST(req: NextRequest) {
       transport,
     })
 
+    // Dynamically estimate fees and gas limit
+    let gasParams: any = {}
+    try {
+      const fees = await publicClient.estimateFeesPerGas()
+      if (fees.maxFeePerGas && fees.maxPriorityFeePerGas) {
+        gasParams.maxFeePerGas = (fees.maxFeePerGas * 130n) / 100n
+        gasParams.maxPriorityFeePerGas = (fees.maxPriorityFeePerGas * 130n) / 100n
+      } else {
+        const gasPrice = await publicClient.getGasPrice()
+        gasParams.gasPrice = (gasPrice * 130n) / 100n
+      }
+    } catch {
+      const gasPrice = await publicClient.getGasPrice().catch(() => ARC_GAS.gasPrice)
+      gasParams.gasPrice = (gasPrice * 130n) / 100n
+    }
+
+    let finalGasLimit: bigint = ARC_GAS.faucet
+    try {
+      const estimatedGas = await publicClient.estimateContractGas({
+        address: CONTRACTS.token,
+        abi: TOKEN_ABI,
+        functionName: 'transfer',
+        args: [walletAddress as `0x${string}`, BigInt(1e18)],
+        account,
+      })
+      finalGasLimit = (estimatedGas * 120n) / 100n
+    } catch (e) {
+      console.warn('Failed to estimate gas for faucet:', e)
+    }
+
     // Send 1 sARC (18 decimals)
     const txHash = await walletClient.writeContract({
       address: CONTRACTS.token,
       abi: TOKEN_ABI,
       functionName: 'transfer',
       args: [walletAddress as `0x${string}`, BigInt(1e18)],
-      gas: ARC_GAS.faucet,
-      gasPrice: ARC_GAS.gasPrice,
+      gas: finalGasLimit,
+      ...gasParams,
     })
 
     // Wait for real confirmation
@@ -67,6 +150,9 @@ export async function POST(req: NextRequest) {
     if (receipt.status !== 'success') {
       return NextResponse.json({ error: 'Transaction failed on-chain' }, { status: 500 })
     }
+
+    // Register claim time on success
+    claims.set(walletAddress, Date.now())
 
     return NextResponse.json({
       success: true,

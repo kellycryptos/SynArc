@@ -215,7 +215,10 @@ export default function TreasuryPage() {
       // Get provider — Privy wallet OR external wallet
       let provider
       if (wallets && wallets.length > 0) {
-        provider = await (wallets[0] as any).getEip1193Provider()
+        const activeWallet = wallets[0];
+        provider = typeof activeWallet.getEthereumProvider === 'function'
+          ? await activeWallet.getEthereumProvider()
+          : await (activeWallet as any).getEip1193Provider();
       } else if (typeof window !== 'undefined' && window.ethereum) {
         await window.ethereum.request({ method: 'eth_requestAccounts' })
         provider = window.ethereum
@@ -237,29 +240,74 @@ export default function TreasuryPage() {
       const tokenAddress = token === 'USDC' ? USDC_ADDRESS : CONTRACTS.eurc
       const amountRaw = BigInt(Math.floor(amount * 1_000_000))
 
+      // Dynamically estimate fees
+      let gasParams: any = {}
+      try {
+        const fees = await publicClient.estimateFeesPerGas()
+        if (fees.maxFeePerGas && fees.maxPriorityFeePerGas) {
+          gasParams.maxFeePerGas = (fees.maxFeePerGas * 130n) / 100n
+          gasParams.maxPriorityFeePerGas = (fees.maxPriorityFeePerGas * 130n) / 100n
+        } else {
+          const gasPrice = await publicClient.getGasPrice()
+          gasParams.gasPrice = (gasPrice * 130n) / 100n
+        }
+      } catch (err) {
+        console.warn('Fee estimation failed, falling back to legacy gas price:', err)
+        const gasPrice = await publicClient.getGasPrice().catch(() => ARC_GAS.gasPrice)
+        gasParams.gasPrice = (gasPrice * 130n) / 100n
+      }
+
       // Step 1 — Approve
       setDepositStatus(`Approving ${token}...`)
+      let estimatedApproveGas: bigint = ARC_GAS.approve
+      try {
+        estimatedApproveGas = await publicClient.estimateContractGas({
+          address: tokenAddress as `0x${string}`,
+          abi: ERC20_ABI,
+          functionName: 'approve',
+          args: [CONTRACTS.treasury, amountRaw],
+          account: address,
+        })
+        estimatedApproveGas = (estimatedApproveGas * 120n) / 100n
+      } catch (e) {
+        console.warn('Approve gas estimation failed:', e)
+      }
+
       const approveTx = await walletClient.writeContract({
         address: tokenAddress as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [CONTRACTS.treasury, amountRaw],
         account: address,
-        gas: ARC_GAS.approve,
-        gasPrice: ARC_GAS.gasPrice,
+        gas: estimatedApproveGas,
+        ...gasParams,
       })
       await publicClient.waitForTransactionReceipt({ hash: approveTx })
 
       // Step 2 — Deposit
       setDepositStatus(`Depositing ${token}...`)
+      let estimatedDepositGas: bigint = ARC_GAS.deposit
+      try {
+        estimatedDepositGas = await publicClient.estimateContractGas({
+          address: CONTRACTS.treasury,
+          abi: TREASURY_ABI,
+          functionName: token === 'USDC' ? 'depositUSDC' : 'depositEURC',
+          args: [amountRaw],
+          account: address,
+        })
+        estimatedDepositGas = (estimatedDepositGas * 120n) / 100n
+      } catch (e) {
+        console.warn('Deposit gas estimation failed:', e)
+      }
+
       const depositTx = await walletClient.writeContract({
         address: CONTRACTS.treasury,
         abi: TREASURY_ABI,
         functionName: token === 'USDC' ? 'depositUSDC' : 'depositEURC',
         args: [amountRaw],
         account: address,
-        gas: ARC_GAS.deposit,
-        gasPrice: ARC_GAS.gasPrice,
+        gas: estimatedDepositGas,
+        ...gasParams,
       })
       setTxHash(depositTx);
       await publicClient.waitForTransactionReceipt({ hash: depositTx })

@@ -264,7 +264,10 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
       let provider
       if (wallets && wallets.length > 0) {
-        provider = await (wallets[0] as any).getEip1193Provider()
+        const activeWallet = wallets[0];
+        provider = typeof activeWallet.getEthereumProvider === 'function'
+          ? await activeWallet.getEthereumProvider()
+          : await (activeWallet as any).getEip1193Provider();
       } else if (typeof window !== 'undefined' && window.ethereum) {
         await window.ethereum.request({ method: 'eth_requestAccounts' })
         provider = window.ethereum
@@ -285,14 +288,45 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       const [address] = await walletClient.getAddresses()
       const rawId = BigInt(proposal.id.replace("SIP-", ""));
 
+      // Dynamically estimate fees
+      let gasParams: any = {}
+      try {
+        const fees = await publicClient.estimateFeesPerGas()
+        if (fees.maxFeePerGas && fees.maxPriorityFeePerGas) {
+          gasParams.maxFeePerGas = (fees.maxFeePerGas * 130n) / 100n
+          gasParams.maxPriorityFeePerGas = (fees.maxPriorityFeePerGas * 130n) / 100n
+        } else {
+          const gasPrice = await publicClient.getGasPrice()
+          gasParams.gasPrice = (gasPrice * 130n) / 100n
+        }
+      } catch (err) {
+        console.warn('Fee estimation failed, falling back to legacy gas price:', err)
+        const gasPrice = await publicClient.getGasPrice().catch(() => ARC_GAS.gasPrice)
+        gasParams.gasPrice = (gasPrice * 130n) / 100n
+      }
+
+      let estimatedVoteGas: bigint = ARC_GAS.vote
+      try {
+        estimatedVoteGas = await publicClient.estimateContractGas({
+          address: CONTRACTS.governor,
+          abi: GOVERNOR_ABI,
+          functionName: 'castVote',
+          args: [rawId, supportValue],
+          account: address,
+        })
+        estimatedVoteGas = (estimatedVoteGas * 120n) / 100n
+      } catch (e) {
+        console.warn('Vote gas estimation failed:', e)
+      }
+
       const voteTx = await walletClient.writeContract({
         address: CONTRACTS.governor,
         abi: GOVERNOR_ABI,
         functionName: 'castVote',
         args: [rawId, supportValue],
         account: address,
-        gas: ARC_GAS.vote,
-        gasPrice: ARC_GAS.gasPrice,
+        gas: estimatedVoteGas,
+        ...gasParams,
       })
 
       setTxHash(voteTx);
