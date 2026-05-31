@@ -28,6 +28,8 @@ export const ARC_CHAIN = {
   }
 } as const
 
+export const arcTestnet = ARC_CHAIN;
+
 export const ARC_GAS = {
   propose: 500000n,
   vote: 300000n,

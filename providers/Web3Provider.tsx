@@ -4,10 +4,10 @@ import { ReactNode, useState } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { WagmiProvider } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ARC_CHAIN } from '@/lib/arc-config';
+import { arcTestnet } from '@/lib/arc-config';
 import { wagmiConfig } from '@/lib/wagmi';
 
-export const arcTestnet = ARC_CHAIN;
+export { arcTestnet };
 
 export function Web3Provider({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -27,8 +27,8 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     <PrivyProvider
       appId={appId}
       config={{
-        defaultChain: ARC_CHAIN,
-        supportedChains: [ARC_CHAIN],
+        defaultChain: arcTestnet,
+        supportedChains: [arcTestnet],
         appearance: {
           theme: 'dark',
           accentColor: '#7C3AED',
