@@ -60,10 +60,11 @@ Every campaign gets AI analysis powered by Groq (Llama 3.3 70B):
 - Risk flags
 - Recommendation: FUND / REJECT / REVIEW
 
-***
+### Smart Contracts & Trustless Escrows
 
-### Contract (Coming Soon)
+The Crowdfund Hub operates entirely via decentralized, custom-compiled smart contracts:
+- **`SynArcCrowdfund.sol`**: Deployed to the Arc Testnet natively from the creator's browser wallet for every campaign launched.
+  - **USDC Escrow Locks**: Contributed USDC is locked securely inside the escrow vault. The DAO treasury has no administrative key or backdoor to arbitrarily extract or redirect funds.
+  - **Milestone-Gated Releases**: Proposers call `approveMilestone(index)` to declare deliverables, followed by `withdrawMilestone(index)` to securely disburse locked capital directly to the recipient wallet.
+  - **Capital Refunds**: Supports `claimRefund()` allowing backers to cryptographically claim full refunds if the campaign's duration expires on-chain before reaching its stablecoin goal.
 
-`SynArcFundingVault.sol` — deploys to Arc Testnet
-
-Handles: campaign creation, contributions, voting, milestone releases

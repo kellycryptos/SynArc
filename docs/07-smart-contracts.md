@@ -36,6 +36,22 @@ SynArc contracts are deployed on the Arc Testnet and can be inspected on the blo
 * **Description:** Circle's Euro-backed stablecoin used for multi-currency reserve diversity.
 * **Explorer:** [View on ArcScan](https://testnet.arcscan.app/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a)
 
+### 5. ERC-8004 Identity Registry
+
+* **Address:** `0x8004A818BFB912233c491871b3d84c89A494BD9e`
+* **Description:** Ratified on-chain registry for AI Agents identity registration and dynamic reputation index tracking.
+
+### 6. SynArcCrowdfund (Dynamic Escrow)
+
+* **Solidity Source:** `contracts/SynArcCrowdfund.sol`
+* **Description:** Deployed on-demand for every crowdfunding campaign to lock USDC stablecoin reserves securely until community milestones are approved.
+
+### 7. SynArcAgent (Autonomous AI Agent)
+
+* **Solidity Source:** `contracts/SynArcAgent.sol`
+* **Description:** Represents an autonomous AI Agent on-chain. Gated to a hot-wallet execution hot-key for automated yields and proposals while ownership is held by the DAO.
+
+
 ***
 
 ## Network Configuration

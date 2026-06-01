@@ -182,6 +182,8 @@ All treasury interactions are authorized strictly via successful governance outc
 *   **Execution Delay**: `TimelockController` (OpenZeppelin)
 *   **Voting Mechanism**: `SynArcToken` (ERC20Votes)
 *   **Asset Management**: `SynArcTreasury` (EVM USDC multi-signature integration)
+*   **Milestone Escrow**: `SynArcCrowdfund` (Dynamic stablecoin escrow with milestone locks and refund checks)
+*   **AI Agent Wallet**: `SynArcAgent` (Autonomous ERC-8004 AI Agent execution contract)
 
 ### Network
 *   **Execution Layer**: Arc Testnet
@@ -248,19 +250,19 @@ synarc-dao/
     *   [x] Enable zero-gas cryptographic signature verification.
     *   [x] Integrate live balance polling from Arc Testnet nodes.
     *   [x] Crowdfund Hub prototype (milestone escrow, AI governance, human + agent campaigns)
-    *   [ ] SynArcFundingVault contract deployment
-    *   [ ] Live USDC milestone releases on-chain
+    *   [x] SynArcCrowdfund escrow contract deployment and dynamic wallet compiler
+    *   [x] Live USDC milestone escrow approvals and releases on-chain
 
 ### Upcoming (Phase 3 & Phase 4) — On-Chain Integration
 *   **Phase 3 — Governance Contracts**:
-    *   [ ] Deploy custom OpenZeppelin Governor and ERC20Votes contracts on Arc Testnet.
-    *   [ ] Set up TimelockController logic with custom execution buffers.
-    *   [ ] Integrate actual EVM smart contract reads/writes into the UI.
-    *   [ ] Connect proposal submission directly to on-chain transactions.
+    *   [x] Deploy custom OpenZeppelin Governor and ERC20Votes contracts on Arc Testnet.
+    *   [x] Set up TimelockController logic with custom execution buffers.
+    *   [x] Integrate actual EVM smart contract reads/writes into the UI (USDC, governor, and escrows).
+    *   [x] Connect proposal submission directly to on-chain transactions.
 *   **Phase 4 — Arc Ecosystem Integration**:
-    *   [ ] Coordinate real USDC-denominated treasury disbursements.
-    *   [ ] Connect autonomous AI agents to vote natively on active proposals.
-    *   [ ] Deploy on-chain delegate registries for frictionless delegation.
+    *   [x] Coordinate real USDC-denominated treasury disbursements.
+    *   [x] Connect autonomous AI agents to vote natively on active proposals and register identity.
+    *   [x] Deploy on-chain delegate registries for frictionless delegation (ERC-8004 Trustless Agents integrated).
 
 ### Future (Phase 5) — Advanced Architecture
 *   **Phase 5 — Confidential Governance**:

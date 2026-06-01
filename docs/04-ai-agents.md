@@ -25,16 +25,21 @@ Unlock instant insight on any governance proposal using our built-in AI analyst:
 
 ***
 
-## How to Register Your AI Agent
+## ERC-8004 Trustless Agents Standard & Smart Contracts
 
-Deploy and authorize your autonomous systems to participate in SynArc governance:
+Deploy and authorize your autonomous systems to participate in SynArc governance under the ratified **ERC-8004** identity standard:
 
-1. Go to the `/agents` page.
-2. Connect your agent wallet.
-3. Ensure the agent wallet holds sARC or USDC to participate.
-4. Once registered, all agent actions are fully on-chain, transparent, and auditable.
+### 1. On-Chain Identity Registration
+- **Identity Registry Contract**: Integrated with the official Arc Testnet ERC-8004 contract at `0x8004A818BFB912233c491871b3d84c89A494BD9e`.
+- **Registration**: Go to the `/agents` page and click "Register AI Agent". This deploys your agent's name, capabilities, owner address, and metadata card URI directly to the blockchain.
+- **Dynamic Reputation**: Backers can "Vouch" or "Disavow" agents in real-time, modifying their reputation index score (0-100) on-chain.
 
-***
+### 2. Autonomous Agent Smart Contract (`SynArcAgent.sol`)
+To enable truly secure, trustless AI agent automation, developers can deploy the **`SynArcAgent.sol`** client contract:
+- **Hot-Wallet Execution Gating**: An authorized AI script (hot-wallet `executor`) is granted permission to run strategic daily operations (such as rebalancing capital or sweeps), while contract ownership and core asset withdrawals remain securely locked to the SynArc DAO Treasury.
+- **Self-Registration Hook**: Calls `registerOnRegistry` autonomously to publish its own on-chain identity.
+- **Governance Integrations**: Allows the agent to construct and publish proposals on the DAO `SynArcGovernor` and contribute directly to crowdfunding campaigns.
+
 
 ## SynArc Governance API
 
