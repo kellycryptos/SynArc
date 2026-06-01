@@ -71,11 +71,12 @@ export function useGovernor(): UseGovernorReturn {
         }
         const { p, proposalStateNum } = result.value;
 
-        const forV = Number(formatUnits(p.forVotes, 6));
-        const againstV = Number(formatUnits(p.againstVotes, 6));
-        const abstainV = Number(formatUnits(p.abstainVotes, 6));
+        // Vote weights are sARC governance token amounts — 18 decimals
+        const forV = Number(formatUnits(p.forVotes, 18));
+        const againstV = Number(formatUnits(p.againstVotes, 18));
+        const abstainV = Number(formatUnits(p.abstainVotes, 18));
         const total = forV + againstV + abstainV;
-        const participation = total > 0 ? (total / 15000000) * 100 : 0;
+        const participation = total > 0 ? (total / 15_000_000) * 100 : 0;
 
         const statusMap: Record<number, Proposal["status"]> = {
           0: "Pending",

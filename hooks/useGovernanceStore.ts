@@ -126,11 +126,13 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         }
         const { p, proposalStateNum } = result.value;
 
-          const forV = Number(formatUnits(p.forVotes, 6)); // USDC 6 decimals
-          const againstV = Number(formatUnits(p.againstVotes, 6));
-          const abstainV = Number(formatUnits(p.abstainVotes, 6));
+          // Vote weights are sARC governance token amounts — 18 decimals
+          const forV = Number(formatUnits(p.forVotes, 18));
+          const againstV = Number(formatUnits(p.againstVotes, 18));
+          const abstainV = Number(formatUnits(p.abstainVotes, 18));
           const total = forV + againstV + abstainV;
-          const participation = total > 0 ? (total / 15000000) * 100 : 0;
+          // Total sARC supply is 15,000,000 tokens (already in human units after formatUnits)
+          const participation = total > 0 ? (total / 15_000_000) * 100 : 0;
 
           const statusMap: Record<number, string> = {
             0: "Pending",
@@ -171,6 +173,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
             abstainVotes: abstainV,
             totalVotes: total,
             participationPercentage: parseFloat(participation.toFixed(1)),
+            // treasuryImpactValue is USDC (6 decimals) — separate from vote weights
             treasuryImpactValue: -Number(formatUnits(p.treasuryImpactValue, 6)),
             treasuryImpact: p.treasuryImpactValue > 0n ? `-${Number(formatUnits(p.treasuryImpactValue, 6)).toLocaleString()} USDC` : "None",
             timeRemaining: status === "Active" ? `${Math.max(0, Math.ceil((Number(p.endTime) - Date.now() / 1000) / 86400))} days left` : "Ended",

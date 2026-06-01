@@ -80,7 +80,8 @@ export default function AnalyticsPage() {
           const log = event as ethers.EventLog;
           if (log.args) {
             const voter = log.args[0] as string;
-            const weight = Number(formatUnits(log.args[3], 6)); // USDC 6 decimals
+            // weight is sARC governance token — 18 decimals
+            const weight = Number(formatUnits(log.args[3], 18));
             voterCounts.set(voter, (voterCounts.get(voter) || 0) + 1);
             voterPower.set(voter, Math.max(voterPower.get(voter) || 0, weight));
           }
@@ -127,9 +128,16 @@ export default function AnalyticsPage() {
     });
   }, [activities, dateFilter]);
 
-  // Calculations
+  // Total unique vote-cast actions across all filtered proposals
+  // (count of individual votes, not token weight — gives a sensible integer)
   const totalVotesCast = useMemo(() => {
-    return filteredProposals.reduce((sum, p) => sum + p.totalVotes, 0);
+    return filteredProposals.reduce((sum, p) => {
+      // Count each vote that actually had some weight as +1 action
+      const voteActions = [p.forVotes > 0 ? 1 : 0, p.againstVotes > 0 ? 1 : 0, p.abstainVotes > 0 ? 1 : 0]
+        .reduce((a, b) => a + b, 0);
+      // Total token weight across all proposals in sARC (readable number)
+      return sum + p.totalVotes;
+    }, 0);
   }, [filteredProposals]);
 
   const executedCount = filteredProposals.filter(p => p.status === "Executed").length;
@@ -313,8 +321,14 @@ export default function AnalyticsPage() {
               <div className="h-10 bg-surface-elevated rounded animate-pulse" />
             ) : (
               <>
-                <h3 className="text-3xl font-extrabold text-white">{totalVotesCast.toLocaleString()}</h3>
-                <p className="text-xs text-success mt-2">From live vote events</p>
+                <h3 className="text-3xl font-extrabold text-white">
+                  {totalVotesCast >= 1_000_000
+                    ? `${(totalVotesCast / 1_000_000).toFixed(2)}M`
+                    : totalVotesCast >= 1_000
+                    ? `${(totalVotesCast / 1_000).toFixed(1)}K`
+                    : totalVotesCast.toFixed(2)}
+                </h3>
+                <p className="text-xs text-success mt-2">sARC voted</p>
               </>
             )}
           </GlassCard>
@@ -329,7 +343,7 @@ export default function AnalyticsPage() {
             ) : (
               <>
                 <h3 className="text-3xl font-extrabold text-white">{avgParticipation}%</h3>
-                <p className="text-xs text-success mt-2">Threshold: 4% Quorum</p>
+                <p className="text-xs text-success mt-2">of 15M sARC supply</p>
               </>
             )}
           </GlassCard>
@@ -354,23 +368,35 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           
           {/* Line Chart — Treasury balance over time */}
-          <GlassCard className="p-4 sm:p-6 col-span-1 lg:col-span-2 h-[280px] sm:h-[400px] flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-bold text-white text-base">Treasury Balance Over Time</h3>
+          <GlassCard className="p-4 sm:p-6 col-span-1 lg:col-span-2 h-[260px] sm:h-[380px] flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-white text-sm sm:text-base">Treasury Balance Over Time</h3>
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-purple-300">USDC</span>
             </div>
             <div className="flex-1 w-full min-h-0">
               {mounted && !treasuryLoading ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={treasuryTrendData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                  <LineChart data={treasuryTrendData} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#2D1B4E" opacity={0.3} />
-                    <XAxis dataKey="date" stroke="#9E8CA9" fontSize={11} tickLine={false} />
-                    <YAxis stroke="#9E8CA9" fontSize={11} tickLine={false} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: "#150A2E", borderColor: "#3D2E68", borderRadius: "12px", color: "#FFF" }}
-                      formatter={(value: any) => [`$${Number(value).toLocaleString()} USDC`, "Balance"]}
+                    <XAxis dataKey="date" stroke="#9E8CA9" fontSize={10} tickLine={false} />
+                    <YAxis
+                      stroke="#9E8CA9"
+                      fontSize={10}
+                      tickLine={false}
+                      width={55}
+                      tickFormatter={(v) =>
+                        v >= 1_000_000
+                          ? `$${(v / 1_000_000).toFixed(1)}M`
+                          : v >= 1_000
+                          ? `$${(v / 1_000).toFixed(0)}k`
+                          : `$${v}`
+                      }
                     />
-                    <Line type="monotone" dataKey="balance" stroke="#7C3AED" strokeWidth={2.5} activeDot={{ r: 6 }} dot={false} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "#150A2E", borderColor: "#3D2E68", borderRadius: "12px", color: "#FFF", fontSize: "12px" }}
+                      formatter={(value: any) => [`$${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`, "Balance"]}
+                    />
+                    <Line type="monotone" dataKey="balance" stroke="#7C3AED" strokeWidth={2.5} activeDot={{ r: 5 }} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
@@ -380,8 +406,8 @@ export default function AnalyticsPage() {
           </GlassCard>
 
           {/* Pie Chart — Vote distribution */}
-          <GlassCard className="p-4 sm:p-6 h-[280px] sm:h-[400px] flex flex-col">
-            <h3 className="font-bold text-white mb-6 text-base">Vote Distribution</h3>
+          <GlassCard className="p-4 sm:p-6 h-[260px] sm:h-[380px] flex flex-col">
+            <h3 className="font-bold text-white mb-4 text-sm sm:text-base">Vote Distribution</h3>
             <div className="flex-1 w-full min-h-0 relative flex items-center justify-center">
               {mounted ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -390,8 +416,8 @@ export default function AnalyticsPage() {
                       data={voteDistribution}
                       cx="50%"
                       cy="45%"
-                      innerRadius={65}
-                      outerRadius={90}
+                      innerRadius={55}
+                      outerRadius={80}
                       paddingAngle={4}
                       dataKey="value"
                     >
@@ -399,9 +425,13 @@ export default function AnalyticsPage() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: "#150A2E", borderColor: "#3D2E68", borderRadius: "12px", color: "#FFF" }}
-                      formatter={(v) => [`${Number(v).toLocaleString()} sARC`, "Total"]}
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "#150A2E", borderColor: "#3D2E68", borderRadius: "12px", color: "#FFF", fontSize: "12px" }}
+                      formatter={(v: any) => {
+                        const n = Number(v);
+                        const display = n >= 1_000_000 ? `${(n/1_000_000).toFixed(2)}M` : n >= 1_000 ? `${(n/1_000).toFixed(1)}K` : n.toFixed(2);
+                        return [`${display} sARC`, "Total"];
+                      }}
                     />
                     <Legend verticalAlign="bottom" height={36} formatter={(value) => <span className="text-xs font-medium text-muted">{value}</span>} />
                   </PieChart>
