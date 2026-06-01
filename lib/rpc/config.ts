@@ -8,15 +8,17 @@ import { checkRpcHealth } from "./health";
  * Supports personalized RPC URLs from ARC CLI (arc-canteen rpc-url).
  */
 
-// Primary: Alchemy dedicated endpoint (low-latency, high rate-limits)
-// Fallbacks: official public Arc Testnet endpoints
-export const ARC_TESTNET_RPC = 'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev';
+// Primary: Custom Canteen RPC (June 2026 Recommended Setup)
+// Fallbacks: official public, Alchemy, QuickNode, and dRPC endpoints
+export const CANTEEN_RPC = 'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f';
+export const ARC_TESTNET_RPC = CANTEEN_RPC;
 
-// Centralized resilient fallbacks — Alchemy primary, official publics as backup
+// Centralized resilient fallbacks — Canteen primary, official publics, Alchemy, QuickNode, dRPC as backups
 export const RPC_URLS = [
-  ARC_TESTNET_RPC,
-  process.env.NEXT_PUBLIC_ARC_RPC_URL, // Optional env override (secondary)
+  process.env.NEXT_PUBLIC_ARC_RPC_URL || CANTEEN_RPC,
   'https://rpc.testnet.arc.network',
+  'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev',
+  'https://rpc.quicknode.testnet.arc.network',
   'https://arc-testnet.drpc.org',
 ].filter(Boolean).filter(
   (url, index, arr) => arr.indexOf(url) === index // deduplicate

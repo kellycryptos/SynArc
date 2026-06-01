@@ -1,14 +1,18 @@
 import { defineChain, createPublicClient, http } from "viem";
 import { JsonRpcProvider } from "ethers";
 
-const ALCHEMY_ARC_RPC = "https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev";
+const CANTEEN_RPC = "https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f";
 const PUBLIC_ARC_RPC = "https://rpc.testnet.arc.network";
+const ALCHEMY_ARC_RPC = "https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev";
+const QUICKNODE_ARC_RPC = "https://rpc.quicknode.testnet.arc.network";
+const DRPC_ARC_RPC = "https://arc-testnet.drpc.org";
 
 export const ARC_RPC_URLS = [
-  ALCHEMY_ARC_RPC,
-  process.env.NEXT_PUBLIC_ARC_RPC_URL,
+  process.env.NEXT_PUBLIC_ARC_RPC_URL || CANTEEN_RPC, // Canteen Primary
   PUBLIC_ARC_RPC,
-  "https://arc-testnet.drpc.org",
+  ALCHEMY_ARC_RPC,
+  QUICKNODE_ARC_RPC,
+  DRPC_ARC_RPC,
 ].filter(Boolean) as string[];
 
 export const ARC_RPC_URL = ARC_RPC_URLS[0];
@@ -72,7 +76,7 @@ export async function ensureArcNetwork(ethereumProvider: any): Promise<void> {
           {
             chainId: chainIdHex,
             chainName: "Arc Testnet",
-            rpcUrls: [PUBLIC_ARC_RPC],
+            rpcUrls: ARC_RPC_URLS,
             nativeCurrency: {
               name: "USDC",
               symbol: "USDC",

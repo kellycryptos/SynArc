@@ -15,7 +15,7 @@ import { useReadContract, useAccount, useWriteContract, useSwitchChain } from "w
 import { formatUnits, createWalletClient, createPublicClient, fallback, custom, http } from "viem";
 import { GovernorABI, ERC20ABI } from "@/lib/governance/contracts";
 import { ARC_GAS_CONFIG } from "@/lib/constants";
-import { writeWithRetry, getSigner } from "@/lib/tx-helper";
+import { writeWithRetry, getSigner, enforceChain } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
 const SARC_ADDRESS = "0x637cA7788aBC956832F389A7BB895D5249FE757B" as `0x${string}`;
@@ -265,14 +265,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       let provider
       if (wallets && wallets.length > 0) {
         const activeWallet = wallets[0];
-        try {
-          if (typeof activeWallet.switchChain === 'function') {
-            await activeWallet.switchChain(5042002);
-          }
-        } catch (switchError) {
-          console.warn("Chain switch error, attempting to proceed:", switchError);
-        }
-        provider = await (activeWallet.getEthereumProvider?.() || (activeWallet as any).getProvider?.() || (activeWallet as any).getEip1193Provider?.());
+        provider = await enforceChain(activeWallet, 5042002);
       } else if (typeof window !== 'undefined' && window.ethereum) {
         await window.ethereum.request({ method: 'eth_requestAccounts' })
         provider = window.ethereum
@@ -397,13 +390,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         throw new Error("Active wallet not found");
       }
 
-      // Force Arc Testnet before transaction
-      const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
-      if (currentChainId !== 5042002) {
-        await activeWallet.switchChain(5042002);
-      }
-
-      const ethereumProvider = await (activeWallet.getEthereumProvider?.() || (activeWallet as any).getProvider?.() || (activeWallet as any).getEip1193Provider?.());
+      // Force Arc Testnet before transaction with robust switching
+      const ethereumProvider = await enforceChain(activeWallet, 5042002);
       const browserProvider = new BrowserProvider(ethereumProvider);
       const signer = await browserProvider.getSigner();
 

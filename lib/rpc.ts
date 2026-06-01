@@ -1,10 +1,13 @@
 import { defineChain } from 'viem'
 
+const CANTEEN_RPC = 'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f';
+
 const RPC_URLS = [
-  'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev', // Alchemy — primary
-  process.env.NEXT_PUBLIC_ARC_RPC_URL,                          // Optional env override
-  'https://rpc.testnet.arc.network',                             // Public fallback 1
-  'https://arc-testnet.drpc.org',                                // Public fallback 2
+  process.env.NEXT_PUBLIC_ARC_RPC_URL || CANTEEN_RPC, // Canteen Primary
+  'https://rpc.testnet.arc.network',                  // Official public Arc RPC
+  'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev', // Alchemy Fallback
+  'https://rpc.quicknode.testnet.arc.network',        // QuickNode Fallback
+  'https://arc-testnet.drpc.org',                     // dRPC Fallback
 ].filter(Boolean) as string[]
 
 export const getWorkingRPC = async (): Promise<string> => {
@@ -27,7 +30,7 @@ export const getWorkingRPC = async (): Promise<string> => {
       continue // Try next
     }
   }
-  return 'https://rpc.testnet.arc.network' // Last resort
+  return CANTEEN_RPC // Last resort
 }
 
 export const arcTestnetChain = defineChain({

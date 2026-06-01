@@ -15,7 +15,7 @@ import { TreasuryActivity } from "@/types";
 import { getWorkingRPC, arcTestnetChain } from "@/lib/rpc";
 import { createPublicClient, createWalletClient, http, custom, fallback } from "viem";
 import { toast } from "react-hot-toast";
-import { writeWithRetry, getSigner } from "@/lib/tx-helper";
+import { writeWithRetry, getSigner, enforceChain } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 
 const ERC20_ABI = [
@@ -216,14 +216,7 @@ export default function TreasuryPage() {
       let provider
       if (wallets && wallets.length > 0) {
         const activeWallet = wallets[0];
-        try {
-          if (typeof activeWallet.switchChain === 'function') {
-            await activeWallet.switchChain(5042002);
-          }
-        } catch (switchError) {
-          console.warn("Chain switch error, attempting to proceed:", switchError);
-        }
-        provider = await (activeWallet.getEthereumProvider?.() || (activeWallet as any).getProvider?.() || (activeWallet as any).getEip1193Provider?.());
+        provider = await enforceChain(activeWallet, 5042002);
       } else if (typeof window !== 'undefined' && window.ethereum) {
         await window.ethereum.request({ method: 'eth_requestAccounts' })
         provider = window.ethereum

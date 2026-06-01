@@ -1,13 +1,16 @@
 import { defineChain } from 'viem'
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 
-// Primary: Alchemy dedicated RPC (fastest, highest rate-limits)
-// Fallbacks: official public Arc Testnet endpoints
+// Primary: Custom Canteen RPC (June 2026 Recommended Setup)
+// Fallbacks: official public, Alchemy, QuickNode, and dRPC endpoints
 export const ARC_RPC_URLS = [
-  'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev', // Alchemy — primary
-  'https://rpc.testnet.arc.network',                              // Public fallback 1
-  'https://arc-testnet.drpc.org',                                 // Public fallback 2
-]
+  process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f', // Canteen Primary
+  'https://rpc.testnet.arc.network',                              // Official public Arc RPC
+  'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev', // Alchemy Fallback
+  'https://rpc.quicknode.testnet.arc.network',                    // QuickNode Fallback
+  'https://arc-testnet.drpc.org',                                 // dRPC Fallback
+].filter(Boolean) as string[]
+
 
 export const arcTestnet = defineChain({
   id: 5042002,

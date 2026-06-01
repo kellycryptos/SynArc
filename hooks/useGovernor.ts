@@ -6,6 +6,7 @@ import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
 import { Proposal } from "@/types/governance";
 import { useWallets } from "@privy-io/react-auth";
 import { getResilientProvider } from "@/lib/rpc/config";
+import { enforceChain } from "@/lib/tx-helper";
 
 // Module-level cache so navigating away and back doesn't re-fetch
 const PROPOSALS_CACHE: { data: Proposal[] | null; ts: number } = { data: null, ts: 0 };
@@ -150,13 +151,8 @@ export function useGovernor(): UseGovernorReturn {
         throw new Error("Active wallet not found");
       }
 
-      // Force Arc Testnet before transaction
-      const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
-      if (currentChainId !== 5042002) {
-        await activeWallet.switchChain(5042002);
-      }
-
-      const ethereumProvider = await activeWallet.getEthereumProvider();
+      // Force Arc Testnet before transaction with robust switching
+      const ethereumProvider = await enforceChain(activeWallet, 5042002);
       const provider = new BrowserProvider(ethereumProvider);
       const signer = await provider.getSigner();
 
@@ -208,13 +204,8 @@ export function useGovernor(): UseGovernorReturn {
         throw new Error("Active wallet not found");
       }
 
-      // Force Arc Testnet before transaction
-      const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
-      if (currentChainId !== 5042002) {
-        await activeWallet.switchChain(5042002);
-      }
-
-      const ethereumProvider = await activeWallet.getEthereumProvider();
+      // Force Arc Testnet before transaction with robust switching
+      const ethereumProvider = await enforceChain(activeWallet, 5042002);
       const provider = new BrowserProvider(ethereumProvider);
       const signer = await provider.getSigner();
 

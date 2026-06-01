@@ -15,7 +15,7 @@ import { BrowserProvider } from "ethers";
 import { parseArcError } from "@/lib/utils";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
 import { toast } from "react-hot-toast";
-import { writeWithRetry } from "@/lib/tx-helper";
+import { writeWithRetry, enforceChain } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS } from "@/lib/arc-config";
 import { GovernorABI } from "@/lib/governance/contracts";
 import { createWalletClient, createPublicClient, custom, fallback, http } from "viem";
@@ -143,14 +143,7 @@ export default function CreateProposalPage() {
       let provider
       if (wallets && wallets.length > 0) {
         const activeWallet = wallets[0];
-        try {
-          if (typeof activeWallet.switchChain === 'function') {
-            await activeWallet.switchChain(5042002);
-          }
-        } catch (switchError) {
-          console.warn("Chain switch error, attempting to proceed:", switchError);
-        }
-        provider = await (activeWallet.getEthereumProvider?.() || (activeWallet as any).getProvider?.() || (activeWallet as any).getEip1193Provider?.());
+        provider = await enforceChain(activeWallet, 5042002);
       } else if (typeof window !== 'undefined' && window.ethereum) {
         await window.ethereum.request({ method: 'eth_requestAccounts' })
         provider = window.ethereum
