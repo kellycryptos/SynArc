@@ -17,8 +17,8 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
   // This bypasses extra RPC roundtrips and settling timeouts entirely!
   if (walletChainId === targetChainId) {
     const provider = await (
-      activeWallet.getEip1193Provider?.() || 
       activeWallet.getEthereumProvider?.() || 
+      activeWallet.getEip1193Provider?.() || 
       (activeWallet as any).getProvider?.()
     );
     if (provider) {
@@ -43,8 +43,8 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
 
   // 3. Obtain EIP1193 provider to query directly and force chain switch on hardware/injected wallets
   const provider = await (
-    activeWallet.getEip1193Provider?.() || 
     activeWallet.getEthereumProvider?.() || 
+    activeWallet.getEip1193Provider?.() || 
     (activeWallet as any).getProvider?.()
   );
   

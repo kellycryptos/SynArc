@@ -141,8 +141,9 @@ export default function CreateProposalPage() {
     try {
       // Get provider — Privy wallet OR external wallet
       let provider
+      let activeWallet = null
       if (wallets && wallets.length > 0) {
-        const activeWallet = wallets[0];
+        activeWallet = wallets[0];
         provider = await enforceChain(activeWallet, 5042002);
       } else if (typeof window !== 'undefined' && window.ethereum) {
         await window.ethereum.request({ method: 'eth_requestAccounts' })
@@ -152,6 +153,7 @@ export default function CreateProposalPage() {
       }
 
       const walletClient = createWalletClient({
+        account: activeWallet ? (activeWallet.address as `0x${string}`) : undefined,
         chain: ARC_CHAIN,
         transport: custom(provider)
       })
