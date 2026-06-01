@@ -134,3 +134,27 @@ export const arcRpcConfig = {
   all: getArcRpcUrls(),
   testnet: ARC_TESTNET_RPC,
 };
+
+/**
+ * Execute a log-query callback function resiliently across all RPC nodes.
+ * If the primary RPC fails due to rate limits or free-tier block range restrictions,
+ * it automatically retries with the backup public RPCs.
+ */
+export async function getLogsResiliently<T>(
+  queryFn: (rpcUrl: string) => Promise<T>
+): Promise<T> {
+  const urls = getArcRpcUrls();
+  let lastError: any = null;
+  
+  for (const url of urls) {
+    try {
+      return await queryFn(url);
+    } catch (err) {
+      console.warn(`getLogsResiliently: Query failed on RPC ${url}, trying next fallback...`, err);
+      lastError = err;
+    }
+  }
+  
+  throw lastError || new Error("All RPC endpoints failed to query logs.");
+}
+

@@ -7,7 +7,7 @@ import { BarChart3, TrendingUp, Users, Activity, AlertCircle, RefreshCw, Calenda
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { ethers, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
-import { getResilientProvider } from "@/lib/rpc/config";
+import { getResilientProvider, getLogsResiliently } from "@/lib/rpc/config";
 
 // Module-level cache for VoteCast event scan — expensive operation, cache 10 minutes
 const VOTERS_CACHE: { data: { address: string; votesCount: number; power: number }[] | null; ts: number } = { data: null, ts: 0 };
@@ -55,23 +55,30 @@ export default function AnalyticsPage() {
 
       try {
         setVotersLoading(true);
-        const provider = await getResilientProvider();
-
         const governorAddress = GOVERNANCE_CONTRACTS.governor;
-        const governorContract = new Contract(governorAddress, GovernorABI, provider);
 
-        const filter = governorContract.filters.VoteCast();
-        const latestBlock = await provider.getBlockNumber();
-        // Only scan the last 50,000 blocks (~2 months on Arc Testnet) to avoid mega-scans
-        const fromBlock = Math.max(0, latestBlock - 50_000);
-        const chunkSize = 5000;
-        const events = [];
-        
-        for (let i = fromBlock; i <= latestBlock; i += chunkSize) {
-          const toBlock = Math.min(i + chunkSize - 1, latestBlock);
-          const chunk = await governorContract.queryFilter(filter, i, toBlock);
-          events.push(...chunk);
-        }
+        // Use our resilient log query helper to seamlessly handle block-range limit failures across nodes
+        const events = await getLogsResiliently(async (rpcUrl) => {
+          const provider = new ethers.JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
+          const governorContract = new Contract(governorAddress, GovernorABI, provider);
+          const filter = governorContract.filters.VoteCast();
+          const latestBlock = await provider.getBlockNumber();
+          
+          // Alchemy free plan limits block ranges to 10. Public nodes limit to 10k.
+          const isAlchemy = rpcUrl.includes("alchemy.com");
+          const scanBlocks = isAlchemy ? 10 : 50000;
+          const chunkSize = isAlchemy ? 10 : 5000;
+          
+          const fromBlock = Math.max(0, Number(latestBlock) - scanBlocks);
+          const chunkEvents = [];
+          
+          for (let i = fromBlock; i <= Number(latestBlock); i += chunkSize) {
+            const toBlock = Math.min(i + chunkSize - 1, Number(latestBlock));
+            const chunk = await governorContract.queryFilter(filter, i, toBlock);
+            chunkEvents.push(...chunk);
+          }
+          return chunkEvents;
+        });
         
         const voterCounts = new Map<string, number>();
         const voterPower = new Map<string, number>();

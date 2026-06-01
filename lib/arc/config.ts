@@ -1,13 +1,19 @@
 import { defineChain, createPublicClient, http } from "viem";
 import { JsonRpcProvider } from "ethers";
 
-// Public fallback — always works even if env var is not set on Vercel
+const ALCHEMY_ARC_RPC = "https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev";
 const PUBLIC_ARC_RPC = "https://rpc.testnet.arc.network";
 
-// Custom authenticated RPC (optional upgrade — set NEXT_PUBLIC_ARC_RPC_URL in Vercel)
-export const ARC_RPC_URL = process.env.NEXT_PUBLIC_ARC_RPC_URL || PUBLIC_ARC_RPC;
+export const ARC_RPC_URLS = [
+  ALCHEMY_ARC_RPC,
+  process.env.NEXT_PUBLIC_ARC_RPC_URL,
+  PUBLIC_ARC_RPC,
+  "https://arc-testnet.drpc.org",
+].filter(Boolean) as string[];
 
-// Arc Testnet Chain Definition — public RPC hardcoded so Vercel always loads
+export const ARC_RPC_URL = ARC_RPC_URLS[0];
+
+// Arc Testnet Chain Definition
 export const arcTestnet = defineChain({
   id: 5042002,
   name: "Arc Testnet",
@@ -17,8 +23,8 @@ export const arcTestnet = defineChain({
     decimals: 6 // Arc is stablecoin-native: gas fees paid in USDC
   },
   rpcUrls: {
-    default: { http: [PUBLIC_ARC_RPC] },
-    public:  { http: [PUBLIC_ARC_RPC] },
+    default: { http: ARC_RPC_URLS },
+    public:  { http: ARC_RPC_URLS },
   },
   blockExplorers: {
     default: { name: "ArcScan", url: "https://testnet.arcscan.app" },
