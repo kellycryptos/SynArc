@@ -6,7 +6,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets } from "@privy-io/react-auth";
 import { getSigner } from "@/lib/tx-helper";
-import { SYnArcFundingVaultABI } from "@/lib/governance/SynArcFundingVault";
+import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 import { parseAbi } from "viem";
 import { 
   ArrowLeft, 
@@ -200,7 +200,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
       console.log(`USDC approved. Depositing ${contributionAmount} USDC into milestone escrow vault on-chain...`);
       const contributeHash = await walletClient.writeContract({
         address: campaign.escrowAddress as `0x${string}`,
-        abi: SYnArcFundingVaultABI,
+        abi: SynArcCrowdfundABI,
         functionName: "contribute",
         chain: walletClient.chain,
         args: [amountBigInt]
@@ -265,7 +265,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
       console.log(`Creator on-chain trigger: Approving Milestone ${index + 1}...`);
       const approveHash = await walletClient.writeContract({
         address: campaign.escrowAddress as `0x${string}`,
-        abi: SYnArcFundingVaultABI,
+        abi: SynArcCrowdfundABI,
         functionName: "approveMilestone",
         chain: walletClient.chain,
         args: [BigInt(index)]
@@ -275,7 +275,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
       console.log(`Milestone ${index + 1} approved. Executing withdrawal of locked USDC to recipient: ${campaign.recipient}...`);
       const withdrawHash = await walletClient.writeContract({
         address: campaign.escrowAddress as `0x${string}`,
-        abi: SYnArcFundingVaultABI,
+        abi: SynArcCrowdfundABI,
         functionName: "withdrawMilestone",
         chain: walletClient.chain,
         args: [BigInt(index)]

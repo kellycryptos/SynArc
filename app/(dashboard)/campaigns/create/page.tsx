@@ -22,7 +22,7 @@ import {
 import Link from "next/link";
 import { useWallets } from "@privy-io/react-auth";
 import { getSigner } from "@/lib/tx-helper";
-import { SYnArcFundingVaultABI, SynArcFundingVaultBytecode } from "@/lib/governance/SynArcFundingVault";
+import { SynArcCrowdfundABI, SynArcCrowdfundBytecode } from "@/lib/governance/SynArcCrowdfund";
 
 interface MilestoneInput {
   title: string;
@@ -239,10 +239,10 @@ export default function CreateCampaignPage() {
         milestoneDescriptions
       });
 
-      // 3. Deploy SynArcFundingVault contract directly from user wallet
+      // 3. Deploy SynArcCrowdfund contract directly from user wallet
       const deployHash = await walletClient.deployContract({
-        abi: SYnArcFundingVaultABI,
-        bytecode: SynArcFundingVaultBytecode as `0x${string}`,
+        abi: SynArcCrowdfundABI,
+        bytecode: SynArcCrowdfundBytecode as `0x${string}`,
         chain: walletClient.chain,
         args: [
           address,

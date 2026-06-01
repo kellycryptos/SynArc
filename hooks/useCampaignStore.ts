@@ -3,7 +3,7 @@ import { Campaign, Milestone, CampaignAIAnalysis } from "@/data/mock/campaigns";
 import { createPublicClient, http } from "viem";
 import { arcTestnet } from "@/lib/arc-config";
 import { getArcRpcUrl } from "@/lib/rpc/config";
-import { SYnArcFundingVaultABI } from "@/lib/governance/SynArcFundingVault";
+import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 
 interface CampaignState {
   campaigns: Campaign[];
@@ -30,19 +30,19 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
 
     const totalRaisedBigInt = await client.readContract({
       address: escrowAddress as `0x${string}`,
-      abi: SYnArcFundingVaultABI,
+      abi: SynArcCrowdfundABI,
       functionName: "totalRaised"
     }) as bigint;
 
     const totalContributorsBigInt = await client.readContract({
       address: escrowAddress as `0x${string}`,
-      abi: SYnArcFundingVaultABI,
+      abi: SynArcCrowdfundABI,
       functionName: "totalContributors"
     }) as bigint;
 
     const onChainMilestones = await client.readContract({
       address: escrowAddress as `0x${string}`,
-      abi: SYnArcFundingVaultABI,
+      abi: SynArcCrowdfundABI,
       functionName: "getMilestones"
     }) as any[];
 
