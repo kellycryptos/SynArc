@@ -58,6 +58,18 @@ export default function ProposalsPage() {
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [agents, setAgents] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/api/agents")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.agents)) {
+          setAgents(data.agents);
+        }
+      })
+      .catch(err => console.error("Failed to load agents for proposal badges:", err));
+  }, []);
 
   useEffect(() => {
     if (!initialized) {
@@ -228,6 +240,11 @@ export default function ProposalsPage() {
                           }`}>
                             {proposal.status}
                           </span>
+                          {agents.some(a => a.address.toLowerCase() === proposal.proposer.toLowerCase()) && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold tracking-wider bg-purple-500/15 border border-purple-400/25 text-purple-300 animate-pulse">
+                              🤖 AI AGENT PROPOSAL
+                            </span>
+                          )}
                           <span className="text-xs text-text-secondary font-bold bg-surface-elevated border border-border-thin px-2.5 py-1 rounded-full">
                             {proposal.category}
                           </span>

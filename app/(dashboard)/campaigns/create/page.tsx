@@ -23,6 +23,10 @@ import Link from "next/link";
 import { useWallets } from "@privy-io/react-auth";
 import { getSigner } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI, SynArcCrowdfundBytecode } from "@/lib/governance/SynArcCrowdfund";
+import { ERC8004_REGISTRY_ADDRESS, ERC8004RegistryABI } from "@/lib/governance/ERC8004Registry";
+import { createPublicClient, http } from "viem";
+import { arcTestnet } from "@/lib/arc-config";
+import { getArcRpcUrl } from "@/lib/rpc/config";
 
 interface MilestoneInput {
   title: string;
@@ -83,11 +87,36 @@ export default function CreateCampaignPage() {
   const [formError, setFormError] = useState("");
   const [successId, setSuccessId] = useState<string | null>(null);
 
-  // Set recipient to user's connected wallet address on load
+  // Set recipient to user's connected wallet address on load + check if registered ERC-8004 agent on-chain
   useEffect(() => {
     if (walletAddress && !recipient) {
       setRecipient(walletAddress);
     }
+
+    const checkAgentStatus = async () => {
+      if (!walletAddress) return;
+      try {
+        const client = createPublicClient({
+          chain: arcTestnet,
+          transport: http(getArcRpcUrl())
+        });
+        const isAgentRegistered = await client.readContract({
+          address: ERC8004_REGISTRY_ADDRESS,
+          abi: ERC8004RegistryABI,
+          functionName: "isAgent",
+          args: [walletAddress as `0x${string}`]
+        }) as boolean;
+        
+        if (isAgentRegistered) {
+          console.log(`🎉 ERC-8004: Connected address ${walletAddress} is a registered AI Agent on-chain.`);
+          setIsAgent(true);
+        }
+      } catch (err) {
+        console.warn("ERC-8004 Registry check failed on campaigns create page:", err);
+      }
+    };
+
+    checkAgentStatus();
   }, [walletAddress, recipient]);
 
   // Calculate sum of milestones
