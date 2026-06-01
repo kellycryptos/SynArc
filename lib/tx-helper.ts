@@ -13,6 +13,20 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
   
   console.log(`[enforceChain] Target chain ID: ${targetChainId}. Wallet Privy state is currently on: ${walletChainId}`);
 
+  // Fast path: if Privy already claims to be on the correct chain, return the provider immediately
+  // This bypasses extra RPC roundtrips and settling timeouts entirely!
+  if (walletChainId === targetChainId) {
+    const provider = await (
+      activeWallet.getEip1193Provider?.() || 
+      activeWallet.getEthereumProvider?.() || 
+      (activeWallet as any).getProvider?.()
+    );
+    if (provider) {
+      console.log(`[enforceChain] Fast-path active: already on chain ${targetChainId}. Returning provider.`);
+      return provider;
+    }
+  }
+
   // 2. Perform switch if mismatch detected
   if (walletChainId !== targetChainId) {
     try {

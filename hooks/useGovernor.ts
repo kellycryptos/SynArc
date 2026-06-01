@@ -153,7 +153,10 @@ export function useGovernor(): UseGovernorReturn {
 
       // Force Arc Testnet before transaction with robust switching
       const ethereumProvider = await enforceChain(activeWallet, 5042002);
-      const provider = new BrowserProvider(ethereumProvider);
+      const provider = new BrowserProvider(ethereumProvider, {
+        chainId: 5042002,
+        name: "Arc Testnet"
+      });
       const signer = await provider.getSigner();
 
       const governorAddress = GOVERNANCE_CONTRACTS.governor;
@@ -206,7 +209,10 @@ export function useGovernor(): UseGovernorReturn {
 
       // Force Arc Testnet before transaction with robust switching
       const ethereumProvider = await enforceChain(activeWallet, 5042002);
-      const provider = new BrowserProvider(ethereumProvider);
+      const provider = new BrowserProvider(ethereumProvider, {
+        chainId: 5042002,
+        name: "Arc Testnet"
+      });
       const signer = await provider.getSigner();
 
       const governorAddress = GOVERNANCE_CONTRACTS.governor;

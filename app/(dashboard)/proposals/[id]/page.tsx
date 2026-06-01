@@ -392,7 +392,10 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
       // Force Arc Testnet before transaction with robust switching
       const ethereumProvider = await enforceChain(activeWallet, 5042002);
-      const browserProvider = new BrowserProvider(ethereumProvider);
+      const browserProvider = new BrowserProvider(ethereumProvider, {
+        chainId: 5042002,
+        name: "Arc Testnet"
+      });
       const signer = await browserProvider.getSigner();
 
       await executeProposal(proposal.id, signer);
