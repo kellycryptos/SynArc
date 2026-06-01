@@ -20,6 +20,9 @@ import {
   Coins
 } from "lucide-react";
 import Link from "next/link";
+import { useWallets } from "@privy-io/react-auth";
+import { getSigner } from "@/lib/tx-helper";
+import { SYnArcFundingVaultABI, SynArcFundingVaultBytecode } from "@/lib/governance/SynArcFundingVault";
 
 interface MilestoneInput {
   title: string;
@@ -48,6 +51,7 @@ function ProtectionItem({ icon, title, description, status }: { icon: string; ti
 
 export default function CreateCampaignPage() {
   const router = useRouter();
+  const { wallets } = useWallets();
   const { isAuthenticated, login, walletAddress } = useAuth();
   const { addCampaign, initializeStore } = useCampaignStore();
 
@@ -175,7 +179,7 @@ export default function CreateCampaignPage() {
   };
 
   // Launch campaign submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
 
@@ -205,6 +209,71 @@ export default function CreateCampaignPage() {
     setSubmitting(true);
 
     try {
+      // 1. Fetch signer and wallet details
+      const { walletClient, publicClient, address } = await getSigner(wallets);
+      if (!walletClient || !address) {
+        throw new Error("Failed to initialize wallet client or signer address");
+      }
+
+      // USDC precompiled contract address on Arc Testnet
+      const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
+      
+      // 2. Format parameters for on-chain deployment
+      const goalBigInt = BigInt(Math.round(Number(goal) * 1_000_000));
+      const milestoneTitles = milestones.map(m => m.title.trim());
+      const milestoneAmounts = milestones.map(m => BigInt(Math.round(Number(m.amount) * 1_000_000)));
+      const milestoneDescriptions = milestones.map(m => m.description.trim() || "No description provided");
+
+      console.log("Deploying Crowdfund escrow vault to Arc Testnet with args:", {
+        creator: address,
+        recipient: recipient.trim(),
+        usdcToken: USDC_ADDRESS,
+        goal: goalBigInt.toString(),
+        duration,
+        isAgent,
+        title,
+        description,
+        category,
+        milestoneTitles,
+        milestoneAmounts: milestoneAmounts.map(a => a.toString()),
+        milestoneDescriptions
+      });
+
+      // 3. Deploy SynArcFundingVault contract directly from user wallet
+      const deployHash = await walletClient.deployContract({
+        abi: SYnArcFundingVaultABI,
+        bytecode: SynArcFundingVaultBytecode as `0x${string}`,
+        chain: walletClient.chain,
+        args: [
+          address,
+          recipient.trim() as `0x${string}`,
+          USDC_ADDRESS,
+          goalBigInt,
+          BigInt(duration),
+          isAgent,
+          title.trim(),
+          description.trim(),
+          category,
+          milestoneTitles,
+          milestoneAmounts,
+          milestoneDescriptions
+        ]
+      });
+
+      console.log("Deployment transaction submitted! Tx Hash:", deployHash);
+
+      // 4. Wait for transaction confirmation
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: deployHash
+      });
+
+      const deployedContractAddress = receipt.contractAddress;
+      if (!deployedContractAddress) {
+        throw new Error("Escrow contract deployment failed — no contract address returned in receipt.");
+      }
+
+      console.log("🎉 Deployed contract successfully at:", deployedContractAddress);
+
       const parsedMilestones = milestones.map((m, index) => ({
         title: m.title.trim(),
         amount: Number(m.amount),
@@ -212,30 +281,31 @@ export default function CreateCampaignPage() {
         status: (index === 0 ? "active" : "pending") as 'completed' | 'active' | 'pending'
       }));
 
-      // Add to store
-      const campaignId = addCampaign({
+      // 5. Register in backend campaigns registry DB with real deployed contract address
+      const campaignId = await addCampaign({
         title: title.trim(),
         description: description.trim(),
         category,
         goal: Number(goal),
         isAgent,
         badge: isAgent ? 'AUTONOMOUS_AGENT_FUND' : 'HUMAN_CAMPAIGN',
-        creator: walletAddress || "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53",
+        creator: address,
         recipient: recipient.trim(),
         deadline: new Date(Date.now() + duration * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         milestones: parsedMilestones,
+        escrowAddress: deployedContractAddress
       });
 
       setSuccessId(campaignId);
       
-      // Auto redirect after a brief moment
+      // Auto redirect after success modal has been visible
       setTimeout(() => {
         router.push("/campaigns");
-      }, 2000);
+      }, 2500);
 
     } catch (e: any) {
-      console.error(e);
-      setFormError(e?.message || "Failed to create campaign. Please try again.");
+      console.error("Campaign deployment failed:", e);
+      setFormError(e?.message || "Failed to deploy crowdfunding escrow contract to Arc Testnet.");
     } finally {
       setSubmitting(false);
     }

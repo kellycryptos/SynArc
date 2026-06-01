@@ -4,6 +4,10 @@ import { useEffect, useState, use } from "react";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useWallets } from "@privy-io/react-auth";
+import { getSigner } from "@/lib/tx-helper";
+import { SYnArcFundingVaultABI } from "@/lib/governance/SynArcFundingVault";
+import { parseAbi } from "viem";
 import { 
   ArrowLeft, 
   Coins, 
@@ -69,14 +73,16 @@ export default function CampaignDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const campaignId = resolvedParams.id;
 
+  const { wallets } = useWallets();
   const { isAuthenticated, login, walletAddress } = useAuth();
-  const { campaigns, initialized, initializeStore, contribute, castVote, setAIAnalysis } = useCampaignStore();
+  const { campaigns, initialized, initializeStore, contribute, castVote, setAIAnalysis, syncOnChainCampaign } = useCampaignStore();
 
   const [contributionAmount, setContributionAmount] = useState<number>(0);
   const [contributing, setContributing] = useState(false);
   const [voteChoice, setVoteChoice] = useState<'FOR' | 'AGAINST' | 'ABSTAIN' | null>(null);
   const [voting, setVoting] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [releasingMilestone, setReleasingMilestone] = useState(false);
 
   // Success notifications
   const [contributionSuccess, setContributionSuccess] = useState(false);
@@ -153,6 +159,8 @@ export default function CampaignDetailPage({ params }: PageProps) {
   // Active milestone for governance votes
   const activeMilestone = campaign.milestones.find(m => m.status === 'active') || campaign.milestones[0];
 
+  const isCreator = walletAddress && campaign.creator && walletAddress.toLowerCase() === campaign.creator.toLowerCase();
+
   const handleContribute = async () => {
     if (contributionAmount <= 0) return;
     
@@ -162,21 +170,61 @@ export default function CampaignDetailPage({ params }: PageProps) {
     }
 
     setContributing(true);
-    // Simulate transaction delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // TODO: Replace with SynArcFundingVault.contribute(campaignId, amount)
-    // Contract: deploy contracts/SynArcFundingVault.sol
-    console.log('Mock contribute transaction payload:', { campaignId, amount: contributionAmount });
+    try {
+      // 1. Get signer & public client
+      const { walletClient, publicClient, address } = await getSigner(wallets);
+      if (!walletClient || !address) {
+        throw new Error("Failed to initialize wallet client or signer address");
+      }
 
-    contribute(campaignId, contributionAmount);
-    setContributing(false);
-    setContributionSuccess(true);
-    setContributionAmount(0);
+      const usdcAddress = "0x3600000000000000000000000000000000000000";
+      const amountBigInt = BigInt(Math.round(contributionAmount * 1_000_000));
+      
+      // 2. Call USDC approve transaction first
+      const erc20Abi = parseAbi([
+        "function approve(address spender, uint256 amount) returns (bool)"
+      ]);
+      
+      console.log(`Approving ${contributionAmount} USDC spending limit to escrow contract: ${campaign.escrowAddress}`);
+      const approveHash = await walletClient.writeContract({
+        address: usdcAddress,
+        abi: erc20Abi,
+        functionName: "approve",
+        chain: walletClient.chain,
+        args: [campaign.escrowAddress as `0x${string}`, amountBigInt]
+      });
+      await publicClient.waitForTransactionReceipt({ hash: approveHash });
 
-    setTimeout(() => {
-      setContributionSuccess(false);
-    }, 4000);
+      // 3. Call contribute() on the campaign escrow vault
+      console.log(`USDC approved. Depositing ${contributionAmount} USDC into milestone escrow vault on-chain...`);
+      const contributeHash = await walletClient.writeContract({
+        address: campaign.escrowAddress as `0x${string}`,
+        abi: SYnArcFundingVaultABI,
+        functionName: "contribute",
+        chain: walletClient.chain,
+        args: [amountBigInt]
+      });
+      
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: contributeHash });
+      console.log("🎉 On-chain contribution completed! Receipt:", receipt);
+
+      // 4. Update the campaign store state & sync metrics on-chain
+      await contribute(campaignId, contributionAmount);
+      
+      setContributionSuccess(true);
+      setContributionAmount(0);
+
+      setTimeout(() => {
+        setContributionSuccess(false);
+      }, 4000);
+
+    } catch (err: any) {
+      console.error("USDC on-chain contribution failed:", err);
+      alert(err?.message || "Failed to submit on-chain contribution. Please check your balance and network.");
+    } finally {
+      setContributing(false);
+    }
   };
 
   const handleVote = async (choice: 'FOR' | 'AGAINST' | 'ABSTAIN') => {
@@ -188,20 +236,63 @@ export default function CampaignDetailPage({ params }: PageProps) {
     setVoteChoice(choice);
     setVoting(true);
 
-    // Simulate cryptographic ballot generation
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Simulate ballot validation & record in active list
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // TODO: Replace with SynArcFundingVault.vote(campaignId, choice)
-    // Contract: deploy contracts/SynArcFundingVault.sol
-    console.log('Mock milestone vote cast payload:', { campaignId, choice });
-
-    castVote(campaignId, choice, 12000); // cast 12k mock voting power weights
+    await castVote(campaignId, choice, 12000); // 12k mock voting power weight
     setVoting(false);
     setVoteSuccess(true);
 
     setTimeout(() => {
       setVoteSuccess(false);
     }, 4000);
+  };
+
+  const handleReleaseMilestone = async (index: number) => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    
+    setReleasingMilestone(true);
+    try {
+      // 1. Get signer
+      const { walletClient, publicClient, address } = await getSigner(wallets);
+      if (!walletClient || !address) {
+        throw new Error("Failed to initialize wallet client or signer address");
+      }
+
+      console.log(`Creator on-chain trigger: Approving Milestone ${index + 1}...`);
+      const approveHash = await walletClient.writeContract({
+        address: campaign.escrowAddress as `0x${string}`,
+        abi: SYnArcFundingVaultABI,
+        functionName: "approveMilestone",
+        chain: walletClient.chain,
+        args: [BigInt(index)]
+      });
+      await publicClient.waitForTransactionReceipt({ hash: approveHash });
+
+      console.log(`Milestone ${index + 1} approved. Executing withdrawal of locked USDC to recipient: ${campaign.recipient}...`);
+      const withdrawHash = await walletClient.writeContract({
+        address: campaign.escrowAddress as `0x${string}`,
+        abi: SYnArcFundingVaultABI,
+        functionName: "withdrawMilestone",
+        chain: walletClient.chain,
+        args: [BigInt(index)]
+      });
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: withdrawHash });
+      console.log("🎉 ESCROW RELEASE COMPLETED! Milestone locked USDC successfully disbursed.", receipt);
+
+      alert(`Success! Milestone ${index + 1} funds released and sent to recipient on-chain.`);
+
+      // Sync and force reload
+      await syncOnChainCampaign(campaignId);
+    } catch (err: any) {
+      console.error("Escrow release transaction failed:", err);
+      alert("Failed to release milestone: " + (err?.message || err));
+    } finally {
+      setReleasingMilestone(false);
+    }
   };
 
   // AI Reviewed Badge System helper
@@ -421,6 +512,26 @@ export default function CampaignDetailPage({ params }: PageProps) {
                         <p className="text-xs text-muted leading-relaxed mt-2 pl-1 border-l-2 border-border-thin/40">
                           {m.description}
                         </p>
+                      )}
+                      
+                      {isActive && isCreator && (
+                        <div className="mt-3 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => handleReleaseMilestone(index)}
+                            disabled={releasingMilestone}
+                            className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5"
+                          >
+                            {releasingMilestone ? (
+                              <>
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                                Releasing Escrow...
+                              </>
+                            ) : (
+                              "🔓 Approve & Release Funds"
+                            )}
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
