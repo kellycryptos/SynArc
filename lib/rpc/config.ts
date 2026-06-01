@@ -75,7 +75,7 @@ export async function getResilientProvider(): Promise<JsonRpcProvider> {
 
   for (const rpcUrl of RPC_URLS) {
     try {
-      const provider = new JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
+      const provider = new JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true, batchMaxCount: 1 });
 
       // Race the health check against a timeout so a hanging URL fails fast
       await Promise.race([

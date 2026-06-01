@@ -50,7 +50,7 @@ export const arcPublicClient = createPublicClient({
 
 // Ethers.js provider helper
 export function getArcEthersProvider(): JsonRpcProvider {
-  return new JsonRpcProvider(ARC_RPC_URL, undefined, { staticNetwork: true });
+  return new JsonRpcProvider(ARC_RPC_URL, undefined, { staticNetwork: true, batchMaxCount: 1 });
 }
 
 // Wallet helper: switch or add Arc Testnet in MetaMask/OKX/etc.
