@@ -225,8 +225,24 @@ export default function TreasuryPage() {
         throw new Error('No wallet connected. Please connect your wallet first.')
       }
 
+      let address: `0x${string}`;
+      if (activeWallet) {
+        address = activeWallet.address as `0x${string}`;
+      } else {
+        const tempClient = createWalletClient({
+          chain: ARC_CHAIN,
+          transport: custom(provider)
+        });
+        const [resolved] = await tempClient.getAddresses();
+        address = resolved;
+      }
+
+      if (!address) {
+        throw new Error("No wallet account address found.");
+      }
+
       const walletClient = createWalletClient({
-        account: activeWallet ? (activeWallet.address as `0x${string}`) : undefined,
+        account: address,
         chain: ARC_CHAIN,
         transport: custom(provider)
       })
@@ -235,8 +251,6 @@ export default function TreasuryPage() {
         chain: ARC_CHAIN,
         transport: fallback(ARC_RPC_URLS.map(url => http(url)))
       })
-
-      const [address] = await walletClient.getAddresses()
       const tokenAddress = token === 'USDC' ? USDC_ADDRESS : CONTRACTS.eurc
       const amountRaw = BigInt(Math.floor(amount * 1_000_000))
 

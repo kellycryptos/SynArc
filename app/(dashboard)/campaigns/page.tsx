@@ -272,7 +272,33 @@ export default function CampaignsPage() {
         </div>
 
         {/* Campaign List / Grid */}
-        {initialized && filteredCampaigns.length === 0 ? (
+        {!initialized ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <GlassCard key={i} className="p-6 h-[420px] flex flex-col justify-between border border-border-thin animate-pulse" hover={false}>
+                <div className="space-y-4 w-full">
+                  <div className="flex justify-between items-center">
+                    <div className="h-5 bg-surface-elevated rounded-full w-24" />
+                    <div className="h-5 bg-surface-elevated rounded-full w-16" />
+                  </div>
+                  <div className="h-7 bg-surface-elevated rounded-lg w-3/4" />
+                  <div className="space-y-2">
+                    <div className="h-4 bg-surface-elevated rounded w-full" />
+                    <div className="h-4 bg-surface-elevated rounded w-5/6" />
+                  </div>
+                  <div className="h-10 bg-surface-elevated/40 rounded-xl w-full" />
+                </div>
+                <div className="space-y-3 w-full pt-4 border-t border-border-thin/40">
+                  <div className="h-3 bg-surface-elevated rounded w-full" />
+                  <div className="flex justify-between">
+                    <div className="h-3 bg-surface-elevated rounded w-1/3" />
+                    <div className="h-3 bg-surface-elevated rounded w-1/4" />
+                  </div>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        ) : filteredCampaigns.length === 0 ? (
           <EmptyState
             title="No campaigns found"
             description="Be the first to launch a permissionless crowdfunding campaign on Arc Network."

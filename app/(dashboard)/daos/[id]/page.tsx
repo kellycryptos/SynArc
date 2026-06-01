@@ -256,7 +256,7 @@ export default function DAODetailsPage() {
         chainId: 5042002,
         name: "Arc Testnet"
       });
-      const signer = await provider.getSigner();
+      const signer = await provider.getSigner(activeWallet.address);
 
       await submitProposal({
         title: proposalData.title,
@@ -307,7 +307,7 @@ export default function DAODetailsPage() {
         chainId: 5042002,
         name: "Arc Testnet"
       });
-      const signer = await provider.getSigner();
+      const signer = await provider.getSigner(activeWallet.address);
 
       // Deployed dynamic treasury contract instance
       const treasuryAddress = dao?.treasuryAddress || "";

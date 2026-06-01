@@ -22,6 +22,7 @@ export function usePrivyWallet() {
     }
     const provider = await embeddedWallet.getEthereumProvider();
     const walletClient = createWalletClient({
+      account: embeddedWallet.address as `0x${string}`,
       chain: arcTestnet,
       transport: custom(provider),
     });
@@ -43,6 +44,7 @@ export function usePrivyWallet() {
     }
     const provider = await embeddedWallet.getEthereumProvider();
     const walletClient = createWalletClient({
+      account: embeddedWallet.address as `0x${string}`,
       chain: arcTestnet,
       transport: custom(provider),
     });

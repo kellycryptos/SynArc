@@ -129,8 +129,84 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
   if (!initialized) {
     return (
-      <div className="pt-28 pb-16 flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-8 animate-pulse">
+        {/* Back Link */}
+        <div className="h-4 bg-surface-elevated rounded w-32" />
+
+        {/* Stepper progress bar */}
+        <GlassCard className="p-6 border border-border-thin flex flex-col md:flex-row items-center justify-between gap-6" hover={false}>
+          <div className="space-y-2 w-full md:w-1/3">
+            <div className="h-3 bg-surface-elevated rounded w-1/4" />
+            <div className="h-5 bg-surface-elevated rounded w-1/2" />
+          </div>
+          <div className="h-8 bg-surface-elevated rounded-full w-full md:w-1/2" />
+        </GlassCard>
+
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Header Card */}
+            <GlassCard className="p-6 sm:p-8 space-y-4 border border-border-thin" hover={false}>
+              <div className="flex justify-between items-center">
+                <div className="h-5 bg-surface-elevated rounded-full w-32" />
+                <div className="h-5 bg-surface-elevated rounded-full w-36" />
+              </div>
+              <div className="h-8 bg-surface-elevated rounded w-3/4" />
+              <div className="flex gap-4">
+                <div className="h-5 bg-surface-elevated rounded w-16" />
+                <div className="h-5 bg-surface-elevated rounded w-28" />
+              </div>
+              <div className="h-16 bg-surface-elevated/30 rounded-xl w-full" />
+            </GlassCard>
+
+            {/* Funding Progress Card */}
+            <GlassCard className="p-6 sm:p-8 space-y-6 border border-border-thin" hover={false}>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <div className="h-4 bg-surface-elevated rounded w-1/4" />
+                  <div className="h-4 bg-surface-elevated rounded w-16" />
+                </div>
+                <div className="h-3 bg-surface-elevated rounded-full w-full" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-surface/30 border border-border-thin/60 h-20" />
+                ))}
+              </div>
+            </GlassCard>
+
+            {/* Escrow Milestone timeline */}
+            <GlassCard className="p-6 sm:p-8 space-y-6 border border-border-thin" hover={false}>
+              <div className="h-6 bg-surface-elevated rounded w-1/3" />
+              <div className="space-y-4 pl-4 border-l border-border-thin">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-16 bg-surface-elevated/40 rounded-xl w-full" />
+                ))}
+              </div>
+            </GlassCard>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            {/* Contributor Card */}
+            <GlassCard className="p-6 border border-border-thin space-y-4" hover={false}>
+              <div className="h-5 bg-surface-elevated rounded w-1/2" />
+              <div className="h-12 bg-surface-elevated rounded-xl w-full" />
+              <div className="h-12 bg-surface-elevated/50 rounded-xl w-full" />
+            </GlassCard>
+
+            {/* AI Risk Card */}
+            <GlassCard className="p-6 border border-border-thin space-y-4" hover={false}>
+              <div className="h-5 bg-surface-elevated rounded w-1/2" />
+              <div className="grid grid-cols-2 gap-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-10 bg-surface/30 border border-border-thin rounded" />
+                ))}
+              </div>
+            </GlassCard>
+          </div>
+        </div>
       </div>
     );
   }

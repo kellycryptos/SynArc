@@ -157,7 +157,7 @@ export function useGovernor(): UseGovernorReturn {
         chainId: 5042002,
         name: "Arc Testnet"
       });
-      const signer = await provider.getSigner();
+      const signer = await provider.getSigner(activeWallet.address);
 
       const governorAddress = GOVERNANCE_CONTRACTS.governor;
       const governorContract = new Contract(governorAddress, GovernorABI, signer);
@@ -213,7 +213,7 @@ export function useGovernor(): UseGovernorReturn {
         chainId: 5042002,
         name: "Arc Testnet"
       });
-      const signer = await provider.getSigner();
+      const signer = await provider.getSigner(activeWallet.address);
 
       const governorAddress = GOVERNANCE_CONTRACTS.governor;
       const governorContract = new Contract(governorAddress, GovernorABI, signer);

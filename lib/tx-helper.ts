@@ -114,9 +114,11 @@ export const getSigner = async (wallets?: any[], targetChain?: any) => {
   const chainToUse = targetChain || ARC_CHAIN
 
   // Try Privy wallet first and perform chain switching if necessary
+  let knownAddress: `0x${string}` | undefined;
   if (wallets && wallets.length > 0) {
     try {
       provider = await enforceChain(wallets[0], chainToUse.id);
+      knownAddress = wallets[0].address as `0x${string}`;
     } catch (err) {
       console.error('Error fetching Privy provider or switching chain:', err)
       throw err;
@@ -174,13 +176,17 @@ export const getSigner = async (wallets?: any[], targetChain?: any) => {
 
   if (!provider) throw new Error('No wallet connected')
 
-  // Construct a temporary client to query the active user address
-  const tempClient = createWalletClient({
-    chain: chainToUse,
-    transport: custom(provider)
-  })
+  // Resolve active address: use known address if Privy wallet is connected, otherwise query provider
+  let address = knownAddress;
+  if (!address) {
+    const tempClient = createWalletClient({
+      chain: chainToUse,
+      transport: custom(provider)
+    })
+    const [resolved] = await tempClient.getAddresses()
+    address = resolved;
+  }
 
-  const [address] = await tempClient.getAddresses()
   if (!address) throw new Error('No account address found on provider')
 
   // Re-create the walletClient with explicitly bound account to prevent missing account context errors

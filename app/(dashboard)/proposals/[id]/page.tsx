@@ -273,9 +273,24 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       } else {
         throw new Error('No wallet connected')
       }
+      let address: `0x${string}`;
+      if (activeWallet) {
+        address = activeWallet.address as `0x${string}`;
+      } else {
+        const tempClient = createWalletClient({
+          chain: ARC_CHAIN,
+          transport: custom(provider)
+        });
+        const [resolved] = await tempClient.getAddresses();
+        address = resolved;
+      }
+
+      if (!address) {
+        throw new Error("No wallet account address found.");
+      }
 
       const walletClient = createWalletClient({
-        account: activeWallet ? (activeWallet.address as `0x${string}`) : undefined,
+        account: address,
         chain: ARC_CHAIN,
         transport: custom(provider)
       })
@@ -284,8 +299,6 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         chain: ARC_CHAIN,
         transport: fallback(ARC_RPC_URLS.map(url => http(url)))
       })
-
-      const [address] = await walletClient.getAddresses()
       const rawId = BigInt(proposal.id.replace("SIP-", ""));
 
       // Dynamically estimate fees
@@ -398,7 +411,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         chainId: 5042002,
         name: "Arc Testnet"
       });
-      const signer = await browserProvider.getSigner();
+      const signer = await browserProvider.getSigner(activeWallet.address);
 
       await executeProposal(proposal.id, signer);
     } catch (err) {

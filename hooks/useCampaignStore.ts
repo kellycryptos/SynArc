@@ -16,6 +16,18 @@ interface CampaignState {
   syncOnChainCampaign: (campaignId: string) => Promise<void>;
 }
 
+// Reuse a single client instance to prevent redundant RPC connections and connection overhead
+let globalPublicClient: any = null;
+function getSharedPublicClient() {
+  if (!globalPublicClient) {
+    globalPublicClient = createPublicClient({
+      chain: arcTestnet,
+      transport: http(getArcRpcUrl())
+    });
+  }
+  return globalPublicClient;
+}
+
 // Resilient on-chain event / state fetcher for deployed campaigns
 async function fetchOnChainCampaignMetrics(escrowAddress: string) {
   if (!escrowAddress || !escrowAddress.startsWith("0x") || escrowAddress.includes("Escrow") || escrowAddress.includes("Treasury") || escrowAddress.length < 42) {
@@ -23,10 +35,7 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
   }
 
   try {
-    const client = createPublicClient({
-      chain: arcTestnet,
-      transport: http(getArcRpcUrl())
-    });
+    const client = getSharedPublicClient();
 
     const totalRaisedBigInt = await client.readContract({
       address: escrowAddress as `0x${string}`,

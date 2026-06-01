@@ -28,6 +28,7 @@ import { useTheme } from "@/providers/ThemeProvider";
 import { ethers, Contract, formatUnits } from "ethers";
 import { getResilientProvider } from "@/lib/rpc/config";
 import { ARC_RPC_URL } from "@/lib/arc/config";
+import { enforceChain } from "@/lib/tx-helper";
 
 export default function SettingsPage() {
   const { walletAddress, isAuthenticated } = useAuth();
@@ -134,9 +135,12 @@ export default function SettingsPage() {
     logDiag("Initiating lightweight contract write (USDC.approve)...");
     try {
       const privy = wallets.find(w => w.walletClientType === "privy") || wallets[0];
-      const privyProvider = await (privy.getEthereumProvider?.() || (privy as any).getProvider?.() || (privy as any).getEip1193Provider?.());
-      const provider = new ethers.BrowserProvider(privyProvider);
-      const signer = await provider.getSigner();
+      const privyProvider = await enforceChain(privy, 5042002);
+      const provider = new ethers.BrowserProvider(privyProvider, {
+        chainId: 5042002,
+        name: "Arc Testnet"
+      });
+      const signer = await provider.getSigner(privy.address);
 
       const usdcAddress = "0x3600000000000000000000000000000000000000";
       const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
@@ -170,9 +174,12 @@ export default function SettingsPage() {
     logDiag("Initiating mock vote write on Governor (castVote)...");
     try {
       const privy = wallets.find(w => w.walletClientType === "privy") || wallets[0];
-      const privyProvider = await (privy.getEthereumProvider?.() || (privy as any).getProvider?.() || (privy as any).getEip1193Provider?.());
-      const provider = new ethers.BrowserProvider(privyProvider);
-      const signer = await provider.getSigner();
+      const privyProvider = await enforceChain(privy, 5042002);
+      const provider = new ethers.BrowserProvider(privyProvider, {
+        chainId: 5042002,
+        name: "Arc Testnet"
+      });
+      const signer = await provider.getSigner(privy.address);
 
       const governorAddress = GOVERNANCE_CONTRACTS.governor;
       const governorContract = new Contract(governorAddress, [
