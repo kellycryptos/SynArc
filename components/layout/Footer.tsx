@@ -12,6 +12,10 @@ const productLinks = [
   { label: "Proposals", href: "/proposals" },
   { label: "Treasury", href: "/treasury" },
   { label: "Roadmap", href: "/#roadmap" },
+  { label: "DAOs", href: "/daos" },
+  { label: "AI Agents", href: "/agents" },
+  { label: "Crowdfund Hub", href: "/campaigns" },
+  { label: "Bridge", href: "/bridge" },
 ];
 
 const developerLinks = [

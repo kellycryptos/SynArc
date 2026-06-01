@@ -1,10 +1,10 @@
 import { defineChain } from 'viem'
 
 const RPC_URLS = [
-  process.env.NEXT_PUBLIC_ARC_RPC_URL, // Canteen RPC — primary
-  'https://rpc.testnet.arc.network',    // Public fallback 1
-  'https://arc-testnet.drpc.org',       // Public fallback 2
-  'https://5042002.rpc.thirdweb.com',   // Public fallback 3
+  'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev', // Alchemy — primary
+  process.env.NEXT_PUBLIC_ARC_RPC_URL,                          // Optional env override
+  'https://rpc.testnet.arc.network',                             // Public fallback 1
+  'https://arc-testnet.drpc.org',                                // Public fallback 2
 ].filter(Boolean) as string[]
 
 export const getWorkingRPC = async (): Promise<string> => {

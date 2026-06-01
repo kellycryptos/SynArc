@@ -64,7 +64,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
   initializeStore: async (customDao) => {
     const activeDaoId = customDao?.id || 'synarc';
-    const STALE_MS = 30_000; // 30-second cache
+    const STALE_MS = 120_000; // 2-minute cache — avoids redundant RPC round-trips
     const state = get();
     const now = Date.now();
 
@@ -105,12 +105,26 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       // Fetch proposal count directly from the contract
       const count = await governorContract.proposalCount();
       const totalCount = Number(count);
-      const loadedProposals: Proposal[] = [];
 
-      for (let i = 1; i <= totalCount; i++) {
-        try {
-          const p = await governorContract.getProposal(i);
-          const proposalStateNum = await governorContract.state(i);
+      // Fetch all proposals in parallel for dramatically faster load times
+      const proposalIndices = Array.from({ length: totalCount }, (_, i) => i + 1);
+      const settled = await Promise.allSettled(
+        proposalIndices.map(async (i) => {
+          const [p, proposalStateNum] = await Promise.all([
+            governorContract.getProposal(i),
+            governorContract.state(i),
+          ]);
+          return { i, p, proposalStateNum };
+        })
+      );
+
+      const loadedProposals: Proposal[] = [];
+      for (const result of settled) {
+        if (result.status === 'rejected') {
+          console.error(`Failed to load a proposal:`, result.reason);
+          continue;
+        }
+        const { p, proposalStateNum } = result.value;
 
           const forV = Number(formatUnits(p.forVotes, 6)); // USDC 6 decimals
           const againstV = Number(formatUnits(p.againstVotes, 6));
@@ -167,9 +181,6 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
             votingDuration: Number(p.votingDuration) / 86400,
             timeline
           });
-        } catch (propErr) {
-          console.error(`Failed to load proposal details for ID ${i}:`, propErr);
-        }
       }
 
       loadedProposals.reverse();

@@ -4,10 +4,14 @@ import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useTreasury } from "@/hooks/useTreasury";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { BarChart3, TrendingUp, Users, Activity, AlertCircle, RefreshCw, Calendar } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { ethers, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
 import { getResilientProvider } from "@/lib/rpc/config";
+
+// Module-level cache for VoteCast event scan — expensive operation, cache 10 minutes
+const VOTERS_CACHE: { data: { address: string; votesCount: number; power: number }[] | null; ts: number } = { data: null, ts: 0 };
+const VOTERS_CACHE_TTL_MS = 600_000; // 10 minutes
 
 import {
   ResponsiveContainer,
@@ -38,9 +42,17 @@ export default function AnalyticsPage() {
     initializeStore();
   }, [initializeStore]);
 
-  // Fetch active voters from VoteCast events
+  // Fetch active voters from VoteCast events (cached to avoid re-scanning on remount)
   useEffect(() => {
     async function loadActiveVoters() {
+      const now = Date.now();
+      // Serve from cache if still fresh
+      if (VOTERS_CACHE.data && now - VOTERS_CACHE.ts < VOTERS_CACHE_TTL_MS) {
+        setActiveVoters(VOTERS_CACHE.data);
+        setVotersLoading(false);
+        return;
+      }
+
       try {
         setVotersLoading(true);
         const provider = await getResilientProvider();
@@ -50,10 +62,12 @@ export default function AnalyticsPage() {
 
         const filter = governorContract.filters.VoteCast();
         const latestBlock = await provider.getBlockNumber();
+        // Only scan the last 50,000 blocks (~2 months on Arc Testnet) to avoid mega-scans
+        const fromBlock = Math.max(0, latestBlock - 50_000);
         const chunkSize = 5000;
         const events = [];
         
-        for (let i = 0; i <= latestBlock; i += chunkSize) {
+        for (let i = fromBlock; i <= latestBlock; i += chunkSize) {
           const toBlock = Math.min(i + chunkSize - 1, latestBlock);
           const chunk = await governorContract.queryFilter(filter, i, toBlock);
           events.push(...chunk);
@@ -77,6 +91,9 @@ export default function AnalyticsPage() {
           votesCount: count,
           power: voterPower.get(address) || 0,
         })).sort((a, b) => b.votesCount - a.votesCount).slice(0, 5);
+
+        VOTERS_CACHE.data = sortedVoters;
+        VOTERS_CACHE.ts = Date.now();
 
         setActiveVoters(sortedVoters);
       } catch (err) {
@@ -210,6 +227,11 @@ export default function AnalyticsPage() {
   }, [filteredProposals]);
 
   const handleRefresh = async () => {
+    // Bust module-level voter cache so refresh actually re-scans
+    VOTERS_CACHE.data = null;
+    VOTERS_CACHE.ts = 0;
+    // Force re-init of governance store (bypass 2-minute TTL)
+    useGovernanceStore.setState({ initialized: false, lastFetched: null });
     initializeStore();
     refetchTreasury();
   };

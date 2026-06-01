@@ -13,10 +13,14 @@ export function Web3Provider({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 30000,
-        gcTime: 300000,
+        // 60s staleTime: data is considered fresh for 60s, no redundant re-fetches
+        staleTime: 60_000,
+        // 10 min cache so navigating back doesn't re-fetch
+        gcTime: 600_000,
         refetchOnWindowFocus: false,
-        retry: false,
+        // Retry twice with 1-second delay before surfacing errors
+        retry: 2,
+        retryDelay: 1000,
       },
     },
   }));

@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { ethers, BrowserProvider, Contract, formatUnits, parseUnits } from "ethers";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { ethers, BrowserProvider, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
 import { Proposal } from "@/types/governance";
 import { useWallets } from "@privy-io/react-auth";
 import { getResilientProvider } from "@/lib/rpc/config";
+
+// Module-level cache so navigating away and back doesn't re-fetch
+const PROPOSALS_CACHE: { data: Proposal[] | null; ts: number } = { data: null, ts: 0 };
+const CACHE_TTL_MS = 120_000; // 2 minutes
 
 interface UseGovernorReturn {
   proposals: Proposal[];
@@ -26,7 +30,15 @@ export function useGovernor(): UseGovernorReturn {
   const [error, setError] = useState<Error | null>(null);
   const { wallets } = useWallets();
 
-  const fetchProposals = useCallback(async () => {
+  const fetchProposals = useCallback(async (force = false) => {
+    const now = Date.now();
+    // Serve from cache if fresh and not forced
+    if (!force && PROPOSALS_CACHE.data && now - PROPOSALS_CACHE.ts < CACHE_TTL_MS) {
+      setProposals(PROPOSALS_CACHE.data);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -36,11 +48,28 @@ export function useGovernor(): UseGovernorReturn {
       const governorContract = new Contract(governorAddress, GovernorABI, provider);
 
       const count = await governorContract.proposalCount();
+      const totalCount = Number(count);
+
+      // Fetch all proposals in parallel — avoids N sequential round-trips
+      const indices = Array.from({ length: totalCount }, (_, i) => i + 1);
+      const settled = await Promise.allSettled(
+        indices.map(async (i) => {
+          const [p, proposalStateNum] = await Promise.all([
+            governorContract.getProposal(i),
+            governorContract.state(i),
+          ]);
+          return { p, proposalStateNum };
+        })
+      );
+
       const loadedProposals: Proposal[] = [];
 
-      for (let i = 1; i <= Number(count); i++) {
-        const p = await governorContract.getProposal(i);
-        const proposalStateNum = await governorContract.state(i);
+      for (const result of settled) {
+        if (result.status === 'rejected') {
+          console.error("Failed to load proposal:", result.reason);
+          continue;
+        }
+        const { p, proposalStateNum } = result.value;
 
         const forV = Number(formatUnits(p.forVotes, 6));
         const againstV = Number(formatUnits(p.againstVotes, 6));
@@ -60,8 +89,8 @@ export function useGovernor(): UseGovernorReturn {
         };
         const status = statusMap[Number(proposalStateNum)] || "Active";
 
-        const now = Math.floor(Date.now() / 1000);
-        const timeLeft = Math.max(0, Number(p.endTime) - now);
+        const now2 = Math.floor(Date.now() / 1000);
+        const timeLeft = Math.max(0, Number(p.endTime) - now2);
         const daysLeft = Math.ceil(timeLeft / 86400);
 
         loadedProposals.push({
@@ -90,7 +119,12 @@ export function useGovernor(): UseGovernorReturn {
         });
       }
 
-      setProposals(loadedProposals.reverse());
+      const reversed = loadedProposals.reverse();
+      // Store in cache
+      PROPOSALS_CACHE.data = reversed;
+      PROPOSALS_CACHE.ts = Date.now();
+
+      setProposals(reversed);
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to fetch proposals");
       setError(error);

@@ -8,14 +8,16 @@ import { checkRpcHealth } from "./health";
  * Supports personalized RPC URLs from ARC CLI (arc-canteen rpc-url).
  */
 
-export const ARC_TESTNET_RPC = process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.network';
+// Primary: Alchemy dedicated endpoint (low-latency, high rate-limits)
+// Fallbacks: official public Arc Testnet endpoints
+export const ARC_TESTNET_RPC = 'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev';
 
-// Centralized resilient fallbacks to ensure zero rate limit failures
+// Centralized resilient fallbacks — Alchemy primary, official publics as backup
 export const RPC_URLS = [
   ARC_TESTNET_RPC,
+  process.env.NEXT_PUBLIC_ARC_RPC_URL, // Optional env override (secondary)
   'https://rpc.testnet.arc.network',
   'https://arc-testnet.drpc.org',
-  'https://5042002.rpc.thirdweb.com',
 ].filter(Boolean).filter(
   (url, index, arr) => arr.indexOf(url) === index // deduplicate
 ) as string[];
@@ -67,7 +69,7 @@ export async function initializeResilientRpc(chain: any) {
  * the entire app while it waits for a TCP response.
  */
 export async function getResilientProvider(): Promise<JsonRpcProvider> {
-  const TIMEOUT_MS = 3000;
+  const TIMEOUT_MS = 4000; // Slightly more generous — Alchemy connects fast
 
   for (const rpcUrl of RPC_URLS) {
     try {
