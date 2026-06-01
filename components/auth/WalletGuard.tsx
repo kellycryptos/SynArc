@@ -14,7 +14,14 @@ export function WalletGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Prevent app render flash while Privy is computing auth cookies
+  const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
+
+  // 🔥 THE FIX: If NOT protected, render IMMEDIATELY to avoid blocking public read-only views
+  if (!isProtected) {
+    return <>{children}</>;
+  }
+
+  // Prevent app render flash while Privy is computing auth cookies ONLY for protected routes
   if (!ready) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center text-text-tertiary">
@@ -23,8 +30,6 @@ export function WalletGuard({ children }: { children: ReactNode }) {
       </div>
     );
   }
-
-  const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
 
   // 🔥 THE FIX: If trying to view a locked tab without being logged in, 
   // DO NOT redirect. Stop the navigation and show an inline, themed access block.

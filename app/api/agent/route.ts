@@ -10,7 +10,8 @@ const groq = new Groq({
 
 export async function POST(req: NextRequest) {
   try {
-    const { action, proposalData, treasuryData } = await req.json();
+    const body = await req.json();
+    const { action, proposalData, treasuryData, campaignData, idea, isAgent } = body;
 
     if (action === "analyze") {
       if (isMockKey) {
@@ -153,8 +154,6 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "analyzeCampaign") {
-      const { campaignData } = await req.json();
-
       if (!campaignData) {
         return NextResponse.json({ success: false, error: "Campaign data is required" }, { status: 400 });
       }
@@ -298,8 +297,6 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "generateCampaign") {
-      const { idea, isAgent } = await req.json();
-
       if (!idea) {
         return NextResponse.json({ success: false, error: "Idea prompt is required" }, { status: 400 });
       }
