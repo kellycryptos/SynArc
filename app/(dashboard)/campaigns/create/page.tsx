@@ -24,8 +24,8 @@ import { useWallets } from "@privy-io/react-auth";
 import { getSigner } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI, SynArcCrowdfundBytecode } from "@/lib/governance/SynArcCrowdfund";
 import { ERC8004_REGISTRY_ADDRESS, ERC8004RegistryABI } from "@/lib/governance/ERC8004Registry";
-import { createPublicClient, http } from "viem";
-import { arcTestnet } from "@/lib/arc-config";
+import { createPublicClient, http, fallback } from "viem";
+import { arcTestnet, ARC_RPC_URLS } from "@/lib/arc-config";
 import { getArcRpcUrl } from "@/lib/rpc/config";
 
 interface MilestoneInput {
@@ -98,7 +98,19 @@ export default function CreateCampaignPage() {
       try {
         const client = createPublicClient({
           chain: arcTestnet,
-          transport: http(getArcRpcUrl())
+          transport: fallback(
+            ARC_RPC_URLS.map(url =>
+              http(url, {
+                timeout: 10000,
+                retryCount: 3,
+                retryDelay: 1000,
+              })
+            ),
+            {
+              retryCount: 3,
+              retryDelay: 1000,
+            }
+          )
         });
         const isAgentRegistered = await client.readContract({
           address: ERC8004_REGISTRY_ADDRESS,

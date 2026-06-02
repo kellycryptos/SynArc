@@ -1,4 +1,4 @@
-import { defineChain, createPublicClient, http } from "viem";
+import { defineChain, createPublicClient, http, fallback } from "viem";
 import { JsonRpcProvider } from "ethers";
 
 const CANTEEN_RPC = "https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f";
@@ -35,12 +35,20 @@ export const arcTestnet = defineChain({
   },
 });
 
-// Stable HTTP transport — uses custom RPC if available, falls back to public
-export const arcTransport = http(ARC_RPC_URL, {
-  retryCount: 3,
-  retryDelay: 1000,
-  timeout: 15000,
-});
+// Stable HTTP transport — fallback through all RPC endpoints with 3 retries and 1s backoff
+export const arcTransport = fallback(
+  ARC_RPC_URLS.map(url =>
+    http(url, {
+      timeout: 10000,
+      retryCount: 3,
+      retryDelay: 1000,
+    })
+  ),
+  {
+    retryCount: 3,
+    retryDelay: 1000,
+  }
+);
 
 // Centralized Viem Public Client
 export const arcPublicClient = createPublicClient({

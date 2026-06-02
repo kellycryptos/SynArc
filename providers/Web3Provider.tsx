@@ -1,15 +1,20 @@
 "use client";
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { WagmiProvider } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { arcTestnet } from '@/lib/arc-config';
 import { wagmiConfig } from '@/lib/wagmi';
+import { initializeResilientRpc } from '@/lib/rpc/config';
 
 export { arcTestnet };
 
 export function Web3Provider({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    initializeResilientRpc(arcTestnet);
+  }, []);
+
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {

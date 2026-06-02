@@ -236,7 +236,11 @@ export default function BridgePage() {
         
         const total = await getLogsResiliently(async (rpcUrl) => {
           const client = createPublicClient({
-            transport: http(rpcUrl)
+            transport: http(rpcUrl, {
+              timeout: 10000,
+              retryCount: 3,
+              retryDelay: 1000,
+            })
           });
           const latestBlock = await client.getBlockNumber();
           

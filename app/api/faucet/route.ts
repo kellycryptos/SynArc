@@ -88,7 +88,19 @@ export async function POST(req: NextRequest) {
       : (`0x${rawKey}` as `0x${string}`)
 
     const account = privateKeyToAccount(privateKey)
-    const transport = fallback(ARC_RPC_URLS.map(url => http(url)))
+    const transport = fallback(
+      ARC_RPC_URLS.map(url =>
+        http(url, {
+          timeout: 10000,
+          retryCount: 3,
+          retryDelay: 1000,
+        })
+      ),
+      {
+        retryCount: 3,
+        retryDelay: 1000,
+      }
+    )
 
     const walletClient = createWalletClient({
       account,

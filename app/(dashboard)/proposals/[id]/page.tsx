@@ -10,6 +10,7 @@ import { useToken } from "@/hooks/useToken";
 import { getResilientProvider } from "@/lib/rpc/config";
 import { arcPublicClient } from "@/lib/arc/config";
 import { toast } from "react-hot-toast";
+import { parseArcError } from "@/lib/utils";
 
 import { useReadContract, useAccount, useWriteContract, useSwitchChain } from "wagmi";
 import { formatUnits, createWalletClient, createPublicClient, fallback, custom, http } from "viem";
@@ -297,7 +298,19 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
       const publicClient = createPublicClient({
         chain: ARC_CHAIN,
-        transport: fallback(ARC_RPC_URLS.map(url => http(url)))
+        transport: fallback(
+          ARC_RPC_URLS.map(url =>
+            http(url, {
+              timeout: 10000,
+              retryCount: 3,
+              retryDelay: 1000,
+            })
+          ),
+          {
+            retryCount: 3,
+            retryDelay: 1000,
+          }
+        )
       })
       const rawId = BigInt(proposal.id.replace("SIP-", ""));
 
@@ -363,14 +376,10 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       setOptimisticVotes(null);
       setOptimisticHasVoted(false);
       setStatus(null);
-      const msg = error?.message || '';
-      if (msg.includes('User rejected') || msg.includes('user rejected')) {
-        setVotingError('Vote cancelled');
-        toast.error('Vote cancelled');
-      } else {
-        setVotingError(error?.shortMessage || 'Vote failed — please try again');
-        toast.error(error?.shortMessage || 'Vote failed — please try again');
-      }
+      
+      const parsedMsg = parseArcError(error);
+      setVotingError(parsedMsg);
+      toast.error(parsedMsg);
     } finally {
       setVoting(false);
     }

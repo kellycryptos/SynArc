@@ -203,7 +203,19 @@ export const getSigner = async (wallets?: any[], targetChain?: any) => {
 
   const publicClient = createPublicClient({
     chain: chainToUse,
-    transport: fallback(rpcUrls.map((url: string) => http(url)))
+    transport: fallback(
+      rpcUrls.map((url: string) =>
+        http(url, {
+          timeout: 10000,
+          retryCount: 3,
+          retryDelay: 1000,
+        })
+      ),
+      {
+        retryCount: 3,
+        retryDelay: 1000,
+      }
+    ),
   })
 
   return { walletClient, publicClient, address }

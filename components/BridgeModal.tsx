@@ -148,7 +148,11 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     setBalanceLoading(true);
     try {
       const client = createPublicClient({
-        transport: http(selectedChain.rpcUrl),
+        transport: http(selectedChain.rpcUrl, {
+          timeout: 10000,
+          retryCount: 3,
+          retryDelay: 1000,
+        }),
       });
 
       const rawBalance = await client.readContract({

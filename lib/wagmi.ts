@@ -6,7 +6,17 @@ export const wagmiConfig = createConfig({
   chains: [ARC_CHAIN],
   transports: {
     [ARC_CHAIN.id]: fallback(
-      ARC_RPC_URLS.map(url => http(url))
+      ARC_RPC_URLS.map(url =>
+        http(url, {
+          timeout: 10000,
+          retryCount: 3,
+          retryDelay: 1000,
+        })
+      ),
+      {
+        retryCount: 3,
+        retryDelay: 1000,
+      }
     )
   },
   connectors: [

@@ -15,6 +15,7 @@ import { TreasuryActivity } from "@/types";
 import { getWorkingRPC, arcTestnetChain } from "@/lib/rpc";
 import { createPublicClient, createWalletClient, http, custom, fallback } from "viem";
 import { toast } from "react-hot-toast";
+import { parseArcError } from "@/lib/utils";
 import { writeWithRetry, getSigner, enforceChain } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 
@@ -249,7 +250,19 @@ export default function TreasuryPage() {
 
       const publicClient = createPublicClient({
         chain: ARC_CHAIN,
-        transport: fallback(ARC_RPC_URLS.map(url => http(url)))
+        transport: fallback(
+          ARC_RPC_URLS.map(url =>
+            http(url, {
+              timeout: 10000,
+              retryCount: 3,
+              retryDelay: 1000,
+            })
+          ),
+          {
+            retryCount: 3,
+            retryDelay: 1000,
+          }
+        )
       })
       const tokenAddress = token === 'USDC' ? USDC_ADDRESS : CONTRACTS.eurc
       const amountRaw = BigInt(Math.floor(amount * 1_000_000))
@@ -347,15 +360,9 @@ export default function TreasuryPage() {
     } catch (error: any) {
       setDepositStatus('')
       setTxStep("error");
-      const msg = error?.message || ''
-      if (msg.includes('User rejected') || msg.includes('user rejected')) {
-        toast.error('Transaction cancelled')
-        setErrorMessage('Transaction cancelled');
-      } else {
-        const errorText = error?.shortMessage || msg || 'Deposit failed — please try again';
-        setErrorMessage(errorText);
-        toast.error(errorText)
-      }
+      const errorText = parseArcError(error);
+      setErrorMessage(errorText);
+      toast.error(errorText);
     }
   };
 

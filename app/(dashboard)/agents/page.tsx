@@ -30,8 +30,8 @@ import {
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useWallets } from "@privy-io/react-auth";
-import { createPublicClient, http } from "viem";
-import { arcTestnet } from "@/lib/arc-config";
+import { createPublicClient, http, fallback } from "viem";
+import { arcTestnet, ARC_RPC_URLS } from "@/lib/arc-config";
 import { getArcRpcUrl } from "@/lib/rpc/config";
 import { getSigner } from "@/lib/tx-helper";
 import { ERC8004_REGISTRY_ADDRESS, ERC8004RegistryABI } from "@/lib/governance/ERC8004Registry";
@@ -93,7 +93,19 @@ export default function AgentsPage() {
     try {
       const client = createPublicClient({
         chain: arcTestnet,
-        transport: http(getArcRpcUrl())
+        transport: fallback(
+          ARC_RPC_URLS.map(url =>
+            http(url, {
+              timeout: 10000,
+              retryCount: 3,
+              retryDelay: 1000,
+            })
+          ),
+          {
+            retryCount: 3,
+            retryDelay: 1000,
+          }
+        )
       });
 
       const onChainData = await client.readContract({

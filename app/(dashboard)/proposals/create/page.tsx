@@ -176,7 +176,19 @@ export default function CreateProposalPage() {
 
       const publicClient = createPublicClient({
         chain: ARC_CHAIN,
-        transport: fallback(ARC_RPC_URLS.map(url => http(url)))
+        transport: fallback(
+          ARC_RPC_URLS.map(url =>
+            http(url, {
+              timeout: 10000,
+              retryCount: 3,
+              retryDelay: 1000,
+            })
+          ),
+          {
+            retryCount: 3,
+            retryDelay: 1000,
+          }
+        )
       })
       const targetAddress = (formData.executionTarget && formData.executionTarget.startsWith('0x'))
         ? (formData.executionTarget as `0x${string}`)
@@ -249,12 +261,7 @@ export default function CreateProposalPage() {
       }, 3000);
     } catch (err: any) {
       console.error("Proposal submission error details:", err);
-      const msg = err?.message || '';
-      if (msg.includes('User rejected') || msg.includes('user rejected')) {
-        setError('Transaction cancelled');
-      } else {
-        setError(err?.shortMessage || msg || 'Failed to submit proposal');
-      }
+      setError(parseArcError(err));
     } finally {
       setIsSubmitting(false);
     }
