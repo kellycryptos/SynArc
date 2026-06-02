@@ -39,6 +39,25 @@ export function OverviewCards() {
     if (!initialized) initializeStore();
   }, [initialized, initializeStore]);
 
+  if (!initialized) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="glass-card p-5 space-y-4 animate-pulse bg-background-surface border border-border h-[130px] rounded-2xl flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div className="w-9 h-9 rounded-lg bg-white/[0.04]" />
+              <div className="w-12 h-5 rounded-full bg-white/[0.04]" />
+            </div>
+            <div className="space-y-2">
+              <div className="w-20 h-3 rounded bg-white/[0.04]" />
+              <div className="w-28 h-6 rounded bg-white/[0.04]" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   const cards = [
     { title: "Treasury Value", value: metrics?.treasuryValue || "$0", icon: DollarSign, trend: "+2.4%" },
     { title: "Total Proposals", value: metrics?.totalProposals !== undefined ? metrics.totalProposals : 0, icon: FileText, trend: "Live" },
@@ -82,7 +101,7 @@ export function OverviewCards() {
               transition={{ duration: 0.2 }}
               className="rounded-2xl overflow-hidden h-full"
             >
-              <GlassCard className="p-5 flex flex-col gap-4 relative overflow-hidden group bg-background-surface border border-border h-full">
+              <GlassCard className="p-5 flex flex-col gap-4 relative overflow-hidden group bg-background-surface border border-border h-full" hover={false}>
                 <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
                 <div className="flex items-start justify-between relative z-10">
                   <div className="p-2 bg-surface-elevated rounded-lg border border-border-thin shadow-sm">

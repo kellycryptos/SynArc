@@ -3,7 +3,6 @@ import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Web3Provider } from "@/providers/Web3Provider";
-import { PageWrapper } from "@/components/layout/PageWrapper";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -70,9 +69,7 @@ export default function RootLayout({
           </div>
 
           <div className="relative z-10 flex flex-col min-h-screen">
-            <PageWrapper>
-              {children}
-            </PageWrapper>
+            {children}
           </div>
         </ThemeProvider>
         </Web3Provider>
@@ -80,3 +77,4 @@ export default function RootLayout({
     </html>
   );
 }
+

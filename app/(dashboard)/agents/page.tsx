@@ -570,9 +570,31 @@ export default function AgentsPage() {
         </div>
 
         {loading ? (
-          <div className="py-20 text-center space-y-3">
-            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-            <p className="text-xs text-muted uppercase font-bold tracking-widest animate-pulse">Reading ERC-8004 identities from block...</p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <GlassCard key={i} className="p-6 h-[340px] flex flex-col justify-between border border-border-thin animate-pulse" hover={false}>
+                <div className="space-y-5 w-full">
+                  {/* Header */}
+                  <div className="flex items-start justify-between border-b border-border-thin/40 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-surface-elevated/40" />
+                      <div className="space-y-2">
+                        <div className="h-4 bg-surface-elevated/40 rounded w-24" />
+                        <div className="h-3 bg-surface-elevated/40 rounded w-16" />
+                      </div>
+                    </div>
+                    <div className="h-5 bg-surface-elevated/40 rounded-full w-12" />
+                  </div>
+                  {/* Reputation */}
+                  <div className="bg-purple-glow/[0.02] border border-purple-500/10 rounded-xl p-3.5 space-y-2">
+                    <div className="h-4 bg-surface-elevated/40 rounded w-1/3" />
+                    <div className="h-2 bg-surface-elevated/40 rounded-full w-full" />
+                  </div>
+                  {/* Capabilities */}
+                  <div className="h-12 bg-surface-elevated/20 rounded-xl w-full" />
+                </div>
+              </GlassCard>
+            ))}
           </div>
         ) : filteredAgents.length === 0 ? (
           <GlassCard className="p-12 text-center border border-border-thin space-y-4" hover={false}>

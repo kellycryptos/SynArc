@@ -434,8 +434,12 @@ export default function TreasuryPage() {
               </div>
               <div>
                 <div className="text-[10px] text-text-tertiary font-bold uppercase tracking-wider">Combined Total</div>
-                <div className="text-lg font-bold font-mono text-white">
-                  ${combinedTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                <div className="text-lg font-bold font-mono text-white flex items-center h-[28px]">
+                  {treasuryLoading ? (
+                    <span className="inline-block w-20 h-5 bg-white/5 animate-pulse rounded mt-0.5" />
+                  ) : (
+                    `$${combinedTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
+                  )}
                 </div>
               </div>
             </div>
@@ -453,8 +457,12 @@ export default function TreasuryPage() {
               <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted">Stable</span>
             </div>
             <p className="text-xs font-semibold text-muted uppercase tracking-wider">USDC Balance</p>
-            <h3 className="text-2xl font-extrabold text-white mt-2 font-mono">
-              {treasuryLoading ? "..." : usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC
+            <h3 className="text-2xl font-extrabold text-white mt-2 font-mono flex items-center h-[32px]">
+              {treasuryLoading ? (
+                <span className="inline-block w-28 h-7 bg-white/5 animate-pulse rounded" />
+              ) : (
+                `${usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC`
+              )}
             </h3>
             <p className="text-[11px] text-text-tertiary mt-1 font-mono">${usdcBalance.toLocaleString()} USD</p>
           </GlassCard>
@@ -468,8 +476,12 @@ export default function TreasuryPage() {
               <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted">Stable</span>
             </div>
             <p className="text-xs font-semibold text-muted uppercase tracking-wider">EURC Balance</p>
-            <h3 className="text-2xl font-extrabold text-white mt-2 font-mono">
-              {treasuryLoading ? "..." : eurcBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })} EURC
+            <h3 className="text-2xl font-extrabold text-white mt-2 font-mono flex items-center h-[32px]">
+              {treasuryLoading ? (
+                <span className="inline-block w-28 h-7 bg-white/5 animate-pulse rounded" />
+              ) : (
+                `${eurcBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })} EURC`
+              )}
             </h3>
             <p className="text-[11px] text-pink-400 mt-1 font-mono">≈ ${(eurcBalance * 1.08).toLocaleString(undefined, { maximumFractionDigits: 2 })} USD</p>
           </GlassCard>
@@ -563,7 +575,27 @@ export default function TreasuryPage() {
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {recentTransactions.length > 0 ? (
+                {treasuryLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="border-b border-border-thin/50">
+                      <td className="py-4 pl-2">
+                        <div className="h-6 w-16 bg-white/5 animate-pulse rounded" />
+                      </td>
+                      <td className="py-4">
+                        <div className="h-4 w-32 bg-white/5 animate-pulse rounded" />
+                      </td>
+                      <td className="py-4 font-mono font-bold">
+                        <div className="h-4 w-20 bg-white/5 animate-pulse rounded" />
+                      </td>
+                      <td className="py-4">
+                        <div className="h-4 w-24 bg-white/5 animate-pulse rounded" />
+                      </td>
+                      <td className="py-4 text-right pr-2">
+                        <div className="h-4 w-12 bg-white/5 animate-pulse rounded ml-auto" />
+                      </td>
+                    </tr>
+                  ))
+                ) : recentTransactions.length > 0 ? (
                   recentTransactions.map((tx, i) => (
                     <tr key={tx.id || i} className="border-b border-border-thin/50 hover:bg-surface-elevated/30 transition-colors">
                       <td className="py-4 pl-2">

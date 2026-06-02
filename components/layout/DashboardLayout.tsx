@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Sidebar } from "../sidebar/Sidebar";
 import { DashboardNavbar } from "../navbar/DashboardNavbar";
 import { WalletGuard } from "../auth/WalletGuard";
+import { PageWrapper } from "@/components/layout/PageWrapper";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, AlertTriangle } from "lucide-react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
@@ -90,7 +91,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8 pb-20">
           <WalletGuard>
-            {children}
+            <PageWrapper>
+              {children}
+            </PageWrapper>
           </WalletGuard>
         </main>
       </div>

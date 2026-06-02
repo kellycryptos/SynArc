@@ -539,4 +539,27 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
+/* ── Premium Scroll & Touch Optimization ── */
+.smooth-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+a, button, [role="button"], select, input, textarea {
+  touch-action: manipulation;
+}
+
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent-purple);
+  outline-offset: 4px;
+}
+
+/* Smooth hover scaling utilities */
+.hover-scale {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
 

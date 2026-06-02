@@ -14,6 +14,34 @@ export function ProposalFeed() {
     if (!initialized) initializeStore();
   }, [initialized, initializeStore]);
 
+  if (!initialized) {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <GlassCard key={i} className="p-6 animate-pulse" hover={false}>
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="space-y-3 flex-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-12 h-5 bg-white/[0.04] rounded" />
+                  <div className="w-16 h-5 bg-white/[0.04] rounded-full" />
+                </div>
+                <div className="w-3/4 h-5 bg-white/[0.04] rounded" />
+                <div className="flex items-center gap-3">
+                  <div className="w-20 h-4 bg-white/[0.04] rounded" />
+                  <div className="w-28 h-4 bg-white/[0.04] rounded" />
+                </div>
+              </div>
+              <div className="w-full sm:w-[140px] space-y-2">
+                <div className="w-full h-2 bg-white/[0.04] rounded-full" />
+                <div className="w-20 h-4 bg-white/[0.04] rounded" />
+              </div>
+            </div>
+          </GlassCard>
+        ))}
+      </div>
+    );
+  }
+
   const recentProposals = proposals.slice(0, 5);
 
   return (
