@@ -19,9 +19,13 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [circleError, setCircleError] = useState(false);
 
-  // Check Circle App ID configuration on mount/open
+  // Check Circle App ID configuration on mount/open, and reset previous error/input states
   useEffect(() => {
     if (isOpen) {
+      setCircleError(false);
+      setErrorMessage(null);
+      setShowCircleInput(false);
+
       const rawAppId = process.env.NEXT_PUBLIC_CIRCLE_APP_ID;
       const appId = !rawAppId || rawAppId === 'mock_circle_app_id_123456' || rawAppId.includes('your_')
         ? '21fe3b25-388d-5cbc-a14a-e62d92a6d2d8' // Resilient fallback to configured real App ID
@@ -127,12 +131,14 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
           {/* Option 1 (Recommended & Primary): Privy Wallet */}
           <div className="flex flex-col justify-between p-5 rounded-xl border-2 border-primary/40 bg-gradient-to-b from-primary/[0.04] to-transparent relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-xl pointer-events-none" />
-            
-            <div className="absolute top-3 right-3 px-2 py-0.5 rounded bg-primary/20 border border-primary/30 text-[9px] font-extrabold uppercase text-purple-300 tracking-wider select-none">
-              Recommended
-            </div>
 
             <div className="space-y-3">
+              <div className="flex items-center">
+                <span className="px-2 py-0.5 rounded bg-primary/20 border border-primary/30 text-[9px] font-extrabold uppercase text-purple-300 tracking-wider select-none">
+                  Recommended
+                </span>
+              </div>
+
               <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <span className="text-primary">🔐</span>
                 <span>Continue with Privy</span>
