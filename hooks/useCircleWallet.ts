@@ -6,6 +6,7 @@ export const useCircleWallet = () => {
   const [circleConnected, setCircleConnected] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [loadingStep, setLoadingStep] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   // Hydrate state from localStorage on client load
@@ -30,6 +31,7 @@ export const useCircleWallet = () => {
 
     setLoading(true)
     setError(null)
+    setLoadingStep('Registering secure user session...')
 
     try {
       // Step 1 — Create/get Circle user
@@ -46,10 +48,12 @@ export const useCircleWallet = () => {
       const { userToken, encryptionKey } = userData
 
       // Step 2 — Initialize Circle SDK
+      setLoadingStep('Initializing Circle Web SDK...')
       console.log('[Circle Hook] Initializing Web SDK client...')
       const client = await initCircleWallet(userToken, encryptionKey)
 
       // Step 3 — Initialize wallet
+      setLoadingStep('Deploying secure wallet structure...')
       console.log('[Circle Hook] Initializing wallet structure...')
       const walletRes = await fetch('/api/circle/wallet', {
         method: 'POST',
@@ -64,6 +68,7 @@ export const useCircleWallet = () => {
 
       // Step 4 — Execute challenge if not already initialized (shows Circle PIN UI)
       if (challengeId && !alreadyInitialized) {
+        setLoadingStep('Awaiting security PIN setup...')
         console.log('[Circle Hook] Executing security challenge PIN setup...')
         await new Promise((resolve, reject) => {
           client.execute(challengeId, (error, result) => {
@@ -79,6 +84,7 @@ export const useCircleWallet = () => {
       }
 
       // Step 5 — Get wallet address
+      setLoadingStep('Retrieving wallet address on ARC...')
       console.log('[Circle Hook] Retrieving wallet address on ARC-TESTNET...')
       const addressRes = await fetch('/api/circle/wallet/address', {
         headers: { 'X-User-Token': userToken }
@@ -106,6 +112,7 @@ export const useCircleWallet = () => {
       throw err // Bubble up to UI
     } finally {
       setLoading(false)
+      setLoadingStep(null)
     }
   }, [])
 
@@ -125,6 +132,7 @@ export const useCircleWallet = () => {
     circleConnected,
     userEmail,
     loading,
+    loadingStep,
     error,
     connectCircleWallet,
     disconnectCircleWallet

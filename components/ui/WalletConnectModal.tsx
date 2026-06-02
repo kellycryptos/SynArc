@@ -13,7 +13,7 @@ interface WalletConnectModalProps {
 
 export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps) {
   const { login } = usePrivy();
-  const { connectCircleWallet, loading } = useCircleWallet();
+  const { connectCircleWallet, loading, loadingStep } = useCircleWallet();
   const [emailInput, setEmailInput] = useState('');
   const [showCircleInput, setShowCircleInput] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -227,6 +227,12 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
                       />
                       <Mail className="w-3.5 h-3.5 text-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
                     </div>
+                    {loading && (
+                      <div className="text-[9px] text-pink-400 font-semibold flex items-center gap-1.5 animate-pulse py-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-ping shrink-0" />
+                        <span>{loadingStep || 'Connecting to Circle...'}</span>
+                      </div>
+                    )}
                     <div className="flex gap-1.5 text-[10px]">
                       <button
                         type="button"
@@ -241,7 +247,7 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
                         disabled={loading}
                         className="flex-1 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white font-bold flex items-center justify-center gap-1 cursor-pointer"
                       >
-                        {loading ? 'Wait...' : 'Confirm'}
+                        {loading ? 'Processing...' : 'Confirm'}
                       </button>
                     </div>
                   </motion.form>
