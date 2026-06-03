@@ -13,20 +13,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizeCss: true,
   },
-  async redirects() {
-    return [
-      {
-        source: '/docs',
-        destination: 'https://docs.synarcdao.xyz',
-        permanent: true,
-      },
-      {
-        source: '/docs/:path*',
-        destination: 'https://docs.synarcdao.xyz/:path*',
-        permanent: true,
-      },
-    ];
-  },
 };
 
 export default nextConfig;

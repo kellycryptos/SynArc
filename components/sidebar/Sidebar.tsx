@@ -36,7 +36,7 @@ const activeLinks = [
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/faucet", label: "Faucet", icon: Droplets },
   { href: "/settings", label: "Settings", icon: Settings },
-  { href: "https://docs.synarcdao.xyz", label: "Docs", icon: BookOpen },
+  { href: "/docs", label: "Docs", icon: BookOpen },
 ];
 
 const comingSoonLinks: { label: string; icon: any }[] = [];
