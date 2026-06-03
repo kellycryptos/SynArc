@@ -431,30 +431,6 @@ export default function CreateCampaignPage() {
     }
   };
 
-  if (!isAuthenticated) {
-    return (
-      <div className="pt-28 pb-16 flex items-center justify-center min-h-[70vh] px-4">
-        <GlassCard className="max-w-md p-8 text-center space-y-6 border border-border-thin">
-          <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto text-primary animate-pulse">
-            <Wallet className="w-8 h-8" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold font-heading text-text-primary">Connect Your Wallet</h2>
-            <p className="text-muted text-sm leading-relaxed">
-              You must connect your Privy wallet to launch a permitless crowdfunding campaign and define milestone escrows.
-            </p>
-          </div>
-          <button
-            onClick={login}
-            className="w-full py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <Wallet className="w-4 h-4" />
-            Connect Wallet
-          </button>
-        </GlassCard>
-      </div>
-    );
-  }
 
   return (
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
@@ -716,23 +692,34 @@ export default function CreateCampaignPage() {
 
               {/* Launch button */}
               <div className="pt-6 border-t border-border-thin flex justify-end">
-                <button
-                  type="submit"
-                  disabled={submitting || milestoneGoalMismatch}
-                  className="px-6 py-3.5 rounded-xl bg-primary text-white font-extrabold text-sm hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.35)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Deploying Escrows...
-                    </>
-                  ) : (
-                    <>
-                      <Rocket className="w-4 h-4" />
-                      🚀 Launch Campaign
-                    </>
-                  )}
-                </button>
+                {!isAuthenticated ? (
+                  <button
+                    type="button"
+                    onClick={login}
+                    className="px-6 py-3.5 rounded-xl bg-primary text-white font-extrabold text-sm hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.35)] flex items-center gap-2 cursor-pointer"
+                  >
+                    <Wallet className="w-4 h-4" />
+                    Connect Wallet to Launch
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={submitting || milestoneGoalMismatch}
+                    className="px-6 py-3.5 rounded-xl bg-primary text-white font-extrabold text-sm hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.35)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Deploying Escrows...
+                      </>
+                    ) : (
+                      <>
+                        <Rocket className="w-4 h-4" />
+                        🚀 Launch Campaign
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
 
             </GlassCard>
