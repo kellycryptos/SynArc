@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 export function parseMarkdown(markdown: string): React.ReactNode[] {
   // Simple markdown parser
@@ -154,10 +155,9 @@ export function parseMarkdown(markdown: string): React.ReactNode[] {
   return elements;
 }
 
-function parseInline(text: string): React.ReactNode[] {
-  // Simple inline parser for bold **text** and inline `code`
+function parseBoldAndCode(text: string, baseKey: number): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  let key = 0;
+  let key = baseKey;
   
   const tokens = text.split(/(\*\*|`)/g);
   let isBold = false;
@@ -183,5 +183,60 @@ function parseInline(text: string): React.ReactNode[] {
     }
   }
   
+  return parts;
+}
+
+function parseInline(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  let key = 0;
+
+  // Match markdown links: [link text](url)
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    const beforeText = text.substring(lastIndex, match.index);
+    if (beforeText) {
+      parts.push(...parseBoldAndCode(beforeText, key));
+      key += beforeText.length;
+    }
+
+    const linkText = match[1];
+    const linkUrl = match[2];
+    
+    const isExternal = linkUrl.startsWith('http') || linkUrl.startsWith('//');
+    if (isExternal) {
+      parts.push(
+        <a 
+          key={`link-${key++}`} 
+          href={linkUrl} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-primary hover:underline hover:text-primary/80 transition-all font-semibold"
+        >
+          {linkText}
+        </a>
+      );
+    } else {
+      parts.push(
+        <Link 
+          key={`link-${key++}`} 
+          href={linkUrl} 
+          className="text-primary hover:underline hover:text-primary/80 transition-all font-semibold"
+        >
+          {linkText}
+        </Link>
+      );
+    }
+
+    lastIndex = linkRegex.lastIndex;
+  }
+
+  const remainingText = text.substring(lastIndex);
+  if (remainingText) {
+    parts.push(...parseBoldAndCode(remainingText, key));
+  }
+
   return parts;
 }

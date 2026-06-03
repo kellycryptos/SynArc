@@ -13,26 +13,31 @@ interface PageProps {
 
 const slugMap: Record<string, string> = {
   "": "README.md",
+  "overview": "README.md",
   "governance": "02-governance.md",
   "treasury": "03-treasury.md",
   "crowdfund": "03b-crowdfund-hub.md",
   "ai-agents": "04-ai-agents.md",
+  "sdk": "04b-sdk.md",
   "dao-registry": "05-dao-registry.md",
   "bridge": "06-bridge.md",
   "smart-contracts": "07-smart-contracts.md",
+  "technical-reference": "07b-technical-reference.md",
   "roadmap": "08-roadmap.md",
   "faq": "09-faq.md"
 };
 
 const docsNav = [
-  { label: "Getting Started", slug: "" },
+  { label: "Overview", slug: "" },
   { label: "Governance", slug: "governance" },
   { label: "Treasury", slug: "treasury" },
   { label: "Crowdfund Hub", slug: "crowdfund" },
   { label: "AI Agents", slug: "ai-agents" },
+  { label: "Agent SDK", slug: "sdk" },
   { label: "DAO Registry", slug: "dao-registry" },
   { label: "Bridge", slug: "bridge" },
   { label: "Smart Contracts", slug: "smart-contracts" },
+  { label: "Technical Reference", slug: "technical-reference" },
   { label: "Mainnet Roadmap", slug: "roadmap" },
   { label: "FAQ", slug: "faq" },
 ];
@@ -60,7 +65,8 @@ export default async function DocsPage({ params }: PageProps) {
   const content = parseMarkdown(markdown);
   
   // Find current index for Prev/Next navigation
-  const currentIndex = docsNav.findIndex(item => item.slug === currentSlug);
+  const navSlug = currentSlug === 'overview' ? '' : currentSlug;
+  const currentIndex = docsNav.findIndex(item => item.slug === navSlug);
   const prevItem = currentIndex > 0 ? docsNav[currentIndex - 1] : null;
   const nextItem = currentIndex < docsNav.length - 1 ? docsNav[currentIndex + 1] : null;
 
@@ -76,7 +82,7 @@ export default async function DocsPage({ params }: PageProps) {
           </div>
           <nav className="flex flex-col gap-1.5">
             {docsNav.map((item) => {
-              const active = item.slug === currentSlug;
+              const active = item.slug === currentSlug || (item.slug === "" && currentSlug === "overview");
               return (
                 <Link
                   key={item.slug}
