@@ -6,10 +6,11 @@ import { useTreasury } from "@/hooks/useTreasury";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useEURCBalance } from "@/hooks/useEURCBalance";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { ethers, Contract, parseUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, TreasuryABI } from "@/lib/governance/contracts";
 import { useWriteContract, useAccount, usePublicClient, useSwitchChain } from "wagmi";
+import React from "react";
 import { ARC_GAS_CONFIG, ARC_GAS_CONFIG_LOW } from "@/lib/constants";
 import { TreasuryActivity } from "@/types";
 import { getWorkingRPC, arcTestnetChain } from "@/lib/rpc";
@@ -74,13 +75,20 @@ export default function TreasuryPage() {
 
   const { balance: walletUSDC, refetch: refetchWalletUSDC } = useUSDCBalance();
   const { balance: walletEURC, refetch: refetchWalletEURC } = useEURCBalance();
-  const { wallets } = useWallets();
+  // usePrivyWallets and wagmi hooks may not have a wallet when Circle is the only connection.
+  // Safe-wrap them so they return empty/noop values instead of crashing.
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
   const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
 
   const userAddress = walletAddress;
-  const { writeContractAsync } = useWriteContract();
+  // Wagmi hooks return undefined when no wagmi wallet is connected (Circle-only).
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const writeContractResult = useWriteContract();
+  const writeContractAsync = writeContractResult?.writeContractAsync ?? (async () => { throw new Error('No wagmi wallet'); });
   const publicClient = usePublicClient();
-  const { switchChainAsync } = useSwitchChain();
+  const switchChainResult = useSwitchChain();
+  const switchChainAsync = switchChainResult?.switchChainAsync;
 
   interface Transaction {
     id: string
@@ -836,8 +844,8 @@ export default function TreasuryPage() {
         isOpen={showBridge} 
         onClose={() => setShowBridge(false)} 
         onSuccess={() => {
-          refetchWalletUSDC();
-          refetchTreasury();
+          refetchWalletUSDC?.();
+          refetchTreasury?.();
         }}
       />
     </div>

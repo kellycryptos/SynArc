@@ -15,9 +15,12 @@ import { useAuth } from "@/hooks/auth/useAuth";
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isConnected } = useAccount();
-  const { isAuthenticated } = useAuth();
-  const { isArcTestnet, isUnsupported } = useArcNetwork();
+  const { isAuthenticated, isCircle } = useAuth();
+  const { isArcTestnet, isUnsupported: wagmiUnsupported } = useArcNetwork();
   const { switchToArc, isSwitching } = useSwitchArcNetwork();
+  // Circle wallet does not register with wagmi, so isConnected=false for Circle users.
+  // Never show the wrong-network banner for Circle wallet users.
+  const isUnsupported = isAuthenticated && !isCircle && wagmiUnsupported;
 
   // Network switch is handled at transaction time (vote, deposit, create proposal).
   // We no longer auto-switch on page load to avoid disrupting public browsing.
