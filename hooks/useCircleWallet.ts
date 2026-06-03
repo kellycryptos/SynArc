@@ -9,16 +9,36 @@ export const useCircleWallet = () => {
   const [loadingStep, setLoadingStep] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Hydrate state from localStorage on client load
+  // Hydrate state from localStorage on client load and listen for sync events
   useEffect(() => {
+    const syncState = () => {
+      if (typeof window !== 'undefined') {
+        const savedAddress = localStorage.getItem('synarc_circle_address')
+        const savedEmail = localStorage.getItem('synarc_circle_email')
+        const savedConnected = localStorage.getItem('synarc_circle_connected') === 'true'
+        if (savedConnected && savedAddress) {
+          setCircleAddress(savedAddress)
+          setUserEmail(savedEmail)
+          setCircleConnected(true)
+        } else {
+          setCircleAddress(null)
+          setUserEmail(null)
+          setCircleConnected(false)
+        }
+      }
+    }
+
+    syncState()
+
     if (typeof window !== 'undefined') {
-      const savedAddress = localStorage.getItem('synarc_circle_address')
-      const savedEmail = localStorage.getItem('synarc_circle_email')
-      const savedConnected = localStorage.getItem('synarc_circle_connected') === 'true'
-      if (savedConnected && savedAddress) {
-        setCircleAddress(savedAddress)
-        setUserEmail(savedEmail)
-        setCircleConnected(true)
+      window.addEventListener('synarc_circle_auth_change', syncState)
+      window.addEventListener('storage', syncState)
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('synarc_circle_auth_change', syncState)
+        window.removeEventListener('storage', syncState)
       }
     }
   }, [])
@@ -104,6 +124,7 @@ export const useCircleWallet = () => {
         localStorage.setItem('synarc_circle_address', address)
         localStorage.setItem('synarc_circle_email', email)
         localStorage.setItem('synarc_circle_connected', 'true')
+        window.dispatchEvent(new Event('synarc_circle_auth_change'))
       }
       
     } catch (err: any) {
@@ -124,6 +145,7 @@ export const useCircleWallet = () => {
       localStorage.removeItem('synarc_circle_address')
       localStorage.removeItem('synarc_circle_email')
       localStorage.removeItem('synarc_circle_connected')
+      window.dispatchEvent(new Event('synarc_circle_auth_change'))
     }
   }, [])
 
