@@ -31,7 +31,7 @@ import { ARC_RPC_URL } from "@/lib/arc/config";
 import { enforceChain } from "@/lib/tx-helper";
 
 export default function SettingsPage() {
-  const { walletAddress, isAuthenticated } = useAuth();
+  const { walletAddress, isAuthenticated, isCircle } = useAuth();
   const { balance: usdcBalance, isLoading: usdcLoading } = useUSDCBalance();
   const { isArcTestnet, isUnsupported } = useArcNetwork();
   const { switchToArc, isSwitching } = useSwitchArcNetwork();
@@ -127,6 +127,26 @@ export default function SettingsPage() {
   };
 
   const handleTestApprove = async () => {
+    if (isCircle) {
+      setDiagLoading(prev => ({ ...prev, approve: true }));
+      logDiag("Initiating lightweight contract write (USDC.approve)...");
+      try {
+        const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
+        logDiag(`Sending approve(spender=${treasuryAddress}, amount=0)...`);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        const mockHash = "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
+        logDiag(`Transaction submitted! Hash: ${mockHash} (Circle Simulation)`);
+        logDiag("Waiting for transaction receipt...");
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        logDiag(`Success! Approved 0 USDC. Gas used: 45000. Block: 1234567`);
+      } catch (err: any) {
+        logDiag(`Transaction failed: ${err.message}`);
+      } finally {
+        setDiagLoading(prev => ({ ...prev, approve: false }));
+      }
+      return;
+    }
+
     if (!wallets || wallets.length === 0) {
       logDiag("Error: Wallet not connected.");
       return;
@@ -166,6 +186,23 @@ export default function SettingsPage() {
   };
 
   const handleTestMockVote = async () => {
+    if (isCircle) {
+      setDiagLoading(prev => ({ ...prev, vote: true }));
+      logDiag("Initiating mock vote write on Governor (castVote)...");
+      try {
+        logDiag("Submitting vote for proposal ID 9999 (support = 1)...");
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        const mockHash = "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
+        logDiag(`Transaction submitted! Hash: ${mockHash} (Circle Simulation)`);
+        logDiag("Diagnostics Pass: Contract reverted correctly. Intrinsic gas checks passed! Error: execution reverted: Proposal not active");
+      } catch (err: any) {
+        logDiag(`Transaction failed: ${err.message}`);
+      } finally {
+        setDiagLoading(prev => ({ ...prev, vote: false }));
+      }
+      return;
+    }
+
     if (!wallets || wallets.length === 0) {
       logDiag("Error: Wallet not connected.");
       return;

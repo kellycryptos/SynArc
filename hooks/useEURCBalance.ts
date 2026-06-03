@@ -1,6 +1,6 @@
 import { createPublicClient, http, fallback } from 'viem'
 import { useEffect, useState, useCallback } from 'react'
-import { useWallets } from "@privy-io/react-auth"
+import { useAuth } from "@/hooks/auth/useAuth"
 import { arcTestnet, ARC_RPC_URLS } from '@/lib/arc-config'
 
 // Arc Testnet EURC contract address
@@ -20,8 +20,8 @@ const ERC20_ABI = [
 ] as const
 
 export const useEURCBalance = (walletAddress?: string | undefined) => {
-  const { wallets } = useWallets()
-  const activeAddress = walletAddress || (wallets && wallets.length > 0 ? wallets[0]?.address : undefined)
+  const { walletAddress: authAddress } = useAuth()
+  const activeAddress = walletAddress || authAddress
 
   const [balance, setBalance] = useState<string>('0.00')
   const [loading, setLoading] = useState(false)

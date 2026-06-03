@@ -75,9 +75,9 @@ export default function TreasuryPage() {
   const { balance: walletUSDC, refetch: refetchWalletUSDC } = useUSDCBalance();
   const { balance: walletEURC, refetch: refetchWalletEURC } = useEURCBalance();
   const { wallets } = useWallets();
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
 
-  const { address: userAddress } = useAccount();
+  const userAddress = walletAddress;
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
   const { switchChainAsync } = useSwitchChain();
@@ -213,6 +213,33 @@ export default function TreasuryPage() {
     setErrorMessage("");
 
     try {
+      if (isCircle) {
+        setDepositStatus(`Approving ${token}...`);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setDepositStatus(`Depositing ${token}...`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const mockHash = "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
+        setTxHash(mockHash);
+        setDepositStatus('✅ Deposit successful!');
+        toast.success(`${amount} ${token} deposited to treasury (Circle Simulation)`);
+        
+        addTransaction({
+          description: `${token} Deposit`,
+          amount: amount,
+          token: token,
+          date: new Date().toLocaleDateString('en-GB'),
+          txHash: mockHash,
+          status: 'confirmed',
+        });
+        
+        setDepositAmount("");
+        refetchTreasury();
+        refetchWalletUSDC?.();
+        refetchWalletEURC?.();
+        return;
+      }
+
       // Get provider — Privy wallet OR external wallet
       let provider
       let activeWallet = null

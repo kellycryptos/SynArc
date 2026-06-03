@@ -46,7 +46,7 @@ import {
 export default function ProposalDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
   const router = useRouter();
-  const { isAuthenticated, walletAddress, login } = useAuth();
+  const { isAuthenticated, walletAddress, login, isCircle } = useAuth();
   const { wallets } = useWallets();
   const { currentBlock } = useArcRpcHealth();
 
@@ -56,7 +56,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   // Live stablecoin treasury balances
   const { usdcBalance: treasuryUSDC, eurcBalance: treasuryEURC } = useTreasury();
 
-  const { address: userAddress } = useAccount();
+  const userAddress = walletAddress ? (walletAddress as `0x${string}`) : undefined;
   const { writeContractAsync } = useWriteContract();
   const { switchChainAsync } = useSwitchChain();
 
@@ -200,6 +200,23 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   useEffect(() => {
     async function checkVoted() {
       if (!walletAddress || !proposal) return;
+
+      const isSimulated = proposal.id.includes("-") && isNaN(Number(proposal.id.replace("SIP-", "")));
+      if (isCircle || isSimulated) {
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem("synarc_simulated_votes");
+          const votes = stored ? JSON.parse(stored) : {};
+          if (votes[proposal.id]) {
+            setHasUserVotedOnChain(true);
+            return;
+          }
+        }
+        if (isSimulated) {
+          setHasUserVotedOnChain(false);
+          return;
+        }
+      }
+
       try {
         const provider = await getResilientProvider();
         const governorAddress = process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702";
@@ -208,14 +225,18 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         ];
         const governorContract = new Contract(governorAddress, GOVERNOR_ABI, provider);
         const rawId = Number(proposal.id.replace("SIP-", ""));
-        const voted = await governorContract.hasVoted(rawId, walletAddress);
-        setHasUserVotedOnChain(voted);
+        if (!isNaN(rawId)) {
+          const voted = await governorContract.hasVoted(rawId, walletAddress);
+          setHasUserVotedOnChain(voted);
+        } else {
+          setHasUserVotedOnChain(false);
+        }
       } catch (err) {
         console.error("Error checking on-chain voted state:", err);
       }
     }
     checkVoted();
-  }, [walletAddress, proposal, voting, initialized]);
+  }, [walletAddress, proposal, voting, initialized, isCircle]);
 
   const handleCastVote = async (supportValue: number) => {
     if (!userAddress) {
@@ -256,6 +277,56 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     });
     setOptimisticHasVoted(true);
     toast.success('Vote submitted optimistically! Syncing with Arc...');
+
+    const isSimulated = proposal.id.includes("-") && isNaN(Number(proposal.id.replace("SIP-", "")));
+    if (isCircle || isSimulated) {
+      try {
+        setVoting(true);
+        setVotingError(null);
+        setTxHash(null);
+        setStatus('Confirming vote on Arc blockchain (Circle Simulation)...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const mockHash = "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
+        
+        if (typeof window !== "undefined") {
+          const storedVotes = localStorage.getItem("synarc_simulated_votes");
+          const votes = storedVotes ? JSON.parse(storedVotes) : {};
+          votes[proposal.id] = { supportValue, timestamp: new Date().toISOString() };
+          localStorage.setItem("synarc_simulated_votes", JSON.stringify(votes));
+
+          const storedProposals = localStorage.getItem("synarc_simulated_proposals");
+          if (storedProposals) {
+            const proposals = JSON.parse(storedProposals);
+            const foundIdx = proposals.findIndex((p: any) => p.id === proposal.id);
+            if (foundIdx !== -1) {
+              if (supportValue === 1) proposals[foundIdx].forVotes += voteWeight;
+              else if (supportValue === 0) proposals[foundIdx].againstVotes += voteWeight;
+              else if (supportValue === 2) proposals[foundIdx].abstainVotes += voteWeight;
+              proposals[foundIdx].totalVotes += voteWeight;
+              localStorage.setItem("synarc_simulated_proposals", JSON.stringify(proposals));
+            }
+          }
+        }
+
+        // Force store re-initialization
+        useGovernanceStore.getState().initializeStore();
+
+        setTxHash(mockHash);
+        setStatus('Vote registered!');
+        toast.success('Vote cast successfully (Circle Simulation)');
+        
+        setHasUserVotedOnChain(true);
+        setOptimisticHasVoted(true);
+        setVoting(false);
+        return;
+      } catch (err: any) {
+        setVoting(false);
+        setVotingError(err);
+        toast.error(err.message || 'Failed to cast vote');
+        return;
+      }
+    }
 
     try {
       setVoting(true);
@@ -408,6 +479,42 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       login();
       return;
     }
+
+    const isSimulated = proposal.id.includes("-") && isNaN(Number(proposal.id.replace("SIP-", "")));
+    if (isCircle || isSimulated) {
+      try {
+        toast.success("Initiating proposal execution simulation...");
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem("synarc_simulated_proposals");
+          if (stored) {
+            const proposalsList = JSON.parse(stored);
+            const foundIdx = proposalsList.findIndex((p: any) => p.id === proposal.id);
+            if (foundIdx !== -1) {
+              proposalsList[foundIdx].status = "Executed";
+              if (!proposalsList[foundIdx].timeline) {
+                proposalsList[foundIdx].timeline = [];
+              }
+              proposalsList[foundIdx].timeline.push({
+                title: "Transaction Executed",
+                timestamp: new Date().toISOString(),
+                status: "Executed"
+              });
+              localStorage.setItem("synarc_simulated_proposals", JSON.stringify(proposalsList));
+            }
+          }
+        }
+
+        // Force store re-initialization
+        useGovernanceStore.getState().initializeStore();
+        toast.success("Proposal executed successfully (Circle Simulation)!");
+      } catch (err: any) {
+        toast.error(err.message || "Failed to execute proposal");
+      }
+      return;
+    }
+
     try {
       const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
       if (!activeWallet) {

@@ -188,6 +188,20 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
       loadedProposals.reverse();
 
+      // Merge simulated proposals from localStorage
+      let simulatedProposals: Proposal[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("synarc_simulated_proposals");
+          if (stored) {
+            simulatedProposals = JSON.parse(stored);
+          }
+        } catch (err) {
+          console.error("Failed to parse simulated proposals from localStorage", err);
+        }
+      }
+      const combinedProposals = [...simulatedProposals, ...loadedProposals];
+
       const treasuryAddress = contracts.treasury;
       const treasuryContract = new Contract(treasuryAddress, [
         "function getTransactions() external view returns (tuple(string txType, address party, uint256 amount, string description, uint256 timestamp)[])",
@@ -215,23 +229,23 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         console.error("Failed to load Treasury activities", err);
       }
 
-      const avgPart = loadedProposals.length > 0
-        ? (loadedProposals.reduce((sum, p) => sum + p.participationPercentage, 0) / loadedProposals.length).toFixed(1) + "%"
+      const avgPart = combinedProposals.length > 0
+        ? (combinedProposals.reduce((sum, p) => sum + p.participationPercentage, 0) / combinedProposals.length).toFixed(1) + "%"
         : "0.0%";
 
-      const executionRate = loadedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
-        ? ((loadedProposals.filter(p => p.status === "Executed").length / loadedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
+      const executionRate = combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
+        ? ((combinedProposals.filter(p => p.status === "Executed").length / combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
         : "100.0%";
 
       set({
-        proposals: loadedProposals,
+        proposals: combinedProposals,
         treasuryActivities: loadedActivities,
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
           treasuryValue: `$${treasuryVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
-          activeProposals: loadedProposals.filter(p => p.status === "Active").length,
-          totalProposals: loadedProposals.length,
+          activeProposals: combinedProposals.filter(p => p.status === "Active").length,
+          totalProposals: combinedProposals.length,
           governanceParticipation: avgPart,
           daoMembers: 12450, // Static fallback of active sARC holders to bypass 8800 rate-limited queries
           treasuryTransactions: loadedActivities.length,
@@ -240,15 +254,26 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       });
     } catch (e) {
       console.warn("RPC connection unavailable, reset to zero on-chain stats:", e);
+      let simulatedProposals: Proposal[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("synarc_simulated_proposals");
+          if (stored) {
+            simulatedProposals = JSON.parse(stored);
+          }
+        } catch (err) {
+          console.error("Failed to parse simulated proposals from localStorage", err);
+        }
+      }
       set({
-        proposals: [],
+        proposals: simulatedProposals,
         treasuryActivities: [],
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
           treasuryValue: "$0",
-          activeProposals: 0,
-          totalProposals: 0,
+          activeProposals: simulatedProposals.filter(p => p.status === "Active").length,
+          totalProposals: simulatedProposals.length,
           governanceParticipation: "0.0%",
           daoMembers: 0,
           treasuryTransactions: 0,

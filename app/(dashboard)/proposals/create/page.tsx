@@ -22,7 +22,7 @@ import { createWalletClient, createPublicClient, custom, fallback, http } from "
 
 export default function CreateProposalPage() {
   const router = useRouter();
-  const { walletAddress, isAuthenticated, login } = useAuth();
+  const { walletAddress, isAuthenticated, login, isCircle } = useAuth();
   const { wallets } = useWallets();
   const { submitProposal } = useGovernanceStore();
   const { votingPower, loading: tokenLoading } = useToken(walletAddress);
@@ -137,6 +137,63 @@ export default function CreateProposalPage() {
 
     setIsSubmitting(true);
     setError(null);
+
+    if (isCircle) {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const mockHash = "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
+        const proposalId = `SIP-${mockHash.substring(0, 8)}`;
+        
+        const newProposal = {
+          id: proposalId,
+          title: formData.title,
+          description: formData.description,
+          proposer: walletAddress,
+          category: formData.category,
+          status: "Active" as const,
+          forVotes: 0,
+          againstVotes: 0,
+          abstainVotes: 0,
+          totalVotes: 0,
+          participationPercentage: 0,
+          treasuryImpactValue: formData.treasuryImpactValue,
+          treasuryImpact: formData.treasuryImpactValue < 0 ? `${formData.treasuryImpactValue.toLocaleString()} USDC` : "None",
+          timeRemaining: `${formData.votingDuration} days left`,
+          createdAt: new Date().toISOString(),
+          votingStarts: new Date().toISOString(),
+          votingEnds: new Date(Date.now() + formData.votingDuration * 86400 * 1000).toISOString(),
+          executionTarget: formData.executionTarget || "0x0000000000000000000000000000000000000000",
+          votingDuration: formData.votingDuration,
+          timeline: [
+            { title: "Proposal Created", timestamp: new Date().toISOString(), status: "Proposed" },
+            { title: "Voting Phase Active", timestamp: new Date().toISOString(), status: "Active" }
+          ]
+        };
+
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem("synarc_simulated_proposals");
+          const existing = stored ? JSON.parse(stored) : [];
+          localStorage.setItem("synarc_simulated_proposals", JSON.stringify([newProposal, ...existing]));
+        }
+
+        // Force store re-initialization so it loads the new proposal
+        useGovernanceStore.getState().initializeStore();
+
+        toast.success('Proposal submitted! ✅');
+        setSuccessProposalId(proposalId);
+
+        setTimeout(() => {
+          router.push('/proposals');
+        }, 3000);
+      } catch (err: any) {
+        console.error("Circle proposal creation error:", err);
+        setError(err.message || "Failed to create proposal");
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
 
     try {
       // Get provider — Privy wallet OR external wallet
