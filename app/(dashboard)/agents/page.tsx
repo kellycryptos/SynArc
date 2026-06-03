@@ -63,7 +63,7 @@ interface AIAgent {
 
 export default function AgentsPage() {
   const { wallets } = useWallets();
-  const { isAuthenticated, walletAddress, login } = useAuth();
+  const { isAuthenticated, walletAddress, login, isCircle } = useAuth();
   const { balance: walletUSDC } = useUSDCBalance();
   const { votingPower: walletSARC } = useToken(walletAddress);
 
@@ -202,6 +202,43 @@ export default function AgentsPage() {
 
     setRegistering(true);
 
+    if (isCircle) {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const postResponse = await fetch("/api/agents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: regName.trim(),
+            address: regAddress.trim(),
+            capabilities: regCapabilities.trim(),
+            metadataURI: regMetadataURI.trim(),
+            model: regModel
+          })
+        });
+
+        const postData = await postResponse.json();
+        if (!postResponse.ok || !postData.success) {
+          throw new Error(postData.error || "Failed to save agent metadata.");
+        }
+
+        alert("🎉 Agent registration confirmed! (Circle Simulation)");
+        setRegSuccess(true);
+        setRegName("");
+        setRegAddress("");
+        setRegCapabilities("");
+        setRegMetadataURI("");
+        await loadAgents();
+        setTimeout(() => setShowRegModal(false), 2000);
+      } catch (err: any) {
+        console.error(err);
+        setRegError(err.message || "Failed to register agent");
+      } finally {
+        setRegistering(false);
+      }
+      return;
+    }
+
     try {
       // 1. Get browser wallet clients
       const { walletClient, publicClient, address } = await getSigner(wallets);
@@ -280,6 +317,26 @@ export default function AgentsPage() {
 
     setModifyingRep(agentAddress);
     const delta = type === "VOUCH" ? 1n : -1n;
+
+    if (isCircle) {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setAgents(prev => prev.map(a => {
+          if (a.address.toLowerCase() === agentAddress.toLowerCase()) {
+            const adj = type === "VOUCH" ? 1 : -1;
+            const newRep = Math.max(0, Math.min(100, a.reputation + adj));
+            return { ...a, reputation: newRep };
+          }
+          return a;
+        }));
+        alert(`Success: AI Agent reputation updated! (Circle Simulation)`);
+      } catch (err: any) {
+        console.error(err);
+      } finally {
+        setModifyingRep(null);
+      }
+      return;
+    }
 
     try {
       const { walletClient, publicClient } = await getSigner(wallets);

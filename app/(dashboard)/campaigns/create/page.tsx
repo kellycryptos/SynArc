@@ -56,7 +56,7 @@ function ProtectionItem({ icon, title, description, status }: { icon: string; ti
 export default function CreateCampaignPage() {
   const router = useRouter();
   const { wallets } = useWallets();
-  const { isAuthenticated, login, walletAddress } = useAuth();
+  const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
   const { addCampaign, initializeStore } = useCampaignStore();
 
   useEffect(() => {
@@ -250,6 +250,85 @@ export default function CreateCampaignPage() {
     setSubmitting(true);
 
     try {
+      if (isCircle) {
+        console.log("Simulating campaign deployment for Circle Wallet...");
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        
+        const mockEscrowAddress = `0x-circle-escrow-${Date.now()}`;
+        const address = walletAddress || "0x0000000000000000000000000000000000000000";
+
+        const parsedMilestones = milestones.map((m, index) => ({
+          title: m.title.trim(),
+          amount: Number(m.amount),
+          description: m.description.trim(),
+          status: (index === 0 ? "active" : "pending") as 'completed' | 'active' | 'pending'
+        }));
+
+        // Register in backend campaigns registry DB with real deployed contract address
+        const campaignId = await addCampaign({
+          title: title.trim(),
+          description: description.trim(),
+          category,
+          goal: Number(goal),
+          isAgent,
+          badge: isAgent ? 'AUTONOMOUS_AGENT_FUND' : 'HUMAN_CAMPAIGN',
+          creator: address,
+          recipient: recipient.trim(),
+          deadline: new Date(Date.now() + duration * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          milestones: parsedMilestones,
+          escrowAddress: mockEscrowAddress
+        });
+
+        // Construct new simulated campaign object
+        const newSimulatedCampaign = {
+          id: campaignId,
+          title: title.trim(),
+          description: description.trim(),
+          category,
+          goal: Number(goal),
+          raised: 0,
+          contributors: 0,
+          isAgent,
+          badge: isAgent ? 'AUTONOMOUS_AGENT_FUND' as const : 'HUMAN_CAMPAIGN' as const,
+          creator: address,
+          recipient: recipient.trim(),
+          deadline: new Date(Date.now() + duration * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          milestones: parsedMilestones,
+          escrowAddress: mockEscrowAddress,
+          state: 'Active' as const,
+          votes: { for: 0, against: 0, abstain: 0 },
+          proposalNumber: Math.floor(Math.random() * 900) + 100,
+          sybilProtection: {
+            aiScanned: true,
+            reputationChecked: false,
+            stakeRequired: false
+          }
+        };
+
+        let simulatedList: any[] = [];
+        try {
+          const stored = localStorage.getItem("synarc_simulated_campaigns");
+          if (stored) {
+            simulatedList = JSON.parse(stored);
+          }
+        } catch (e) {
+          console.error("Failed to parse simulated campaigns", e);
+        }
+        simulatedList.push(newSimulatedCampaign);
+        localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(simulatedList));
+
+        // Re-initialize store
+        await initializeStore();
+
+        setSuccessId(campaignId);
+        
+        // Auto redirect after success modal has been visible
+        setTimeout(() => {
+          router.push("/campaigns");
+        }, 2500);
+        return;
+      }
+
       // 1. Fetch signer and wallet details
       const { walletClient, publicClient, address } = await getSigner(wallets);
       if (!walletClient || !address) {

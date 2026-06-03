@@ -47,7 +47,7 @@ interface Member {
 export default function DAODetailsPage() {
   const router = useRouter();
   const { id } = useParams();
-  const { isAuthenticated, walletAddress, login } = useAuth();
+  const { isAuthenticated, walletAddress, login, isCircle } = useAuth();
   const { wallets } = useWallets();
 
   // Find DAO config in registry
@@ -234,7 +234,6 @@ export default function DAODetailsPage() {
     }
   }, [activeTab, fetchMembers]);
 
-  // Handle Proposal Submission
   const handleProposalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAuthenticated) {
@@ -242,6 +241,74 @@ export default function DAODetailsPage() {
       return;
     }
     if (!proposalData.title || !proposalData.description) return;
+
+    if (isCircle) {
+      try {
+        setSubmittingProposal(true);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const mockHash = "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
+        const proposalId = `SIP-${mockHash.substring(0, 8)}`;
+        
+        const newProposal = {
+          id: proposalId,
+          title: proposalData.title,
+          description: proposalData.description,
+          proposer: walletAddress || "",
+          category: proposalData.category,
+          status: "Active" as const,
+          forVotes: 0,
+          againstVotes: 0,
+          abstainVotes: 0,
+          totalVotes: 0,
+          participationPercentage: 0,
+          treasuryImpactValue: proposalData.treasuryImpactValue,
+          treasuryImpact: proposalData.treasuryImpactValue < 0 ? `${proposalData.treasuryImpactValue.toLocaleString()} USDC` : "None",
+          timeRemaining: `${proposalData.votingDuration} days left`,
+          createdAt: new Date().toISOString(),
+          votingStarts: new Date().toISOString(),
+          votingEnds: new Date(Date.now() + proposalData.votingDuration * 86400 * 1000).toISOString(),
+          executionTarget: proposalData.executionTarget || "0x0000000000000000000000000000000000000000",
+          votingDuration: proposalData.votingDuration,
+          timeline: [
+            { title: "Proposal Created", timestamp: new Date().toISOString(), status: "Proposed" },
+            { title: "Voting Phase Active", timestamp: new Date().toISOString(), status: "Active" }
+          ]
+        };
+
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem("synarc_simulated_proposals");
+          const existing = stored ? JSON.parse(stored) : [];
+          localStorage.setItem("synarc_simulated_proposals", JSON.stringify([newProposal, ...existing]));
+        }
+
+        // Force store re-initialization so it loads the new proposal
+        if (dao && dao.governorAddress && dao.treasuryAddress && dao.tokenAddress) {
+          useGovernanceStore.getState().initializeStore({
+            id: dao.id,
+            governorAddress: dao.governorAddress,
+            treasuryAddress: dao.treasuryAddress,
+            tokenAddress: dao.tokenAddress
+          });
+        }
+
+        setIsProposalModalOpen(false);
+        setProposalData({
+          title: "",
+          description: "",
+          category: "Infrastructure",
+          treasuryImpactValue: 0,
+          executionTarget: "",
+          votingDuration: 3,
+        });
+        alert('Proposal submitted successfully! (Circle Simulation)');
+      } catch (err: any) {
+        alert(err.message || "Failed to submit proposal");
+      } finally {
+        setSubmittingProposal(false);
+      }
+      return;
+    }
 
     try {
       setSubmittingProposal(true);
@@ -292,6 +359,44 @@ export default function DAODetailsPage() {
       return;
     }
     if (!depositAmount || parseFloat(depositAmount) <= 0) return;
+
+    if (isCircle) {
+      try {
+        setDepositing(true);
+        setDepositError("");
+        
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        const mockHash = "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
+        const treasuryAddress = dao?.treasuryAddress || "";
+
+        if (typeof window !== "undefined" && treasuryAddress) {
+          const storedActivities = localStorage.getItem(`synarc_simulated_activities_${treasuryAddress}`);
+          const existing = storedActivities ? JSON.parse(storedActivities) : [];
+          const newActivity = {
+            id: `SIM-${Math.random().toString(16).substring(2, 8)}`,
+            type: "Inflow" as const,
+            amount: parseFloat(depositAmount),
+            token: depositToken,
+            timestamp: new Date().toISOString(),
+            description: `Deposit to Treasury via Circle Wallet`,
+            txHash: mockHash.substring(0, 10) + "..."
+          };
+          localStorage.setItem(`synarc_simulated_activities_${treasuryAddress}`, JSON.stringify([newActivity, ...existing]));
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        setDepositAmount("");
+        setIsDepositModalOpen(false);
+        refetchTreasury();
+      } catch (err: any) {
+        setDepositError(err.message || "Failed to process deposit");
+      } finally {
+        setDepositing(false);
+      }
+      return;
+    }
 
     try {
       setDepositing(true);

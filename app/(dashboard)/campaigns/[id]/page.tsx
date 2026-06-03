@@ -74,7 +74,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
   const campaignId = resolvedParams.id;
 
   const { wallets } = useWallets();
-  const { isAuthenticated, login, walletAddress } = useAuth();
+  const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
   const { campaigns, initialized, initializeStore, contribute, castVote, setAIAnalysis, syncOnChainCampaign } = useCampaignStore();
 
   const [contributionAmount, setContributionAmount] = useState<number>(0);
@@ -247,6 +247,26 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
     setContributing(true);
 
+    const isSimulated = campaign.id.includes("-") && isNaN(Number(campaign.id));
+    if (isCircle || isSimulated) {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await contribute(campaignId, contributionAmount);
+        
+        setContributionSuccess(true);
+        setContributionAmount(0);
+
+        setTimeout(() => {
+          setContributionSuccess(false);
+        }, 4000);
+      } catch (err: any) {
+        console.error("Circle contribution error:", err);
+      } finally {
+        setContributing(false);
+      }
+      return;
+    }
+
     try {
       // 1. Get signer & public client
       const { walletClient, publicClient, address } = await getSigner(wallets);
@@ -332,6 +352,58 @@ export default function CampaignDetailPage({ params }: PageProps) {
     
     setReleasingMilestone(true);
     try {
+      const isSimulated = campaign.id.includes("-") && isNaN(Number(campaign.id));
+      if (isCircle || isSimulated) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Update campaign milestones locally
+        const updatedMilestones = campaign.milestones.map((m, idx) => {
+          if (idx === index) {
+            return { ...m, status: "completed" as const };
+          }
+          if (idx === index + 1 && m.status === "pending") {
+            return { ...m, status: "active" as const };
+          }
+          return m;
+        });
+
+        const allCompleted = updatedMilestones.every(m => m.status === 'completed');
+        const updatedState = allCompleted ? 'Completed' : campaign.state;
+
+        // Save back to localStorage
+        let simulatedList: any[] = [];
+        try {
+          const stored = localStorage.getItem("synarc_simulated_campaigns");
+          if (stored) {
+            simulatedList = JSON.parse(stored);
+          }
+        } catch (e) {
+          console.error("Failed to parse simulated campaigns", e);
+        }
+
+        const listIndex = simulatedList.findIndex(c => c.id === campaign.id);
+        const updatedCampaignObject = {
+          ...campaign,
+          milestones: updatedMilestones,
+          state: updatedState,
+        };
+
+        if (listIndex !== -1) {
+          simulatedList[listIndex] = updatedCampaignObject;
+        } else {
+          simulatedList.push(updatedCampaignObject);
+        }
+
+        localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(simulatedList));
+        
+        // Re-initialize the store to propagate changes
+        await initializeStore();
+        
+        alert(`Success! Milestone ${index + 1} funds released and sent to recipient (Simulated).`);
+        setReleasingMilestone(false);
+        return;
+      }
+
       // 1. Get signer
       const { walletClient, publicClient, address } = await getSigner(wallets);
       if (!walletClient || !address) {

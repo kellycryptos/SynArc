@@ -53,16 +53,15 @@ export function useTreasury(customTreasuryAddress?: string): UseTreasuryReturn {
 
       const usdcVal = Number(formatUnits(usdcBal, 6));
       const eurcVal = Number(formatUnits(eurcBal, 6));
-      
-      setUsdcBalance(usdcVal);
-      setEurcBalance(eurcVal);
-
-      // Combined total USD value (EUR to USD conversion rate placeholder: 1.08)
-      const combinedVal = usdcVal + (eurcVal * 1.08);
-      setBalance(combinedVal);
 
       // Fetch transaction history
-      const rawActivities = await treasuryContract.getTransactions();
+      let rawActivities: any[] = [];
+      try {
+        rawActivities = await treasuryContract.getTransactions();
+      } catch (e) {
+        console.warn("Failed to fetch raw on-chain treasury transactions:", e);
+      }
+
       const formattedActivities: TreasuryActivity[] = rawActivities.map((act: any, idx: number) => ({
         id: idx.toString(),
         type: act.txType as "Inflow" | "Outflow",
@@ -73,7 +72,44 @@ export function useTreasury(customTreasuryAddress?: string): UseTreasuryReturn {
         txHash: "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("")
       }));
 
-      setActivities(formattedActivities.reverse());
+      // Merge simulated activities from localStorage
+      let simulatedActivities: TreasuryActivity[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem(`synarc_simulated_activities_${treasuryAddress}`);
+          if (stored) {
+            simulatedActivities = JSON.parse(stored);
+          }
+        } catch (err) {
+          console.error("Failed to parse simulated activities from localStorage", err);
+        }
+      }
+      const combinedActivities = [...simulatedActivities, ...formattedActivities];
+
+      // Sum up simulated activities to adjust balances
+      let simulatedUSDC = 0;
+      let simulatedEURC = 0;
+      simulatedActivities.forEach(act => {
+        const val = act.amount;
+        if (act.type === "Inflow") {
+          if (act.token === "USDC") simulatedUSDC += val;
+          else if (act.token === "EURC") simulatedEURC += val;
+        } else {
+          if (act.token === "USDC") simulatedUSDC -= val;
+          else if (act.token === "EURC") simulatedEURC -= val;
+        }
+      });
+
+      const finalUSDC = usdcVal + simulatedUSDC;
+      const finalEURC = eurcVal + simulatedEURC;
+
+      setUsdcBalance(finalUSDC);
+      setEurcBalance(finalEURC);
+
+      const combinedVal = finalUSDC + (finalEURC * 1.08);
+      setBalance(combinedVal);
+
+      setActivities(combinedActivities.reverse());
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to fetch treasury data");
       setError(error);

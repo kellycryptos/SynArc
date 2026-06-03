@@ -119,7 +119,29 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
             })
           );
 
-          set({ campaigns: hydratedCampaigns, initialized: true });
+          // Get simulated campaigns from localStorage
+          let simulatedCampaigns: Campaign[] = [];
+          try {
+            const stored = localStorage.getItem("synarc_simulated_campaigns");
+            if (stored) {
+              simulatedCampaigns = JSON.parse(stored);
+            }
+          } catch (err) {
+            console.error("Failed to parse simulated campaigns from localStorage", err);
+          }
+
+          // Merge them. If any simulated campaign has the same ID, overwrite it.
+          const mergedCampaigns = [...hydratedCampaigns];
+          simulatedCampaigns.forEach((sc) => {
+            const idx = mergedCampaigns.findIndex((c) => c.id === sc.id);
+            if (idx !== -1) {
+              mergedCampaigns[idx] = sc;
+            } else {
+              mergedCampaigns.push(sc);
+            }
+          });
+
+          set({ campaigns: mergedCampaigns, initialized: true });
         }
       }
     } catch (err) {
@@ -151,6 +173,28 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
   },
 
   contribute: async (campaignId, amount) => {
+    let isSimulated = false;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("synarc_simulated_campaigns");
+        if (stored) {
+          const list = JSON.parse(stored);
+          const found = list.find((c: any) => c.id === campaignId);
+          if (found) {
+            isSimulated = true;
+            found.raised += amount;
+            found.contributors += 1;
+            if (found.raised >= found.goal && found.state === "Active") {
+              found.state = "Voting";
+            }
+            localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(list));
+          }
+        }
+      } catch (e) {
+        console.error("Error updating simulated campaign contribution:", e);
+      }
+    }
+
     // Optimistically update the UI metrics, then refresh from chain
     set((state) => {
       const campaigns = state.campaigns.map((c) => {
@@ -168,11 +212,36 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
       return { campaigns };
     });
 
-    // Refetch the on-chain data to make sure UI is synchronized perfectly
-    await get().syncOnChainCampaign(campaignId);
+    if (!isSimulated) {
+      // Refetch the on-chain data to make sure UI is synchronized perfectly
+      await get().syncOnChainCampaign(campaignId);
+    }
   },
 
   castVote: async (campaignId, choice, count = 1000) => {
+    let isSimulated = false;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("synarc_simulated_campaigns");
+        if (stored) {
+          const list = JSON.parse(stored);
+          const found = list.find((c: any) => c.id === campaignId);
+          if (found) {
+            isSimulated = true;
+            if (!found.votes) {
+              found.votes = { for: 0, against: 0, abstain: 0 };
+            }
+            if (choice === 'FOR') found.votes.for += count;
+            if (choice === 'AGAINST') found.votes.against += count;
+            if (choice === 'ABSTAIN') found.votes.abstain += count;
+            localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(list));
+          }
+        }
+      } catch (e) {
+        console.error("Error casting simulated campaign vote:", e);
+      }
+    }
+
     set((state) => {
       const campaigns = state.campaigns.map((c) => {
         if (c.id === campaignId) {
@@ -191,7 +260,9 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
       return { campaigns };
     });
 
-    await get().syncOnChainCampaign(campaignId);
+    if (!isSimulated) {
+      await get().syncOnChainCampaign(campaignId);
+    }
   },
 
   setAIAnalysis: (campaignId, analysis) => {
