@@ -5,7 +5,12 @@ let circleClient: W3SSdk | null = null
 export const getCircleClient = () => {
   if (typeof window === 'undefined') return null
   if (!circleClient) {
-    circleClient = new W3SSdk()
+    try {
+      circleClient = new W3SSdk()
+    } catch (err) {
+      console.error('[Circle Web SDK] Failed to instantiate SDK client:', err)
+      return null
+    }
   }
   return circleClient
 }
@@ -13,7 +18,7 @@ export const getCircleClient = () => {
 export const initCircleWallet = async (userToken: string, encryptionKey: string) => {
   const client = getCircleClient()
   if (!client) {
-    throw new Error('Circle Web SDK can only be initialized on the client side.')
+    throw new Error('Circle Web SDK is not supported or failed to initialize in this browser environment.')
   }
   
   const rawAppId = process.env.NEXT_PUBLIC_CIRCLE_APP_ID;
