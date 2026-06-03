@@ -20,7 +20,7 @@ import {
   Coins
 } from "lucide-react";
 import Link from "next/link";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { getSigner } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI, SynArcCrowdfundBytecode } from "@/lib/governance/SynArcCrowdfund";
 import { ERC8004_REGISTRY_ADDRESS, ERC8004RegistryABI } from "@/lib/governance/ERC8004Registry";
@@ -55,7 +55,9 @@ function ProtectionItem({ icon, title, description, status }: { icon: string; ti
 
 export default function CreateCampaignPage() {
   const router = useRouter();
-  const { wallets } = useWallets();
+  // Safe: Circle wallet does not register with Privy wallets list
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
   const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
   const { addCampaign, initializeStore } = useCampaignStore();
 

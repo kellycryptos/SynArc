@@ -30,7 +30,7 @@ import {
 import Link from "next/link";
 import { ethers, Contract, formatUnits, parseUnits, BrowserProvider } from "ethers";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, GovernorABI } from "@/lib/governance/contracts";
 import { getResilientProvider } from "@/lib/rpc/config";
 import { enforceChain } from "@/lib/tx-helper";
@@ -48,7 +48,9 @@ export default function DAODetailsPage() {
   const router = useRouter();
   const { id } = useParams();
   const { isAuthenticated, walletAddress, login, isCircle } = useAuth();
-  const { wallets } = useWallets();
+  // Safe: Circle wallet does not register with Privy wallets list
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
 
   // Find DAO config in registry
   const dao = useMemo(() => {

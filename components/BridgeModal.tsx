@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useCCTPBridge } from "@/hooks/useCCTPBridge";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { useSwitchChain } from "wagmi";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
 import { 
@@ -81,7 +81,8 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   const { state: bridgeState, bridgeUSDC, resetState } = useCCTPBridge();
   
   const [switchingNetwork, setSwitchingNetwork] = useState(false);
-  const { switchChainAsync } = useSwitchChain();
+  const switchChainResult = useSwitchChain();
+  const switchChainAsync = switchChainResult?.switchChainAsync;
 
   const handleSwitchNetwork = async () => {
     setSwitchingNetwork(true);
@@ -130,8 +131,10 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     }
   };
 
-  const { wallets } = useWallets();
-  const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+  // Safe: Circle wallet does not register with Privy wallets list
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
+  const activeWallet = wallets.length > 0 ? wallets[0] : null;
 
   // Load balance for the selected EVM source chain
   const fetchSourceBalance = async () => {

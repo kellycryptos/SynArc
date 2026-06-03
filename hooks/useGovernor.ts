@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { ethers, BrowserProvider, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
 import { Proposal } from "@/types/governance";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { getResilientProvider } from "@/lib/rpc/config";
 import { enforceChain } from "@/lib/tx-helper";
 
@@ -29,7 +29,9 @@ export function useGovernor(): UseGovernorReturn {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { wallets } = useWallets();
+  // Safe: Circle wallet does not register with Privy wallets list
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
 
   const fetchProposals = useCallback(async (force = false) => {
     const now = Date.now();

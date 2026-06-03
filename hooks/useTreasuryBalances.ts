@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createPublicClient, http, fallback } from 'viem';
 import { arcTestnet, ARC_RPC_URLS } from '@/lib/arc-config';
-import { useWallets } from '@privy-io/react-auth';
+import { useAuth } from '@/hooks/auth/useAuth';
 
 const ERC20_ABI = [
   {
@@ -19,14 +19,15 @@ const EURC_ADDRESS = (process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS ||
   '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}`;
 
 export const useTreasuryBalances = () => {
-  const { wallets } = useWallets();
+  // Use unified auth hook so Circle wallet users are also supported
+  const { walletAddress } = useAuth();
   const [usdcBalance, setUsdcBalance] = useState(0);
   const [eurcBalance, setEurcBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchBalances = useCallback(async () => {
-    const address = wallets?.[0]?.address;
+    const address = walletAddress;
     if (!address) {
       setLoading(false);
       return;
@@ -65,7 +66,7 @@ export const useTreasuryBalances = () => {
     } finally {
       setLoading(false);
     }
-  }, [wallets]);
+  }, [walletAddress]);
 
   useEffect(() => {
     fetchBalances();

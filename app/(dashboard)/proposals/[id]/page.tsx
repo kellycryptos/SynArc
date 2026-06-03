@@ -24,7 +24,7 @@ const GOVERNOR_ABI = GovernorABI;
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { BrowserProvider, Contract } from "ethers";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
 import { useArcRpcHealth } from "@/hooks/useArcRpcHealth";
@@ -47,7 +47,9 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   const unwrappedParams = use(params);
   const router = useRouter();
   const { isAuthenticated, walletAddress, login, isCircle } = useAuth();
-  const { wallets } = useWallets();
+  // Safe: Circle wallet does not register with Privy wallets list
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
   const { currentBlock } = useArcRpcHealth();
 
   const { proposals, initialized, initializeStore, userVotes, castVote, executeProposal } = useGovernanceStore();

@@ -29,7 +29,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { createPublicClient, http, fallback } from "viem";
 import { arcTestnet, ARC_RPC_URLS } from "@/lib/arc-config";
 import { getArcRpcUrl } from "@/lib/rpc/config";
@@ -62,7 +62,9 @@ interface AIAgent {
 }
 
 export default function AgentsPage() {
-  const { wallets } = useWallets();
+  // Safe: Circle wallet does not register with Privy wallets list
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
   const { isAuthenticated, walletAddress, login, isCircle } = useAuth();
   const { balance: walletUSDC } = useUSDCBalance();
   const { votingPower: walletSARC } = useToken(walletAddress);

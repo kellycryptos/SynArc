@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { getSigner } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 import { parseAbi } from "viem";
@@ -73,7 +73,9 @@ export default function CampaignDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const campaignId = resolvedParams.id;
 
-  const { wallets } = useWallets();
+  // Safe: Circle wallet does not register with Privy wallets list
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
   const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
   const { campaigns, initialized, initializeStore, contribute, castVote, setAIAnalysis, syncOnChainCampaign } = useCampaignStore();
 

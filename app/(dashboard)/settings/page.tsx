@@ -17,7 +17,7 @@ import {
   Activity,
   Play
 } from "lucide-react";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { parseArcError } from "@/lib/utils";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, GovernorABI, TreasuryABI } from "@/lib/governance/contracts";
 import { useAuth } from "@/hooks/auth/useAuth";
@@ -37,7 +37,9 @@ export default function SettingsPage() {
   const { switchToArc, isSwitching } = useSwitchArcNetwork();
   const { theme, setTheme } = useTheme();
   
-  const { wallets } = useWallets();
+  // Safe: Circle wallet does not register with Privy wallets list
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
   const [diagLog, setDiagLog] = useState<string>("Ready for diagnostics testing...");
   const [diagLoading, setDiagLoading] = useState<Record<string, boolean>>({
     approve: false,

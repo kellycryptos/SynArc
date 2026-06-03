@@ -10,7 +10,7 @@ import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown, Wallet, Check } from "lucide-react";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { BrowserProvider } from "ethers";
 import { parseArcError } from "@/lib/utils";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
@@ -23,7 +23,9 @@ import { createWalletClient, createPublicClient, custom, fallback, http } from "
 export default function CreateProposalPage() {
   const router = useRouter();
   const { walletAddress, isAuthenticated, login, isCircle } = useAuth();
-  const { wallets } = useWallets();
+  // Safe: Circle wallet does not register with Privy wallets list
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
   const { submitProposal } = useGovernanceStore();
   const { votingPower, loading: tokenLoading } = useToken(walletAddress);
   const { balance: usdcBalance } = useUSDCBalance();

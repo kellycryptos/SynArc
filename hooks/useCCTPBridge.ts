@@ -1,7 +1,7 @@
 "use client";
  
 import { useState, useEffect, useRef } from "react";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { useSwitchChain, useAccount, useConfig } from "wagmi";
 import { sepolia } from "wagmi/chains";
 import { arcTestnet } from "@/lib/chains/arc";
@@ -107,8 +107,11 @@ export interface BridgeState {
 }
 
 export function useCCTPBridge() {
-  const { wallets } = useWallets();
-  const { switchChainAsync } = useSwitchChain();
+  // Safe: Circle wallet does not register with Privy wallets list
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
+  const switchChainResult = useSwitchChain();
+  const switchChainAsync = switchChainResult?.switchChainAsync;
   const { chain } = useAccount();
   const wagmiConfig = useConfig();
 

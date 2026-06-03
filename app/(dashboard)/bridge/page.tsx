@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useSwitchChain } from "wagmi";
@@ -83,8 +83,10 @@ type BridgeProgress = "idle" | "initiating" | "burning" | "minting" | "success" 
 
 export default function BridgePage() {
   const { isAuthenticated, walletAddress, isCircle } = useAuth();
-  const { wallets } = useWallets();
-  const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+  // Safe: Circle wallet does not register with Privy wallets list
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
+  const activeWallet = wallets.length > 0 ? wallets[0] : null;
 
   // Global hooks for Arc USDC balance refetching
   const { balance: arcUSDCBalance, refetch: refetchArcUSDC, isFetching: arcFetching } = useUSDCBalance(walletAddress);
@@ -93,7 +95,8 @@ export default function BridgePage() {
   const { state: bridgeState, bridgeUSDC, resetState: resetBridgeState } = useCCTPBridge();
 
   const [switchingNetwork, setSwitchingNetwork] = useState(false);
-  const { switchChainAsync } = useSwitchChain();
+  const switchChainResult = useSwitchChain();
+  const switchChainAsync = switchChainResult?.switchChainAsync;
 
   const handleSwitchNetwork = async () => {
     setSwitchingNetwork(true);
