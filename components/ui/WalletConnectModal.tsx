@@ -118,7 +118,7 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
         </div>
 
         {/* Dynamic Error Messaging (No raw API leakage, clean and user-friendly) */}
-        {errorMessage && (
+        {errorMessage && errorMessage !== 'Circle Wallet temporarily unavailable — use Privy instead.' && (
           <div className="p-3.5 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-start gap-2 mb-6 animate-fade-in-up">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span className="break-words w-full font-medium">{errorMessage}</span>
