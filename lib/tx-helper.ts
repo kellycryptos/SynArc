@@ -239,7 +239,15 @@ export const writeWithRetry = async (
       const msg = error?.message || ''
       
       // Only retry on RPC errors, not user rejections
-      if (msg.includes('User rejected') || msg.includes('user rejected')) {
+      const lowerMsg = msg.toLowerCase()
+      if (
+        lowerMsg.includes('user rejected') || 
+        lowerMsg.includes('user denied') || 
+        lowerMsg.includes('user_rejected') ||
+        lowerMsg.includes('user cancelled') ||
+        lowerMsg.includes('user_cancelled') ||
+        lowerMsg.includes('cancelled')
+      ) {
         throw error
       }
       
