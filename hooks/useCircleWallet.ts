@@ -11,6 +11,13 @@ export const useCircleWallet = () => {
 
   // Hydrate state from localStorage on client load and listen for sync events
   useEffect(() => {
+    // Clear Circle Wallet connection state on initial mount to disable automatic session restore
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('synarc_circle_address')
+      localStorage.removeItem('synarc_circle_email')
+      localStorage.removeItem('synarc_circle_connected')
+    }
+
     const syncState = () => {
       if (typeof window !== 'undefined') {
         const savedAddress = localStorage.getItem('synarc_circle_address')
@@ -27,8 +34,6 @@ export const useCircleWallet = () => {
         }
       }
     }
-
-    syncState()
 
     if (typeof window !== 'undefined') {
       window.addEventListener('synarc_circle_auth_change', syncState)
@@ -86,15 +91,19 @@ export const useCircleWallet = () => {
       }
       const { challengeId, alreadyInitialized } = walletData
 
-      // Step 4 — Execute challenge if not already initialized (shows Circle PIN UI)
-      if (challengeId && !alreadyInitialized) {
-        setLoadingStep('Awaiting security PIN setup...')
-        console.log('[Circle Hook] Executing security challenge PIN setup...')
+      // Step 4 — Execute challenge if present (shows Circle PIN/Verification UI)
+      if (challengeId) {
+        if (!alreadyInitialized) {
+          setLoadingStep('Awaiting security PIN setup...')
+        } else {
+          setLoadingStep('Awaiting security verification...')
+        }
+        console.log('[Circle Hook] Executing security challenge...')
         await new Promise((resolve, reject) => {
           client.execute(challengeId, (error, result) => {
             if (error) {
               console.error('[Circle Hook] Challenge execution failed:', error)
-              reject(new Error(error.message || 'PIN setup challenge failed'))
+              reject(new Error(error.message || 'Verification challenge failed'))
             } else {
               console.log('[Circle Hook] Challenge complete:', result)
               resolve(result)

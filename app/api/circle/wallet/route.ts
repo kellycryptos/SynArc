@@ -36,7 +36,51 @@ export async function POST(req: NextRequest) {
       const isAlreadyInit = errorMsg.toLowerCase().includes('already') || data.code === 155118
       
       if (isAlreadyInit) {
-        return NextResponse.json({ success: true, alreadyInitialized: true })
+        // Fetch wallets for this user to get the walletId
+        console.log(`[Circle API] Fetching wallets to generate verification challenge...`)
+        const walletsRes = await fetch(`${CIRCLE_API_URL}/wallets`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+            'X-User-Token': userToken
+          }
+        })
+        const walletsData = await walletsRes.json()
+        const wallets = walletsData.data?.wallets || []
+        const arcWallet = wallets.find((w: any) => w.blockchain === 'ARC-TESTNET') || wallets[0]
+
+        if (!arcWallet) {
+          return NextResponse.json({ error: 'No wallets found for user' }, { status: 404 })
+        }
+
+        // Generate a signature challenge to force PIN/OTP verification
+        console.log(`[Circle API] Generating signMessage verification challenge for wallet ${arcWallet.id}...`)
+        const signRes = await fetch(`${CIRCLE_API_URL}/user/sign/message`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+            'X-User-Token': userToken
+          },
+          body: JSON.stringify({
+            idempotencyKey: crypto.randomUUID(),
+            message: 'Circle Wallet requires verification for security',
+            walletId: arcWallet.id
+          })
+        })
+        const signData = await signRes.json()
+
+        if (signRes.status !== 200 && signRes.status !== 201) {
+          const signErrorMsg = signData.message || signData.error?.message || 'Failed to create verification challenge'
+          return NextResponse.json({ error: signErrorMsg }, { status: signRes.status })
+        }
+
+        return NextResponse.json({
+          success: true,
+          challengeId: signData.data?.challengeId,
+          alreadyInitialized: true
+        })
       }
       return NextResponse.json({ error: errorMsg || 'Failed to initialize wallet' }, { status: res.status })
     }

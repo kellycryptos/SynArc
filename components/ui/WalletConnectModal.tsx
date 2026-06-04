@@ -180,6 +180,10 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
               <p className="text-[11px] text-muted leading-relaxed font-medium">
                 Gasless governance actions and native USDC stablecoin allocations built on Arc.
               </p>
+              
+              <div className="text-[10px] text-pink-500 font-semibold leading-normal mt-1">
+                Circle Wallet requires verification for security
+              </div>
 
               {/* Circle Down User Warning */}
               {circleError && (
