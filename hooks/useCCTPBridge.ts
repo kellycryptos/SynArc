@@ -150,6 +150,13 @@ export function useCCTPBridge() {
     amountString: string
   ) => {
     const chainConfig = SOURCE_CHAINS[sourceKey];
+    const isCircleConnected = typeof window !== 'undefined' && localStorage.getItem('synarc_circle_connected') === 'true';
+
+    if (isCircleConnected) {
+      await executeSolanaMockBridge(chainConfig.name, amountString);
+      return;
+    }
+
     const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
 
     if (!activeWallet?.address) {

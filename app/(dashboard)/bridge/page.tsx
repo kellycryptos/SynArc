@@ -358,7 +358,7 @@ export default function BridgePage() {
     setErrorMessage("");
     setActiveTxHash("");
 
-    if (!activeWallet) {
+    if (!activeWallet && !isCircle) {
       setErrorMessage("Please connect your Privy wallet to execute this EVM transaction.");
       setProgressState("error");
       return;

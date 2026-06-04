@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { initCircleWallet } from '@/lib/circle/client'
 
+let isFirstLoad = true
+
 export const useCircleWallet = () => {
   const [circleAddress, setCircleAddress] = useState<string | null>(null)
   const [circleConnected, setCircleConnected] = useState(false)
@@ -11,11 +13,14 @@ export const useCircleWallet = () => {
 
   // Hydrate state from localStorage on client load and listen for sync events
   useEffect(() => {
-    // Clear Circle Wallet connection state on initial mount to disable automatic session restore
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('synarc_circle_address')
-      localStorage.removeItem('synarc_circle_email')
-      localStorage.removeItem('synarc_circle_connected')
+    // Clear Circle Wallet connection state on initial page load (hard refresh) to disable automatic session restore
+    if (isFirstLoad) {
+      isFirstLoad = false
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('synarc_circle_address')
+        localStorage.removeItem('synarc_circle_email')
+        localStorage.removeItem('synarc_circle_connected')
+      }
     }
 
     const syncState = () => {
@@ -34,6 +39,9 @@ export const useCircleWallet = () => {
         }
       }
     }
+
+    // Call syncState on mount to read current state
+    syncState()
 
     if (typeof window !== 'undefined') {
       window.addEventListener('synarc_circle_auth_change', syncState)
