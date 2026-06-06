@@ -17,7 +17,7 @@ import { getWorkingRPC, arcTestnetChain } from "@/lib/rpc";
 import { createPublicClient, createWalletClient, http, custom, fallback } from "viem";
 import { toast } from "react-hot-toast";
 import { parseArcError } from "@/lib/utils";
-import { writeWithRetry, getSigner, enforceChain } from "@/lib/tx-helper";
+import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 
 const ERC20_ABI = [
@@ -248,59 +248,11 @@ export default function TreasuryPage() {
         return;
       }
 
-      // Get provider — Privy wallet OR external wallet
-      let provider
-      let activeWallet = null
-      if (wallets && wallets.length > 0) {
-        activeWallet = wallets[0];
-        provider = await enforceChain(activeWallet, 5042002);
-      } else if (typeof window !== 'undefined' && window.ethereum) {
-        await window.ethereum.request({ method: 'eth_requestAccounts' })
-        provider = window.ethereum
-      } else {
-        throw new Error('No wallet connected. Please connect your wallet first.')
-      }
+      // Get provider and client — Privy wallet, Circle wallet OR external wallet
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
 
-      let address: `0x${string}`;
-      if (activeWallet) {
-        address = activeWallet.address as `0x${string}`;
-      } else {
-        const tempClient = createWalletClient({
-          chain: ARC_CHAIN,
-          transport: custom(provider)
-        });
-        const [resolved] = await tempClient.getAddresses();
-        address = resolved;
-      }
-
-      if (!address) {
-        throw new Error("No wallet account address found.");
-      }
-
-      const walletClient = createWalletClient({
-        account: address,
-        chain: ARC_CHAIN,
-        transport: custom(provider)
-      })
-
-      const publicClient = createPublicClient({
-        chain: ARC_CHAIN,
-        transport: fallback(
-          ARC_RPC_URLS.map(url =>
-            http(url, {
-              timeout: 10000,
-              retryCount: 3,
-              retryDelay: 1000,
-            })
-          ),
-          {
-            retryCount: 3,
-            retryDelay: 1000,
-          }
-        )
-      })
-      const tokenAddress = token === 'USDC' ? USDC_ADDRESS : CONTRACTS.eurc
-      const amountRaw = BigInt(Math.floor(amount * 1_000_000))
+      const tokenAddress = token === 'USDC' ? USDC_ADDRESS : EURC_ADDRESS;
+      const amountRaw = BigInt(Math.floor(amount * 1_000_000));
 
       // Dynamically estimate fees
       let gasParams: any = {}
@@ -320,11 +272,11 @@ export default function TreasuryPage() {
       }
 
       // Step 1 — Approve
-      setDepositStatus(`Approving ${token}...`)
+      setDepositStatus('Approving...');
       let estimatedApproveGas: bigint = ARC_GAS.approve
       try {
         estimatedApproveGas = await publicClient.estimateContractGas({
-          address: tokenAddress as `0x${string}`,
+          address: tokenAddress,
           abi: ERC20_ABI,
           functionName: 'approve',
           args: [CONTRACTS.treasury, amountRaw],
@@ -336,7 +288,7 @@ export default function TreasuryPage() {
       }
 
       const approveTx = await walletClient.writeContract({
-        address: tokenAddress as `0x${string}`,
+        address: tokenAddress,
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [CONTRACTS.treasury, amountRaw],
@@ -344,10 +296,12 @@ export default function TreasuryPage() {
         gas: estimatedApproveGas,
         ...gasParams,
       })
-      await publicClient.waitForTransactionReceipt({ hash: approveTx })
+
+      setDepositStatus('Confirming approval...');
+      await waitForTransaction(publicClient, approveTx);
 
       // Step 2 — Deposit
-      setDepositStatus(`Depositing ${token}...`)
+      setDepositStatus('Depositing...');
       let estimatedDepositGas: bigint = ARC_GAS.deposit
       try {
         estimatedDepositGas = await publicClient.estimateContractGas({
@@ -372,7 +326,8 @@ export default function TreasuryPage() {
         ...gasParams,
       })
       setTxHash(depositTx);
-      await publicClient.waitForTransactionReceipt({ hash: depositTx })
+      setDepositStatus('Confirming deposit...');
+      await waitForTransaction(publicClient, depositTx);
 
       setDepositStatus('✅ Deposit successful!')
       toast.success(`${amount} ${token} deposited to treasury`)
