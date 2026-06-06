@@ -15,7 +15,7 @@ import { BrowserProvider } from "ethers";
 import { parseArcError } from "@/lib/utils";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
 import { toast } from "react-hot-toast";
-import { writeWithRetry, enforceChain, getAuthenticatedClient } from "@/lib/tx-helper";
+import { writeWithRetry, enforceChain, getAuthenticatedClient, getAggressiveGasParams } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS } from "@/lib/arc-config";
 import { GovernorABI } from "@/lib/governance/contracts";
 import { createWalletClient, createPublicClient, custom, fallback, http } from "viem";
@@ -208,26 +208,12 @@ export default function CreateProposalPage() {
       const absoluteImpactValue = BigInt(Math.abs(formData.treasuryImpactValue)) * 1000000n;
       const governorAddress = (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702") as `0x${string}`;
 
-      // Dynamically estimate fees
-      let gasParams: any = {}
-      try {
-        const fees = await publicClient.estimateFeesPerGas()
-        if (fees.maxFeePerGas && fees.maxPriorityFeePerGas) {
-          gasParams.maxFeePerGas = (fees.maxFeePerGas * 130n) / 100n
-          gasParams.maxPriorityFeePerGas = (fees.maxPriorityFeePerGas * 130n) / 100n
-        } else {
-          const gasPrice = await publicClient.getGasPrice()
-          gasParams.gasPrice = (gasPrice * 130n) / 100n
-        }
-      } catch (err) {
-        console.warn('Fee estimation failed, falling back to legacy gas price:', err)
-        const gasPrice = await publicClient.getGasPrice().catch(() => ARC_GAS.gasPrice)
-        gasParams.gasPrice = (gasPrice * 130n) / 100n
-      }
+      // Dynamically estimate fees using low-latency and aggressive parameters
+      const gasParams = await getAggressiveGasParams(publicClient);
 
-      let estimatedProposeGas: bigint = ARC_GAS.propose
+      let estimatedProposeGas = 600000n; // Slightly higher gas limit floor
       try {
-        estimatedProposeGas = await publicClient.estimateContractGas({
+        const est = await publicClient.estimateContractGas({
           address: governorAddress,
           abi: GovernorABI,
           functionName: 'propose',
@@ -241,7 +227,8 @@ export default function CreateProposalPage() {
           ],
           account: address,
         })
-        estimatedProposeGas = (estimatedProposeGas * 120n) / 100n
+        estimatedProposeGas = (est * 150n) / 100n;
+        if (estimatedProposeGas < 600000n) estimatedProposeGas = 600000n;
       } catch (e) {
         console.warn('Propose gas estimation failed:', e)
       }

@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import { getSigner, getAuthenticatedClient, waitForTransaction } from "@/lib/tx-helper";
+import { getSigner, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI, SynArcCrowdfundBytecode } from "@/lib/governance/SynArcCrowdfund";
 import { ERC8004_REGISTRY_ADDRESS, ERC8004RegistryABI } from "@/lib/governance/ERC8004Registry";
 import { createPublicClient, http, fallback } from "viem";
@@ -358,6 +358,8 @@ export default function CreateCampaignPage() {
         milestoneDescriptions
       });
 
+      const gasParams = await getAggressiveGasParams(publicClient);
+
       // 3. Deploy SynArcCrowdfund contract directly from user wallet
       const deployHash = await walletClient.deployContract({
         abi: SynArcCrowdfundABI,
@@ -376,7 +378,9 @@ export default function CreateCampaignPage() {
           milestoneTitles,
           milestoneAmounts,
           milestoneDescriptions
-        ]
+        ],
+        gas: 2000000n, // Slightly higher gas limit floor for deployment
+        ...gasParams,
       });
 
       console.log("Deployment transaction submitted! Tx Hash:", deployHash);

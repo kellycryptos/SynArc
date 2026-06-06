@@ -293,9 +293,9 @@ export const getAuthenticatedClient = async (
 
     // Retrieve provider
     provider = await (
-      activeWallet.getEthereumProvider?.() ||
-      activeWallet.getEip1193Provider?.() ||
-      (activeWallet as any).getProvider?.()
+      (activeWallet.getEthereumProvider ? activeWallet.getEthereumProvider() : null) ||
+      (activeWallet.getProvider ? activeWallet.getProvider() : null) ||
+      (activeWallet.getEip1193Provider ? activeWallet.getEip1193Provider() : null)
     );
     address = activeWallet.address as `0x${string}`;
   } 
@@ -359,11 +359,14 @@ export const getAuthenticatedClient = async (
     transport: fallback(
       uniqueRpcUrls.map((url) =>
         http(url, {
-          timeout: 20000,
-          retryCount: 5,
-          retryDelay: 1500,
+          timeout: 4000,   // Fast failover for slow RPCs
+          retryCount: 2,   // Shorter retries per node to switch quickly
+          retryDelay: 800,
         })
-      )
+      ),
+      {
+        rank: true // dynamically rank RPCs by latency!
+      }
     ),
   });
 
@@ -382,6 +385,44 @@ export const getAuthenticatedClient = async (
 };
 
 /**
+ * Dynamic fee configuration with aggressive floors for fast inclusion
+ * on mobile/embedded wallets on the Arc Testnet.
+ */
+export const getAggressiveGasParams = async (publicClient: any) => {
+  const minMaxFeePerGas = 20000000n;         // Floor: 20 Gwei/units
+  const minMaxPriorityFeePerGas = 15000000n; // Floor: 15 Gwei/units
+
+  try {
+    const fees = await publicClient.estimateFeesPerGas();
+    if (fees.maxFeePerGas && fees.maxPriorityFeePerGas) {
+      // Apply 1.5x multiplier to the estimated gas fees for faster inclusion
+      const estMax = (fees.maxFeePerGas * 150n) / 100n;
+      const estPriority = (fees.maxPriorityFeePerGas * 150n) / 100n;
+
+      return {
+        maxFeePerGas: estMax > minMaxFeePerGas ? estMax : minMaxFeePerGas,
+        maxPriorityFeePerGas: estPriority > minMaxPriorityFeePerGas ? estPriority : minMaxPriorityFeePerGas,
+      };
+    }
+  } catch (err) {
+    console.warn('[getAggressiveGasParams] estimateFeesPerGas failed, using aggressive floors:', err);
+  }
+
+  try {
+    const gasPrice = await publicClient.getGasPrice();
+    const estGasPrice = (gasPrice * 150n) / 100n;
+    return {
+      gasPrice: estGasPrice > minMaxFeePerGas ? estGasPrice : minMaxFeePerGas,
+    };
+  } catch (err) {
+    console.warn('[getAggressiveGasParams] getGasPrice failed, using defaults.');
+    return {
+      gasPrice: minMaxFeePerGas,
+    };
+  }
+};
+
+/**
  * Resilient transaction receipt waiter with custom timeouts and polling
  * optimized for the Arc Testnet block times.
  */
@@ -394,8 +435,8 @@ export const waitForTransaction = async (
   const receipt = await publicClient.waitForTransactionReceipt({
     hash,
     timeout: 60_000,
-    pollingInterval: 2_000,
-    retryCount: 30,
+    pollingInterval: 500, // Reduced polling interval to 500ms
+    retryCount: 60,       // Increased retry count
   });
   
   console.log(`[waitForTransaction] Transaction receipt received:`, receipt);

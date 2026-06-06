@@ -17,7 +17,7 @@ import { getWorkingRPC, arcTestnetChain } from "@/lib/rpc";
 import { createPublicClient, createWalletClient, http, custom, fallback } from "viem";
 import { toast } from "react-hot-toast";
 import { parseArcError } from "@/lib/utils";
-import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction } from "@/lib/tx-helper";
+import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 
 const ERC20_ABI = [
@@ -254,39 +254,26 @@ export default function TreasuryPage() {
       const tokenAddress = token === 'USDC' ? USDC_ADDRESS : EURC_ADDRESS;
       const amountRaw = BigInt(Math.floor(amount * 1_000_000));
 
-      // Dynamically estimate fees
-      let gasParams: any = {}
-      try {
-        const fees = await publicClient.estimateFeesPerGas()
-        if (fees.maxFeePerGas && fees.maxPriorityFeePerGas) {
-          gasParams.maxFeePerGas = (fees.maxFeePerGas * 130n) / 100n
-          gasParams.maxPriorityFeePerGas = (fees.maxPriorityFeePerGas * 130n) / 100n
-        } else {
-          const gasPrice = await publicClient.getGasPrice()
-          gasParams.gasPrice = (gasPrice * 130n) / 100n
-        }
-      } catch (err) {
-        console.warn('Fee estimation failed, falling back to legacy gas price:', err)
-        const gasPrice = await publicClient.getGasPrice().catch(() => ARC_GAS.gasPrice)
-        gasParams.gasPrice = (gasPrice * 130n) / 100n
-      }
+      // Dynamically estimate fees using low-latency and aggressive parameters
+      const gasParams = await getAggressiveGasParams(publicClient);
 
       // Step 1 — Approve
-      setDepositStatus('Approving...');
-      let estimatedApproveGas: bigint = ARC_GAS.approve
+      let estimatedApproveGas = 250000n; // Slightly higher gas limit
       try {
-        estimatedApproveGas = await publicClient.estimateContractGas({
+        const est = await publicClient.estimateContractGas({
           address: tokenAddress,
           abi: ERC20_ABI,
           functionName: 'approve',
           args: [CONTRACTS.treasury, amountRaw],
           account: address,
         })
-        estimatedApproveGas = (estimatedApproveGas * 120n) / 100n
+        estimatedApproveGas = (est * 150n) / 100n;
+        if (estimatedApproveGas < 250000n) estimatedApproveGas = 250000n;
       } catch (e) {
         console.warn('Approve gas estimation failed:', e)
       }
 
+      setDepositStatus('Sending transaction...');
       const approveTx = await walletClient.writeContract({
         address: tokenAddress,
         abi: ERC20_ABI,
@@ -301,8 +288,7 @@ export default function TreasuryPage() {
       await waitForTransaction(publicClient, approveTx);
 
       // Step 2 — Deposit
-      setDepositStatus('Depositing...');
-      let estimatedDepositGas: bigint = ARC_GAS.deposit
+      let estimatedDepositGas = 300000n; // Slightly higher gas limit
       try {
         estimatedDepositGas = await publicClient.estimateContractGas({
           address: CONTRACTS.treasury,
@@ -311,11 +297,13 @@ export default function TreasuryPage() {
           args: [amountRaw],
           account: address,
         })
-        estimatedDepositGas = (estimatedDepositGas * 120n) / 100n
+        estimatedDepositGas = (estimatedDepositGas * 150n) / 100n;
+        if (estimatedDepositGas < 300000n) estimatedDepositGas = 300000n;
       } catch (e) {
         console.warn('Deposit gas estimation failed:', e)
       }
 
+      setDepositStatus('Sending transaction...');
       const depositTx = await walletClient.writeContract({
         address: CONTRACTS.treasury,
         abi: TREASURY_ABI,

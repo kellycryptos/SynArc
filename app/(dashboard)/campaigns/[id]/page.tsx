@@ -5,7 +5,7 @@ import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import { getSigner, getAuthenticatedClient, waitForTransaction } from "@/lib/tx-helper";
+import { getSigner, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 import { parseAbi } from "viem";
 import { 
@@ -276,6 +276,8 @@ export default function CampaignDetailPage({ params }: PageProps) {
       const usdcAddress = "0x3600000000000000000000000000000000000000";
       const amountBigInt = BigInt(Math.round(contributionAmount * 1_000_000));
       
+      const gasParams = await getAggressiveGasParams(publicClient);
+
       // 2. Call USDC approve transaction first
       const erc20Abi = parseAbi([
         "function approve(address spender, uint256 amount) returns (bool)"
@@ -287,7 +289,9 @@ export default function CampaignDetailPage({ params }: PageProps) {
         abi: erc20Abi,
         functionName: "approve",
         chain: walletClient.chain,
-        args: [campaign.escrowAddress as `0x${string}`, amountBigInt]
+        args: [campaign.escrowAddress as `0x${string}`, amountBigInt],
+        gas: 250000n, // Slightly higher gas limit floor
+        ...gasParams,
       });
       await waitForTransaction(publicClient, approveHash);
 
@@ -298,7 +302,9 @@ export default function CampaignDetailPage({ params }: PageProps) {
         abi: SynArcCrowdfundABI,
         functionName: "contribute",
         chain: walletClient.chain,
-        args: [amountBigInt]
+        args: [amountBigInt],
+        gas: 300000n, // Slightly higher gas limit floor
+        ...gasParams,
       });
       
       const receipt = await waitForTransaction(publicClient, contributeHash);
@@ -406,13 +412,17 @@ export default function CampaignDetailPage({ params }: PageProps) {
       // 1. Get signer
       const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
 
+      const gasParams = await getAggressiveGasParams(publicClient);
+
       console.log(`Creator on-chain trigger: Approving Milestone ${index + 1}...`);
       const approveHash = await walletClient.writeContract({
         address: campaign.escrowAddress as `0x${string}`,
         abi: SynArcCrowdfundABI,
         functionName: "approveMilestone",
         chain: walletClient.chain,
-        args: [BigInt(index)]
+        args: [BigInt(index)],
+        gas: 200000n, // Slightly higher gas limit floor
+        ...gasParams,
       });
       await waitForTransaction(publicClient, approveHash);
 
@@ -422,7 +432,9 @@ export default function CampaignDetailPage({ params }: PageProps) {
         abi: SynArcCrowdfundABI,
         functionName: "withdrawMilestone",
         chain: walletClient.chain,
-        args: [BigInt(index)]
+        args: [BigInt(index)],
+        gas: 250000n, // Slightly higher gas limit floor
+        ...gasParams,
       });
       const receipt = await waitForTransaction(publicClient, withdrawHash);
       console.log("🎉 ESCROW RELEASE COMPLETED! Milestone locked USDC successfully disbursed.", receipt);

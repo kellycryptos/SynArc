@@ -33,7 +33,7 @@ import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { createPublicClient, http, fallback } from "viem";
 import { arcTestnet, ARC_RPC_URLS } from "@/lib/arc-config";
 import { getArcRpcUrl } from "@/lib/rpc/config";
-import { getSigner, getAuthenticatedClient, waitForTransaction } from "@/lib/tx-helper";
+import { getSigner, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { ERC8004_REGISTRY_ADDRESS, ERC8004RegistryABI } from "@/lib/governance/ERC8004Registry";
 
 interface AIAgent {
@@ -245,6 +245,8 @@ export default function AgentsPage() {
       // 1. Get browser wallet clients
       const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
 
+      const gasParams = await getAggressiveGasParams(publicClient);
+
       console.log("Registering agent identity on ERC-8004 registry contract at:", ERC8004_REGISTRY_ADDRESS);
 
       // 2. Call registerAgent on ERC-8004 contract
@@ -259,7 +261,9 @@ export default function AgentsPage() {
           `AI Agent standard identity card for ${regName}`,
           regCapabilities.trim(),
           regMetadataURI.trim()
-        ]
+        ],
+        gas: 300000n, // Slightly higher gas limit floor
+        ...gasParams,
       });
 
       console.log("Registry transaction submitted! Tx Hash:", regHash);
@@ -340,6 +344,8 @@ export default function AgentsPage() {
     try {
       const { walletClient, publicClient } = await getAuthenticatedClient(wallets, 5042002);
 
+      const gasParams = await getAggressiveGasParams(publicClient);
+
       console.log(`Submitting reputation adjustment on-chain for ${agentAddress}: ${type} (${delta.toString()})`);
 
       const txHash = await walletClient.writeContract({
@@ -347,7 +353,9 @@ export default function AgentsPage() {
         abi: ERC8004RegistryABI,
         functionName: "updateReputation",
         chain: walletClient.chain,
-        args: [agentAddress as `0x${string}`, delta]
+        args: [agentAddress as `0x${string}`, delta],
+        gas: 200000n, // Slightly higher gas limit floor
+        ...gasParams,
       });
 
       await waitForTransaction(publicClient, txHash);

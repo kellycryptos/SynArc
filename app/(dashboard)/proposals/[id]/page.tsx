@@ -16,7 +16,7 @@ import { useWriteContract, useSwitchChain } from "wagmi";
 import { formatUnits, createWalletClient, createPublicClient, fallback, custom, http } from "viem";
 import { GovernorABI, ERC20ABI } from "@/lib/governance/contracts";
 import { ARC_GAS_CONFIG } from "@/lib/constants";
-import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction } from "@/lib/tx-helper";
+import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
 const SARC_ADDRESS = "0x637cA7788aBC956832F389A7BB895D5249FE757B" as `0x${string}`;
@@ -318,37 +318,25 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
       const rawId = BigInt(proposal.id.replace("SIP-", ""));
 
-      // Dynamically estimate fees
-      let gasParams: any = {}
-      try {
-        const fees = await publicClient.estimateFeesPerGas()
-        if (fees.maxFeePerGas && fees.maxPriorityFeePerGas) {
-          gasParams.maxFeePerGas = (fees.maxFeePerGas * 130n) / 100n
-          gasParams.maxPriorityFeePerGas = (fees.maxPriorityFeePerGas * 130n) / 100n
-        } else {
-          const gasPrice = await publicClient.getGasPrice()
-          gasParams.gasPrice = (gasPrice * 130n) / 100n
-        }
-      } catch (err) {
-        console.warn('Fee estimation failed, falling back to legacy gas price:', err)
-        const gasPrice = await publicClient.getGasPrice().catch(() => ARC_GAS.gasPrice)
-        gasParams.gasPrice = (gasPrice * 130n) / 100n
-      }
+      // Dynamically estimate fees using low-latency and aggressive parameters
+      const gasParams = await getAggressiveGasParams(publicClient);
 
-      let estimatedVoteGas: bigint = ARC_GAS.vote
+      let estimatedVoteGas = 350000n; // Slightly higher gas limit floor
       try {
-        estimatedVoteGas = await publicClient.estimateContractGas({
+        const est = await publicClient.estimateContractGas({
           address: CONTRACTS.governor,
           abi: GOVERNOR_ABI,
           functionName: 'castVote',
           args: [rawId, supportValue],
           account: address,
         })
-        estimatedVoteGas = (estimatedVoteGas * 120n) / 100n
+        estimatedVoteGas = (est * 150n) / 100n;
+        if (estimatedVoteGas < 350000n) estimatedVoteGas = 350000n;
       } catch (e) {
         console.warn('Vote gas estimation failed:', e)
       }
 
+      setStatus('Sending transaction...');
       const voteTx = await walletClient.writeContract({
         address: CONTRACTS.governor,
         abi: GOVERNOR_ABI,
