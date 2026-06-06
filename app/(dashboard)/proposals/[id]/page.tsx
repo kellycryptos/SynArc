@@ -12,7 +12,7 @@ import { arcPublicClient } from "@/lib/arc/config";
 import { toast } from "react-hot-toast";
 import { parseArcError } from "@/lib/utils";
 
-import { useReadContract, useAccount, useWriteContract, useSwitchChain } from "wagmi";
+import { useWriteContract, useSwitchChain } from "wagmi";
 import { formatUnits, createWalletClient, createPublicClient, fallback, custom, http } from "viem";
 import { GovernorABI, ERC20ABI } from "@/lib/governance/contracts";
 import { ARC_GAS_CONFIG } from "@/lib/constants";
@@ -62,35 +62,15 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   const { writeContractAsync } = useWriteContract();
   const { switchChainAsync } = useSwitchChain();
 
-  // Fetch real-time balances
-  const { data: usdcBalanceRaw } = useReadContract({
-    address: USDC_ADDRESS,
-    abi: ERC20ABI,
-    functionName: "balanceOf",
-    args: userAddress ? [userAddress] : undefined,
-    query: { enabled: !!userAddress },
-  });
+  // Fetch real-time balances using safe custom hooks to prevent WAGMI rendering errors on Circle
+  const { votingPower: sarcPower } = useToken(walletAddress);
+  const { balance: usdcBalance } = useUSDCBalance();
 
-  const { data: sarcBalanceRaw } = useReadContract({
-    address: SARC_ADDRESS,
-    abi: ERC20ABI,
-    functionName: "balanceOf",
-    args: userAddress ? [userAddress] : undefined,
-    query: { enabled: !!userAddress },
-  });
-
-  const usdcFormatted = useMemo(() => {
-    return usdcBalanceRaw !== undefined ? formatUnits(usdcBalanceRaw as bigint, 6) : "0";
-  }, [usdcBalanceRaw]);
-
-  const sarcFormatted = useMemo(() => {
-    return sarcBalanceRaw !== undefined ? formatUnits(sarcBalanceRaw as bigint, 18) : "0";
-  }, [sarcBalanceRaw]);
+  const usdcFormatted = usdcBalance || "0";
+  const sarcFormatted = sarcPower.toString();
 
   // Check voting power — either USDC > 0 OR sARC > 0
-  const hasVotingPower = 
-    (usdcBalanceRaw !== undefined && Number(usdcFormatted) > 0) || 
-    (sarcBalanceRaw !== undefined && Number(sarcFormatted) > 0);
+  const hasVotingPower = Number(usdcFormatted) > 0 || Number(sarcFormatted) > 0;
 
   // AI analysis states
   const [aiLoading, setAiLoading] = useState(false);
@@ -184,9 +164,6 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       router.push("/proposals");
     }
   }, [initialized, proposal, router]);
-
-  const { votingPower: sarcPower } = useToken(walletAddress);
-  const { balance: usdcBalance } = useUSDCBalance();
 
   const activeBalance = useMemo(() => {
     if (!walletAddress) return 0.0;
@@ -542,7 +519,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       <div className="max-w-4xl mx-auto space-y-8">
         
         {/* RPC Health Banner */}
-        <RpcHealthBanner hasLoadedBalance={usdcBalanceRaw !== undefined || sarcBalanceRaw !== undefined} />
+        <RpcHealthBanner hasLoadedBalance={usdcFormatted !== "0" || sarcPower > 0} />
         
         {/* Navigation & Header */}
         <div className="space-y-4">
