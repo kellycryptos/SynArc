@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { getSigner, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
@@ -78,6 +79,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
   const wallets = privyWallets ?? [];
   const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
   const { campaigns, initialized, initializeStore, contribute, castVote, setAIAnalysis, syncOnChainCampaign } = useCampaignStore();
+  const { balance: walletUSDC } = useUSDCBalance();
 
   const [contributionAmount, setContributionAmount] = useState<number>(0);
   const [contributing, setContributing] = useState(false);
@@ -244,6 +246,12 @@ export default function CampaignDetailPage({ params }: PageProps) {
     
     if (!isAuthenticated) {
       login();
+      return;
+    }
+
+    const userUSDC = parseFloat(walletUSDC || "0.00");
+    if (contributionAmount > userUSDC) {
+      alert(`Insufficient USDC balance. You have ${userUSDC.toFixed(2)} USDC in your wallet, but tried to contribute ${contributionAmount.toFixed(2)} USDC.`);
       return;
     }
 
@@ -723,6 +731,13 @@ export default function CampaignDetailPage({ params }: PageProps) {
                 </div>
               ) : (
                 <div className="space-y-3">
+                  {/* Wallet Balance display */}
+                  <div className="flex justify-between items-center text-xs px-1">
+                    <span className="text-muted">Wallet Balance</span>
+                    <span className="font-semibold text-white font-mono">
+                      {parseFloat(walletUSDC || "0.00").toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC
+                    </span>
+                  </div>
                   <div className="relative">
                     <input
                       type="number"

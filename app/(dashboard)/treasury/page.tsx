@@ -217,6 +217,13 @@ export default function TreasuryPage() {
       return;
     }
 
+    const balanceVal = parseFloat(currentWalletBalance);
+    if (amount > balanceVal) {
+      setErrorMessage(`Insufficient ${token} balance in your wallet. You have ${balanceVal.toFixed(2)} ${token}, but tried to deposit ${amount.toFixed(2)} ${token}.`);
+      setTxStep("error");
+      return;
+    }
+
     setDepositStatus('Preparing...')
     setErrorMessage("");
 

@@ -389,8 +389,8 @@ export const getAuthenticatedClient = async (
  * on mobile/embedded wallets on the Arc Testnet.
  */
 export const getAggressiveGasParams = async (publicClient: any) => {
-  const minMaxFeePerGas = 20000000n;         // Floor: 20 Gwei/units
-  const minMaxPriorityFeePerGas = 15000000n; // Floor: 15 Gwei/units
+  const minMaxFeePerGas = 20000000000n;         // Floor: 20 Gwei/units
+  const minMaxPriorityFeePerGas = 15000000000n; // Floor: 15 Gwei/units
 
   try {
     const fees = await publicClient.estimateFeesPerGas();
@@ -443,6 +443,12 @@ export const waitForTransaction = async (
   if (receipt.status !== 'success') {
     throw new Error('Transaction execution failed on-chain.');
   }
+
+  // Introduce a brief settlement delay (1.5 seconds) to allow RPC state synchronization
+  // across nodes before proceeding with subsequent transactions or reads.
+  console.log(`[waitForTransaction] Transaction succeeded. Applying 1.5s RPC settlement delay...`);
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+  console.log(`[waitForTransaction] Settlement delay completed.`);
   
   return receipt;
 };
