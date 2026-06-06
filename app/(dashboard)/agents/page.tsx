@@ -33,7 +33,7 @@ import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { createPublicClient, http, fallback } from "viem";
 import { arcTestnet, ARC_RPC_URLS } from "@/lib/arc-config";
 import { getArcRpcUrl } from "@/lib/rpc/config";
-import { getSigner } from "@/lib/tx-helper";
+import { getSigner, getAuthenticatedClient, waitForTransaction } from "@/lib/tx-helper";
 import { ERC8004_REGISTRY_ADDRESS, ERC8004RegistryABI } from "@/lib/governance/ERC8004Registry";
 
 interface AIAgent {
@@ -243,10 +243,7 @@ export default function AgentsPage() {
 
     try {
       // 1. Get browser wallet clients
-      const { walletClient, publicClient, address } = await getSigner(wallets);
-      if (!walletClient || !address) {
-        throw new Error("Wallet provider not initialized. Connect your Privy wallet.");
-      }
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
 
       console.log("Registering agent identity on ERC-8004 registry contract at:", ERC8004_REGISTRY_ADDRESS);
 
@@ -268,7 +265,7 @@ export default function AgentsPage() {
       console.log("Registry transaction submitted! Tx Hash:", regHash);
 
       // 3. Wait for confirmation
-      await publicClient.waitForTransactionReceipt({ hash: regHash });
+      await waitForTransaction(publicClient, regHash);
       console.log("🎉 On-chain agent registration confirmed!");
 
       // 4. Save metadata registry record in backend DB
@@ -341,8 +338,7 @@ export default function AgentsPage() {
     }
 
     try {
-      const { walletClient, publicClient } = await getSigner(wallets);
-      if (!walletClient) throw new Error("No signer found.");
+      const { walletClient, publicClient } = await getAuthenticatedClient(wallets, 5042002);
 
       console.log(`Submitting reputation adjustment on-chain for ${agentAddress}: ${type} (${delta.toString()})`);
 
@@ -354,7 +350,7 @@ export default function AgentsPage() {
         args: [agentAddress as `0x${string}`, delta]
       });
 
-      await publicClient.waitForTransactionReceipt({ hash: txHash });
+      await waitForTransaction(publicClient, txHash);
       console.log("🎉 Reputation score modified on-chain!");
 
       // Refresh list to pull live values

@@ -259,3 +259,150 @@ export const writeWithRetry = async (
   }
   throw lastError
 }
+
+/**
+ * Unified helper to get an authenticated walletClient and publicClient
+ * supporting Privy embedded wallets, Circle wallets, and external injected wallets.
+ */
+export const getAuthenticatedClient = async (
+  wallets?: any[],
+  targetChainId: number = 5042002
+) => {
+  console.log(`[getAuthenticatedClient] Initializing client for chain ${targetChainId}`);
+  
+  let provider: any;
+  let address: `0x${string}` | undefined;
+
+  // 1. If we have a Privy wallet array, use the active wallet
+  if (wallets && wallets.length > 0) {
+    const activeWallet = wallets[0];
+    console.log(`[getAuthenticatedClient] Connected Privy wallet address: ${activeWallet.address}`);
+    
+    // Switch chain reliably
+    try {
+      if (typeof activeWallet.switchChain === 'function') {
+        console.log(`[getAuthenticatedClient] Requesting switchChain to ${targetChainId}...`);
+        await activeWallet.switchChain(targetChainId);
+        console.log(`[getAuthenticatedClient] switchChain call sent.`);
+        // Brief sleep to let provider chain switch propagate
+        await new Promise(resolve => setTimeout(resolve, 800));
+      }
+    } catch (err: any) {
+      console.error(`[getAuthenticatedClient] switchChain failed:`, err);
+    }
+
+    // Retrieve provider
+    provider = await (
+      activeWallet.getEthereumProvider?.() ||
+      activeWallet.getEip1193Provider?.() ||
+      (activeWallet as any).getProvider?.()
+    );
+    address = activeWallet.address as `0x${string}`;
+  } 
+  // 2. Fallback to injected window.ethereum
+  else if (typeof window !== 'undefined' && window.ethereum) {
+    console.log(`[getAuthenticatedClient] Fallback to window.ethereum`);
+    provider = window.ethereum;
+    try {
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const hexChainId = await window.ethereum.request({ method: 'eth_chainId' });
+      const currentChainId = parseInt(hexChainId as string, 16);
+      if (currentChainId !== targetChainId) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: `0x${targetChainId.toString(16)}` }]
+          });
+        } catch (switchError: any) {
+          console.error('[getAuthenticatedClient] window.ethereum switchChain failed:', switchError);
+        }
+      }
+    } catch (reqError) {
+      console.error('[getAuthenticatedClient] Account request failed:', reqError);
+    }
+  }
+
+  if (!provider) {
+    console.error("[getAuthenticatedClient] No provider found");
+    throw new Error('No wallet connected. Please connect your wallet first.');
+  }
+
+  // Resolve address if not already known
+  if (!address) {
+    const tempClient = createWalletClient({
+      chain: ARC_CHAIN,
+      transport: custom(provider)
+    });
+    const [resolved] = await tempClient.getAddresses();
+    address = resolved;
+  }
+
+  if (!address) {
+    console.error("[getAuthenticatedClient] No address found");
+    throw new Error('No wallet account address found.');
+  }
+
+  console.log(`[getAuthenticatedClient] Final resolved wallet address: ${address}`);
+
+  // Create public client with resilient fallback transport
+  const rpcUrls = [
+    process.env.NEXT_PUBLIC_ARC_RPC_URL,
+    'https://rpc.testnet.arc.network',
+    'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev',
+    ...ARC_RPC_URLS
+  ].filter(Boolean) as string[];
+
+  const uniqueRpcUrls = Array.from(new Set(rpcUrls));
+
+  const publicClient = createPublicClient({
+    chain: ARC_CHAIN,
+    transport: fallback(
+      uniqueRpcUrls.map((url) =>
+        http(url, {
+          timeout: 20000,
+          retryCount: 5,
+          retryDelay: 1500,
+        })
+      )
+    ),
+  });
+
+  const walletClient = createWalletClient({
+    chain: ARC_CHAIN,
+    transport: custom(provider),
+    account: address,
+  });
+
+  return {
+    walletClient,
+    publicClient,
+    address,
+    provider
+  };
+};
+
+/**
+ * Resilient transaction receipt waiter with custom timeouts and polling
+ * optimized for the Arc Testnet block times.
+ */
+export const waitForTransaction = async (
+  publicClient: any,
+  hash: `0x${string}`
+) => {
+  console.log(`[waitForTransaction] Waiting for transaction receipt of hash: ${hash}`);
+  
+  const receipt = await publicClient.waitForTransactionReceipt({
+    hash,
+    timeout: 60_000,
+    pollingInterval: 2_000,
+    retryCount: 30,
+  });
+  
+  console.log(`[waitForTransaction] Transaction receipt received:`, receipt);
+  if (receipt.status !== 'success') {
+    throw new Error('Transaction execution failed on-chain.');
+  }
+  
+  return receipt;
+};
+

@@ -16,7 +16,7 @@ import { useWriteContract, useSwitchChain } from "wagmi";
 import { formatUnits, createWalletClient, createPublicClient, fallback, custom, http } from "viem";
 import { GovernorABI, ERC20ABI } from "@/lib/governance/contracts";
 import { ARC_GAS_CONFIG } from "@/lib/constants";
-import { writeWithRetry, getSigner, enforceChain } from "@/lib/tx-helper";
+import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
 const SARC_ADDRESS = "0x637cA7788aBC956832F389A7BB895D5249FE757B" as `0x${string}`;
@@ -313,55 +313,9 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       setTxHash(null);
       setStatus('Confirming vote on Arc blockchain...');
 
-      let provider
-      let activeWallet = null
-      if (wallets && wallets.length > 0) {
-        activeWallet = wallets[0];
-        provider = await enforceChain(activeWallet, 5042002);
-      } else if (typeof window !== 'undefined' && window.ethereum) {
-        await window.ethereum.request({ method: 'eth_requestAccounts' })
-        provider = window.ethereum
-      } else {
-        throw new Error('No wallet connected')
-      }
-      let address: `0x${string}`;
-      if (activeWallet) {
-        address = activeWallet.address as `0x${string}`;
-      } else {
-        const tempClient = createWalletClient({
-          chain: ARC_CHAIN,
-          transport: custom(provider)
-        });
-        const [resolved] = await tempClient.getAddresses();
-        address = resolved;
-      }
+      // Get provider and client — Privy wallet, Circle wallet OR external wallet
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
 
-      if (!address) {
-        throw new Error("No wallet account address found.");
-      }
-
-      const walletClient = createWalletClient({
-        account: address,
-        chain: ARC_CHAIN,
-        transport: custom(provider)
-      })
-
-      const publicClient = createPublicClient({
-        chain: ARC_CHAIN,
-        transport: fallback(
-          ARC_RPC_URLS.map(url =>
-            http(url, {
-              timeout: 10000,
-              retryCount: 3,
-              retryDelay: 1000,
-            })
-          ),
-          {
-            retryCount: 3,
-            retryDelay: 1000,
-          }
-        )
-      })
       const rawId = BigInt(proposal.id.replace("SIP-", ""));
 
       // Dynamically estimate fees
@@ -408,7 +362,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       setTxHash(voteTx);
       setStatus('⏳ Waiting for confirmation...');
 
-      await publicClient.waitForTransactionReceipt({ hash: voteTx })
+      await waitForTransaction(publicClient, voteTx);
 
       setStatus('✅ Vote recorded on Arc');
       toast.success('Vote recorded on-chain! ✅');

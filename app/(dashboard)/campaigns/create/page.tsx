@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import { getSigner } from "@/lib/tx-helper";
+import { getSigner, getAuthenticatedClient, waitForTransaction } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI, SynArcCrowdfundBytecode } from "@/lib/governance/SynArcCrowdfund";
 import { ERC8004_REGISTRY_ADDRESS, ERC8004RegistryABI } from "@/lib/governance/ERC8004Registry";
 import { createPublicClient, http, fallback } from "viem";
@@ -332,10 +332,7 @@ export default function CreateCampaignPage() {
       }
 
       // 1. Fetch signer and wallet details
-      const { walletClient, publicClient, address } = await getSigner(wallets);
-      if (!walletClient || !address) {
-        throw new Error("Failed to initialize wallet client or signer address");
-      }
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
 
       // USDC precompiled contract address on Arc Testnet
       const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
@@ -385,9 +382,7 @@ export default function CreateCampaignPage() {
       console.log("Deployment transaction submitted! Tx Hash:", deployHash);
 
       // 4. Wait for transaction confirmation
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash: deployHash
-      });
+      const receipt = await waitForTransaction(publicClient, deployHash);
 
       const deployedContractAddress = receipt.contractAddress;
       if (!deployedContractAddress) {

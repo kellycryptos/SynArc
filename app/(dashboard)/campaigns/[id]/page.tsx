@@ -5,7 +5,7 @@ import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import { getSigner } from "@/lib/tx-helper";
+import { getSigner, getAuthenticatedClient, waitForTransaction } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 import { parseAbi } from "viem";
 import { 
@@ -271,10 +271,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
     try {
       // 1. Get signer & public client
-      const { walletClient, publicClient, address } = await getSigner(wallets);
-      if (!walletClient || !address) {
-        throw new Error("Failed to initialize wallet client or signer address");
-      }
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
 
       const usdcAddress = "0x3600000000000000000000000000000000000000";
       const amountBigInt = BigInt(Math.round(contributionAmount * 1_000_000));
@@ -292,7 +289,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
         chain: walletClient.chain,
         args: [campaign.escrowAddress as `0x${string}`, amountBigInt]
       });
-      await publicClient.waitForTransactionReceipt({ hash: approveHash });
+      await waitForTransaction(publicClient, approveHash);
 
       // 3. Call contribute() on the campaign escrow vault
       console.log(`USDC approved. Depositing ${contributionAmount} USDC into milestone escrow vault on-chain...`);
@@ -304,7 +301,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
         args: [amountBigInt]
       });
       
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: contributeHash });
+      const receipt = await waitForTransaction(publicClient, contributeHash);
       console.log("🎉 On-chain contribution completed! Receipt:", receipt);
 
       // 4. Update the campaign store state & sync metrics on-chain
@@ -407,10 +404,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
       }
 
       // 1. Get signer
-      const { walletClient, publicClient, address } = await getSigner(wallets);
-      if (!walletClient || !address) {
-        throw new Error("Failed to initialize wallet client or signer address");
-      }
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
 
       console.log(`Creator on-chain trigger: Approving Milestone ${index + 1}...`);
       const approveHash = await walletClient.writeContract({
@@ -420,7 +414,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
         chain: walletClient.chain,
         args: [BigInt(index)]
       });
-      await publicClient.waitForTransactionReceipt({ hash: approveHash });
+      await waitForTransaction(publicClient, approveHash);
 
       console.log(`Milestone ${index + 1} approved. Executing withdrawal of locked USDC to recipient: ${campaign.recipient}...`);
       const withdrawHash = await walletClient.writeContract({
@@ -430,7 +424,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
         chain: walletClient.chain,
         args: [BigInt(index)]
       });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: withdrawHash });
+      const receipt = await waitForTransaction(publicClient, withdrawHash);
       console.log("🎉 ESCROW RELEASE COMPLETED! Milestone locked USDC successfully disbursed.", receipt);
 
       alert(`Success! Milestone ${index + 1} funds released and sent to recipient on-chain.`);
