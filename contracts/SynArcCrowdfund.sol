@@ -96,7 +96,7 @@ contract SynArcCrowdfund is ReentrancyGuard {
     function approveMilestone(uint256 index) external {
         require(index < milestones.length, "Invalid milestone index");
         require(!milestones[index].approved, "Milestone already approved");
-        require(msg.sender == creator || msg.sender == tx.origin, "Unauthorized");
+        require(msg.sender == creator, "Unauthorized: Only creator");
 
         milestones[index].approved = true;
         emit MilestoneApproved(index);

@@ -220,16 +220,17 @@ export function useGovernor(): UseGovernorReturn {
       const governorAddress = GOVERNANCE_CONTRACTS.governor;
       const governorContract = new Contract(governorAddress, GovernorABI, signer);
 
-      const targets = [ethers.ZeroAddress]; // placeholder target
-      const values = [0n];                   // no ETH value
-      const calldatas = ['0x'];              // empty calldata
-      const optimizedDescription = `${title.trim()}\n\n${description.trim()}\n\nCategory: ${category.trim()}`;
+      const votingDurationSecs = BigInt(duration) * 86400n;
+      const absoluteImpactValue = BigInt(Math.abs(treasuryImpact)) * 1000000n;
+      const targetAddress = target && target.startsWith('0x') ? target : ethers.ZeroAddress;
 
       const tx = await governorContract.propose(
-        targets,
-        values,
-        calldatas,
-        optimizedDescription,
+        title.trim(),
+        description.trim(),
+        category.trim(),
+        votingDurationSecs,
+        absoluteImpactValue,
+        targetAddress,
         { 
           gasLimit: 550000n, 
           maxFeePerGas: 30000000n, 

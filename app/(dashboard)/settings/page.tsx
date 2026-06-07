@@ -265,20 +265,17 @@ export default function SettingsPage() {
 
       const governorAddress = GOVERNANCE_CONTRACTS.governor;
       const governorContract = new Contract(governorAddress, [
-        "function propose(address[] targets, uint256[] values, bytes[] calldatas, string description) external returns (uint256)"
+        "function propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget) external returns (uint256)"
       ], provider);
-
-      const targets = [ethers.ZeroAddress];
-      const values = [0n];
-      const calldatas = ["0x"];
-      const description = "Diagnostic Test Proposal description string.";
 
       logDiag("Populating propose transaction for gas estimation...");
       const txData = await governorContract.propose.populateTransaction(
-        targets,
-        values,
-        calldatas,
-        description
+        "Diagnostic Test Proposal",
+        "Diagnostic Test Proposal description string.",
+        "Governance Parameter",
+        604800n,
+        0n,
+        ethers.ZeroAddress
       );
 
       if (walletAddress) {

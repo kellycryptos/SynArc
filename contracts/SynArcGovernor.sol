@@ -23,6 +23,7 @@ contract SynArcGovernor {
         bool executed;
         uint256 treasuryImpactValue;
         address executionTarget;
+        uint256 snapshotBlock;
     }
 
     SynArcToken public token;
@@ -30,6 +31,7 @@ contract SynArcGovernor {
     uint256 public proposalCount;
     mapping(uint256 => Proposal) public proposals;
     mapping(uint256 => mapping(address => bool)) public hasVoted;
+    uint256 public executionDelay;
 
     event ProposalCreated(
         uint256 indexed proposalId,
@@ -54,9 +56,10 @@ contract SynArcGovernor {
     event ProposalExecuted(uint256 indexed proposalId);
     event ProposalCanceled(uint256 indexed proposalId);
 
-    constructor(address _token, address payable _treasury) {
+    constructor(address _token, address payable _treasury, uint256 _executionDelay) {
         token = SynArcToken(_token);
         treasury = SynArcTreasury(_treasury);
+        executionDelay = _executionDelay;
     }
 
     function propose(
@@ -81,6 +84,7 @@ contract SynArcGovernor {
         newProposal.endTime = block.timestamp + votingDuration;
         newProposal.treasuryImpactValue = treasuryImpactValue;
         newProposal.executionTarget = executionTarget;
+        newProposal.snapshotBlock = block.number - 1;
 
         emit ProposalCreated(
             proposalId,
@@ -118,7 +122,7 @@ contract SynArcGovernor {
         require(state(proposalId) == ProposalState.Active, "Proposal is not active");
         require(!hasVoted[proposalId][msg.sender], "Already voted");
 
-        uint256 weight = token.balanceOf(msg.sender);
+        uint256 weight = token.getPastVotes(msg.sender, p.snapshotBlock);
         require(weight > 0, "No voting power");
 
         if (support == 0) {
@@ -179,6 +183,9 @@ contract SynArcGovernor {
         
         // After end time:
         if (p.forVotes > p.againstVotes) {
+            if (block.timestamp < p.endTime + executionDelay) {
+                return ProposalState.Queued;
+            }
             return ProposalState.Succeeded;
         } else {
             return ProposalState.Defeated;

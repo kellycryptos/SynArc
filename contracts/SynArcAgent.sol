@@ -187,6 +187,7 @@ contract SynArcAgent is Ownable, ReentrancyGuard {
     function withdrawNative(address payable recipient, uint256 amount) external onlyOwner {
         require(recipient != address(0), "Invalid recipient address");
         require(amount > 0, "Amount must be > 0");
-        recipient.transfer(amount);
+        (bool success, ) = recipient.call{value: amount}("");
+        require(success, "Native transfer failed");
     }
 }

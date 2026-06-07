@@ -9,14 +9,14 @@ const ARC_RPC_URL = process.env.ARC_RPC_URL || "https://rpc.testnet.arc.network"
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.20",
+    version: "0.8.24",
     settings: {
       optimizer: {
         enabled: true,
         runs: 200,
       },
       viaIR: true,
-      evmVersion: "paris",
+      evmVersion: "cancun",
     },
   },
   networks: {

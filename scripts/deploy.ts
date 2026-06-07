@@ -27,7 +27,8 @@ async function main() {
   // 3. Deploy SynArcGovernor
   console.log("Deploying SynArcGovernor...");
   const SynArcGovernor = await ethers.getContractFactory("SynArcGovernor");
-  const governor = await SynArcGovernor.deploy(tokenAddress, treasuryAddress);
+  const EXECUTION_DELAY_SECONDS = 60; // 1 minute execution delay for testnet
+  const governor = await SynArcGovernor.deploy(tokenAddress, treasuryAddress, EXECUTION_DELAY_SECONDS);
   await governor.waitForDeployment();
   const governorAddress = await governor.getAddress();
   console.log("SynArcGovernor deployed to:", governorAddress);
