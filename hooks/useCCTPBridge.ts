@@ -18,8 +18,9 @@ import {
 } from "viem";
  
 import { ARC_RPC_URL } from "@/lib/arc/config";
-import { getSigner } from "@/lib/tx-helper";
+import { getSigner, selectActiveWallet } from "@/lib/tx-helper";
 import { EVM_BRIDGE_CHAINS } from "@/lib/arc-config";
+import { useAuth } from "@/hooks/auth/useAuth";
  
 // CCTP Chain Configs matching circlefin's official configuration
 export const SOURCE_CHAINS = {
@@ -107,6 +108,7 @@ export interface BridgeState {
 }
 
 export function useCCTPBridge() {
+  const { walletAddress } = useAuth();
   // Safe: Circle wallet does not register with Privy wallets list
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
@@ -157,7 +159,7 @@ export function useCCTPBridge() {
       return;
     }
 
-    const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+    const activeWallet = selectActiveWallet(wallets, walletAddress);
 
     if (!activeWallet?.address) {
       setState(prev => ({
@@ -218,7 +220,7 @@ export function useCCTPBridge() {
       }
 
       const targetChainObj = EVM_BRIDGE_CHAINS[chainConfig.id];
-      const { walletClient, address } = await getSigner(wallets, targetChainObj);
+      const { walletClient, address } = await getSigner(wallets, targetChainObj, walletAddress || undefined);
 
       const approveData = encodeFunctionData({
         abi: erc20Abi,
@@ -422,7 +424,7 @@ export function useCCTPBridge() {
       let mintTxHash: string;
       try {
         const targetDestChain = EVM_BRIDGE_CHAINS[DESTINATION_CHAIN.id];
-        const { walletClient: destWalletClient, address: destAddress } = await getSigner(wallets, targetDestChain);
+        const { walletClient: destWalletClient, address: destAddress } = await getSigner(wallets, targetDestChain, walletAddress || undefined);
         mintTxHash = await destWalletClient.sendTransaction({
           to: DESTINATION_CHAIN.messageTransmitter as `0x${string}`,
           data: mintData,

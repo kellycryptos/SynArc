@@ -7,6 +7,7 @@ import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { useSwitchChain } from "wagmi";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
+import { selectActiveWallet } from "@/lib/tx-helper";
 import { 
   X, 
   Coins, 
@@ -70,7 +71,7 @@ interface BridgeModalProps {
 }
 
 export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login, walletAddress } = useAuth();
   const [selectedChain, setSelectedChain] = useState(SOURCE_CHAINS[0]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [amount, setAmount] = useState("");
@@ -134,7 +135,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   // Safe: Circle wallet does not register with Privy wallets list
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
-  const activeWallet = wallets.length > 0 ? wallets[0] : null;
+  const activeWallet = selectActiveWallet(wallets, walletAddress);
 
   // Load balance for the selected EVM source chain
   const fetchSourceBalance = async () => {

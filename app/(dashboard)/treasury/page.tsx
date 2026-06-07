@@ -17,7 +17,7 @@ import { getWorkingRPC, arcTestnetChain } from "@/lib/rpc";
 import { createPublicClient, createWalletClient, http, custom, fallback } from "viem";
 import { toast } from "react-hot-toast";
 import { parseArcError } from "@/lib/utils";
-import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
+import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams, selectActiveWallet } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 
 const ERC20_ABI = [
@@ -109,7 +109,7 @@ export default function TreasuryPage() {
     }, ...prev]);
   };
 
-  const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+  const activeWallet = selectActiveWallet(wallets, walletAddress);
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
@@ -255,7 +255,7 @@ export default function TreasuryPage() {
         return;
       }
 
-      const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+      const activeWallet = selectActiveWallet(wallets, walletAddress);
       const isEmbedded = activeWallet?.walletClientType === 'privy';
 
       if (isEmbedded && activeWallet) {
@@ -352,7 +352,7 @@ export default function TreasuryPage() {
       }
 
       // Get provider and client — Privy wallet, Circle wallet OR external wallet
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
 
       const tokenAddress = token === 'USDC' ? USDC_ADDRESS : EURC_ADDRESS;
       const amountRaw = BigInt(Math.floor(amount * 1_000_000));

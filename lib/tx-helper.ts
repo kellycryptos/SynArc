@@ -2,6 +2,21 @@ import { createWalletClient, createPublicClient, http, custom, fallback } from '
 import { ARC_CHAIN, ARC_RPC_URLS, ARC_GAS } from './arc-config'
 
 // Enforce target chain ID before executing transaction with dynamic checks to prevent Privy crashes
+export function selectActiveWallet(wallets?: any[], activeAddress?: string | null): any {
+  if (!wallets || wallets.length === 0) return null;
+  
+  if (activeAddress) {
+    const target = activeAddress.toLowerCase();
+    const found = wallets.find(w => w.address.toLowerCase() === target);
+    if (found) return found;
+  }
+  
+  const privyWallet = wallets.find(w => w.walletClientType === 'privy');
+  if (privyWallet) return privyWallet;
+  
+  return wallets[0];
+}
+
 export const enforceChain = async (activeWallet: any, targetChainId: number = 5042002): Promise<any> => {
   if (!activeWallet) throw new Error("No active wallet provided for chain enforcement");
 
@@ -28,51 +43,38 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
   }
 
   // 2. Perform switch if mismatch detected
-  if (walletChainId !== targetChainId) {
-    try {
-      if (typeof activeWallet.switchChain === 'function') {
-        console.log(`[enforceChain] Invoking Privy switchChain to ${targetChainId}...`);
-        await activeWallet.switchChain(targetChainId);
-        // Wait 600ms for Privy internal state & provider instances to fully synchronize
-        await new Promise(resolve => setTimeout(resolve, 600));
-      }
-    } catch (switchError: any) {
-      console.warn('[enforceChain] Privy switchChain failed, attempting direct provider RPC switch:', switchError);
+  try {
+    if (typeof activeWallet.switchChain === 'function') {
+      console.log(`[enforceChain] switchChain to ${targetChainId}...`);
+      await activeWallet.switchChain(targetChainId);
+      console.log(`[enforceChain] switchChain call sent successfully.`);
+      // Delay to let Privy state propagate
+      await new Promise(resolve => setTimeout(resolve, 800));
     }
+  } catch (err: any) {
+    console.warn('[enforceChain] switchChain call raised error, continuing with fallback checks:', err);
   }
 
-  // 3. Obtain EIP1193 provider to query directly and force chain switch on hardware/injected wallets
+  // 3. Confirm network shift was successful
   const provider = await (
     activeWallet.getEthereumProvider?.() || 
     activeWallet.getEip1193Provider?.() || 
     (activeWallet as any).getProvider?.()
   );
-  
+
   if (provider) {
-    // Query direct chainId from provider RPC (bypasses any cached states in Privy/Wagmi)
     let providerChainIdHex = await provider.request({ method: 'eth_chainId' }).catch(() => null);
     let providerChainId = providerChainIdHex ? parseInt(providerChainIdHex, 16) : 0;
+    console.log(`[enforceChain] Provider reports active chain ID: ${providerChainId}`);
     
-    if (providerChainId && providerChainId !== targetChainId) {
-      console.log(`[enforceChain] Provider chain mismatch. Expected ${targetChainId}, got ${providerChainId}. Forcing switch via provider request...`);
-      try {
-        await provider.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: targetHex }]
-        });
-        await new Promise(resolve => setTimeout(resolve, 600));
-        providerChainIdHex = await provider.request({ method: 'eth_chainId' }).catch(() => null);
-        providerChainId = providerChainIdHex ? parseInt(providerChainIdHex, 16) : 0;
-      } catch (reqError: any) {
-        console.error('[enforceChain] Provider request chain switch failed:', reqError);
+    // Trigger wallet_addEthereumChain if RPC reports missing chain support
+    if (providerChainId !== targetChainId) {
+      if (typeof window !== 'undefined' && provider.request) {
+        console.log(`[enforceChain] Requesting wallet_addEthereumChain for chain ${targetChainId}...`);
         
-        // If unrecognized chain, try to wallet_addEthereumChain
-        const isUnrecognized = 
-          reqError?.code === 4902 || 
-          reqError?.message?.includes("4902") || 
-          reqError?.message?.toLowerCase().includes("unrecognized");
-          
-        if (isUnrecognized) {
+        // Define standard RPC networks parameter
+        const isArc = targetChainId === 5042002;
+        if (isArc) {
           try {
             await provider.request({
               method: 'wallet_addEthereumChain',
@@ -80,13 +82,9 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
                 chainId: targetHex,
                 chainName: "Arc Testnet",
                 rpcUrls: ARC_RPC_URLS,
-                nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
-                blockExplorerUrls: ['https://testnet.arcscan.app']
+                nativeCurrency: { name: "Arc USDC", symbol: "USDC", decimals: 6 },
+                blockExplorerUrls: ["https://testnet.arcscan.app/"],
               }]
-            });
-            await provider.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: targetHex }]
             });
             await new Promise(resolve => setTimeout(resolve, 600));
             providerChainIdHex = await provider.request({ method: 'eth_chainId' }).catch(() => null);
@@ -109,19 +107,22 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
 };
 
 // Get signer from ANY wallet type (Privy, MetaMask, Rabby, OKX)
-export const getSigner = async (wallets?: any[], targetChain?: any) => {
+export const getSigner = async (wallets?: any[], targetChain?: any, activeAddress?: string) => {
   let provider
   const chainToUse = targetChain || ARC_CHAIN
 
   // Try Privy wallet first and perform chain switching if necessary
   let knownAddress: `0x${string}` | undefined;
   if (wallets && wallets.length > 0) {
-    try {
-      provider = await enforceChain(wallets[0], chainToUse.id);
-      knownAddress = wallets[0].address as `0x${string}`;
-    } catch (err) {
-      console.error('Error fetching Privy provider or switching chain:', err)
-      throw err;
+    const activeWallet = selectActiveWallet(wallets, activeAddress);
+    if (activeWallet) {
+      try {
+        provider = await enforceChain(activeWallet, chainToUse.id);
+        knownAddress = activeWallet.address as `0x${string}`;
+      } catch (err) {
+        console.error('Error fetching Privy provider or switching chain:', err)
+        throw err;
+      }
     }
   }
 
@@ -266,7 +267,8 @@ export const writeWithRetry = async (
  */
 export const getAuthenticatedClient = async (
   wallets?: any[],
-  targetChainId: number = 5042002
+  targetChainId: number = 5042002,
+  activeAddress?: string
 ) => {
   console.log(`[getAuthenticatedClient] Initializing client for chain ${targetChainId}`);
   
@@ -275,7 +277,7 @@ export const getAuthenticatedClient = async (
 
   // 1. If we have a Privy wallet array, use the active wallet
   if (wallets && wallets.length > 0) {
-    const activeWallet = wallets[0];
+    const activeWallet = selectActiveWallet(wallets, activeAddress);
     console.log(`[getAuthenticatedClient] Connected Privy wallet address: ${activeWallet.address}`);
     
     // Switch chain reliably

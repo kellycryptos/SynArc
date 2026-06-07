@@ -6,7 +6,8 @@ import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
 import { Proposal } from "@/types/governance";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { getResilientProvider } from "@/lib/rpc/config";
-import { enforceChain } from "@/lib/tx-helper";
+import { enforceChain, selectActiveWallet } from "@/lib/tx-helper";
+import { useAuth } from "@/hooks/auth/useAuth";
 
 // Module-level cache so navigating away and back doesn't re-fetch
 const PROPOSALS_CACHE: { data: Proposal[] | null; ts: number } = { data: null, ts: 0 };
@@ -32,6 +33,7 @@ export function useGovernor(): UseGovernorReturn {
   // Safe: Circle wallet does not register with Privy wallets list
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
+  const { walletAddress } = useAuth();
 
   const fetchProposals = useCallback(async (force = false) => {
     const now = Date.now();
@@ -148,7 +150,7 @@ export function useGovernor(): UseGovernorReturn {
         throw new Error("No wallet connected");
       }
 
-      const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+      const activeWallet = selectActiveWallet(wallets, walletAddress);
       if (!activeWallet) {
         throw new Error("Active wallet not found");
       }
@@ -204,7 +206,7 @@ export function useGovernor(): UseGovernorReturn {
         throw new Error("No wallet connected");
       }
 
-      const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+      const activeWallet = selectActiveWallet(wallets, walletAddress);
       if (!activeWallet) {
         throw new Error("Active wallet not found");
       }

@@ -3,6 +3,8 @@ import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useState, useCallback } from "react";
 import { ensureArcNetwork } from "@/lib/arc/config";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { selectActiveWallet } from "@/lib/tx-helper";
 
 export function useSwitchArcNetwork() {
   // Safe: Circle wallet does not register with Privy wallets list
@@ -11,8 +13,9 @@ export function useSwitchArcNetwork() {
   const { isUnsupported } = useArcNetwork();
   const { refetch: refetchBalance } = useUSDCBalance();
   const [isSwitching, setIsSwitching] = useState(false);
+  const { walletAddress } = useAuth();
 
-  const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+  const activeWallet = selectActiveWallet(wallets, walletAddress);
 
   const switchToArc = useCallback(async () => {
     if (!activeWallet) {
