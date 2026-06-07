@@ -4,7 +4,7 @@ import { TreasuryActivity } from "@/types";
 import { ethers, JsonRpcProvider, BrowserProvider, Contract, formatUnits, parseUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI, ProposalState, VoteType, ERC20ABI } from "@/lib/governance/contracts";
 
-import { getResilientProvider } from "@/lib/rpc/config";
+import { getCachedProvider } from "@/lib/rpc/provider-cache";
 
 interface GovernanceState {
   proposals: Proposal[];
@@ -64,7 +64,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
   initializeStore: async (customDao) => {
     const activeDaoId = customDao?.id || 'synarc';
-    const STALE_MS = 120_000; // 2-minute cache — avoids redundant RPC round-trips
+    const STALE_MS = 180_000; // 3-minute cache — avoids redundant RPC round-trips
     const state = get();
     const now = Date.now();
 
@@ -97,7 +97,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     });
 
     try {
-      const provider = await getResilientProvider();
+      const provider = await getCachedProvider();
 
       const governorAddress = contracts.governor;
       const governorContract = new Contract(governorAddress, GovernorABI, provider);

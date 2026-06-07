@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ethers, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS } from "@/lib/governance/contracts";
-import { getResilientProvider } from "@/lib/rpc/config";
+import { getCachedProvider } from "@/lib/rpc/provider-cache";
 
 const SARC_ABI = [
   "function balanceOf(address account) external view returns (uint256)",
@@ -72,7 +72,7 @@ export function useToken(userAddress: string | null): UseTokenReturn {
       setLoading(true);
       setError(null);
 
-      const provider = await getResilientProvider();
+      const provider = await getCachedProvider();
       const tokenAddress = GOVERNANCE_CONTRACTS.token;
       const sarcContract = new Contract(tokenAddress, SARC_ABI, provider);
       const usdcContract = new Contract(USDC_ADDRESS, USDC_ABI, provider);
@@ -106,6 +106,14 @@ export function useToken(userAddress: string | null): UseTokenReturn {
 
   useEffect(() => {
     fetchBalances();
+
+    // Refresh every 60 seconds and only if visible
+    const interval = setInterval(() => {
+      if (typeof document === "undefined" || document.visibilityState === "visible") {
+        fetchBalances();
+      }
+    }, 60_000);
+    return () => clearInterval(interval);
   }, [fetchBalances]);
 
   const totalDisplayPower = votingPower + usdcBalance;

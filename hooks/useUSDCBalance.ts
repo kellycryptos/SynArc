@@ -17,6 +17,10 @@ const ERC20_ABI = [
   },
 ] as const
 
+// Cache and promise deduplication variables
+const cachedBalance: { [address: string]: { balance: string; timestamp: number } | undefined } = {}
+const pendingFetches: { [address: string]: Promise<string> | undefined } = {}
+
 export const useUSDCBalance = (walletAddress?: string | undefined) => {
   const { walletAddress: authAddress } = useAuth()
   const activeAddress = walletAddress || authAddress
@@ -33,10 +37,35 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
       return
     }
 
+    const key = activeAddress.toLowerCase()
+    const now = Date.now()
+
+    // 1. Check cache (5 seconds cache to deduplicate simultaneous calls on load)
+    const cacheEntry = cachedBalance[key]
+    if (cacheEntry && now - cacheEntry.timestamp < 5000) {
+      setBalance(cacheEntry.balance)
+      setLoading(false)
+      setError(null)
+      return
+    }
+
+    // 2. Check if there is already a pending promise for this address
+    if (pendingFetches[key]) {
+      setLoading(true)
+      try {
+        const res = await pendingFetches[key]
+        setBalance(res)
+        setLoading(false)
+        return
+      } catch (err) {
+        // Fall through to try a new fetch if the previous one failed
+      }
+    }
+
     setLoading(true)
     setError(null)
     
-    try {
+    const fetchPromise = (async () => {
       const client = createPublicClient({
         chain: arcTestnet,
         transport: fallback(ARC_RPC_URLS.map(url => http(url))),
@@ -49,25 +78,35 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
         args: [activeAddress as `0x${string}`],
       })
 
-      // USDC has 6 decimals
       const formatted = (Number(raw) / 1_000_000).toFixed(2)
+      cachedBalance[key] = { balance: formatted, timestamp: Date.now() }
+      return formatted
+    })()
+
+    pendingFetches[key] = fetchPromise
+
+    try {
+      const formatted = await fetchPromise
       setBalance(formatted)
       setLoading(false)
-      return
     } catch (err) {
       console.warn('USDC balance fetch failed:', err)
+      setError('Error fetching balance')
+      setLoading(false)
+    } finally {
+      delete pendingFetches[key]
     }
-
-    // All RPCs failed
-    setError('Error fetching balance')
-    setLoading(false)
   }, [activeAddress])
 
   useEffect(() => {
     fetchBalance()
     
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchBalance, 30_000)
+    // Refresh every 60 seconds (reduced from 30s) and only if visible
+    const interval = setInterval(() => {
+      if (typeof document === "undefined" || document.visibilityState === "visible") {
+        fetchBalance()
+      }
+    }, 60_000)
     return () => clearInterval(interval)
     
   }, [fetchBalance])
@@ -83,3 +122,4 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
     refetch: fetchBalance,
   }
 }
+

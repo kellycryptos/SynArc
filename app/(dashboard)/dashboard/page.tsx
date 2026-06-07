@@ -1,15 +1,23 @@
 "use client";
 
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { OverviewCards } from "@/components/dashboard/OverviewCards";
 import { WalletFaucetCard } from "@/components/dashboard/WalletFaucetCard";
-import { GovernanceAnalytics } from "@/components/analytics/GovernanceAnalytics";
 import { ProposalFeed } from "@/components/proposals/ProposalFeed";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { ArrowRight, Rocket, Plus, Coins, Users } from "lucide-react";
 import Link from "next/link";
+
+const GovernanceAnalytics = dynamic(
+  () => import("@/components/analytics/GovernanceAnalytics").then((m) => m.GovernanceAnalytics),
+  {
+    loading: () => <div className="h-64 w-full bg-surface-elevated/40 animate-pulse rounded-xl border border-border-thin" />,
+    ssr: false,
+  }
+);
 
 export default function DashboardOverview() {
   const { campaigns, initialized, initializeStore } = useCampaignStore();

@@ -24,7 +24,11 @@ export function useArcRpcHealth() {
 
   useEffect(() => {
     checkHealth();
-    const interval = setInterval(checkHealth, 15000);
+    const interval = setInterval(() => {
+      if (typeof document === "undefined" || document.visibilityState === "visible") {
+        checkHealth();
+      }
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 

@@ -146,8 +146,12 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
   useEffect(() => {
     fetchBalances();
 
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchBalances, 30_000);
+    // Auto-refresh every 60 seconds and only if visible
+    const interval = setInterval(() => {
+      if (typeof document === "undefined" || document.visibilityState === "visible") {
+        fetchBalances();
+      }
+    }, 60_000);
     return () => clearInterval(interval);
   }, [fetchBalances]);
 

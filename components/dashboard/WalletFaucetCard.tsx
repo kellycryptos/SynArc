@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useToken } from "@/hooks/useToken";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -76,11 +75,16 @@ export function WalletFaucetCard() {
   const [txHistory, setTxHistory] = useState<FaucetTx[]>([]);
   const [nextClaimAt, setNextClaimAt] = useState<string | null>(null);
 
-  // Custom hook to fetch actual USDC balance on Arc Testnet
-  const { balance: realBalance, isLoading: balanceLoading, isError: balanceError, refetch: refetchUSDC, isFetching } = useUSDCBalance();
-  
   // Custom hook to fetch sARC token balance and USDC from Arc
-  const { votingPower: sarcVotes, sarcBalance, usdcBalance: usdcFromToken, needsDelegation, refetch: refetchToken } = useToken(walletAddress);
+  const { 
+    votingPower: sarcVotes, 
+    sarcBalance, 
+    usdcBalance: activeBalance, 
+    needsDelegation, 
+    loading: tokenLoading, 
+    error: tokenError, 
+    refetch: refetchToken 
+  } = useToken(walletAddress);
 
   // Load persistent override and history on mount & address change
   useEffect(() => {
@@ -252,9 +256,6 @@ export function WalletFaucetCard() {
     ? `${walletAddress.substring(0, 8)}...${walletAddress.substring(walletAddress.length - 8)}`
     : "Disconnected";
 
-  // Balance display (USDC from Arc)
-  const activeBalance = realBalance ? parseFloat(realBalance) : (usdcFromToken || 0);
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-up">
       {/* Balance & Identity (Left & Center Columns) */}
@@ -325,14 +326,14 @@ export function WalletFaucetCard() {
           <div className="flex flex-col gap-3 py-4">
             <p className="text-xs font-semibold tracking-wider text-text-tertiary uppercase flex items-center gap-1">
               Arc Testnet Wallet Balance
-              {isFetching && <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />}
+              {tokenLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />}
             </p>
 
             {/* USDC Primary Balance */}
             <div className="flex items-baseline gap-2">
-              {balanceLoading ? (
+              {tokenLoading && activeBalance === 0 ? (
                 <div className="h-12 w-48 bg-white/5 animate-pulse rounded-xl" />
-              ) : balanceError ? (
+              ) : tokenError ? (
                 <span className="text-sm font-semibold text-danger bg-danger/10 border border-danger/20 rounded-full px-3 py-1" title="Failed to fetch balance from Arc RPC">
                   Error fetching balance
                 </span>
@@ -608,7 +609,7 @@ export function WalletFaucetCard() {
         <BridgeModal 
           isOpen={showBridge} 
           onClose={() => setShowBridge(false)} 
-          onSuccess={refetchUSDC} 
+          onSuccess={refetchToken} 
         />
       </GlassCard>
     </div>
