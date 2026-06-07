@@ -51,7 +51,7 @@ export default function DAOsPage() {
         const provider = await getResilientProvider();
         
         // 1. Fetch live treasury balance
-        const treasuryAddress = "0x8Ab21363cB0319548B051f129e477393908be7c1";
+        const treasuryAddress = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18";
         const TREASURY_ABI = [
           "function usdcBalance() external view returns (uint256)",
           "function eurcBalance() external view returns (uint256)"
@@ -67,7 +67,7 @@ export default function DAOsPage() {
         setSynarcTreasury(combinedTreasury);
 
         // 2. Fetch live members count by scraping token Transfer logs
-        const tokenAddress = "0x637cA7788aBC956832F389A7BB895D5249FE757B";
+        const tokenAddress = process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e";
         const ERC20_ABI = [
           "function balanceOf(address account) external view returns (uint256)"
         ];

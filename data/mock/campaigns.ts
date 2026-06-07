@@ -84,7 +84,7 @@ export const MOCK_CAMPAIGNS: Campaign[] = [
     votes: { for: 12400, against: 800, abstain: 200 },
     fundingSources: ['individual', 'dao_treasury'],
     proposalNumber: 12,
-    escrowAddress: '0x8Ab21363cB0319548B051f129e477393908be7c1',
+    escrowAddress: '0xFE0F6bF45D363d34CD5fC1781594a7471736dC18',
     sybilProtection: {
       aiScanned: true,
       reputationChecked: true,

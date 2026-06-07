@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const GOVERNOR_ADDRESS = "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702";
+  const GOVERNOR_ADDRESS = process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e";
   
   // Proposal Metadata matching custom SynArcGovernor contract
   const title = "SIP-1: Optimize Core Protocol Treasury Target";

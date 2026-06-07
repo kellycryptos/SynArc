@@ -8,7 +8,7 @@ async function main() {
 
   const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
   const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a";
-  const GOVERNOR_ADDRESS = "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702";
+  const GOVERNOR_ADDRESS = process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e";
 
   console.log("Deploying SynArcTreasury...");
   const SynArcTreasury = await ethers.getContractFactory("SynArcTreasury");
@@ -27,7 +27,7 @@ async function main() {
   let deploymentData = {
     network: "arcTestnet",
     chainId: 5042002,
-    token: "0x637cA7788aBC956832F389A7BB895D5249FE757B",
+    token: process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e",
     treasury: treasuryAddress,
     governor: GOVERNOR_ADDRESS,
     timestamp: new Date().toISOString(),

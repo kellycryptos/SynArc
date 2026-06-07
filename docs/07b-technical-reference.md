@@ -86,5 +86,5 @@ SynArc is optimized for the **Arc Testnet**. Here are the official contract para
 * **EVM Chain ID:** `5042002`
 * **Official RPC URL:** `https://rpc.testnet.arc.network`
 * **Block Explorer:** `https://testnet.arcscan.app`
-* **USDC Contract Address:** `0x637cA7788aBC956832F389A7BB895D5249FE757B` (sARC is matched to this on-chain asset for voting checkpoints)
+* **USDC Contract Address:** `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e` (sARC is matched to this on-chain asset for voting checkpoints)
 * **EURC Contract Address:** `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a`

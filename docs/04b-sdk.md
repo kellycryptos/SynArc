@@ -104,8 +104,8 @@ const isAuthorized = await synarc.treasury.isExecutor(wallet.address);
 if (isAuthorized) {
   // Trigger a yield sweep to direct capital to optimization vaults
   const sweepTx = await synarc.treasury.executeSweep({
-    tokenAddress: "0x637cA7788aBC956832F389A7BB895D5249FE757B", // sARC
-    targetVault: "0x8Ab21363cB0319548B051f129e477393908be7c1",
+    tokenAddress: "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e", // sARC
+    targetVault: "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18",
     amount: ethers.parseUnits("500", 18)
   });
   console.log(`Sweep execution complete. Hash: ${sweepTx.hash}`);

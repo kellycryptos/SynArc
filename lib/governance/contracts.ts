@@ -311,13 +311,13 @@ export const TreasuryABI = [
  */
 export const GOVERNANCE_CONTRACTS = {
   // Governor contract for proposal voting
-  governor: (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || '0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702') as `0x${string}`,
+  governor: (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || '0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e') as `0x${string}`,
   
   // USDC token for voting power
-  token: (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0x637cA7788aBC956832F389A7BB895D5249FE757B') as `0x${string}`,
+  token: (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e') as `0x${string}`,
   
   // Treasury for fund management
-  treasury: (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '0x8Ab21363cB0319548B051f129e477393908be7c1') as `0x${string}`,
+  treasury: (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '0xFE0F6bF45D363d34CD5fC1781594a7471736dC18') as `0x${string}`,
   
   // EURC token address
   eurc: (process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS || '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}`,

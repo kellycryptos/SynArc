@@ -206,7 +206,7 @@ export default function CreateProposalPage() {
 
       const votingDurationSecs = BigInt(formData.votingDuration) * 86400n;
       const absoluteImpactValue = BigInt(Math.abs(formData.treasuryImpactValue)) * 1000000n;
-      const governorAddress = (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702") as `0x${string}`;
+      const governorAddress = (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e") as `0x${string}`;
 
       // Dynamically estimate fees using low-latency and aggressive parameters
       const gasParams = await getAggressiveGasParams(publicClient);

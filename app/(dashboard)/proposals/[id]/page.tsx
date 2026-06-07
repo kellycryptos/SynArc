@@ -19,7 +19,7 @@ import { ARC_GAS_CONFIG } from "@/lib/constants";
 import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
-const SARC_ADDRESS = "0x637cA7788aBC956832F389A7BB895D5249FE757B" as `0x${string}`;
+const SARC_ADDRESS = (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e") as `0x${string}`;
 const GOVERNOR_ABI = GovernorABI;
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -198,7 +198,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
       try {
         const provider = await getResilientProvider();
-        const governorAddress = process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702";
+        const governorAddress = process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e";
         const GOVERNOR_ABI = [
           "function hasVoted(uint256 proposalId, address account) external view returns (bool)"
         ];
@@ -858,7 +858,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
               <div className="space-y-1.5">
-                <div><span className="text-text-tertiary">Governor Address:</span> <span className="text-white">{process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702"}</span></div>
+                <div><span className="text-text-tertiary">Governor Address:</span> <span className="text-white">{process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e"}</span></div>
                 <div><span className="text-text-tertiary">RPC URL:</span> <span className="text-white">{process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network"}</span></div>
                 <div><span className="text-text-tertiary">Current Block:</span> <span className="text-primary font-bold">{currentBlock || "Loading..."}</span></div>
               </div>

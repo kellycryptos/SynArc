@@ -287,7 +287,7 @@ export default function SettingsPage() {
         logDiag(`Computed intrinsic cost: ${totalCostWei.toString()} wei (${Number(totalCostWei) / 1e18} USDC)`);
       } else {
         logDiag("Warning: Connect wallet to calculate custom sender gas estimation.");
-        txData.from = "0x8Ab21363cB0319548B051f129e477393908be7c1"; // Treasury fallback
+        txData.from = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18"; // Treasury fallback
         const gasEst = await provider.estimateGas(txData);
         logDiag(`Estimated Gas Limit (Treasury Sender): ${gasEst.toString()}`);
       }
@@ -607,10 +607,10 @@ export default function SettingsPage() {
             
             <div className="grid grid-cols-1 gap-3">
               {[
-                { name: "SynArc Governor", address: "0x17D9d585CBB1AF6aa4a3C787116f7ba59651B702", id: "gov" },
-                { name: "SynArc Treasury", address: "0x8Ab21363cB0319548B051f129e477393908be7c1", id: "treasury" },
-                { name: "sARC Token (Voting Power)", address: "0x637cA7788aBC956832F389A7BB895D5249FE757B", id: "token" },
-                { name: "EURC Token", address: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a", id: "eurc" },
+                { name: "SynArc Governor", address: process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e", id: "gov" },
+                { name: "SynArc Treasury", address: process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18", id: "treasury" },
+                { name: "sARC Token (Voting Power)", address: process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e", id: "token" },
+                { name: "EURC Token", address: process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS || "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a", id: "eurc" },
               ].map((contract) => (
                 <div key={contract.id} className="flex items-center justify-between gap-3 p-4 bg-surface-elevated rounded-xl border border-border-thin w-full">
                   <div className="min-w-0 flex-1">
