@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { useTreasury } from "@/hooks/useTreasury";
+import { useTreasuryBalances } from "@/hooks/useTreasuryBalances";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useEURCBalance } from "@/hooks/useEURCBalance";
 import { useAuth } from "@/hooks/auth/useAuth";
@@ -69,9 +69,9 @@ export default function TreasuryPage() {
     usdcBalance, 
     eurcBalance, 
     activities, 
-    loading: treasuryLoading, 
+    isLoading: treasuryLoading, 
     refetch: refetchTreasury 
-  } = useTreasury();
+  } = useTreasuryBalances();
 
   const { balance: walletUSDC, refetch: refetchWalletUSDC } = useUSDCBalance();
   const { balance: walletEURC, refetch: refetchWalletEURC } = useEURCBalance();
