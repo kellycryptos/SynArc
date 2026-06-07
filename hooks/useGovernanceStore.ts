@@ -5,6 +5,8 @@ import { ethers, JsonRpcProvider, BrowserProvider, Contract, formatUnits, parseU
 import { GOVERNANCE_CONTRACTS, GovernorABI, ProposalState, VoteType, ERC20ABI } from "@/lib/governance/contracts";
 
 import { getCachedProvider } from "@/lib/rpc/provider-cache";
+import historicalProposals from "@/data/historical-proposals.json";
+
 
 interface GovernanceState {
   proposals: Proposal[];
@@ -200,7 +202,11 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           console.error("Failed to parse simulated proposals from localStorage", err);
         }
       }
-      const combinedProposals = [...simulatedProposals, ...loadedProposals];
+      let combinedProposals = [...simulatedProposals, ...loadedProposals];
+      if (activeDaoId === 'synarc') {
+        combinedProposals = [...combinedProposals, ...(historicalProposals as Proposal[])];
+      }
+
 
       const treasuryAddress = contracts.treasury;
       const treasuryContract = new Contract(treasuryAddress, [
@@ -265,19 +271,26 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           console.error("Failed to parse simulated proposals from localStorage", err);
         }
       }
+      const fallbackProposals = activeDaoId === 'synarc'
+        ? [...simulatedProposals, ...(historicalProposals as Proposal[])]
+        : simulatedProposals;
       set({
-        proposals: simulatedProposals,
+        proposals: fallbackProposals,
         treasuryActivities: [],
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
           treasuryValue: "$0",
-          activeProposals: simulatedProposals.filter(p => p.status === "Active").length,
-          totalProposals: simulatedProposals.length,
-          governanceParticipation: "0.0%",
+          activeProposals: fallbackProposals.filter(p => p.status === "Active").length,
+          totalProposals: fallbackProposals.length,
+          governanceParticipation: fallbackProposals.length > 0
+            ? (fallbackProposals.reduce((sum, p) => sum + p.participationPercentage, 0) / fallbackProposals.length).toFixed(1) + "%"
+            : "0.0%",
           daoMembers: 0,
           treasuryTransactions: 0,
-          proposalExecutionRate: "100.0%"
+          proposalExecutionRate: fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
+            ? ((fallbackProposals.filter(p => p.status === "Executed").length / fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
+            : "100.0%"
         }
       });
     }
