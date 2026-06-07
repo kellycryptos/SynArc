@@ -79,8 +79,8 @@ export function WalletFaucetCard() {
   // Custom hook to fetch actual USDC balance on Arc Testnet
   const { balance: realBalance, isLoading: balanceLoading, isError: balanceError, refetch: refetchUSDC, isFetching } = useUSDCBalance();
   
-  // Custom hook to fetch sARC token balance
-  const { votingPower: tokenBalance, refetch: refetchToken } = useToken(walletAddress);
+  // Custom hook to fetch sARC token balance and USDC from Arc
+  const { votingPower: sarcVotes, sarcBalance, usdcBalance: usdcFromToken, needsDelegation, refetch: refetchToken } = useToken(walletAddress);
 
   // Load persistent override and history on mount & address change
   useEffect(() => {
@@ -252,8 +252,8 @@ export function WalletFaucetCard() {
     ? `${walletAddress.substring(0, 8)}...${walletAddress.substring(walletAddress.length - 8)}`
     : "Disconnected";
 
-  // Balance display (USDC)
-  const activeBalance = realBalance ? parseFloat(realBalance) : 0.00;
+  // Balance display (USDC from Arc)
+  const activeBalance = realBalance ? parseFloat(realBalance) : (usdcFromToken || 0);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-up">
@@ -321,32 +321,57 @@ export function WalletFaucetCard() {
           </div>
         </div>
 
-        {/* Balance Display Section */}
-        <div className="flex flex-col gap-1 py-4">
-          <p className="text-xs font-semibold tracking-wider text-text-tertiary uppercase flex items-center gap-1">
-            Arc Testnet Wallet Balance
-            {isFetching && <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />}
-          </p>
-          <div className="flex items-baseline gap-2">
-            {balanceLoading ? (
-              <div className="h-12 w-48 bg-white/5 animate-pulse rounded-xl" />
-            ) : balanceError ? (
-              <span className="text-sm font-semibold text-danger bg-danger/10 border border-danger/20 rounded-full px-3 py-1" title="Failed to fetch balance from Arc RPC">
-                Error fetching balance
+          {/* Balance Display Section */}
+          <div className="flex flex-col gap-3 py-4">
+            <p className="text-xs font-semibold tracking-wider text-text-tertiary uppercase flex items-center gap-1">
+              Arc Testnet Wallet Balance
+              {isFetching && <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />}
+            </p>
+
+            {/* USDC Primary Balance */}
+            <div className="flex items-baseline gap-2">
+              {balanceLoading ? (
+                <div className="h-12 w-48 bg-white/5 animate-pulse rounded-xl" />
+              ) : balanceError ? (
+                <span className="text-sm font-semibold text-danger bg-danger/10 border border-danger/20 rounded-full px-3 py-1" title="Failed to fetch balance from Arc RPC">
+                  Error fetching balance
+                </span>
+              ) : (
+                <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white font-heading">
+                  {activeBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </h1>
+              )}
+              <span className="text-2xl font-bold text-primary font-heading">USDC</span>
+            </div>
+
+            {/* sARC Voting Power Row */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                <span className="text-xs font-bold text-purple-300">
+                  {sarcVotes > 0
+                    ? sarcVotes.toLocaleString(undefined, { maximumFractionDigits: 0 })
+                    : sarcBalance > 0
+                    ? sarcBalance.toLocaleString(undefined, { maximumFractionDigits: 0 })
+                    : "0"} sARC
+                </span>
+                {needsDelegation && (
+                  <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full ml-1">
+                    Not delegated
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] text-text-tertiary">
+                {sarcVotes > 0 ? "✅ Voting active" : sarcBalance > 0 ? "⚠️ Delegate to vote" : "No sARC yet"}
               </span>
-            ) : (
-              <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white font-heading">
-                {activeBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </h1>
-            )}
-            <span className="text-2xl font-bold text-primary font-heading">USDC</span>
+            </div>
+
+            <p className="text-xs text-text-tertiary flex items-center gap-1.5">
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <span className="text-emerald-400 font-medium">USDC + sARC</span>
+              combined governance holdings
+            </p>
           </div>
-          <p className="text-xs text-text-tertiary flex items-center gap-1.5 pt-1.5">
-            <TrendingUp className="w-4 h-4 text-emerald-400" />
-            <span className="text-emerald-400 font-medium">Native stablecoin asset</span>
-            on Arc Network Layer
-          </p>
-        </div>
       </GlassCard>
 
       {/* Transaction History (Right Column) */}

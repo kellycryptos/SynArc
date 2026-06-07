@@ -9,13 +9,15 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useToken } from "@/hooks/useToken";
 import { 
   FileText, 
   Plus, 
   Check, 
   Search,
   Filter,
-  RefreshCw
+  RefreshCw,
+  Zap
 } from "lucide-react";
 
 // Skeleton card for loading state
@@ -53,12 +55,15 @@ function ProposalSkeleton() {
 
 export default function ProposalsPage() {
   const router = useRouter();
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login, walletAddress } = useAuth();
   const { proposals, initialized, initializeStore, userVotes } = useGovernanceStore();
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [agents, setAgents] = useState<any[]>([]);
+
+  // User voting power for header display
+  const { votingPower: sarcVotes, usdcBalance, totalDisplayPower, needsDelegation } = useToken(walletAddress);
 
   useEffect(() => {
     fetch("/api/agents")
@@ -109,18 +114,22 @@ export default function ProposalsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Governance Proposals</h1>
-            <p className="text-muted mt-1 flex flex-wrap items-center gap-1.5 text-sm">
-              <span>Review, discuss, and vote on Arc Testnet DAO proposals.</span>
-              <span className="text-text-tertiary">•</span>
-              <a 
-                href="https://faucet.circle.com" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-primary hover:underline font-bold"
-              >
-                🚰 Claim USDC Gas Faucet
-              </a>
-            </p>
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <p className="text-muted text-sm">
+                Review, discuss, and vote on Arc Testnet DAO proposals.
+              </p>
+              {/* Voting power pill */}
+              {isAuthenticated && totalDisplayPower > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/10 border border-purple-500/20 text-purple-300">
+                  <Zap className="w-3 h-3" />
+                  {usdcBalance > 0 && <>{usdcBalance.toFixed(2)} USDC + </>}
+                  {sarcVotes > 0
+                    ? <>{sarcVotes.toLocaleString(undefined, { maximumFractionDigits: 0 })} sARC</>
+                    : <>0 sARC</>}
+                  {needsDelegation && <span className="text-amber-400 ml-1">(delegate!)</span>}
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-3">
             {/* Refresh button */}

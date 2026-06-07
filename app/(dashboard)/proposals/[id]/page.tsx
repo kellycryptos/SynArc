@@ -5,7 +5,6 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useTreasury } from "@/hooks/useTreasury";
-import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useToken } from "@/hooks/useToken";
 import { getResilientProvider } from "@/lib/rpc/config";
 import { arcPublicClient } from "@/lib/arc/config";
@@ -63,15 +62,24 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   const { writeContractAsync } = useWriteContract();
   const { switchChainAsync } = useSwitchChain();
 
-  // Fetch real-time balances using safe custom hooks to prevent WAGMI rendering errors on Circle
-  const { votingPower: sarcPower, sarcBalance, needsDelegation, refetch: refetchToken } = useToken(walletAddress);
-  const { balance: usdcBalance } = useUSDCBalance();
+  // Fetch real-time balances — useToken now provides both sARC and USDC
+  const {
+    votingPower: sarcPower,
+    sarcBalance,
+    usdcBalance: usdcFromToken,
+    totalDisplayPower,
+    needsDelegation,
+    refetch: refetchToken
+  } = useToken(walletAddress);
 
-  const usdcFormatted = usdcBalance || "0";
-  const sarcFormatted = sarcPower.toString();
+  // USDC formatted for display (comes from useToken, 6-decimal aware)
+  const usdcFormatted = usdcFromToken > 0 ? usdcFromToken.toFixed(2) : "0";
+  const sarcFormatted = sarcPower > 0
+    ? sarcPower.toLocaleString(undefined, { maximumFractionDigits: 0 })
+    : "0";
 
-  // Check voting power — either USDC > 0 OR delegated sARC > 0
-  const hasVotingPower = Number(usdcFormatted) > 0 || Number(sarcFormatted) > 0;
+  // Check voting power — USDC or delegated sARC
+  const hasVotingPower = usdcFromToken > 0 || sarcPower > 0;
 
   // Delegation state
   const [delegating, setDelegating] = useState(false);
@@ -172,9 +180,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
   const activeBalance = useMemo(() => {
     if (!walletAddress) return 0.0;
-    const usdcPower = usdcBalance ? parseFloat(usdcBalance) : 0;
-    return usdcPower + sarcPower;
-  }, [walletAddress, usdcBalance, sarcPower]);
+    return totalDisplayPower;
+  }, [walletAddress, totalDisplayPower]);
   const [voting, setVoting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -701,9 +708,14 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
                       {/* Show voting power */}
                       {hasVotingPower ? (
-                        <p className="text-emerald-400 text-xs font-semibold text-center mb-2">
-                          ✅ Voting power: {usdcFormatted} USDC + {sarcFormatted} sARC
-                        </p>
+                        <div className="mb-2 space-y-1">
+                          <p className="text-emerald-400 text-xs font-semibold text-center">
+                            ✅ {usdcFormatted} USDC + {sarcFormatted} sARC
+                          </p>
+                          <p className="text-text-tertiary text-[10px] text-center leading-tight">
+                            On-chain vote weight: <span className="text-purple-400 font-bold">{sarcFormatted} sARC</span>
+                          </p>
+                        </div>
                       ) : sarcBalance > 0 && !delegateSuccess ? null : (
                         <p className="text-red-400 text-xs font-semibold text-center mb-2">
                           ⚠️ You need USDC or sARC on Arc Testnet to vote.{" "}

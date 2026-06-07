@@ -12,12 +12,26 @@ const SARC_ABI = [
   "function decimals() external view returns (uint8)",
 ];
 
-interface UseTokenReturn {
-  /** Actual delegated voting power (what counts on-chain) */
+const USDC_ABI = [
+  "function balanceOf(address account) external view returns (uint256)",
+];
+
+const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
+
+export interface UseTokenReturn {
+  /** Delegated sARC voting weight — what the Governor reads on-chain */
   votingPower: number;
-  /** Raw sARC balance (may differ from votingPower if not delegated) */
+  /** Raw sARC token balance (may differ from votingPower if not delegated) */
   sarcBalance: number;
-  /** True when the user has sARC but hasn't self-delegated */
+  /** USDC balance fetched from Arc (6 decimals, displayed as whole units) */
+  usdcBalance: number;
+  /**
+   * Combined display power for UI only.
+   * NOTE: On-chain vote weight is sARC (votingPower) only.
+   * USDC is shown for transparency but does NOT count toward the Governor vote.
+   */
+  totalDisplayPower: number;
+  /** True when the user has sARC but hasn't self-delegated yet */
   needsDelegation: boolean;
   loading: boolean;
   error: Error | null;
@@ -26,21 +40,29 @@ interface UseTokenReturn {
 
 /**
  * Hook: useToken
- * Fetches user's actual on-chain voting power (getVotes) and raw sARC balance.
- * ERC20Votes requires tokens to be delegated (even to self) before they count
- * as voting power in getPastVotes snapshots used by the Governor.
+ *
+ * Fetches:
+ *  - sARC delegated voting power (getVotes)  — what counts on-chain
+ *  - sARC raw balance (balanceOf)
+ *  - USDC balance                             — displayed as additional context
+ *
+ * totalDisplayPower = votingPower (sARC) + usdcBalance
+ * This is shown in the UI to give users a full picture of their holdings.
+ * The Governor contract only uses sARC (getPastVotes) for on-chain vote weight.
  */
 export function useToken(userAddress: string | null): UseTokenReturn {
   const [votingPower, setVotingPower] = useState(0);
   const [sarcBalance, setSarcBalance] = useState(0);
+  const [usdcBalance, setUsdcBalance] = useState(0);
   const [needsDelegation, setNeedsDelegation] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchVotingPower = useCallback(async () => {
+  const fetchBalances = useCallback(async () => {
     if (!userAddress) {
       setVotingPower(0);
       setSarcBalance(0);
+      setUsdcBalance(0);
       setNeedsDelegation(false);
       setLoading(false);
       return;
@@ -52,40 +74,50 @@ export function useToken(userAddress: string | null): UseTokenReturn {
 
       const provider = await getResilientProvider();
       const tokenAddress = GOVERNANCE_CONTRACTS.token;
-      const tokenContract = new Contract(tokenAddress, SARC_ABI, provider);
+      const sarcContract = new Contract(tokenAddress, SARC_ABI, provider);
+      const usdcContract = new Contract(USDC_ADDRESS, USDC_ABI, provider);
 
-      // Fetch both balance and delegated votes in parallel
-      const [balance, votes] = await Promise.all([
-        tokenContract.balanceOf(userAddress),
-        tokenContract.getVotes(userAddress),
+      // Fetch sARC balance, sARC votes, and USDC balance in parallel
+      const [sarcBalRaw, sarcVotesRaw, usdcBalRaw] = await Promise.all([
+        sarcContract.balanceOf(userAddress),
+        sarcContract.getVotes(userAddress),
+        usdcContract.balanceOf(userAddress).catch(() => 0n), // USDC fetch is non-critical
       ]);
 
-      const balanceNum = Number(formatUnits(balance, 18));
-      const votesNum = Number(formatUnits(votes, 18));
+      const sarcBal  = Number(formatUnits(sarcBalRaw, 18));
+      const sarcVotes = Number(formatUnits(sarcVotesRaw, 18));
+      const usdcBal  = typeof usdcBalRaw === "bigint"
+        ? Number(formatUnits(usdcBalRaw, 6))
+        : 0;
 
-      setSarcBalance(balanceNum);
-      setVotingPower(votesNum);
-      // User needs to delegate if they have sARC but voting power is zero (or less than balance)
-      setNeedsDelegation(balanceNum > 0 && votesNum === 0);
+      setSarcBalance(sarcBal);
+      setVotingPower(sarcVotes);
+      setUsdcBalance(usdcBal);
+      // Needs delegation: has sARC but no delegated votes
+      setNeedsDelegation(sarcBal > 0 && sarcVotes === 0);
     } catch (err) {
-      const error = err instanceof Error ? err : new Error("Failed to fetch voting power");
-      setError(error);
-      console.error("Error fetching voting power:", error);
+      const e = err instanceof Error ? err : new Error("Failed to fetch token balances");
+      setError(e);
+      console.error("useToken error:", e);
     } finally {
       setLoading(false);
     }
   }, [userAddress]);
 
   useEffect(() => {
-    fetchVotingPower();
-  }, [fetchVotingPower]);
+    fetchBalances();
+  }, [fetchBalances]);
+
+  const totalDisplayPower = votingPower + usdcBalance;
 
   return {
     votingPower,
     sarcBalance,
+    usdcBalance,
+    totalDisplayPower,
     needsDelegation,
     loading,
     error,
-    refetch: fetchVotingPower,
+    refetch: fetchBalances,
   };
 }
