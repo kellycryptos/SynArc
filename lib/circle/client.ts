@@ -1,11 +1,10 @@
-import { W3SSdk } from '@circle-fin/w3s-pw-web-sdk'
+let circleClient: any = null
 
-let circleClient: W3SSdk | null = null
-
-export const getCircleClient = () => {
+export const getCircleClient = async () => {
   if (typeof window === 'undefined') return null
   if (!circleClient) {
     try {
+      const { W3SSdk } = await import('@circle-fin/w3s-pw-web-sdk')
       circleClient = new W3SSdk()
     } catch (err) {
       console.error('[Circle Web SDK] Failed to instantiate SDK client:', err)
@@ -16,7 +15,7 @@ export const getCircleClient = () => {
 }
 
 export const initCircleWallet = async (userToken: string, encryptionKey: string) => {
-  const client = getCircleClient()
+  const client = await getCircleClient()
   if (!client) {
     throw new Error('Circle Web SDK is not supported or failed to initialize in this browser environment.')
   }

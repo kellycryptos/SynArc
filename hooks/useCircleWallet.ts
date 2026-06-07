@@ -108,7 +108,7 @@ export const useCircleWallet = () => {
         }
         console.log('[Circle Hook] Executing security challenge...')
         await new Promise((resolve, reject) => {
-          client.execute(challengeId, (error, result) => {
+          client.execute(challengeId, (error: any, result: any) => {
             if (error) {
               console.error('[Circle Hook] Challenge execution failed:', error)
               reject(new Error(error.message || 'Verification challenge failed'))
