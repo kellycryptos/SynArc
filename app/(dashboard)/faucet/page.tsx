@@ -218,13 +218,22 @@ export default function FaucetPage() {
               Claimed Today
             </button>
           ) : sarcStatus === "success" ? (
-            <button
-              disabled
-              className="w-full py-3 rounded-xl bg-success/10 border border-success/20 text-success font-bold text-sm flex items-center justify-center gap-2 cursor-not-allowed"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              Token Sent!
-            </button>
+            <div className="space-y-2">
+              <button
+                disabled
+                className="w-full py-3 rounded-xl bg-success/10 border border-success/20 text-success font-bold text-sm flex items-center justify-center gap-2 cursor-not-allowed"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Token Sent!
+              </button>
+              {/* Next step: delegation */}
+              <a
+                href="/proposals"
+                className="w-full py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-amber-500/20 transition-all"
+              >
+                ⚡ Activate voting power → open a proposal &amp; delegate
+              </a>
+            </div>
           ) : (
             <button
               id="faucet-sarc-btn"

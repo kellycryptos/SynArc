@@ -40,7 +40,8 @@ import {
   Bot,
   Info,
   Loader2,
-  Wallet
+  Wallet,
+  Zap
 } from "lucide-react";
 
 export default function ProposalDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -63,14 +64,18 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   const { switchChainAsync } = useSwitchChain();
 
   // Fetch real-time balances using safe custom hooks to prevent WAGMI rendering errors on Circle
-  const { votingPower: sarcPower } = useToken(walletAddress);
+  const { votingPower: sarcPower, sarcBalance, needsDelegation, refetch: refetchToken } = useToken(walletAddress);
   const { balance: usdcBalance } = useUSDCBalance();
 
   const usdcFormatted = usdcBalance || "0";
   const sarcFormatted = sarcPower.toString();
 
-  // Check voting power — either USDC > 0 OR sARC > 0
+  // Check voting power — either USDC > 0 OR delegated sARC > 0
   const hasVotingPower = Number(usdcFormatted) > 0 || Number(sarcFormatted) > 0;
+
+  // Delegation state
+  const [delegating, setDelegating] = useState(false);
+  const [delegateSuccess, setDelegateSuccess] = useState(false);
 
   // AI analysis states
   const [aiLoading, setAiLoading] = useState(false);
@@ -216,6 +221,41 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     }
     checkVoted();
   }, [walletAddress, proposal, voting, initialized, isCircle]);
+
+  const handleDelegate = async () => {
+    if (!userAddress) return;
+    setDelegating(true);
+    try {
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
+      const SARC_DELEGATE_ABI = [{
+        name: "delegate",
+        type: "function",
+        inputs: [{ name: "delegatee", type: "address" }],
+        outputs: [],
+        stateMutability: "nonpayable",
+      }] as const;
+
+      const gasParams = await getAggressiveGasParams(publicClient);
+      const hash = await walletClient.writeContract({
+        address: SARC_ADDRESS,
+        abi: SARC_DELEGATE_ABI,
+        functionName: "delegate",
+        args: [address],
+        account: address,
+        gas: 120000n,
+        ...gasParams,
+      });
+      await waitForTransaction(publicClient, hash);
+      setDelegateSuccess(true);
+      toast.success("✅ sARC delegated! You now have voting power.");
+      // Refetch voting power immediately after delegation
+      await refetchToken();
+    } catch (err: any) {
+      toast.error(err?.message || "Delegation failed. Please try again.");
+    } finally {
+      setDelegating(false);
+    }
+  };
 
   const handleCastVote = async (supportValue: number) => {
     if (!userAddress) {
@@ -637,16 +677,38 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                     </div>
                   ) : (
                     <div className="space-y-3">
+                      {/* Delegation Banner — shown when user has sARC but hasn't delegated */}
+                      {needsDelegation && !isCircle && !delegateSuccess && (
+                        <div className="p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs space-y-2">
+                          <div className="flex items-center gap-1.5 font-bold">
+                            <Zap className="w-3.5 h-3.5" />
+                            Activate your {sarcBalance.toLocaleString()} sARC voting power
+                          </div>
+                          <p className="text-amber-400/80 leading-snug">sARC uses on-chain checkpoints (ERC20Votes). You must delegate to yourself once to activate your votes.</p>
+                          <button
+                            onClick={handleDelegate}
+                            disabled={delegating}
+                            className="w-full py-2 rounded-lg bg-amber-500/20 border border-amber-500/40 hover:bg-amber-500/30 text-amber-200 font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+                          >
+                            {delegating ? (
+                              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Delegating...</>
+                            ) : (
+                              <><Zap className="w-3.5 h-3.5" /> Delegate to Self (1-time)</>  
+                            )}
+                          </button>
+                        </div>
+                      )}
+
                       {/* Show voting power */}
                       {hasVotingPower ? (
                         <p className="text-emerald-400 text-xs font-semibold text-center mb-2">
                           ✅ Voting power: {usdcFormatted} USDC + {sarcFormatted} sARC
                         </p>
-                      ) : (
+                      ) : sarcBalance > 0 && !delegateSuccess ? null : (
                         <p className="text-red-400 text-xs font-semibold text-center mb-2">
                           ⚠️ You need USDC or sARC on Arc Testnet to vote.{" "}
-                          <a href="https://faucet.circle.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold">
-                            Get testnet USDC
+                          <a href="/faucet" className="text-primary hover:underline font-bold">
+                            Get sARC from faucet
                           </a>
                         </p>
                       )}

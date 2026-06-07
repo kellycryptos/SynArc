@@ -5,13 +5,20 @@ import { ethers, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS } from "@/lib/governance/contracts";
 import { getResilientProvider } from "@/lib/rpc/config";
 
-const ERC20_ABI = [
+const SARC_ABI = [
   "function balanceOf(address account) external view returns (uint256)",
-  "function decimals() external view returns (uint8)"
+  "function getVotes(address account) external view returns (uint256)",
+  "function delegate(address delegatee) external",
+  "function decimals() external view returns (uint8)",
 ];
 
 interface UseTokenReturn {
+  /** Actual delegated voting power (what counts on-chain) */
   votingPower: number;
+  /** Raw sARC balance (may differ from votingPower if not delegated) */
+  sarcBalance: number;
+  /** True when the user has sARC but hasn't self-delegated */
+  needsDelegation: boolean;
   loading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
@@ -19,16 +26,22 @@ interface UseTokenReturn {
 
 /**
  * Hook: useToken
- * Fetches user's voting power (SynArcToken balance) from Arc Testnet
+ * Fetches user's actual on-chain voting power (getVotes) and raw sARC balance.
+ * ERC20Votes requires tokens to be delegated (even to self) before they count
+ * as voting power in getPastVotes snapshots used by the Governor.
  */
 export function useToken(userAddress: string | null): UseTokenReturn {
   const [votingPower, setVotingPower] = useState(0);
+  const [sarcBalance, setSarcBalance] = useState(0);
+  const [needsDelegation, setNeedsDelegation] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchVotingPower = useCallback(async () => {
     if (!userAddress) {
       setVotingPower(0);
+      setSarcBalance(0);
+      setNeedsDelegation(false);
       setLoading(false);
       return;
     }
@@ -39,11 +52,21 @@ export function useToken(userAddress: string | null): UseTokenReturn {
 
       const provider = await getResilientProvider();
       const tokenAddress = GOVERNANCE_CONTRACTS.token;
-      const tokenContract = new Contract(tokenAddress, ERC20_ABI, provider);
+      const tokenContract = new Contract(tokenAddress, SARC_ABI, provider);
 
-      const balance = await tokenContract.balanceOf(userAddress);
-      const votingPowerValue = Number(formatUnits(balance, 18)); // Assuming 18 decimals for governance token
-      setVotingPower(votingPowerValue);
+      // Fetch both balance and delegated votes in parallel
+      const [balance, votes] = await Promise.all([
+        tokenContract.balanceOf(userAddress),
+        tokenContract.getVotes(userAddress),
+      ]);
+
+      const balanceNum = Number(formatUnits(balance, 18));
+      const votesNum = Number(formatUnits(votes, 18));
+
+      setSarcBalance(balanceNum);
+      setVotingPower(votesNum);
+      // User needs to delegate if they have sARC but voting power is zero (or less than balance)
+      setNeedsDelegation(balanceNum > 0 && votesNum === 0);
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to fetch voting power");
       setError(error);
@@ -59,8 +82,10 @@ export function useToken(userAddress: string | null): UseTokenReturn {
 
   return {
     votingPower,
+    sarcBalance,
+    needsDelegation,
     loading,
     error,
-    refetch: fetchVotingPower
+    refetch: fetchVotingPower,
   };
 }
