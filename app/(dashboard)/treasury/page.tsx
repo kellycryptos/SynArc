@@ -260,7 +260,7 @@ export default function TreasuryPage() {
 
       if (isEmbedded && activeWallet) {
         setDepositStatus('Preparing...');
-        const eip1193Provider = await activeWallet.getEthereumProvider();
+        const eip1193Provider = await enforceChain(activeWallet, 5042002);
         const provider = new BrowserProvider(eip1193Provider);
         const signer = await provider.getSigner();
 

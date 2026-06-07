@@ -33,7 +33,7 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, GovernorABI } from "@/lib/governance/contracts";
 import { getResilientProvider } from "@/lib/rpc/config";
-import { enforceChain } from "@/lib/tx-helper";
+import { enforceChain, selectActiveWallet } from "@/lib/tx-helper";
 
 interface Member {
   id: string;
@@ -314,7 +314,7 @@ export default function DAODetailsPage() {
 
     try {
       setSubmittingProposal(true);
-      const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+      const activeWallet = selectActiveWallet(wallets, walletAddress);
       if (!activeWallet) {
         throw new Error("Active wallet not found");
       }
@@ -403,7 +403,7 @@ export default function DAODetailsPage() {
     try {
       setDepositing(true);
       setDepositError("");
-      const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+      const activeWallet = selectActiveWallet(wallets, walletAddress);
       if (!activeWallet) {
         throw new Error("Active wallet not found");
       }

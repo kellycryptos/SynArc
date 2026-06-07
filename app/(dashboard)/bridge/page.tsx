@@ -8,6 +8,7 @@ import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useSwitchChain } from "wagmi";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
 import { getLogsResiliently } from "@/lib/rpc/config";
+import { selectActiveWallet } from "@/lib/tx-helper";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeftRight, 
@@ -86,7 +87,7 @@ export default function BridgePage() {
   // Safe: Circle wallet does not register with Privy wallets list
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
-  const activeWallet = wallets.length > 0 ? wallets[0] : null;
+  const activeWallet = selectActiveWallet(wallets, walletAddress);
 
   // Global hooks for Arc USDC balance refetching
   const { balance: arcUSDCBalance, refetch: refetchArcUSDC, isFetching: arcFetching } = useUSDCBalance(walletAddress);
