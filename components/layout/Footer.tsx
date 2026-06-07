@@ -238,16 +238,30 @@ export function Footer() {
           className="relative py-8 border-t border-border"
         >
           <div className="flex flex-col items-center justify-center text-center gap-4">
-            {/* Canteen Builder Badge */}
-            <a
-              href="https://thecanteenapp.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-background-primary border border-border text-text-secondary px-3 py-1 rounded-full hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-300 text-xs font-medium"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-glow animate-pulse" />
-              <span>Built on Arc • Powered by Canteen</span>
-            </a>
+            {/* Badges Row */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              {/* Canteen Builder Badge */}
+              <a
+                href="https://thecanteenapp.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-background-primary border border-border text-text-secondary px-3 py-1 rounded-full hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-300 text-xs font-medium"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-glow animate-pulse" />
+                <span>Built on Arc • Powered by Canteen</span>
+              </a>
+
+              {/* ArcLens Badge */}
+              <a
+                href="https://arclenz.xyz/ecosystem/synarc-dao"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-background-primary border border-border text-text-secondary px-3 py-1 rounded-full hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-300 text-xs font-medium"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-glow animate-pulse" />
+                <span>SynArc on ArcLens</span>
+              </a>
+            </div>
 
             {/* Legal Links */}
             <div className="flex items-center gap-6">

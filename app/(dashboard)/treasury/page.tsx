@@ -7,7 +7,7 @@ import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useEURCBalance } from "@/hooks/useEURCBalance";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import { ethers, Contract, parseUnits } from "ethers";
+import { Contract, parseUnits, BrowserProvider } from "ethers";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, TreasuryABI } from "@/lib/governance/contracts";
 import { useWriteContract, useAccount, usePublicClient, useSwitchChain } from "wagmi";
 import React from "react";
@@ -248,6 +248,102 @@ export default function TreasuryPage() {
           status: 'confirmed',
         });
         
+        setDepositAmount("");
+        refetchTreasury();
+        refetchWalletUSDC?.();
+        refetchWalletEURC?.();
+        return;
+      }
+
+      const activeWallet = wallets && wallets.length > 0 ? wallets[0] : null;
+      const isEmbedded = activeWallet?.walletClientType === 'privy';
+
+      if (isEmbedded && activeWallet) {
+        setDepositStatus('Preparing...');
+        const eip1193Provider = await activeWallet.getEthereumProvider();
+        const provider = new BrowserProvider(eip1193Provider);
+        const signer = await provider.getSigner();
+
+        const tokenAddress = token === 'USDC' ? USDC_ADDRESS : EURC_ADDRESS;
+        const amountRaw = BigInt(Math.floor(amount * 1_000_000));
+
+        // Get dynamic gas price with a 20 Gwei floor
+        const feeData = await provider.getFeeData();
+        const networkGasPrice = feeData.gasPrice || 20000000000n;
+        const gasPrice = (networkGasPrice * 150n) / 100n > 20000000000n 
+          ? (networkGasPrice * 150n) / 100n 
+          : 20000000000n;
+
+        // ERC20 Contract instance
+        const erc20 = new Contract(
+          tokenAddress,
+          [
+            'function approve(address spender, uint256 amount) returns (bool)',
+            'function allowance(address owner, address spender) view returns (uint256)',
+          ],
+          signer
+        );
+
+        // Treasury Contract instance
+        const treasury = new Contract(
+          CONTRACTS.treasury,
+          [
+            'function depositUSDC(uint256 amount) external',
+            'function depositEURC(uint256 amount) external',
+          ],
+          signer
+        );
+
+        // Step 1 — Approve
+        setDepositStatus('Sending transaction...');
+        const approveTx = await erc20.approve(
+          CONTRACTS.treasury,
+          amountRaw,
+          {
+            gasLimit: 250000,
+            gasPrice: gasPrice
+          }
+        );
+
+        setDepositStatus('Confirming approval...');
+        const approveReceipt = await approveTx.wait(1);
+        if (!approveReceipt || approveReceipt.status !== 1) {
+          throw new Error('Approval failed on-chain.');
+        }
+
+        // Apply a brief settlement delay for RPC sync
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        // Step 2 — Deposit
+        setDepositStatus('Sending transaction...');
+        const depositFn = token === 'USDC' ? 'depositUSDC' : 'depositEURC';
+        const depositTx = await treasury[depositFn](
+          amountRaw,
+          {
+            gasLimit: 300000,
+            gasPrice: gasPrice
+          }
+        );
+
+        setTxHash(depositTx.hash);
+        setDepositStatus('Confirming deposit...');
+        const depositReceipt = await depositTx.wait(1);
+        if (!depositReceipt || depositReceipt.status !== 1) {
+          throw new Error('Deposit failed on-chain.');
+        }
+
+        setDepositStatus('✅ Deposit successful!');
+        toast.success(`${amount} ${token} deposited to treasury`);
+
+        addTransaction({
+          description: `${token} Deposit`,
+          amount: amount,
+          token: token,
+          date: new Date().toLocaleDateString('en-GB'),
+          txHash: depositTx.hash,
+          status: 'confirmed',
+        });
+
         setDepositAmount("");
         refetchTreasury();
         refetchWalletUSDC?.();
