@@ -3,6 +3,8 @@ import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Web3Provider } from "@/providers/Web3Provider";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -73,6 +75,8 @@ export default function RootLayout({
           </div>
         </ThemeProvider>
         </Web3Provider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
