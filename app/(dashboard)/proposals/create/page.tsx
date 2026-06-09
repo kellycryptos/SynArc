@@ -199,7 +199,7 @@ export default function CreateProposalPage() {
 
     try {
       // Get provider and client — Privy wallet, Circle wallet OR external wallet
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
       const targetAddress = (formData.executionTarget && formData.executionTarget.startsWith('0x'))
         ? (formData.executionTarget as `0x${string}`)
         : '0x0000000000000000000000000000000000000000';

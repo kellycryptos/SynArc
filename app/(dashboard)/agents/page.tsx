@@ -243,7 +243,7 @@ export default function AgentsPage() {
 
     try {
       // 1. Get browser wallet clients
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
 
       const gasParams = await getAggressiveGasParams(publicClient);
 
@@ -342,7 +342,7 @@ export default function AgentsPage() {
     }
 
     try {
-      const { walletClient, publicClient } = await getAuthenticatedClient(wallets, 5042002);
+      const { walletClient, publicClient } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
 
       const gasParams = await getAggressiveGasParams(publicClient);
 

@@ -332,7 +332,7 @@ export default function CreateCampaignPage() {
       }
 
       // 1. Fetch signer and wallet details
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
 
       // USDC precompiled contract address on Arc Testnet
       const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";

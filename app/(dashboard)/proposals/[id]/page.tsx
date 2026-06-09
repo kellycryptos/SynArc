@@ -233,7 +233,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     if (!userAddress) return;
     setDelegating(true);
     try {
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
       const SARC_DELEGATE_ABI = [{
         name: "delegate",
         type: "function",
@@ -361,7 +361,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       setStatus('Confirming vote on Arc blockchain...');
 
       // Get provider and client — Privy wallet, Circle wallet OR external wallet
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
 
       // Dynamically estimate fees using low-latency and aggressive parameters
       const gasParams = await getAggressiveGasParams(publicClient);

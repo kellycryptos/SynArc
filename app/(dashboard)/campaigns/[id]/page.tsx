@@ -279,7 +279,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
     try {
       // 1. Get signer & public client
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
 
       const usdcAddress = "0x3600000000000000000000000000000000000000";
       const amountBigInt = BigInt(Math.round(contributionAmount * 1_000_000));
@@ -418,7 +418,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
       }
 
       // 1. Get signer
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
 
       const gasParams = await getAggressiveGasParams(publicClient);
 
