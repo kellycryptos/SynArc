@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
-import { Web3Provider } from "@/providers/Web3Provider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -56,8 +55,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${sora.variable} antialiased min-h-screen flex flex-col relative bg-background text-foreground`}
       >
-        <Web3Provider>
-          <ThemeProvider>
+        <ThemeProvider>
           {/* Ambient page background */}
           <div className="fixed inset-0 pointer-events-none z-0">
             <div className="absolute inset-0 bg-background" />
@@ -76,7 +74,6 @@ export default function RootLayout({
             {children}
           </div>
         </ThemeProvider>
-        </Web3Provider>
         <Analytics />
         <SpeedInsights />
       </body>
