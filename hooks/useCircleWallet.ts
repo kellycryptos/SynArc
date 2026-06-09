@@ -11,19 +11,10 @@ export const useCircleWallet = () => {
   const [loadingStep, setLoadingStep] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Hydrate state from localStorage on client load and listen for sync events
+  // Hydrate Circle state from localStorage on client mount.
+  // We do NOT clear on first load — Circle sessions should persist across page navigations.
+  // Session is only cleared on explicit disconnectCircleWallet() call.
   useEffect(() => {
-    // Clear Circle Wallet connection state on initial page load (hard refresh) to disable automatic session restore
-    if (isFirstLoad) {
-      isFirstLoad = false
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('synarc_circle_address')
-        localStorage.removeItem('synarc_circle_email')
-        localStorage.removeItem('synarc_circle_connected')
-        localStorage.removeItem('synarc_circle_user_token')
-      }
-    }
-
     const syncState = () => {
       if (typeof window !== 'undefined') {
         const savedAddress = localStorage.getItem('synarc_circle_address')
@@ -41,7 +32,7 @@ export const useCircleWallet = () => {
       }
     }
 
-    // Call syncState on mount to read current state
+    // Hydrate immediately on mount
     syncState()
 
     if (typeof window !== 'undefined') {

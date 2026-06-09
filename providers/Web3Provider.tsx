@@ -37,28 +37,17 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     <PrivyProvider
       appId={appId}
       config={{
-        // Spread shared privyConfig first — includes loginMethods: ['email', ...] for OTP-first auth
+        // All settings (loginMethods, embeddedWallets, supportedChains, appearance) come
+        // from privyConfig. Overriding embeddedWallets here previously caused a conflict
+        // where the embedded wallet was created for ALL users (including external wallets),
+        // which led to "Arc network temporarily unavailable" on the secondary embedded wallet.
         ...privyConfig,
-        // Chain overrides
-        defaultChain: arcTestnet,
-        supportedChains: [arcTestnet],
-        // Merge appearance so showWalletLoginFirst: false is preserved from privyConfig
         appearance: {
           ...privyConfig.appearance,
           theme: 'dark',
           accentColor: '#7C3AED',
           showWalletLoginFirst: false,
         },
-        embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
-          showWalletUIs: false,
-          ethereum: {
-            createOnLogin: 'users-without-wallets',
-            showWalletUIs: false,
-            waitForUserConfirmation: 'never',
-          },
-          waitForUserConfirmation: 'never',
-        } as any
       }}
     >
       <QueryClientProvider client={queryClient}>
