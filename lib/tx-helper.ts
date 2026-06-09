@@ -30,21 +30,73 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
   
   console.log(`[enforceChain] Target chain ID: ${targetChainId}. Wallet Privy state is currently on: ${walletChainId}`);
 
-  // Fast path: if Privy already claims to be on the correct chain, return the provider immediately
-  // This bypasses extra RPC roundtrips and settling timeouts entirely!
-  if (walletChainId === targetChainId) {
+  const isArc = (id: number) => id === 5042002 || id === 1303;
+  const chainsCompatible = (id1: number, id2: number) => {
+    if (id1 === id2) return true;
+    if (isArc(id1) && isArc(id2)) return true;
+    return false;
+  };
+
+  // Fast path: if Privy already claims to be on the correct or compatible chain, return the provider immediately
+  if (chainsCompatible(walletChainId, targetChainId)) {
     const provider = await (
       activeWallet.getEthereumProvider?.() || 
       activeWallet.getEip1193Provider?.() || 
       (activeWallet as any).getProvider?.()
     );
     if (provider) {
-      console.log(`[enforceChain] Fast-path active: already on chain ${targetChainId}. Returning provider.`);
+      console.log(`[enforceChain] Fast-path active: already on compatible chain (${walletChainId} vs ${targetChainId}). Returning provider.`);
       return provider;
     }
   }
 
-  // 2. Perform switch if mismatch detected
+  // 2. Perform switch or add-then-switch based on wallet type
+  if (activeWallet.walletClientType === 'privy') {
+    const provider = await (
+      activeWallet.getEthereumProvider?.() || 
+      activeWallet.getEip1193Provider?.() || 
+      (activeWallet as any).getProvider?.()
+    );
+    if (provider) {
+      console.log(`[enforceChain] Privy embedded wallet detected. Running add-then-switch flow.`);
+      // Add Ethereum chain first
+      try {
+        const rpcUrls = targetChainId === 5042002 
+          ? ARC_RPC_URLS 
+          : ['https://rpc.testnet.arc.network'];
+        const chainName = targetChainId === 5042002 ? "Arc Testnet" : "Arc Testnet (1303)";
+        
+        await provider.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: targetHex,
+            chainName: chainName,
+            rpcUrls: rpcUrls,
+            nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
+            blockExplorerUrls: ["https://testnet.arcscan.app"],
+          }]
+        });
+        console.log(`[enforceChain] wallet_addEthereumChain completed for Privy embedded wallet.`);
+      } catch (addError) {
+        console.warn(`[enforceChain] wallet_addEthereumChain failed:`, addError);
+      }
+      
+      // Now switch chain
+      try {
+        await provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: targetHex }]
+        });
+        console.log(`[enforceChain] wallet_switchEthereumChain completed for Privy embedded wallet.`);
+        await new Promise(resolve => setTimeout(resolve, 800));
+        return provider;
+      } catch (switchError) {
+        console.warn(`[enforceChain] wallet_switchEthereumChain failed, trying activeWallet.switchChain fallback:`, switchError);
+      }
+    }
+  }
+
+  // 3. Fallback switch if not privy or direct request failed
   try {
     if (typeof activeWallet.switchChain === 'function') {
       console.log(`[enforceChain] switchChain to ${targetChainId}...`);
@@ -57,7 +109,7 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
     console.warn('[enforceChain] switchChain call raised error, continuing with fallback checks:', err);
   }
 
-  // 3. Confirm network shift was successful
+  // 4. Confirm network shift was successful
   const provider = await (
     activeWallet.getEthereumProvider?.() || 
     activeWallet.getEip1193Provider?.() || 
@@ -70,21 +122,26 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
     console.log(`[enforceChain] Provider reports active chain ID: ${providerChainId}`);
     
     // Trigger wallet_addEthereumChain if RPC reports missing chain support
-    if (providerChainId !== targetChainId) {
+    if (!chainsCompatible(providerChainId, targetChainId)) {
       if (typeof window !== 'undefined' && provider.request) {
         console.log(`[enforceChain] Requesting wallet_addEthereumChain for chain ${targetChainId}...`);
         
         // Define standard RPC networks parameter
-        const isArc = targetChainId === 5042002;
-        if (isArc) {
+        const isArcTest = isArc(targetChainId);
+        if (isArcTest) {
           try {
+            const rpcUrls = targetChainId === 5042002 
+              ? ARC_RPC_URLS 
+              : ['https://rpc.testnet.arc.network'];
+            const chainName = targetChainId === 5042002 ? "Arc Testnet" : "Arc Testnet (1303)";
+
             await provider.request({
               method: 'wallet_addEthereumChain',
               params: [{
                 chainId: targetHex,
-                chainName: "Arc Testnet",
-                rpcUrls: ARC_RPC_URLS,
-                nativeCurrency: { name: "Arc USDC", symbol: "USDC", decimals: 6 },
+                chainName: chainName,
+                rpcUrls: rpcUrls,
+                nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
                 blockExplorerUrls: ["https://testnet.arcscan.app/"],
               }]
             });
@@ -92,13 +149,13 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
             providerChainIdHex = await provider.request({ method: 'eth_chainId' }).catch(() => null);
             providerChainId = providerChainIdHex ? parseInt(providerChainIdHex, 16) : 0;
           } catch (addError) {
-            console.error('[enforceChain] Failed to add Arc Testnet to provider:', addError);
+            console.error('[enforceChain] Failed to add compatible Arc Testnet chain to provider:', addError);
           }
         }
       }
     }
 
-    if (providerChainId && providerChainId !== targetChainId) {
+    if (providerChainId && !chainsCompatible(providerChainId, targetChainId)) {
       throw new Error(`Wallet chain enforcement failed: expected chain ID ${targetChainId}, but your wallet is active on chain ID ${providerChainId}. Please switch the network manually in your wallet.`);
     }
     

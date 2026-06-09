@@ -24,7 +24,7 @@ interface GovernanceState {
   };
   
   // Actions
-  initializeStore: (customDao?: { id: string; governorAddress: string; treasuryAddress: string; tokenAddress: string }) => Promise<void>;
+  initializeStore: (customDao?: { id: string; governorAddress: string; treasuryAddress: string; tokenAddress: string }, force?: boolean) => Promise<void>;
   submitProposal: (proposalData: {
     title: string;
     description: string;
@@ -64,7 +64,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     token: GOVERNANCE_CONTRACTS.token,
   },
 
-  initializeStore: async (customDao) => {
+  initializeStore: async (customDao, force) => {
     const activeDaoId = customDao?.id || 'synarc';
     const STALE_MS = 180_000; // 3-minute cache — avoids redundant RPC round-trips
     const state = get();
@@ -72,6 +72,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
     // Skip re-fetch if data is fresh and DAO hasn't changed
     if (
+      !force &&
       state.initialized &&
       state.currentDaoId === activeDaoId &&
       state.lastFetched !== null &&
@@ -345,7 +346,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
       set({ initialized: false });
       const currentDao = get().currentDao;
-      await get().initializeStore(currentDao || undefined);
+      await get().initializeStore(currentDao || undefined, true);
 
       return finalProposalId;
     } catch (err: any) {
@@ -374,7 +375,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
     set({ initialized: false });
     const currentDao = get().currentDao;
-    await get().initializeStore(currentDao || undefined);
+    await get().initializeStore(currentDao || undefined, true);
   },
 
   executeProposal: async (proposalId, signer) => {
@@ -391,6 +392,6 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
     set({ initialized: false });
     const currentDao = get().currentDao;
-    await get().initializeStore(currentDao || undefined);
+    await get().initializeStore(currentDao || undefined, true);
   }
 }));

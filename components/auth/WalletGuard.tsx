@@ -7,7 +7,7 @@ import { ShieldAlert, Wallet, Sparkles } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { WalletConnectModal } from "@/components/ui/WalletConnectModal";
 
-const PROTECTED_ROUTES = ['/bridge', '/settings'];
+const PROTECTED_ROUTES = ['/settings'];
 
 export function WalletGuard({ children }: { children: ReactNode }) {
   const { isAuthenticated, ready } = useAuth();

@@ -335,8 +335,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
           }
         }
 
-        // Force store re-initialization
-        useGovernanceStore.getState().initializeStore();
+        // Force store re-initialization (bypasses 3-minute staleness cache)
+        useGovernanceStore.getState().initializeStore(undefined, true);
 
         setTxHash(mockHash);
         setStatus('Vote registered!');
@@ -457,8 +457,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       setStatus('✅ Vote recorded on Arc');
       toast.success('Vote recorded on-chain! ✅');
       
-      // Reactive refetch without reload
-      await initializeStore();
+      // Reactive force-refetch — bypasses 3-minute staleness cache so UI updates immediately
+      await initializeStore(undefined, true);
 
       // Clear optimistic states once store is synchronized
       setOptimisticVotes(null);
@@ -529,8 +529,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
           }
         }
 
-        // Force store re-initialization
-        useGovernanceStore.getState().initializeStore();
+        // Force store re-initialization (bypasses staleness cache)
+        useGovernanceStore.getState().initializeStore(undefined, true);
         toast.success("Proposal executed successfully (Circle Simulation)!");
       } catch (err: any) {
         toast.error(err.message || "Failed to execute proposal");

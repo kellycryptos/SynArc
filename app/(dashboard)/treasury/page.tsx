@@ -7,6 +7,7 @@ import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useEURCBalance } from "@/hooks/useEURCBalance";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { Contract, parseUnits, BrowserProvider } from "ethers";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, TreasuryABI } from "@/lib/governance/contracts";
 import { useWriteContract, useAccount, usePublicClient, useSwitchChain } from "wagmi";
@@ -63,7 +64,7 @@ import {
 import { BridgeModal } from "@/components/BridgeModal";
 
 
-export default function TreasuryPage() {
+function TreasuryPageContent() {
   const { 
     balance: combinedTotal, 
     usdcBalance, 
@@ -895,6 +896,14 @@ export default function TreasuryPage() {
         }}
       />
     </div>
+  );
+}
+
+export default function TreasuryPage() {
+  return (
+    <ErrorBoundary>
+      <TreasuryPageContent />
+    </ErrorBoundary>
   );
 }
 

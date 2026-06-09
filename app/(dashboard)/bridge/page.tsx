@@ -83,7 +83,7 @@ interface BridgeTx {
 type BridgeProgress = "idle" | "initiating" | "burning" | "minting" | "success" | "error";
 
 export default function BridgePage() {
-  const { isAuthenticated, walletAddress, isCircle } = useAuth();
+  const { isAuthenticated, walletAddress, isCircle, login } = useAuth();
   // Safe: Circle wallet does not register with Privy wallets list
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
@@ -302,6 +302,12 @@ export default function BridgePage() {
       return;
     }
 
+    const targetAddress = activeWallet?.address || walletAddress;
+    if (!targetAddress) {
+      setSourceBalance("0.00");
+      return;
+    }
+
     setBalanceLoading(true);
     try {
       const client = createPublicClient({
@@ -312,7 +318,7 @@ export default function BridgePage() {
         address: selectedChain.tokenAddress as `0x${string}`,
         abi: erc20Abi,
         functionName: "balanceOf",
-        args: [activeWallet?.address as `0x${string}`],
+        args: [targetAddress as `0x${string}`],
       });
 
       const formatted = formatUnits(rawBalance, 6);
@@ -324,12 +330,10 @@ export default function BridgePage() {
     } finally {
       setBalanceLoading(false);
     }
-  }, [walletAddress, isCircle, selectedChain, activeWallet?.address]);
+  }, [walletAddress, selectedChain, activeWallet?.address]);
 
   useEffect(() => {
-    if (walletAddress) {
-      fetchSourceBalance();
-    }
+    fetchSourceBalance();
   }, [selectedChain, walletAddress, fetchSourceBalance]);
 
   const handleMaxClick = () => {
@@ -619,14 +623,24 @@ export default function BridgePage() {
                   </div>
 
                   {/* Submit Actions */}
-                  <button
-                    type="button"
-                    onClick={handleBridgeConfirm}
-                    disabled={!amount || parseFloat(amount) <= 0}
-                    className="w-full py-4 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Initiate Cross-Chain Bridge
-                  </button>
+                  {!isAuthenticated ? (
+                    <button
+                      type="button"
+                      onClick={login}
+                      className="w-full py-4 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      Connect Wallet to Bridge
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleBridgeConfirm}
+                      disabled={!amount || parseFloat(amount) <= 0}
+                      className="w-full py-4 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Initiate Cross-Chain Bridge
+                    </button>
+                  )}
                 </motion.div>
               ) : (
                 <motion.div

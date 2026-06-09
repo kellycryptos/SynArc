@@ -20,6 +20,7 @@ export const useCircleWallet = () => {
         localStorage.removeItem('synarc_circle_address')
         localStorage.removeItem('synarc_circle_email')
         localStorage.removeItem('synarc_circle_connected')
+        localStorage.removeItem('synarc_circle_user_token')
       }
     }
 
@@ -141,6 +142,7 @@ export const useCircleWallet = () => {
         localStorage.setItem('synarc_circle_address', address)
         localStorage.setItem('synarc_circle_email', email)
         localStorage.setItem('synarc_circle_connected', 'true')
+        localStorage.setItem('synarc_circle_user_token', userToken)
         window.dispatchEvent(new Event('synarc_circle_auth_change'))
       }
       
@@ -162,6 +164,7 @@ export const useCircleWallet = () => {
       localStorage.removeItem('synarc_circle_address')
       localStorage.removeItem('synarc_circle_email')
       localStorage.removeItem('synarc_circle_connected')
+      localStorage.removeItem('synarc_circle_user_token')
       window.dispatchEvent(new Event('synarc_circle_auth_change'))
     }
   }, [])

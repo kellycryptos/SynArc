@@ -11,11 +11,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown, Wallet, Check } from "lucide-react";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import { BrowserProvider } from "ethers";
+import { BrowserProvider, Interface } from "ethers";
 import { parseArcError } from "@/lib/utils";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
 import { toast } from "react-hot-toast";
-import { writeWithRetry, enforceChain, getAuthenticatedClient, getAggressiveGasParams } from "@/lib/tx-helper";
+import { writeWithRetry, enforceChain, getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS } from "@/lib/arc-config";
 import { GovernorABI } from "@/lib/governance/contracts";
 import { createWalletClient, createPublicClient, custom, fallback, http } from "viem";
@@ -179,8 +179,8 @@ export default function CreateProposalPage() {
           localStorage.setItem("synarc_simulated_proposals", JSON.stringify([newProposal, ...existing]));
         }
 
-        // Force store re-initialization so it loads the new proposal
-        useGovernanceStore.getState().initializeStore();
+        // Force store re-initialization (bypasses 3-minute staleness cache)
+        useGovernanceStore.getState().initializeStore(undefined, true);
 
         toast.success('Proposal submitted! ✅');
         setSuccessProposalId(proposalId);
@@ -250,11 +250,37 @@ export default function CreateProposalPage() {
         ...gasParams,
       })
 
+      // Wait for on-chain confirmation and parse the actual proposalId from logs
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 60_000 });
+
+      let finalProposalId = `SIP-${txHash.slice(0, 6)}`; // fallback
+      try {
+        if (receipt && receipt.logs) {
+          const iface = new Interface(GovernorABI);
+          for (const log of receipt.logs) {
+            try {
+              const parsed = iface.parseLog({ topics: [...(log.topics as string[])], data: log.data });
+              if (parsed && parsed.name === 'ProposalCreated') {
+                finalProposalId = `SIP-${parsed.args.proposalId?.toString() || parsed.args[0]?.toString()}`;
+                break;
+              }
+            } catch {
+              // skip logs that don't match
+            }
+          }
+        }
+      } catch (logErr) {
+        console.error('Failed to parse ProposalCreated log:', logErr);
+      }
+
+      // Force-refetch proposal list from chain (bypasses 3-minute staleness cache)
+      await useGovernanceStore.getState().initializeStore(undefined, true);
+
       toast.success('Proposal submitted! ✅');
-      setSuccessProposalId(txHash);
+      setSuccessProposalId(finalProposalId);
 
       setTimeout(() => {
-        router.push('/proposals');
+        router.push(`/proposals/${finalProposalId}`);
       }, 3000);
     } catch (err: any) {
       console.error("Proposal submission error details:", err);

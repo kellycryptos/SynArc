@@ -26,12 +26,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Never show the wrong-network banner for Circle wallet users.
   const isUnsupported = isAuthenticated && !isCircle && wagmiUnsupported;
 
-  // Run the self-delegation check on wallet connection
-  useEffect(() => {
-    if (wallets && wallets.length > 0 && walletAddress && !isCircle) {
-      checkAndDelegate(wallets, walletAddress).catch(console.error);
-    }
-  }, [wallets, walletAddress, isCircle]);
 
 
   // Network switch is handled at transaction time (vote, deposit, create proposal).
