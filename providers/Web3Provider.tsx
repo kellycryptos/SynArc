@@ -37,11 +37,9 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     <PrivyProvider
       appId={appId}
       config={{
-        // All settings (loginMethods, embeddedWallets, supportedChains, appearance) come
-        // from privyConfig. Overriding embeddedWallets here previously caused a conflict
-        // where the embedded wallet was created for ALL users (including external wallets),
-        // which led to "Arc network temporarily unavailable" on the secondary embedded wallet.
+        // Spread shared privyConfig first — includes loginMethods, stable defaultChain/supportedChains
         ...privyConfig,
+        // Merge appearance so showWalletLoginFirst: false is preserved from privyConfig
         appearance: {
           ...privyConfig.appearance,
           theme: 'dark',
