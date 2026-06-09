@@ -355,6 +355,142 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Developer SDK Section */}
+      <section id="sdk" className="py-24 relative overflow-hidden px-4 border-b border-border-thin bg-gradient-to-b from-transparent to-primary/[0.03]">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] opacity-15 bg-gradient-to-r from-primary to-arc-blue rounded-full blur-[130px]" />
+        </div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-5 space-y-6 text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold uppercase tracking-wider text-purple-300">
+                🛠️ FOR DEVELOPERS
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
+                Empower Your AI Agents <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">With On-Chain Governance</span>
+              </h2>
+              <p className="text-lg text-text-secondary leading-relaxed">
+                Integrate autonomous AI agents and organizations directly with Arc governance and treasury protocols. Build custom voting engines, yield sweep algorithms, and registry integrations.
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[10px] text-primary">✔</div>
+                  <div>
+                    <h4 className="text-sm font-bold text-text-primary">Easy Integration</h4>
+                    <p className="text-xs text-text-secondary">Fully typed SDK built for Javascript, TypeScript, and Python agent runners.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[10px] text-primary">✔</div>
+                  <div>
+                    <h4 className="text-sm font-bold text-text-primary">Universal Wallet Support</h4>
+                    <p className="text-xs text-text-secondary">Works seamlessly with Circle Programmable Wallets, Privy, MetaMask, and WalletConnect.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[10px] text-primary">✔</div>
+                  <div>
+                    <h4 className="text-sm font-bold text-text-primary">Full Treasury & Governance</h4>
+                    <p className="text-xs text-text-secondary">Trigger programmatic sweeps, registry updates, and execute timelocked execution transactions.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4 pt-4">
+                <Link href="/docs/sdk" className="px-6 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] flex items-center gap-2">
+                  Get Started <ArrowRight className="w-4 h-4" />
+                </Link>
+                <a 
+                  href="https://github.com/kellycryptos/synarc-agent-sdk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center gap-2"
+                >
+                  View GitHub
+                </a>
+              </div>
+            </div>
+
+            {/* Right Interactive Mockup */}
+            <div className="lg:col-span-7">
+              <GlassCard className="p-0 border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden relative group">
+                <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-arc-blue/5 to-transparent pointer-events-none" />
+                
+                {/* Mac window header */}
+                <div className="bg-surface-elevated/40 px-4 py-3 border-b border-white/[0.05] flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+                    <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+                    <span className="w-3 h-3 rounded-full bg-[#27c93f]" />
+                  </div>
+                  <span className="text-[11px] font-mono text-muted/70 tracking-wider">agent-setup.ts</span>
+                  <div className="w-12" /> {/* spacer */}
+                </div>
+
+                {/* Code Body */}
+                <div className="p-6 md:p-8 font-mono text-xs md:text-sm leading-relaxed overflow-x-auto text-left text-text-secondary">
+                  <div>
+                    <span className="text-[#f47067]">npm install</span> <span className="text-[#8dd3c7]">@synarc/agent-sdk</span>
+                  </div>
+                  <div className="h-4" />
+                  <div>
+                    <span className="text-[#ff7b72]">import</span> {"{"} <span className="text-[#c9d1d9]">SynArcAgentClient</span> {"}"} <span className="text-[#ff7b72]">from</span> <span className="text-[#a5d6ff]">'@synarc/agent-sdk'</span><span className="text-[#c9d1d9]">;</span>
+                  </div>
+                  <div>
+                    <span className="text-[#ff7b72]">import</span> {"{"} <span className="text-[#c9d1d9]">ethers</span> {"}"} <span className="text-[#ff7b72]">from</span> <span className="text-[#a5d6ff]">'ethers'</span><span className="text-[#c9d1d9]">;</span>
+                  </div>
+                  <div className="h-3" />
+                  <div className="text-muted/60">// Initialize connection for the Arc Network</div>
+                  <div>
+                    <span className="text-[#ff7b72]">const</span> <span className="text-[#79c0ff]">provider</span> <span className="text-[#ff7b72]">=</span> <span className="text-[#ff7b72]">new</span> <span className="text-[#79c0ff]">ethers</span><span className="text-[#c9d1d9]">.</span><span className="text-[#d2a8ff]">JsonRpcProvider</span><span className="text-[#c9d1d9]">(</span><span className="text-[#a5d6ff]">'https://rpc.testnet.arc.network'</span><span className="text-[#c9d1d9]">);</span>
+                  </div>
+                  <div>
+                    <span className="text-[#ff7b72]">const</span> <span className="text-[#79c0ff]">agentWallet</span> <span className="text-[#ff7b72]">=</span> <span className="text-[#ff7b72]">new</span> <span className="text-[#79c0ff]">ethers</span><span className="text-[#c9d1d9]">.</span><span className="text-[#d2a8ff]">Wallet</span><span className="text-[#c9d1d9]">(</span><span className="text-[#79c0ff]">process</span><span className="text-[#c9d1d9]">.</span><span className="text-[#79c0ff]">env</span><span className="text-[#c9d1d9]">.</span><span className="text-[#79c0ff]">AGENT_PRIVATE_KEY</span><span className="text-[#c9d1d9]">,</span> <span className="text-[#79c0ff]">provider</span><span className="text-[#c9d1d9]">);</span>
+                  </div>
+                  <div className="h-3" />
+                  <div>
+                    <span className="text-[#ff7b72]">const</span> <span className="text-[#79c0ff]">client</span> <span className="text-[#ff7b72]">=</span> <span className="text-[#ff7b72]">new</span> <span className="text-[#d2a8ff]">SynArcAgentClient</span><span className="text-[#c9d1d9]">({"{"}</span>
+                  </div>
+                  <div>
+                    &nbsp;&nbsp;<span className="text-[#79c0ff]">signer</span><span className="text-[#c9d1d9]">:</span> <span className="text-[#79c0ff]">agentWallet</span><span className="text-[#c9d1d9]">,</span>
+                  </div>
+                  <div>
+                    &nbsp;&nbsp;<span className="text-[#79c0ff]">network</span><span className="text-[#c9d1d9]">:</span> <span className="text-[#a5d6ff]">'arc-testnet'</span>
+                  </div>
+                  <div>
+                    <span className="text-[#c9d1d9]">{"}"});</span>
+                  </div>
+                  <div className="h-3" />
+                  <div className="text-muted/60">// Programmatically register and cast cryptographic votes</div>
+                  <div>
+                    <span className="text-[#ff7b72]">await</span> <span className="text-[#79c0ff]">client</span><span className="text-[#c9d1d9]">.</span><span className="text-[#79c0ff]">agent</span><span className="text-[#c9d1d9]">.</span><span className="text-[#d2a8ff]">registerIdentity</span><span className="text-[#c9d1d9]">({"{"}</span> <span className="text-[#79c0ff]">name</span><span className="text-[#c9d1d9]">:</span> <span className="text-[#a5d6ff]">'Agent-007'</span> <span className="text-[#c9d1d9]">{"}"});</span>
+                  </div>
+                  <div>
+                    <span className="text-[#ff7b72]">await</span> <span className="text-[#79c0ff]">client</span><span className="text-[#c9d1d9]">.</span><span className="text-[#79c0ff]">governance</span><span className="text-[#c9d1d9]">.</span><span className="text-[#d2a8ff]">castVote</span><span className="text-[#c9d1d9]">({"{"}</span>
+                  </div>
+                  <div>
+                    &nbsp;&nbsp;<span className="text-[#79c0ff]">proposalId</span><span className="text-[#c9d1d9]">:</span> <span className="text-[#79c0ff]">42</span><span className="text-[#c9d1d9]">,</span>
+                  </div>
+                  <div>
+                    &nbsp;&nbsp;<span className="text-[#79c0ff]">support</span><span className="text-[#c9d1d9]">:</span> <span className="text-[#79c0ff]">1</span><span className="text-[#c9d1d9]">,</span> <span className="text-muted/60">// For</span>
+                  </div>
+                  <div>
+                    &nbsp;&nbsp;<span className="text-[#79c0ff]">reason</span><span className="text-[#c9d1d9]">:</span> <span className="text-[#a5d6ff]">'Automated AI alignment verified.'</span>
+                  </div>
+                  <div>
+                    <span className="text-[#c9d1d9]">{"}"});</span>
+                  </div>
+                </div>
+              </GlassCard>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Roadmap Section */}
       <section id="roadmap" className="py-24 relative overflow-hidden px-4">
         {/* Glow Effects */}

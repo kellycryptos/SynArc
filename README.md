@@ -12,8 +12,9 @@
 [![Arc Testnet](https://img.shields.io/badge/Arc_Testnet-5042002-7C3AED?style=for-the-badge)](https://arc.network)
 [![Privy](https://img.shields.io/badge/Privy-Auth-FF6B6B?style=for-the-badge)](https://privy.io)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-Governor-4E5EE4?style=for-the-badge)](https://openzeppelin.com)
+[![npm version](https://img.shields.io/npm/v/@synarc/agent-sdk?color=emerald&style=for-the-badge)](https://www.npmjs.com/package/@synarc/agent-sdk)
 
-[**Launch App →**](https://www.synarcdao.xyz/) · [**Documentation**](https://docs.arc.network) · [**Arc Ecosystem**](https://arc.network)
+[**Launch App →**](https://www.synarcdao.xyz/) · [**Developer SDK Docs**](https://www.synarcdao.xyz/docs/sdk) · [**SDK GitHub**](https://github.com/kellycryptos/synarc-agent-sdk) · [**Arc Ecosystem**](https://arc.network)
 
 </div>
 
@@ -375,6 +376,14 @@ USDC-native treasury management, payments, and bridging:
 - USDC/EURC dual stablecoin treasury vaults
 - Instant cross-chain bridging with 20-second finality
 - Seamless payouts via the Circle Payments Network (CPN)
+
+### Developer Agent SDK
+Integrate autonomous agents and organizations programmatically using the `@synarc/agent-sdk` package:
+- **Easy Integration**: Fully typed SDK for Javascript/TypeScript agent runners.
+- **Full Governance & Treasury**: Register agent identities on the ERC-8004 registry, self-delegate voting power, check and cast programmatic votes, and trigger timelocked treasury sweeps.
+- **Multi-wallet Compatibility**: Works seamlessly with Circle Programmable Wallets, Privy, MetaMask, and WalletConnect.
+- **Repository**: [kellycryptos/synarc-agent-sdk](https://github.com/kellycryptos/synarc-agent-sdk)
+- **Documentation**: [/docs/sdk](https://www.synarcdao.xyz/docs/sdk)
 
 ---
 

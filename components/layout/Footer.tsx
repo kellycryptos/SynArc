@@ -20,6 +20,7 @@ const productLinks = [
 
 const developerLinks = [
   { label: "Docs", href: "/docs" },
+  { label: "Agent SDK", href: "/docs/sdk" },
   { label: "GitHub", href: "https://github.com/kellycryptos/SynArc", external: true },
 ];
 
