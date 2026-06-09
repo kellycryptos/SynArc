@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { arcTestnet } from '@/lib/arc-config';
 import { wagmiConfig } from '@/lib/wagmi';
 import { initializeResilientRpc } from '@/lib/rpc/config';
+import { privyConfig } from '@/lib/privy/config';
 
 export { arcTestnet };
 
@@ -36,11 +37,17 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     <PrivyProvider
       appId={appId}
       config={{
+        // Spread shared privyConfig first — includes loginMethods: ['email', ...] for OTP-first auth
+        ...privyConfig,
+        // Chain overrides
         defaultChain: arcTestnet,
         supportedChains: [arcTestnet],
+        // Merge appearance so showWalletLoginFirst: false is preserved from privyConfig
         appearance: {
+          ...privyConfig.appearance,
           theme: 'dark',
           accentColor: '#7C3AED',
+          showWalletLoginFirst: false,
         },
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
@@ -62,3 +69,4 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     </PrivyProvider>
   );
 }
+

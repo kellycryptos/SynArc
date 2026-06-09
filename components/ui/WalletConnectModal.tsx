@@ -182,7 +182,7 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
               </p>
               
               <div className="text-[10px] text-pink-500 font-semibold leading-normal mt-1">
-                Circle Wallet requires verification for security
+                Verification via email OTP — no password required
               </div>
 
               {/* Circle Down User Warning */}
@@ -232,9 +232,24 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
                       <Mail className="w-3.5 h-3.5 text-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
                     </div>
                     {loading && (
-                      <div className="text-[9px] text-pink-400 font-semibold flex items-center gap-1.5 animate-pulse py-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-ping shrink-0" />
-                        <span>{loadingStep || 'Connecting to Circle...'}</span>
+                      <div className="space-y-2">
+                        {loadingStep && loadingStep.toLowerCase().includes('email') ? (
+                          // Prominent OTP email callout
+                          <div className="p-3 bg-pink-500/10 border border-pink-500/30 rounded-xl flex items-start gap-2.5 animate-fade-in-up">
+                            <Mail className="w-4 h-4 text-pink-400 shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-[11px] font-bold text-pink-300 leading-snug">Check your email</p>
+                              <p className="text-[10px] text-pink-400/80 leading-relaxed mt-0.5">
+                                A verification code has been sent to <span className="font-semibold text-pink-300">{emailInput}</span>. Enter it in the Circle popup to confirm your identity.
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-[9px] text-pink-400 font-semibold flex items-center gap-1.5 animate-pulse py-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-ping shrink-0" />
+                            <span>{loadingStep || 'Connecting to Circle...'}</span>
+                          </div>
+                        )}
                       </div>
                     )}
                     <div className="flex gap-1.5 text-[10px]">

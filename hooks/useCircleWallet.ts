@@ -100,12 +100,13 @@ export const useCircleWallet = () => {
       }
       const { challengeId, alreadyInitialized } = walletData
 
-      // Step 4 — Execute challenge if present (shows Circle PIN/Verification UI)
+      // Step 4 — Execute challenge if present (triggers Circle Email OTP UI, not PIN)
       if (challengeId) {
         if (!alreadyInitialized) {
-          setLoadingStep('Awaiting security PIN setup...')
+          // Circle Console is configured for Email OTP — not PIN
+          setLoadingStep('Check your email for a verification code...')
         } else {
-          setLoadingStep('Awaiting security verification...')
+          setLoadingStep('Check your email for a verification code...')
         }
         console.log('[Circle Hook] Executing security challenge...')
         await new Promise((resolve, reject) => {
