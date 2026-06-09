@@ -18,7 +18,7 @@ const privyArcTestnet = {
 };
 
 export const privyConfig: PrivyClientConfig = {
-  loginMethods: ['email', 'google', 'twitter', 'discord', 'wallet'],
+  loginMethods: ['email', 'google', 'wallet'],
   appearance: {
     theme: 'dark',
     accentColor: '#7C3AED',

@@ -35,13 +35,49 @@ export async function POST(req: NextRequest) {
       const isAlreadyInit = errorMsg.toLowerCase().includes('already') || data.code === 155118
       
       if (isAlreadyInit) {
-        // Wallet already exists — no need to challenge again.
-        // Return without a challengeId so the client skips the SDK execute() call
-        // and proceeds directly to fetching the wallet address.
-        console.log('[Circle API] Wallet already initialized — skipping verification challenge.')
+        // Fetch wallets for this user to get the walletId
+        console.log(`[Circle API] Fetching wallets to generate verification challenge...`)
+        const walletsRes = await fetch(`${CIRCLE_API_URL}/wallets`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+            'X-User-Token': userToken
+          }
+        })
+        const walletsData = await walletsRes.json()
+        const wallets = walletsData.data?.wallets || []
+        const arcWallet = wallets.find((w: any) => w.blockchain === 'ARC-TESTNET') || wallets[0]
+
+        if (!arcWallet) {
+          return NextResponse.json({ error: 'No wallets found for user' }, { status: 404 })
+        }
+
+        // Generate a signature challenge to force security verification (will trigger Email OTP or PIN based on Console config)
+        console.log(`[Circle API] Generating signMessage verification challenge for wallet ${arcWallet.id}...`)
+        const signRes = await fetch(`${CIRCLE_API_URL}/user/sign/message`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+            'X-User-Token': userToken
+          },
+          body: JSON.stringify({
+            idempotencyKey: crypto.randomUUID(),
+            message: 'Verify ownership of your SynArc governance wallet',
+            walletId: arcWallet.id
+          })
+        })
+        const signData = await signRes.json()
+
+        if (signRes.status !== 200 && signRes.status !== 201) {
+          const signErrorMsg = signData.message || signData.error?.message || 'Failed to create verification challenge'
+          return NextResponse.json({ error: signErrorMsg }, { status: signRes.status })
+        }
+
         return NextResponse.json({
           success: true,
-          challengeId: null,
+          challengeId: signData.data?.challengeId,
           alreadyInitialized: true
         })
       }
