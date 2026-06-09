@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useCircleWallet } from '@/hooks/useCircleWallet';
-import { X, Mail, ArrowRight, AlertCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { X, Loader2 } from 'lucide-react';
 
 interface WalletConnectModalProps {
   isOpen: boolean;
@@ -15,25 +14,14 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
   const { login } = usePrivy();
   const { connectCircleWallet, loading, loadingStep } = useCircleWallet();
   const [emailInput, setEmailInput] = useState('');
-  const [showCircleInput, setShowCircleInput] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [circleError, setCircleError] = useState(false);
+  const [tab, setTab] = useState<'privy' | 'circle'>('privy');
 
-  // Check Circle App ID configuration on mount/open, and reset previous error/input states
   useEffect(() => {
     if (isOpen) {
-      setCircleError(false);
       setErrorMessage(null);
-      setShowCircleInput(false);
-
-      const rawAppId = process.env.NEXT_PUBLIC_CIRCLE_APP_ID;
-      const appId = !rawAppId || rawAppId === 'mock_circle_app_id_123456' || rawAppId.includes('your_')
-        ? '21fe3b25-388d-5cbc-a14a-e62d92a6d2d8' // Resilient fallback to configured real App ID
-        : rawAppId;
-
-      if (!appId) {
-        setCircleError(true);
-      }
+      setEmailInput('');
+      setTab('privy');
     }
   }, [isOpen]);
 
@@ -41,20 +29,8 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
     e.preventDefault();
     setErrorMessage(null);
 
-    const rawAppId = process.env.NEXT_PUBLIC_CIRCLE_APP_ID;
-    const appId = !rawAppId || rawAppId === 'mock_circle_app_id_123456' || rawAppId.includes('your_')
-      ? '21fe3b25-388d-5cbc-a14a-e62d92a6d2d8'
-      : rawAppId;
-
-    if (!appId) {
-      console.error('[Circle Auth] App ID environment variable is missing.');
-      setCircleError(true);
-      setErrorMessage('Circle Wallet temporarily unavailable — use Privy instead.');
-      return;
-    }
-
     if (!emailInput || !emailInput.includes('@')) {
-      setErrorMessage('Please enter a valid email address.');
+      setErrorMessage('Enter a valid email address.');
       return;
     }
 
@@ -65,218 +41,136 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
       }
       onClose();
     } catch (err: any) {
-      console.error('[Circle SDK Connection Error]:', err);
-      setCircleError(true);
-      setErrorMessage('Circle Wallet temporarily unavailable — use Privy instead.');
+      setErrorMessage(err?.message || 'Connection failed. Please try again.');
     }
-  };
-
-  const handleCircleInitCheck = () => {
-    setErrorMessage(null);
-    
-    const rawAppId = process.env.NEXT_PUBLIC_CIRCLE_APP_ID;
-    const appId = !rawAppId || rawAppId === 'mock_circle_app_id_123456' || rawAppId.includes('your_')
-      ? '21fe3b25-388d-5cbc-a14a-e62d92a6d2d8'
-      : rawAppId;
-
-    if (!appId) {
-      console.error('[Circle Auth] Initialization Check Failed: App ID is missing.');
-      setCircleError(true);
-      setErrorMessage('Circle Wallet temporarily unavailable — use Privy instead.');
-      return;
-    }
-    
-    setShowCircleInput(true);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      {/* Sleek Overlay Backdrop */}
-      <div 
-        className="fixed inset-0 bg-background/80 dark:bg-background/90 backdrop-blur-md transition-opacity" 
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Reduced Width Centered Modal (max-w-[520px]) */}
-      <div className="w-full max-w-[520px] bg-card border border-card-border rounded-2xl shadow-2xl relative z-10 overflow-hidden glass-card p-6 md:p-8 animate-fade-in-up text-left">
-        {/* Close Button */}
-        <button 
-          onClick={onClose}
-          className="absolute right-4 top-4 p-1.5 text-muted hover:text-foreground rounded-full transition-colors cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-        </button>
+      {/* Modal */}
+      <div className="relative w-full max-w-md bg-[#0f0f14] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
 
-        {/* Modal Header */}
-        <div className="space-y-1 mb-8">
-          <h2 className="text-xl font-extrabold text-foreground tracking-tight">Connect Wallet</h2>
-          <p className="text-xs text-muted leading-relaxed font-semibold">
-            Choose how you want to participate in SynArc governance.
-          </p>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-6 pb-4">
+          <div>
+            <h2 className="text-base font-semibold text-white">Connect Wallet</h2>
+            <p className="text-xs text-white/40 mt-0.5">Choose how to join SynArc</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-white/30 hover:text-white hover:bg-white/5 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Dynamic Error Messaging (No raw API leakage, clean and user-friendly) */}
-        {errorMessage && errorMessage !== 'Circle Wallet temporarily unavailable — use Privy instead.' && (
-          <div className="p-3.5 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-start gap-2 mb-6 animate-fade-in-up">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span className="break-words w-full font-medium">{errorMessage}</span>
+        {/* Tab selector */}
+        <div className="px-6 pb-4">
+          <div className="flex rounded-lg bg-white/5 p-0.5 gap-0.5">
+            <button
+              onClick={() => setTab('privy')}
+              className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-all ${
+                tab === 'privy'
+                  ? 'bg-[#7C3AED] text-white shadow'
+                  : 'text-white/50 hover:text-white/80'
+              }`}
+            >
+              Privy
+            </button>
+            <button
+              onClick={() => setTab('circle')}
+              className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-all ${
+                tab === 'circle'
+                  ? 'bg-white/10 text-white shadow'
+                  : 'text-white/50 hover:text-white/80'
+              }`}
+            >
+              Circle Wallet
+            </button>
           </div>
-        )}
+        </div>
 
-        {/* Two Options with Privy Priority */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
-          
-          {/* Option 1 (Recommended & Primary): Privy Wallet */}
-          <div className="flex flex-col justify-between p-5 rounded-xl border-2 border-primary/40 bg-gradient-to-b from-primary/[0.04] to-transparent relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-xl pointer-events-none" />
-
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <span className="px-2 py-0.5 rounded bg-primary/20 border border-primary/30 text-[9px] font-extrabold uppercase text-purple-300 tracking-wider select-none">
-                  Recommended
-                </span>
-              </div>
-
-              <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <span className="text-primary">🔐</span>
-                <span>Continue with Privy</span>
-              </h3>
-
-              <p className="text-[11px] text-muted leading-relaxed font-medium">
-                The fastest and most reliable way to sign in. Supports:
+        {/* Content */}
+        <div className="px-6 pb-6">
+          {tab === 'privy' ? (
+            <div className="space-y-4">
+              <p className="text-xs text-white/50 leading-relaxed">
+                Sign in with email, Google, Twitter, Discord, or an existing wallet. Fast and secure.
               </p>
-
-              <div className="flex flex-wrap gap-1 pt-1">
-                {['📧 Email', '🌐 Google', '🦊 MetaMask', '🔗 WalletConnect'].map((badge) => (
-                  <span key={badge} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-border-thin text-text-secondary font-medium">
-                    {badge}
+              <div className="flex flex-wrap gap-1.5">
+                {['Email', 'Google', 'MetaMask', 'WalletConnect', 'Discord'].map((m) => (
+                  <span
+                    key={m}
+                    className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] text-white/40 font-medium"
+                  >
+                    {m}
                   </span>
                 ))}
               </div>
+              <button
+                onClick={() => { login(); onClose(); }}
+                className="w-full py-2.5 rounded-xl bg-[#7C3AED] hover:bg-[#6d2fe0] text-white text-sm font-semibold transition-colors shadow-lg shadow-purple-900/30"
+              >
+                Continue with Privy
+              </button>
             </div>
-
-            <button
-              onClick={() => {
-                login();
-                onClose();
-              }}
-              className="w-full py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-all mt-6 shadow-[0_0_15px_rgba(124,58,237,0.2)]"
-            >
-              <span>Connect with Privy</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Option 2: Circle Wallet */}
-          <div className={`flex flex-col justify-between p-5 rounded-xl border ${circleError ? 'border-amber-500/20 bg-amber-500/[0.01]' : 'border-card-border hover:border-primary/30'} bg-surface transition-all duration-300 group`}>
-            <div className="space-y-3">
-              <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <span>⭕</span>
-                <span>Circle Developer Wallet</span>
-              </h3>
-              
-              <p className="text-[11px] text-muted leading-relaxed font-medium">
-                Gasless governance actions and native USDC stablecoin allocations built on Arc.
+          ) : (
+            <div className="space-y-4">
+              <p className="text-xs text-white/50 leading-relaxed">
+                Gasless governance with a native USDC wallet on Arc. Enter your email to connect.
               </p>
-              
-              <div className="text-[10px] text-pink-500 font-semibold leading-normal mt-1">
-                Verification via email OTP — no password required
-              </div>
 
-              {/* Circle Down User Warning */}
-              {circleError && (
-                <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-[9px] text-amber-400 leading-normal flex items-start gap-1.5 animate-fade-in-up mt-2 font-medium">
-                  <span className="shrink-0">⚠️</span>
-                  <span>Circle temporarily unavailable — use Privy instead.</span>
+              {/* Error */}
+              {errorMessage && (
+                <div className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+                  {errorMessage}
                 </div>
               )}
-            </div>
 
-            <div className="mt-6">
-              <AnimatePresence mode="wait">
-                {circleError ? (
-                  <button
-                    disabled
-                    className="w-full py-2.5 rounded-lg bg-surface-elevated border border-border-thin text-muted text-[11px] font-bold flex items-center justify-center gap-1 cursor-not-allowed opacity-50"
-                  >
-                    <span>Temporarily Offline</span>
-                  </button>
-                ) : !showCircleInput ? (
-                  <button
-                    onClick={handleCircleInitCheck}
-                    className="w-full py-2.5 rounded-lg bg-pink-600/10 border border-pink-500/20 hover:bg-pink-600/20 text-pink-400 text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-all"
-                  >
-                    <span>Continue with Circle</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                ) : (
-                  <motion.form
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    onSubmit={handleCircleSubmit}
-                    className="space-y-2"
-                  >
-                    <div className="relative">
-                      <input
-                        type="email"
-                        value={emailInput}
-                        onChange={(e) => setEmailInput(e.target.value)}
-                        placeholder="Enter email"
-                        required
-                        disabled={loading}
-                        className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-background border border-card-border focus:border-pink-500 outline-none text-[11px] text-foreground placeholder:text-muted disabled:opacity-50 font-mono"
-                      />
-                      <Mail className="w-3.5 h-3.5 text-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
-                    </div>
-                    {loading && (
-                      <div className="space-y-2">
-                        {loadingStep && loadingStep.toLowerCase().includes('email') ? (
-                          // Prominent OTP email callout
-                          <div className="p-3 bg-pink-500/10 border border-pink-500/30 rounded-xl flex items-start gap-2.5 animate-fade-in-up">
-                            <Mail className="w-4 h-4 text-pink-400 shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-[11px] font-bold text-pink-300 leading-snug">Check your email</p>
-                              <p className="text-[10px] text-pink-400/80 leading-relaxed mt-0.5">
-                                A verification code has been sent to <span className="font-semibold text-pink-300">{emailInput}</span>. Enter it in the Circle popup to confirm your identity.
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="text-[9px] text-pink-400 font-semibold flex items-center gap-1.5 animate-pulse py-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-ping shrink-0" />
-                            <span>{loadingStep || 'Connecting to Circle...'}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    <div className="flex gap-1.5 text-[10px]">
-                      <button
-                        type="button"
-                        onClick={() => setShowCircleInput(false)}
-                        disabled={loading}
-                        className="px-2 py-1.5 rounded-lg border border-card-border text-muted hover:text-foreground transition-colors cursor-pointer"
-                      >
-                        Back
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="flex-1 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white font-bold flex items-center justify-center gap-1 cursor-pointer"
-                      >
-                        {loading ? 'Processing...' : 'Confirm'}
-                      </button>
-                    </div>
-                  </motion.form>
+              <form onSubmit={handleCircleSubmit} className="space-y-3">
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                  disabled={loading}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:border-white/30 outline-none text-sm text-white placeholder:text-white/25 disabled:opacity-50 transition-colors"
+                />
+
+                {/* Loading state */}
+                {loading && (
+                  <div className="flex items-center gap-2 px-1 py-0.5">
+                    <Loader2 className="w-3.5 h-3.5 text-white/40 animate-spin shrink-0" />
+                    <span className="text-[11px] text-white/50">
+                      {loadingStep || 'Connecting...'}
+                    </span>
+                  </div>
                 )}
-              </AnimatePresence>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-2.5 rounded-xl bg-white/8 hover:bg-white/12 border border-white/10 hover:border-white/20 text-white text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Connecting...' : 'Connect Circle Wallet'}
+                </button>
+              </form>
+
+              <p className="text-[10px] text-white/25 text-center">
+                First time? A wallet will be created on Arc Testnet.
+              </p>
             </div>
-          </div>
-
+          )}
         </div>
-
       </div>
     </div>
   );
