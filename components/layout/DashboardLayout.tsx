@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "../sidebar/Sidebar";
 import { DashboardNavbar } from "../navbar/DashboardNavbar";
 import { WalletGuard } from "../auth/WalletGuard";
@@ -11,16 +11,28 @@ import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 import { useAccount } from "wagmi";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useWallets } from "@privy-io/react-auth";
+import { checkAndDelegate } from "@/lib/tx-helper";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isConnected } = useAccount();
-  const { isAuthenticated, isCircle } = useAuth();
+  const { isAuthenticated, isCircle, walletAddress } = useAuth();
   const { isArcTestnet, isUnsupported: wagmiUnsupported } = useArcNetwork();
   const { switchToArc, isSwitching } = useSwitchArcNetwork();
+  const { wallets } = useWallets();
+
   // Circle wallet does not register with wagmi, so isConnected=false for Circle users.
   // Never show the wrong-network banner for Circle wallet users.
   const isUnsupported = isAuthenticated && !isCircle && wagmiUnsupported;
+
+  // Run the self-delegation check on wallet connection
+  useEffect(() => {
+    if (wallets && wallets.length > 0 && walletAddress && !isCircle) {
+      checkAndDelegate(wallets, walletAddress).catch(console.error);
+    }
+  }, [wallets, walletAddress, isCircle]);
+
 
   // Network switch is handled at transaction time (vote, deposit, create proposal).
   // We no longer auto-switch on page load to avoid disrupting public browsing.

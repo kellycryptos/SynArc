@@ -363,10 +363,65 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       // Get provider and client — Privy wallet, Circle wallet OR external wallet
       const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002);
 
-      const rawId = BigInt(proposal.id.replace("SIP-", ""));
-
       // Dynamically estimate fees using low-latency and aggressive parameters
       const gasParams = await getAggressiveGasParams(publicClient);
+
+      // Check if user has sARC but has not self-delegated
+      const SARC_DELEGATE_ABI = [{
+        name: "delegates",
+        type: "function",
+        stateMutability: "view",
+        inputs: [{ name: "account", type: "address" }],
+        outputs: [{ name: "", type: "address" }]
+      }, {
+        name: "delegate",
+        type: "function",
+        stateMutability: "nonpayable",
+        inputs: [{ name: "delegatee", type: "address" }],
+        outputs: []
+      }, {
+        name: "balanceOf",
+        type: "function",
+        stateMutability: "view",
+        inputs: [{ name: "account", type: "address" }],
+        outputs: [{ name: "", type: "uint256" }]
+      }] as const;
+
+      const currentDelegate = await publicClient.readContract({
+        address: SARC_ADDRESS,
+        abi: SARC_DELEGATE_ABI,
+        functionName: "delegates",
+        args: [address]
+      });
+
+      const balance = await publicClient.readContract({
+        address: SARC_ADDRESS,
+        abi: SARC_DELEGATE_ABI,
+        functionName: "balanceOf",
+        args: [address]
+      });
+
+      if (balance > 0n && currentDelegate === "0x0000000000000000000000000000000000000000") {
+        setStatus('Activating voting power (one-time delegation)...');
+        toast.loading('Activating voting power (one-time delegation)...');
+        
+        const delegateTx = await walletClient.writeContract({
+          address: SARC_ADDRESS,
+          abi: SARC_DELEGATE_ABI,
+          functionName: "delegate",
+          args: [address],
+          gas: 150000n,
+          ...gasParams
+        });
+        
+        await waitForTransaction(publicClient, delegateTx);
+        toast.dismiss();
+        toast.success('Voting power activated successfully!');
+        await refetchToken().catch(() => {});
+      }
+
+      const rawId = BigInt(proposal.id.replace("SIP-", ""));
+
 
       let estimatedVoteGas = 350000n; // Slightly higher gas limit floor
       try {

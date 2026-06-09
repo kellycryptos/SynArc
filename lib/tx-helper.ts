@@ -1,5 +1,7 @@
 import { createWalletClient, createPublicClient, http, custom, fallback } from 'viem'
 import { ARC_CHAIN, ARC_RPC_URLS, ARC_GAS } from './arc-config'
+import { BrowserProvider, Contract, ZeroAddress } from 'ethers'
+
 
 // Enforce target chain ID before executing transaction with dynamic checks to prevent Privy crashes
 export function selectActiveWallet(wallets?: any[], activeAddress?: string | null): any {
@@ -454,4 +456,57 @@ export const waitForTransaction = async (
   
   return receipt;
 };
+
+/**
+ * Auto-delegates voting power to self if the user has sARC tokens but has never delegated.
+ */
+export const checkAndDelegate = async (wallets: any[], activeAddress?: string) => {
+  if (!wallets || wallets.length === 0) return;
+
+  const activeWallet = selectActiveWallet(wallets, activeAddress);
+  if (!activeWallet) return;
+
+  try {
+    const provider = await enforceChain(activeWallet, 5042002);
+    const browserProvider = new BrowserProvider(provider, {
+      chainId: 5042002,
+      name: "Arc Testnet"
+    });
+    const signer = await browserProvider.getSigner(activeWallet.address);
+    const address = activeWallet.address;
+
+    const TOKEN_ABI = [
+      'function delegate(address delegatee) external',
+      'function delegates(address account) external view returns (address)',
+      'function balanceOf(address account) external view returns (uint256)',
+    ];
+
+    const tokenContract = new Contract(
+      process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e',
+      TOKEN_ABI,
+      signer
+    );
+
+    // Check if already delegated
+    const currentDelegate = await tokenContract.delegates(address);
+    const balance = await tokenContract.balanceOf(address);
+
+    if (balance > 0n && currentDelegate === ZeroAddress) {
+      console.log('Auto-delegating voting power to self...');
+      
+      // Get gas parameters for fast inclusion on Arc Testnet
+      const minMaxFeePerGas = 20000000000n; // 20 Gwei/units
+      
+      const tx = await tokenContract.delegate(address, {
+        gasLimit: 150000n,
+        gasPrice: minMaxFeePerGas,
+      });
+      await tx.wait();
+      console.log('Delegation complete');
+    }
+  } catch (err) {
+    console.error('Error during auto-delegation check:', err);
+  }
+};
+
 

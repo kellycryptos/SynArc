@@ -11,8 +11,14 @@ import {
   Zap,
   RefreshCw,
   ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useToken } from "@/hooks/useToken";
+import { useWallets } from "@privy-io/react-auth";
+import { getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
+import { toast } from "react-hot-toast";
+
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const COOLDOWN_KEY = "synarc_faucet_last_claim";
@@ -58,6 +64,52 @@ export default function FaucetPage() {
   const [sarcMsg, setSarcMsg] = useState("");
   const [sarcTxHash, setSarcTxHash] = useState("");
   const [nextClaimAt, setNextClaimAt] = useState<string | null>(null);
+
+  const { needsDelegation, sarcBalance, refetch: refetchToken } = useToken(walletAddress);
+  const { wallets } = useWallets();
+  const [delegating, setDelegating] = useState(false);
+
+  const handleDelegate = async () => {
+    if (!walletAddress) return;
+    setDelegating(true);
+    try {
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      
+      const SARC_DELEGATE_ABI = [{
+        name: "delegate",
+        type: "function",
+        stateMutability: "nonpayable",
+        inputs: [{ name: "delegatee", type: "address" }],
+        outputs: []
+      }] as const;
+
+      const SARC_ADDRESS = (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e") as `0x${string}`;
+
+      const gasParams = await getAggressiveGasParams(publicClient);
+
+      toast.loading("Activating voting power...");
+      const tx = await walletClient.writeContract({
+        address: SARC_ADDRESS,
+        abi: SARC_DELEGATE_ABI,
+        functionName: "delegate",
+        args: [address],
+        gas: 150000n,
+        ...gasParams
+      });
+
+      await waitForTransaction(publicClient, tx);
+      toast.dismiss();
+      toast.success("Voting power activated! You are ready to vote.");
+      await refetchToken();
+    } catch (err: any) {
+      console.error("Delegation failed:", err);
+      toast.dismiss();
+      toast.error(err.message || "Failed to delegate voting power");
+    } finally {
+      setDelegating(false);
+    }
+  };
+
 
   // ─── Check localStorage cooldown on mount ─────────────────────────────────
   useEffect(() => {
@@ -125,6 +177,8 @@ export default function FaucetPage() {
       setSarcStatus("success");
       setSarcMsg(data.message || "1000 sARC Tokens sent to your wallet!");
       setSarcTxHash(data.txHash || "");
+      await refetchToken().catch(() => {});
+
     } catch (err: any) {
       setSarcStatus("error");
       setSarcMsg(err.message || "Something went wrong. Please try again.");
@@ -208,7 +262,40 @@ export default function FaucetPage() {
             </div>
           )}
 
+          {/* Delegation Check Notice */}
+          {sarcBalance > 0 && needsDelegation && (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold flex flex-col gap-2 animate-fade-in-up">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 animate-pulse animate-duration-1000" />
+                <div className="space-y-0.5">
+                  <p className="font-bold text-amber-300">Activate Voting Power</p>
+                  <p className="text-[10px] text-muted leading-relaxed font-medium">
+                    Holdings: {sarcBalance.toLocaleString()} sARC. You need to self-delegate to unlock voting.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleDelegate}
+                disabled={delegating}
+                className="w-full py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-background font-bold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {delegating ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    Activating...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-3 h-3" />
+                    Activate Voting Power
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
           {/* CTA Button */}
+
           {sarcStatus === "cooldown" ? (
             <button
               disabled
