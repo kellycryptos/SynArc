@@ -56,17 +56,17 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-[#0f0f14] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-md bg-background-surface border border-border-thin rounded-2xl shadow-2xl overflow-hidden">
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4">
           <div>
-            <h2 className="text-base font-semibold text-white">Connect Wallet</h2>
-            <p className="text-xs text-white/40 mt-0.5">Choose how to join SynArc</p>
+            <h2 className="text-base font-semibold text-text-primary">Connect Wallet</h2>
+            <p className="text-xs text-text-muted mt-0.5">Choose how to join SynArc</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-white/30 hover:text-white hover:bg-white/5 transition-colors"
+            className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-foreground/5 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -74,13 +74,13 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
 
         {/* Tab selector */}
         <div className="px-6 pb-4">
-          <div className="flex rounded-lg bg-white/5 p-0.5 gap-0.5">
+          <div className="flex rounded-lg bg-background-primary p-0.5 gap-0.5 border border-border-thin/40">
             <button
               onClick={() => setTab('privy')}
               className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-all ${
                 tab === 'privy'
-                  ? 'bg-[#7C3AED] text-white shadow'
-                  : 'text-white/50 hover:text-white/80'
+                  ? 'bg-primary text-white shadow'
+                  : 'text-text-secondary hover:text-text-primary'
               }`}
             >
               Privy
@@ -89,8 +89,8 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
               onClick={() => setTab('circle')}
               className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-all ${
                 tab === 'circle'
-                  ? 'bg-white/10 text-white shadow'
-                  : 'text-white/50 hover:text-white/80'
+                  ? 'bg-foreground/10 text-text-primary shadow'
+                  : 'text-text-secondary hover:text-text-primary'
               }`}
             >
               Circle Wallet
@@ -102,14 +102,14 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
         <div className="px-6 pb-6">
           {tab === 'privy' ? (
             <div className="space-y-4">
-              <p className="text-xs text-white/50 leading-relaxed">
+              <p className="text-xs text-text-secondary leading-relaxed">
                 Sign in with email, Google, Twitter, Discord, or an existing wallet. Fast and secure.
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {['Email', 'Google', 'MetaMask', 'WalletConnect', 'Discord'].map((m) => (
                   <span
                     key={m}
-                    className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] text-white/40 font-medium"
+                    className="px-2 py-0.5 rounded-full bg-foreground/5 border border-border-thin text-[10px] text-text-secondary font-medium"
                   >
                     {m}
                   </span>
@@ -124,7 +124,7 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-xs text-white/50 leading-relaxed">
+              <p className="text-xs text-text-secondary leading-relaxed">
                 Gasless governance with a native USDC wallet on Arc. Enter your email to connect.
               </p>
 
@@ -143,14 +143,14 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
                   placeholder="your@email.com"
                   required
                   disabled={loading}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:border-white/30 outline-none text-sm text-white placeholder:text-white/25 disabled:opacity-50 transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-foreground/5 border border-border-thin focus:border-primary/50 outline-none text-sm text-text-primary placeholder:text-text-muted disabled:opacity-50 transition-colors"
                 />
 
                 {/* Loading state */}
                 {loading && (
                   <div className="flex items-center gap-2 px-1 py-0.5">
-                    <Loader2 className="w-3.5 h-3.5 text-white/40 animate-spin shrink-0" />
-                    <span className="text-[11px] text-white/50">
+                    <Loader2 className="w-3.5 h-3.5 text-text-muted animate-spin shrink-0" />
+                    <span className="text-[11px] text-text-secondary">
                       {loadingStep || 'Connecting...'}
                     </span>
                   </div>
@@ -159,13 +159,13 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 rounded-xl bg-white/8 hover:bg-white/12 border border-white/10 hover:border-white/20 text-white text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-2.5 rounded-xl bg-foreground/5 hover:bg-foreground/10 border border-border-thin text-text-primary text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Connecting...' : 'Connect Circle Wallet'}
                 </button>
               </form>
 
-              <p className="text-[10px] text-white/25 text-center">
+              <p className="text-[10px] text-text-muted text-center">
                 First time? A wallet will be created on Arc Testnet.
               </p>
             </div>

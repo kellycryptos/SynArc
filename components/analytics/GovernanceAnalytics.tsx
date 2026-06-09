@@ -27,13 +27,10 @@ export function GovernanceAnalytics() {
                 <stop offset="95%" stopColor="#7C3AED" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
             <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}%`} />
-            <Tooltip 
-              contentStyle={{ backgroundColor: 'rgba(15,15,25,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-              itemStyle={{ color: '#fff' }}
-            />
+            <Tooltip />
             <Area type="monotone" dataKey="participation" stroke="#7C3AED" strokeWidth={2} fillOpacity={1} fill="url(#colorParticipation)" />
           </AreaChart>
         </ResponsiveContainer>

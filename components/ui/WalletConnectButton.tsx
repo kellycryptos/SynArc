@@ -96,13 +96,13 @@ export function WalletConnectButton() {
         <div className="absolute bottom-full left-0 w-full mb-2 bg-surface-elevated border border-border-thin rounded-xl shadow-xl overflow-hidden animate-fade-in-up origin-bottom z-50 p-1">
           <button 
             onClick={copyAddress}
-            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-foreground/5 rounded-lg transition-colors cursor-pointer"
           >
             <Copy className="w-4 h-4 text-muted" /> Copy Address
           </button>
           <button 
             onClick={openExplorer}
-            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-foreground/5 rounded-lg transition-colors cursor-pointer"
           >
             <ExternalLink className="w-4 h-4 text-muted" /> View on Explorer
           </button>
