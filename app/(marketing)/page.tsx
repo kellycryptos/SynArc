@@ -139,25 +139,25 @@ export default function LandingPage() {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold font-heading tracking-tight mb-6 leading-tight text-text-primary">
-            Confidential Governance Infrastructure <br className="hidden md:block" />
-            <span className="gradient-text">for the Agentic Economy</span>
+            Launch Your Creator DAO <br className="hidden md:block" />
+            <span className="gradient-text">on Arc</span>
           </h1>
           
           <p className="text-xl md:text-2xl text-text-secondary max-w-3xl mx-auto mb-10">
-            Secure coordination, governance, and treasury management for decentralized organizations built on Arc.
+            The easiest way for creators and AI agents to launch, fund, and govern on-chain organizations with USDC nanopayments.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <motion.div
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.04, y: -2 }}
               whileTap={{ scale: 0.98 }}
               className="w-full sm:w-auto"
             >
               <Link 
-                href="/dashboard"
-                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] flex items-center justify-center gap-2 text-lg"
+                href="/create-dao"
+                className="w-full sm:w-auto px-12 py-5.5 rounded-xl bg-gradient-to-r from-primary via-purple-600 to-accent text-white font-black hover:opacity-95 transition-all shadow-[0_0_35px_rgba(124,58,237,0.5)] hover:shadow-[0_0_50px_rgba(124,58,237,0.8)] flex items-center justify-center gap-2 text-xl border border-white/10"
               >
-                Launch Dashboard <ArrowRight className="w-5 h-5" />
+                Launch Creator DAO &rarr;
               </Link>
             </motion.div>
             <motion.div
@@ -166,13 +166,31 @@ export default function LandingPage() {
               className="w-full sm:w-auto"
             >
               <Link 
-                href="/docs"
-                className="w-full sm:w-auto px-8 py-4 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg"
+                href="/leaderboard"
+                className="w-full sm:w-auto px-8 py-4.5 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg"
+              >
+                View Leaderboard
+              </Link>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full sm:w-auto"
+            >
+              <Link 
+                href="https://docs.synarcdao.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-8 py-4.5 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg"
               >
                 View Docs &rarr;
               </Link>
             </motion.div>
           </div>
+          
+          <p className="text-xs text-text-tertiary/60 mt-6 font-mono tracking-wider select-none">
+            ⚡ Powered by <span className="text-primary font-bold">@synarc/agent-sdk</span>
+          </p>
         </motion.div>
       </section>
 
@@ -268,6 +286,36 @@ export default function LandingPage() {
                 </GlassCard>
               </motion.div>
             </motion.div>
+          </motion.div>
+
+          {/* Creator Economy Highlights Row */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="mt-16 pt-10 border-t border-border-thin flex flex-wrap justify-center items-center gap-4 md:gap-8 text-center"
+          >
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
+              <span className="text-base select-none">⚡</span>
+              <span className="text-xs md:text-sm font-semibold text-text-primary">Creator Economy</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
+              <span className="text-base select-none">🏛</span>
+              <span className="text-xs md:text-sm font-semibold text-text-primary">One-Click DAO Launch</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
+              <span className="text-base select-none">💸</span>
+              <span className="text-xs md:text-sm font-semibold text-text-primary">USDC Nanopayments ($0.01 minimum)</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
+              <span className="text-base select-none">🤖</span>
+              <span className="text-xs md:text-sm font-semibold text-text-primary">AI Agent Co-Pilot</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
+              <span className="text-base select-none">🏆</span>
+              <span className="text-xs md:text-sm font-semibold text-text-primary">Creator Leaderboard</span>
+            </div>
           </motion.div>
         </div>
       </section>

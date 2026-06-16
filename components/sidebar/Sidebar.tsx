@@ -17,6 +17,7 @@ import {
   ArrowRightLeft,
   Bot,
   Rocket,
+  Trophy,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { WalletConnectButton } from "@/components/ui/WalletConnectButton";
@@ -124,6 +125,77 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
             </button>
           );
         })}
+
+        {/* Creators Section */}
+        <p className="px-3 pt-5 pb-2 text-[10px] uppercase tracking-[0.15em] font-semibold text-muted/50">
+          Creators
+        </p>
+
+        {/* Leaderboard link */}
+        {(() => {
+          const href = "/leaderboard";
+          const active = pathname === href || pathname.startsWith(href + "/");
+          return (
+            <button
+              onClick={() => handleNavClick(href)}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer text-left",
+                active
+                  ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_18px_rgba(124,58,237,0.12)]"
+                  : "text-muted hover:text-foreground hover:bg-surface-elevated border border-transparent hover:border-border-thin hover:shadow-[0_0_10px_rgba(124,58,237,0.05)]"
+              )}
+            >
+              <Trophy
+                className={cn(
+                  "w-4.5 h-4.5 shrink-0 transition-colors duration-200",
+                  active ? "text-primary" : "text-muted group-hover:text-foreground"
+                )}
+              />
+              <span>Leaderboard</span>
+              {!active && (
+                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-amber-500/15 border border-amber-500/25 text-amber-400 tracking-wider">
+                  NEW
+                </span>
+              )}
+              {active && (
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(124,58,237,0.8)]" />
+              )}
+            </button>
+          );
+        })()}
+
+        {/* Launch Creator DAO link */}
+        {(() => {
+          const href = "/create-dao";
+          const active = pathname === href || pathname.startsWith(href + "/");
+          return (
+            <button
+              onClick={() => handleNavClick(href)}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer text-left",
+                active
+                  ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_18px_rgba(124,58,237,0.12)]"
+                  : "text-muted hover:text-foreground hover:bg-surface-elevated border border-transparent hover:border-border-thin hover:shadow-[0_0_10px_rgba(124,58,237,0.05)]"
+              )}
+            >
+              <Rocket
+                className={cn(
+                  "w-4.5 h-4.5 shrink-0 transition-colors duration-200",
+                  active ? "text-primary" : "text-muted group-hover:text-foreground"
+                )}
+              />
+              <span>Launch Creator DAO</span>
+              {!active && (
+                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 tracking-wider animate-pulse">
+                  NEW
+                </span>
+              )}
+              {active && (
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(124,58,237,0.8)]" />
+              )}
+            </button>
+          );
+        })()}
 
         {/* Divider & Roadmap if any coming soon */}
         {comingSoonLinks.length > 0 && (
