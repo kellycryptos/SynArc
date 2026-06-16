@@ -14,6 +14,7 @@ const productLinks = [
   { label: "Roadmap", href: "/#roadmap" },
   { label: "DAOs", href: "/daos" },
   { label: "AI Agents", href: "/agents" },
+  { label: "Creator DAOs", href: "/leaderboard" },
   { label: "Crowdfund Hub", href: "/campaigns" },
   { label: "Bridge", href: "/bridge" },
 ];

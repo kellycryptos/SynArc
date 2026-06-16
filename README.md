@@ -4,7 +4,7 @@
 
 # SynArc DAO
 
-**SynArc is governance infrastructure for the agentic economy enabling DAOs, AI agents, and autonomous systems to coordinate, vote, and manage USDC-native treasuries on Arc. The first multi-DAO governance layer built natively on Arc with Circle’s full stablecoin stack.**
+**SynArc is governance and funding infrastructure for the agentic economy, enabling creators, AI agents, and decentralized organizations to launch on-chain Creator DAOs, raise capital via USDC nanopayments ($0.01 minimum), and coordinate treasuries with milestone-based escrows on Arc.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)](https://typescriptlang.org)
@@ -22,18 +22,18 @@
 
 ## 1. Introduction
 
-SynArc is governance infrastructure for the agentic economy enabling DAOs, AI agents, and autonomous systems to coordinate, vote, and manage USDC-native treasuries on Arc. The first multi-DAO governance layer built natively on Arc with Circle’s full stablecoin stack.
+SynArc is governance and funding infrastructure for the agentic economy, enabling creators, AI agents, and decentralized organizations to launch on-chain Creator DAOs, raise capital via USDC nanopayments ($0.01 minimum), and coordinate treasuries with milestone-based escrows on Arc. The first multi-DAO governance and funding layer built natively on Arc with Circle's full stablecoin stack.
 
-Designed for institutional-grade decentralized organizations, SynArc provides the full governance lifecycle stack: from on-chain proposal creation and off-chain gasless voting to treasury execution and confidential coordination  all denominated natively in USDC.
+Designed for decentralized organizations, SynArc provides the full governance and funding lifecycle stack: from template-based Creator DAO launches and off-chain gasless voting to timelocked milestones and on-chain USDC execution.
 
-SynArc is built for the **agentic economy**: a world where DAOs, autonomous agents, and programmable organizations coordinate at scale without compromising operational security or member privacy.
+SynArc is built for the **agentic economy**: a world where DAOs, autonomous agents, and programmable organizations coordinate and fund at scale without compromising operational security or member privacy.
 
 Key features include:
+*   **Creator Economy & Creator DAOs**: One-click template-based DAO launches for artists, developers, writers, and autonomous AI agents.
+*   **USDC Nanopayments ($0.01+)**: Direct micro-tipping and creator support enabled by Arc's low-fee transactions.
 *   **Confidential Governance**: Secure voting mechanisms that protect participant intent and delegate integrity.
 *   **USDC-Native Treasury Coordination**: Real-time management and deployment of stablecoin reserves.
-*   **Proposal Execution**: Automated and programmable governance execution through timelock controller modules.
-*   **Programmable Organizations**: Modular and composable smart contract building blocks for decentralized organizations.
-*   **Governance Infrastructure**: A complete stack encompassing smart contracts, indexers, state management, and an interactive front-end.
+*   **Milestone Escrow & Backer Protection**: Funds are locked in smart contracts and released progressively upon community vote approval.
 *   **Agentic Economy Alignment**: Native integration pathways for AI agents, multi-sig controls, and autonomous protocols to act as governance participants.
 
 ```
@@ -65,6 +65,9 @@ SynArc is the infrastructure layer that makes this future possible today.
 *   **USDC Balance Display**: Real-time balance tracking and treasury visualization
 *   **Dashboard Analytics**: Governance participation metrics and voting trends
 *   **Responsive Design**: Mobile-first interface with glassmorphism effects
+*   **⚡ Creator Economy**: Launch on-chain Creator DAOs and receive USDC nanopayments ($0.01 minimum) from backers.
+*   **🏆 Creator Leaderboard**: Filter and view top-performing creators (Week/Month/All Time).
+*   **👤 Creator Profile Pages**: Interactive public pages with presets and custom donation triggers, sharing tools, and AI agent audits.
 *   **⚡ Crowdfund Hub** — permissionless USDC crowdfunding for humans and AI agents
 *   **🤖 Autonomous Agent Fund** — AI-created campaigns with on-chain validation
 *   **👤 Human Campaigns** — builder and community funding campaigns
