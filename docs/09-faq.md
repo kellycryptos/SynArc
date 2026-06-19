@@ -4,11 +4,11 @@ icon: circle-question
 
 # FAQ
 
-This section answers frequently asked questions about the SynArc ecosystem, token metrics, stablecoin integration, and security.
+This section answers frequently asked questions about the SynArc ecosystem, token metrics, stablecoin integration, Creator DAOs, and security.
 
-***
+---
 
-## Frequently Asked Questions
+## General
 
 ### 1. What is Arc Testnet?
 
@@ -24,8 +24,81 @@ The core smart contracts inherit from battle-tested OpenZeppelin Governor and ER
 
 ### 4. How do I report a bug?
 
-If you detect any issues, file a bug report directly inside our GitHub repository issue tracker, or drop a message to the engineering team in the Discord channel.
+If you detect any issues, file a bug report directly inside our [GitHub repository issue tracker](https://github.com/kellycryptos/SynArc/issues), or drop a message to the engineering team in the Discord channel.
 
 ### 5. Where can I get help?
 
 Visit our Discord server for technical support, or browse our internal documentation sections to learn more about the platform's core features.
+
+---
+
+## Creator DAOs & Nanopayments
+
+### 6. What is a Creator DAO?
+
+A Creator DAO is a fully on-chain decentralized organization launched by a creator or AI agent on SynArc. Each Creator DAO deploys its own isolated `SynArcCrowdfund` escrow smart contract, holding backer funds securely until milestones are approved by the community.
+
+### 7. How do I launch a Creator DAO?
+
+Go to **Create DAO** in the sidebar, choose a template (Music, Artist, AI Agent, or Builder), fill in your campaign details and milestones, then click **Launch Creator DAO**. Your wallet will deploy a fresh escrow contract to Arc Testnet. The whole process takes under 2 minutes.
+
+See the [Creator Economy guide](/docs/creator-economy) for step-by-step instructions.
+
+### 8. How do nanopayments work?
+
+Nanopayments are direct USDC transfers from a supporter's wallet to a creator's escrow contract. Arc's ultra-low fees make payments as small as **$0.01** economically viable. Simply visit a creator's profile, click a preset amount ($1, $5, $10) or enter a custom amount, and confirm the transaction in your wallet.
+
+### 9. Can I browse creator profiles without a wallet?
+
+Yes! Creator profiles, the leaderboard, and all read-only views are fully accessible without connecting a wallet. A wallet is only required to send nanopayments, create a DAO, or vote on milestones.
+
+### 10. What happens if a campaign doesn't reach its goal?
+
+If a campaign's funding goal is not reached by the deadline, backers can call `claimRefund()` on the escrow contract to recover their contributed USDC. No funds can be taken by the creator if the goal isn't met.
+
+### 11. How are milestones released?
+
+Milestone releases require:
+1. The creator to mark a milestone as complete.
+2. A community governance vote — majority FOR votes required.
+3. An on-chain transaction calling `withdrawMilestone(index)` which releases USDC 1:1 to the creator's beneficiary wallet.
+
+### 12. How do I share my Creator DAO profile?
+
+Every creator profile has a canonical URL: `https://synarcdao.xyz/creator/[your-slug]`. Click the **Share** button on your profile to use the native Web Share API (mobile) or copy the link to clipboard (desktop).
+
+---
+
+## SDK & Developers
+
+### 13. How do I install the Agent SDK?
+
+```bash
+npm install @synarc/agent-sdk ethers
+```
+
+See the full [SDK guide](/docs/sdk) for initialization and quickstart examples.
+
+### 14. Can AI agents launch Creator DAOs programmatically?
+
+Yes! Using `client.campaigns.create()` in the SDK, autonomous agents can deploy Creator DAOs, contribute nanopayments, and read live campaign metrics entirely programmatically.
+
+### 15. What is ERC-8004?
+
+ERC-8004 is the on-chain AI Agent identity standard used by SynArc. Agents register their name, capabilities, and metadata on Arc Testnet's ERC-8004 registry contract (`0x8004A818BFB912233c491871b3d84c89A494BD9e`), enabling verifiable on-chain participation in governance and fundraising.
+
+---
+
+## Security
+
+### 16. Who controls the SynArc Treasury?
+
+No individual controls the treasury. It is owned exclusively by the `TimelockController` smart contract. All disbursements require a successful governance proposal, quorum approval, and a 1–2 day timelock delay before execution.
+
+### 17. Are Creator DAO escrows shared?
+
+No. Every Creator DAO deploys its own completely independent `SynArcCrowdfund` contract from the creator's wallet. There is no shared contract holding multiple creators' funds — eliminating shared-contract attack surfaces.
+
+### 18. How can I verify a Creator DAO escrow contract?
+
+After launching your Creator DAO, you'll see the deployed contract address in the success screen. Visit [testnet.arcscan.app](https://testnet.arcscan.app), search for the address, and use the verification guide in [Smart Contracts](/docs/smart-contracts) to publish your source code.

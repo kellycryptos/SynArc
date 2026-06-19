@@ -4,9 +4,9 @@ icon: terminal
 
 # Agent SDK
 
-The SynArc Agent SDK (`@synarc/agent-sdk`) allows developers to integrate autonomous AI agents and decentralized organizations directly with SynArc's on-chain governance, treasury management, and milestone-escrow crowdfunding protocols. Using the SDK, agents and organizations can programmatically register their identities, check and execute voting power delegations, analyze and cast votes, and perform secure treasury sweeping operations on the Arc network.
+The SynArc Agent SDK (`@synarc/agent-sdk`) allows developers to integrate autonomous AI agents and decentralized organizations directly with SynArc's on-chain governance, treasury management, Creator DAO launches, and milestone-escrow crowdfunding protocols.
 
-***
+---
 
 ## Installation
 
@@ -23,11 +23,16 @@ yarn add @synarc/agent-sdk ethers
 pnpm add @synarc/agent-sdk ethers
 ```
 
-***
+**Requirements:**
+- Node.js 18+
+- TypeScript 5+ (recommended)
+- An Arc Testnet RPC endpoint (see [Getting Started](/docs))
+
+---
 
 ## Getting Started
 
-The SDK is EVM-agnostic and connects seamlessly with Privy, Circle Programmable Wallets, MetaMask, and generic EIP-1193 providers. To interact with the on-chain contracts, the SDK requires an RPC provider configured for the Arc Testnet and an authorized execution key.
+The SDK is EVM-agnostic and connects seamlessly with Privy, Circle Programmable Wallets, MetaMask, and generic EIP-1193 providers.
 
 ### Initialization
 
@@ -37,7 +42,7 @@ Initialize the `SynArcAgentClient` using a private key (for autonomous agent hot
 import { SynArcAgentClient } from '@synarc/agent-sdk';
 import { ethers } from 'ethers';
 
-// Set up provider for Arc Testnet (Priority fallback list supported)
+// Set up provider for Arc Testnet
 const provider = new ethers.JsonRpcProvider('https://rpc.testnet.arc.network');
 
 // Hot-wallet executor key (e.g. from environment variables)
@@ -50,47 +55,76 @@ const synarc = new SynArcAgentClient({
 });
 ```
 
-***
+---
 
-## Quickstart for Organizations
+## Quickstart: Creator DAOs
 
-Deploying governance and treasury triggers programmatically. Compatible with Circle Wallets, Privy, and MetaMask.
+Launch, query, and support Creator DAOs programmatically.
 
-### 1. Execute a Treasury Yield Sweep
+### 1. Launch a Creator DAO
 
-Move idle treasury capital to conservative yield-generating vaults (e.g., Morpho) or AMMs (e.g., ArcDEX).
+```typescript
+import { SynArcClient } from "@synarc/agent-sdk";
 
-```javascript
-// Validate caller is an authorized executor for the DAO treasury
-const isExecutor = await synarc.treasury.isExecutor(wallet.address);
+const client = new SynArcClient({
+  network: "arc-testnet",
+  privateKey: process.env.PRIVATE_KEY
+});
 
-if (isExecutor) {
-  // Trigger sweep of 1,000 sARC to target optimizer vault
-  const sweepTx = await synarc.treasury.executeSweep({
-    tokenAddress: "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e", // sARC Token
-    targetVault: "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18",   // Target vault
-    amount: ethers.parseUnits("1000", 18)
-  });
-  
-  await sweepTx.wait();
-  console.log(`Treasury sweep completed successfully! Tx Hash: ${sweepTx.hash}`);
-} else {
-  console.error("Caller is not authorized to sweep funds.");
-}
+// Launch a Creator DAO programmatically
+const campaign = await client.campaigns.create({
+  title: "Autonomous Art Agent",
+  description: "AI agent generating generative NFT art on-chain",
+  goal: 1000, // USDC
+  category: "ai-agent",
+  milestones: [
+    { title: "Phase 1: Concept Art", budget: 300 },
+    { title: "Phase 2: On-chain Minting", budget: 700 }
+  ]
+});
+
+console.log("Deployed Campaign Escrow:", campaign.escrowAddress);
+console.log("Profile URL:", `https://synarcdao.xyz/creator/${campaign.slug}`);
 ```
 
-### 2. Monitor & Release Milestone Escrows
+### 2. Read Live Campaign Metrics
 
-Query active crowdfunding campaigns and programmatically approve milestone releases if criteria are met.
+```typescript
+// Fetch all active campaigns
+const campaigns = await client.campaigns.list();
 
-```javascript
+for (const c of campaigns) {
+  console.log(`${c.title}: $${c.totalRaised} raised from ${c.backers} backers`);
+}
+
+// Fetch a specific campaign by slug
+const creator = await client.campaigns.getBySlug("autonomous-art-agent");
+console.log("Escrow address:", creator.escrowAddress);
+console.log("Goal:", creator.goal, "USDC");
+```
+
+### 3. Send a Nanopayment
+
+```typescript
+// Support a creator with $5 USDC
+const tx = await client.campaigns.support({
+  escrowAddress: "0xYourCreatorEscrow...",
+  amountUsdc: 5.00
+});
+
+await tx.wait();
+console.log("Nanopayment sent:", tx.hash);
+```
+
+### 4. Release a Milestone
+
+```typescript
 // Query campaign milestones
 const campaignId = "12";
 const milestones = await synarc.crowdfund.getMilestones(campaignId);
 
 for (const milestone of milestones) {
   if (milestone.isCompleted && !milestone.isReleased) {
-    // Release escrows directly to beneficiary
     const releaseTx = await synarc.crowdfund.releaseMilestone({
       campaignId: campaignId,
       milestoneId: milestone.id
@@ -100,59 +134,76 @@ for (const milestone of milestones) {
 }
 ```
 
-***
+---
 
-## Quickstart for AI Agents
+## Quickstart: Organizations
 
-Enable autonomous agents to register their on-chain identity and participate in governance with automatic voting power activation.
+Deploy governance and treasury triggers programmatically.
+
+### Execute a Treasury Yield Sweep
+
+```javascript
+const isExecutor = await synarc.treasury.isExecutor(wallet.address);
+
+if (isExecutor) {
+  const sweepTx = await synarc.treasury.executeSweep({
+    tokenAddress: "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e", // sARC Token
+    targetVault: "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18",   // Target vault
+    amount: ethers.parseUnits("1000", 18)
+  });
+
+  await sweepTx.wait();
+  console.log(`Treasury sweep completed! Tx Hash: ${sweepTx.hash}`);
+}
+```
+
+---
+
+## Quickstart: AI Agents
+
+Enable autonomous agents to register their on-chain identity and participate in governance.
 
 ### 1. Register AI Agent on ERC-8004 Registry
-
-Broadcast your agent's name, capabilities, and metadata URI to the Arc ecosystem.
 
 ```javascript
 const registrationTx = await synarc.agent.register({
   name: "GovernanceAnalyst-01",
-  capabilities: ["proposal-evaluation", "auto-voting"],
+  capabilities: ["proposal-evaluation", "auto-voting", "creator-dao-launch"],
   metadataUri: "https://metadata.synarcdao.xyz/agents/governance-01.json"
 });
 
-console.log(`Agent identity registered under ERC-8004. Hash: ${registrationTx.hash}`);
+console.log(`Agent registered. Hash: ${registrationTx.hash}`);
 ```
 
 ### 2. Auto-Delegate & Cast Programmatic Votes
 
-Because SynArc uses the `ERC20Votes` checkpoint token standard, agents must delegate voting power to themselves before casting on-chain votes.
-
 ```javascript
-// 1. Check current delegation state
+// Check delegation state
 const currentDelegate = await synarc.token.getDelegate(wallet.address);
 const balance = await synarc.token.getBalance(wallet.address);
 
 if (balance > 0 && currentDelegate === ethers.ZeroAddress) {
-  console.log("Voting power inactive. Self-delegating sARC...");
   const delegateTx = await synarc.token.delegate(wallet.address);
   await delegateTx.wait();
   console.log("Voting power activated.");
 }
 
-// 2. Fetch active proposals and cast vote
+// Fetch active proposals and cast vote
 const activeProposals = await synarc.governance.getActiveProposals();
 
 for (const proposal of activeProposals) {
-  // Implement evaluation rules (e.g. LLM call or treasury constraints)
   const voteSupport = 1; // 0 = Against, 1 = For, 2 = Abstain
-  
+
   const voteTx = await synarc.governance.castVote({
     proposalId: proposal.id,
     support: voteSupport,
     reason: "Autonomous alignment criteria met."
   });
-  console.log(`Vote casted on proposal ${proposal.id}. Hash: ${voteTx.hash}`);
+  console.log(`Vote cast on proposal ${proposal.id}. Hash: ${voteTx.hash}`);
 }
 ```
 
-***
+---
 
 ## API Reference
 
@@ -163,33 +214,52 @@ for (const proposal of activeProposals) {
 | `signer` | `Signer` (ethers/viem) | The wallet/signer executing on-chain transactions. |
 | `network` | `'arc-testnet' \| 'arc-mainnet'` | The target network. |
 | `rpcUrl` | `string` (optional) | Custom RPC URL to override the default endpoints. |
+| `privateKey` | `string` (optional) | Private key for hot-wallet mode. |
 
 ### Module Reference
 
+#### `client.campaigns`
+| Method | Description |
+| :--- | :--- |
+| `create({ title, description, goal, category, milestones })` | Deploys a new Creator DAO escrow on Arc. Returns `{ escrowAddress, slug }`. |
+| `list()` | Returns all active Creator DAO campaigns with on-chain metrics. |
+| `getBySlug(slug)` | Fetches a single campaign by its URL slug. |
+| `support({ escrowAddress, amountUsdc })` | Sends a USDC nanopayment to the given escrow. |
+
 #### `client.agent`
-- `register({ name, capabilities, metadataUri })`: Registers the agent's identity in the ERC-8004 registry.
-- `getAgentInfo(address)`: Resolves an agent's registered metadata and capabilities.
+| Method | Description |
+| :--- | :--- |
+| `register({ name, capabilities, metadataUri })` | Registers the agent's identity in the ERC-8004 registry. |
+| `getAgentInfo(address)` | Resolves an agent's registered metadata and capabilities. |
 
 #### `client.governance`
-- `getActiveProposals()`: Returns a list of active proposals waiting for votes.
-- `castVote({ proposalId, support, reason })`: Casts a cryptographic vote on-chain.
-- `getProposalDetails(proposalId)`: Fetches a proposal's description, status, and current vote counts.
+| Method | Description |
+| :--- | :--- |
+| `getActiveProposals()` | Returns a list of active proposals waiting for votes. |
+| `castVote({ proposalId, support, reason })` | Casts a cryptographic vote on-chain. |
+| `getProposalDetails(proposalId)` | Fetches a proposal's description, status, and current vote counts. |
 
 #### `client.treasury`
-- `isExecutor(address)`: Returns true if the address has treasury sweep permissions.
-- `executeSweep({ tokenAddress, targetVault, amount })`: Swaps or sweeps treasury capital.
-- `getBalances()`: Returns the list of assets held by the DAO treasury.
+| Method | Description |
+| :--- | :--- |
+| `isExecutor(address)` | Returns true if the address has treasury sweep permissions. |
+| `executeSweep({ tokenAddress, targetVault, amount })` | Swaps or sweeps treasury capital. |
+| `getBalances()` | Returns the list of assets held by the DAO treasury. |
 
 #### `client.token`
-- `getBalance(address)`: Returns the sARC balance of the address.
-- `getDelegate(address)`: Returns the current delegate of the address.
-- `delegate(delegatee)`: Self-delegates or delegates voting power to a third-party address.
+| Method | Description |
+| :--- | :--- |
+| `getBalance(address)` | Returns the sARC balance of the address. |
+| `getDelegate(address)` | Returns the current delegate of the address. |
+| `delegate(delegatee)` | Self-delegates or delegates voting power to a third-party address. |
 
 #### `client.crowdfund`
-- `getMilestones(campaignId)`: Returns milestones associated with a campaign.
-- `releaseMilestone({ campaignId, milestoneId })`: Triggers a USDC disbursement from the escrow to the campaign owner.
+| Method | Description |
+| :--- | :--- |
+| `getMilestones(campaignId)` | Returns milestones associated with a campaign. |
+| `releaseMilestone({ campaignId, milestoneId })` | Triggers a USDC disbursement from the escrow to the campaign owner. |
 
-***
+---
 
 ## Error Handling
 
@@ -210,3 +280,11 @@ try {
   }
 }
 ```
+
+---
+
+## Resources
+
+- **npm**: [npmjs.com/package/@synarc/agent-sdk](https://www.npmjs.com/package/@synarc/agent-sdk)
+- **GitHub**: [kellycryptos/synarc-agent-sdk](https://github.com/kellycryptos/synarc-agent-sdk)
+- **Live Docs**: [synarcdao.xyz/docs/sdk](https://www.synarcdao.xyz/docs/sdk)

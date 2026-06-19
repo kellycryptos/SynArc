@@ -10,7 +10,19 @@ All core SynArc mechanics operate programmatically through secure on-chain EVM s
 
 ## Deployed Contract Addresses
 
-SynArc contracts are deployed on the Arc Testnet and can be inspected on the block explorer:
+SynArc contracts are deployed on the Arc Testnet and can be inspected on the block explorer.
+
+### Quick Reference
+
+| Contract | Address | ArcScan |
+| :--- | :--- | :--- |
+| SynArc Governor | `0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e` | [View](https://testnet.arcscan.app/address/0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e) |
+| SynArc Treasury | `0xFE0F6bF45D363d34CD5fC1781594a7471736dC18` | [View](https://testnet.arcscan.app/address/0xFE0F6bF45D363d34CD5fC1781594a7471736dC18) |
+| SynArcToken (sARC) | `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e` | [View](https://testnet.arcscan.app/address/0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e) |
+| EURC Token (Circle) | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | [View](https://testnet.arcscan.app/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a) |
+| ERC-8004 Registry | `0x8004A818BFB912233c491871b3d84c89A494BD9e` | [View](https://testnet.arcscan.app/address/0x8004A818BFB912233c491871b3d84c89A494BD9e) |
+| SynArcCrowdfund | Dynamic — per Creator DAO | — |
+| SynArcAgent | Dynamic — per AI Agent | — |
 
 ### 1. SynArc Governor
 
@@ -44,7 +56,7 @@ SynArc contracts are deployed on the Arc Testnet and can be inspected on the blo
 ### 6. SynArcCrowdfund (Dynamic Escrow)
 
 * **Solidity Source:** `contracts/SynArcCrowdfund.sol`
-* **Description:** Deployed on-demand for every crowdfunding campaign to lock USDC stablecoin reserves securely until community milestones are approved.
+* **Description:** Deployed on-demand **from the creator's own wallet** for every Creator DAO — each campaign gets its own isolated escrow contract. No single contract holds funds for multiple creators.
 
 ### 7. SynArcAgent (Autonomous AI Agent)
 
@@ -52,7 +64,44 @@ SynArc contracts are deployed on the Arc Testnet and can be inspected on the blo
 * **Description:** Represents an autonomous AI Agent on-chain. Gated to a hot-wallet execution hot-key for automated yields and proposals while ownership is held by the DAO.
 
 
-***
+---
+
+## Security Notes & Recent Upgrades
+
+SynArc's contract architecture has been designed with security as the top priority. Here are the latest improvements:
+
+| Area | Improvement | Status |
+| :--- | :--- | :--- |
+| **Escrow Isolation** | Each Creator DAO deploys its own independent `SynArcCrowdfund` — no shared contract attack surface | ✅ Live |
+| **On-Chain State Reads** | `totalRaised` and contributor counts read directly from chain via `viem` (no trusted backend) | ✅ Live |
+| **RPC Resiliency** | 4-endpoint sequential fallback chain prevents single-point-of-failure | ✅ Live |
+| **Verification Docs** | Hardhat CLI + ArcScan UI verification guide (see below) | ✅ Live |
+| **No Admin Keys** | Treasury owned exclusively by `TimelockController` — no EOA can withdraw directly | ✅ By Design |
+| **Pre-Audit Review** | Internal security review of Governor, Timelock, and Crowdfund contracts | 🔄 In Progress |
+| **ZK Voting** | Encrypted ballots via Zero-Knowledge proofs | 🗓 Planned |
+
+> ⚠️ **Warning**: SynArc's contracts are on Arc Testnet. Do not commit high-value mainnet funds before the final security audit report is published.
+
+### Security Architecture
+
+```
+Creator wallet → deploys SynArcCrowdfund (isolated)
+                         ↓
+              USDC locked in escrow
+                         ↓
+          Community milestone vote (on-chain)
+                         ↓
+              USDC released 1:1 to creator
+                    OR
+              claimRefund() available to backers
+```
+
+- **Governor** is owned by `TimelockController` (not any EOA)
+- **Treasury** disbursements require passing quorum + timelock
+- **Creator escrows** are isolated per-campaign, verified on ArcScan
+- **No admin key** exists for any core contract
+
+---
 
 ## Network Configuration
 
