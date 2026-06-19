@@ -67,7 +67,8 @@ export async function POST(req: Request) {
       recipient,
       deadline,
       milestones,
-      escrowAddress
+      escrowAddress,
+      twitter
     } = body;
 
     if (!title || !description || !recipient || !goal || !escrowAddress) {
@@ -110,6 +111,7 @@ export async function POST(req: Request) {
         : ["individual", "dao_treasury"],
       proposalNumber: Math.floor(Math.random() * 50) + 16,
       escrowAddress,
+      twitter: twitter || null,
       sybilProtection: {
         aiScanned: true,
         reputationChecked: false,

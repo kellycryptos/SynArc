@@ -59,6 +59,7 @@ export interface Campaign {
   proposalNumber: number;
   escrowAddress: string;
   sybilProtection: SybilProtection;
+  twitter?: string | null;
 }
 
 export const MOCK_CAMPAIGNS: Campaign[] = [
@@ -90,6 +91,7 @@ export const MOCK_CAMPAIGNS: Campaign[] = [
       reputationChecked: true,
       stakeRequired: false
     },
+    twitter: 'ArcBuilders',
     aiAnalysis: {
       recommendation: 'FUND',
       scores: {
@@ -146,6 +148,7 @@ export const MOCK_CAMPAIGNS: Campaign[] = [
       reputationChecked: true,
       stakeRequired: true
     },
+    twitter: null,
     aiAnalysis: {
       recommendation: 'FUND',
       scores: {
@@ -199,6 +202,7 @@ export const MOCK_CAMPAIGNS: Campaign[] = [
       reputationChecked: false,
       stakeRequired: false
     },
+    twitter: 'SynArcDAO',
     aiAnalysis: {
       recommendation: 'FUND',
       scores: {

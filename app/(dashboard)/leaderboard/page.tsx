@@ -4,16 +4,26 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCreatorStore } from "@/hooks/useCreatorStore";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { Trophy, ChevronRight, User, Users, Star, Coins } from "lucide-react";
+import { Trophy, ChevronRight, User, Users, Star, Coins, RefreshCw } from "lucide-react";
 
 export default function LeaderboardPage() {
-  const { creators, initializeStore } = useCreatorStore();
+  const { creators, initializeStore, initialized } = useCreatorStore();
   const [period, setPeriod] = useState<"week" | "month" | "all">("all");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
     initializeStore();
   }, [initializeStore]);
+
+  if (!initialized) {
+    return (
+      <div className="max-w-5xl mx-auto py-12 px-4 flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
+        <RefreshCw className="w-12 h-12 text-primary animate-spin" />
+        <h2 className="text-xl font-bold text-white">Loading Leaderboard...</h2>
+        <p className="text-sm text-text-tertiary">Fetching real-time on-chain rankings.</p>
+      </div>
+    );
+  }
 
   const categories = ["All", "Music", "Art", "Writing", "Gaming", "AI Agent", "Builder"];
 

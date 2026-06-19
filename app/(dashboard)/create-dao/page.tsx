@@ -196,6 +196,7 @@ export default function CreateDaoPage() {
           }
         ],
         escrowAddress: deployedContractAddress,
+        twitter: formData.twitter || null,
       });
 
       // Show real transaction hash and success message

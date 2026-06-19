@@ -40,7 +40,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
   const { wallets } = useWallets();
   const { balance: walletUSDC, refetch: refetchUSDC } = useUSDCBalance(walletAddress);
 
-  const { creators, supporters, supportCreator, initializeStore } = useCreatorStore();
+  const { creators, supporters, supportCreator, initializeStore, initialized } = useCreatorStore();
   const { campaigns, contribute, initializeStore: initializeCampaignStore } = useCampaignStore();
 
   const [supportAmount, setSupportAmount] = useState<string>("");
@@ -59,6 +59,16 @@ export default function CreatorProfilePage({ params }: PageProps) {
 
   // Find creator details
   const creator = creators.find((c) => c.id === id || c.slug === id);
+
+  if (!initialized) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
+        <RefreshCw className="w-12 h-12 text-primary animate-spin" />
+        <h2 className="text-xl font-bold text-white">Loading Creator Profile...</h2>
+        <p className="text-sm text-text-tertiary">Fetching real-time on-chain parameters from Arc Network.</p>
+      </div>
+    );
+  }
 
   if (!creator) {
     return (
@@ -88,8 +98,8 @@ export default function CreatorProfilePage({ params }: PageProps) {
   ];
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/creator/${creator.id}`;
-    const shareText = `Support ${creator.name} on SynArc! They are raising ${creator.goal} USDC on Arc. ${shareUrl}`;
+    const shareUrl = `https://synarcdao.xyz/creator/${creator.slug || creator.id}`;
+    const shareText = `Support ${creator.name} on SynArc! They are raising ${creator.goal} USDC on Arc.`;
 
     if (navigator.share) {
       try {
@@ -99,12 +109,19 @@ export default function CreatorProfilePage({ params }: PageProps) {
           url: shareUrl,
         });
       } catch (err) {
-        console.error("Share failed", err);
+        if (err instanceof Error && err.name !== "AbortError") {
+          try {
+            await navigator.clipboard.writeText(shareUrl);
+            toast.success("Link copied!");
+          } catch (clipErr) {
+            toast.error("Failed to copy link.");
+          }
+        }
       }
     } else {
       try {
         await navigator.clipboard.writeText(shareUrl);
-        toast.success("Shareable link copied to clipboard!");
+        toast.success("Link copied!");
       } catch (err) {
         toast.error("Failed to copy link.");
       }
@@ -128,9 +145,21 @@ export default function CreatorProfilePage({ params }: PageProps) {
     setSupporting(true);
     setLatestTxHash("");
 
-    // 1. If user is on a Circle Wallet or simulated campaign, bypass smart contracts
-    const isSimulated = creator.id.includes("-") || creator.id.startsWith("camp");
-    if (isCircle || isSimulated) {
+    // Find matching campaign in campaigns store to check if it has a real escrow contract deployed
+    const matchingCampaign = campaigns.find(
+      (c) => c.id === creator.id || c.title.toLowerCase() === creator.name.toLowerCase()
+    );
+
+    const hasRealEscrow = matchingCampaign && 
+      matchingCampaign.escrowAddress && 
+      matchingCampaign.escrowAddress.startsWith("0x") && 
+      matchingCampaign.escrowAddress.length === 42 &&
+      !matchingCampaign.escrowAddress.toLowerCase().includes("escrow");
+
+    // Only simulate if using a Circle Wallet, or if there's no real escrow and the creator wallet is not a valid 0x address
+    const isSimulated = isCircle || (!hasRealEscrow && (!creator.wallet || !creator.wallet.startsWith("0x")));
+
+    if (isSimulated) {
       try {
         await new Promise((resolve) => setTimeout(resolve, 2000));
         
@@ -172,18 +201,6 @@ export default function CreatorProfilePage({ params }: PageProps) {
       const amountBigInt = BigInt(Math.round(amountVal * 1_000_000)); // USDC has 6 decimals
 
       const gasParams = await getAggressiveGasParams(publicClient);
-
-      // Find matching campaign in campaigns store to check if it has a real escrow contract deployed
-      const matchingCampaign = campaigns.find(
-        (c) => c.title.toLowerCase() === creator.name.toLowerCase() || c.recipient.toLowerCase() === creator.wallet.toLowerCase()
-      );
-
-      const hasRealEscrow = matchingCampaign && 
-        matchingCampaign.escrowAddress && 
-        matchingCampaign.escrowAddress.startsWith("0x") && 
-        !matchingCampaign.escrowAddress.includes("escrow") &&
-        matchingCampaign.escrowAddress.length === 42;
-
       let txHash = "";
 
       if (hasRealEscrow) {
@@ -345,7 +362,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
                 </a>
               )}
               <span className="font-mono text-text-tertiary select-all">
-                {creator.wallet.slice(0, 6)}...{creator.wallet.slice(-4)}
+                {creator.wallet ? `${creator.wallet.slice(0, 6)}...${creator.wallet.slice(-4)}` : ""}
               </span>
             </div>
           </div>
