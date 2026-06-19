@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { parseAbi } from "viem";
+import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -40,7 +41,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
   const { balance: walletUSDC, refetch: refetchUSDC } = useUSDCBalance(walletAddress);
 
   const { creators, supporters, supportCreator, initializeStore } = useCreatorStore();
-  const { contribute, initializeStore: initializeCampaignStore } = useCampaignStore();
+  const { campaigns, contribute, initializeStore: initializeCampaignStore } = useCampaignStore();
 
   const [supportAmount, setSupportAmount] = useState<string>("");
   const [supporting, setSupporting] = useState(false);
@@ -163,7 +164,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
       return;
     }
 
-    // 2. Real on-chain USDC transfer transaction on Arc Testnet
+    // 2. Real on-chain transaction on Arc Testnet
     try {
       const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
       
@@ -172,45 +173,101 @@ export default function CreatorProfilePage({ params }: PageProps) {
 
       const gasParams = await getAggressiveGasParams(publicClient);
 
-      const usdcAbi = parseAbi([
-        "function transfer(address recipient, uint256 amount) returns (bool)"
-      ]);
+      // Find matching campaign in campaigns store to check if it has a real escrow contract deployed
+      const matchingCampaign = campaigns.find(
+        (c) => c.title.toLowerCase() === creator.name.toLowerCase() || c.recipient.toLowerCase() === creator.wallet.toLowerCase()
+      );
 
-      console.log(`Sending ${amountVal} USDC directly to recipient wallet: ${creator.wallet}`);
-      
-      const txHash = await walletClient.writeContract({
-        address: usdcAddress,
-        abi: usdcAbi,
-        functionName: "transfer",
-        chain: walletClient.chain,
-        args: [creator.wallet as `0x${string}`, amountBigInt],
-        gas: 120000n, // Standard transfer gas limit
-        ...gasParams
-      });
+      const hasRealEscrow = matchingCampaign && 
+        matchingCampaign.escrowAddress && 
+        matchingCampaign.escrowAddress.startsWith("0x") && 
+        !matchingCampaign.escrowAddress.includes("escrow") &&
+        matchingCampaign.escrowAddress.length === 42;
 
-      await waitForTransaction(publicClient, txHash);
-      console.log("On-chain transfer completed. Hash:", txHash);
+      let txHash = "";
+
+      if (hasRealEscrow) {
+        // Contribute to campaign escrow contract
+        const erc20Abi = parseAbi([
+          "function approve(address spender, uint256 amount) returns (bool)"
+        ]);
+
+        console.log(`Approving ${amountVal} USDC for Creator DAO escrow contract: ${matchingCampaign.escrowAddress}`);
+        toast.loading("Approving USDC spending...", { id: "support-toast" });
+
+        const approveHash = await walletClient.writeContract({
+          address: usdcAddress,
+          abi: erc20Abi,
+          functionName: "approve",
+          chain: walletClient.chain,
+          args: [matchingCampaign.escrowAddress as `0x${string}`, amountBigInt],
+          gas: 250000n,
+          ...gasParams,
+        });
+
+        await waitForTransaction(publicClient, approveHash);
+
+        console.log(`Depositing ${amountVal} USDC into Creator DAO milestone escrow vault on-chain...`);
+        toast.loading("Depositing USDC to Creator DAO escrow contract on-chain...", { id: "support-toast" });
+
+        const contributeHash = await walletClient.writeContract({
+          address: matchingCampaign.escrowAddress as `0x${string}`,
+          abi: SynArcCrowdfundABI,
+          functionName: "contribute",
+          chain: walletClient.chain,
+          args: [amountBigInt],
+          gas: 300000n,
+          ...gasParams,
+        });
+
+        await waitForTransaction(publicClient, contributeHash);
+        txHash = contributeHash;
+        toast.success(`🎉 Deposited ${amountVal} USDC into Creator DAO milestone escrow!`, { id: "support-toast" });
+      } else {
+        // Direct USDC transfer fallback
+        const usdcAbi = parseAbi([
+          "function transfer(address recipient, uint256 amount) returns (bool)"
+        ]);
+
+        console.log(`Sending ${amountVal} USDC directly to recipient wallet: ${creator.wallet}`);
+        toast.loading("Sending direct USDC transfer...", { id: "support-toast" });
+        
+        const transferHash = await walletClient.writeContract({
+          address: usdcAddress,
+          abi: usdcAbi,
+          functionName: "transfer",
+          chain: walletClient.chain,
+          args: [creator.wallet as `0x${string}`, amountBigInt],
+          gas: 120000n,
+          ...gasParams
+        });
+
+        await waitForTransaction(publicClient, transferHash);
+        txHash = transferHash;
+        toast.success(`Sent direct USDC payment to creator!`, { id: "support-toast" });
+      }
+
+      console.log("On-chain transaction completed. Hash:", txHash);
 
       // Update local storage / state
       supportCreator(creator.id, amountVal, address, txHash);
       
       // Sync to campaign store
       try {
-        await contribute(creator.id, amountVal);
+        await contribute(matchingCampaign ? matchingCampaign.id : creator.id, amountVal);
       } catch {}
 
       setLatestTxHash(txHash);
       setSupportSuccess(true);
       setSupportAmount("");
       refetchUSDC();
-      toast.success(`Successfully sent ${amountVal} USDC nanopayment!`);
 
       setTimeout(() => {
         setSupportSuccess(false);
       }, 4000);
     } catch (err: any) {
-      console.error("USDC transfer failed:", err);
-      toast.error(err?.message || "On-chain USDC transfer failed.");
+      console.error("USDC transfer/contribution failed:", err);
+      toast.error(err?.message || "On-chain transaction failed.", { id: "support-toast" });
     } finally {
       setSupporting(false);
     }
