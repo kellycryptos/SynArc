@@ -7,7 +7,7 @@ import { useCreatorStore } from "@/hooks/useCreatorStore";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Rocket, HelpCircle, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Rocket, HelpCircle, ChevronRight, Loader2, Sparkles } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
@@ -49,6 +49,50 @@ export default function CreateDaoPage() {
     twitter: "",
     wallet: "",
   });
+
+  const [aiIdeaInput, setAiIdeaInput] = useState("");
+  const [generatingWithAi, setGeneratingWithAi] = useState(false);
+
+  const generateCampaignWithAI = async () => {
+    if (!aiIdeaInput.trim()) {
+      toast.error("Please enter a brief idea first.");
+      return;
+    }
+
+    setGeneratingWithAi(true);
+    try {
+      const response = await fetch("/api/ai/proposal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: aiIdeaInput,
+          type: "campaign",
+          context: `Creator DAO on Arc: ${selectedTemplate || "general creator"}`
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success && data.campaign) {
+        const c = data.campaign;
+        setFormData((prev) => ({
+          ...prev,
+          name: c.title || prev.name,
+          description: c.description || prev.description,
+          goal: c.goal ? c.goal.toString() : prev.goal,
+          duration: c.duration ? c.duration.toString() : prev.duration,
+          wallet: c.recipient || prev.wallet,
+        }));
+        toast.success("🤖 Details auto-drafted successfully!");
+      } else {
+        toast.error(data.error || "Failed to generate campaign draft.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error("An error occurred during AI drafting.");
+    } finally {
+      setGeneratingWithAi(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -307,6 +351,43 @@ export default function CreateDaoPage() {
             </div>
 
             <GlassCard className="p-6 md:p-8 space-y-5" hover={false}>
+              {/* AI Campaign Auto-Draft card */}
+              <div className="p-4 rounded-xl border border-primary/20 bg-primary/[0.01] overflow-hidden relative space-y-3">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-full blur-lg pointer-events-none" />
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary animate-pulse shrink-0" />
+                  <h4 className="text-xs font-bold text-text-primary uppercase tracking-wide">🤖 Auto-Draft with AI</h4>
+                </div>
+                <p className="text-xs text-text-tertiary leading-relaxed">
+                  Briefly describe your Creator DAO idea and our AI agent will auto-fill your name, description, funding goal, and duration.
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="e.g. Build a Web3 gaming community to fund weekly tournaments"
+                    value={aiIdeaInput}
+                    onChange={(e) => setAiIdeaInput(e.target.value)}
+                    disabled={generatingWithAi}
+                    className="flex-1 px-3 py-2 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-xs text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={generateCampaignWithAI}
+                    disabled={generatingWithAi}
+                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-60 transition-all shrink-0"
+                  >
+                    {generatingWithAi ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Drafting...
+                      </>
+                    ) : (
+                      "Draft"
+                    )}
+                  </button>
+                </div>
+              </div>
+
               {/* Creator Name */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-muted uppercase">Creator / Project Name <span className="text-danger">*</span></label>

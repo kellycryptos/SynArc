@@ -83,7 +83,8 @@ export async function POST(req: NextRequest) {
       });
 
       try {
-        const text = response.choices[0].message.content || "{}";
+        let text = response.choices[0].message.content || "{}";
+        text = text.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
         const decision = JSON.parse(text);
         return NextResponse.json({ success: true, decision });
       } catch {
@@ -142,7 +143,8 @@ export async function POST(req: NextRequest) {
       });
 
       try {
-        const text = response.choices[0].message.content || "{}";
+        let text = response.choices[0].message.content || "{}";
+        text = text.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
         const proposal = JSON.parse(text);
         return NextResponse.json({ success: true, proposal });
       } catch {
@@ -288,7 +290,8 @@ export async function POST(req: NextRequest) {
       });
 
       try {
-        const text = response.choices[0].message.content || "{}";
+        let text = response.choices[0].message.content || "{}";
+        text = text.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
         const decision = JSON.parse(text);
         return NextResponse.json({ success: true, decision });
       } catch {
