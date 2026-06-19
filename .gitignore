@@ -42,3 +42,8 @@ tmp/
 .idea/
 *.swp
 *.swo
+
+# User-uploaded images (served from /public/uploads/)
+# The folder is tracked via public/uploads/.gitkeep
+public/uploads/*
+!public/uploads/.gitkeep
