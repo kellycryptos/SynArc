@@ -63,3 +63,85 @@ Ensure your developer suite or wallet RPC parameters are configured correctly:
 * **Currency Symbol:** `USDC`
 * **RPC URL:** `https://rpc.testnet.arc.network`
 * **Block Explorer:** `https://testnet.arcscan.app`
+
+***
+
+## Smart Contract Verification on ArcScan
+
+Verifying your smart contracts on [ArcScan](https://testnet.arcscan.app) makes the code readable and interactable for the community. Since core governance contracts are deployed once, while Creator DAO/Crowdfund escrows are deployed dynamically, follow the instructions below to verify them.
+
+### Compiler Configuration Settings
+
+Ensure the compiler parameters in your verify command or web interface match the following settings:
+- **Compiler Version:** `v0.8.24+commit.e11b9ed9` (or `0.8.24`)
+- **Optimization:** Enabled
+- **Runs:** `200`
+- **viaIR:** `true`
+- **EVM Version:** `cancun`
+
+---
+
+### Option 1: Verification via Hardhat CLI (Recommended)
+
+Verify your deployed contract from the terminal using Hardhat. The configuration is already set up in [hardhat.config.ts](file:///c:/Users/HP/OneDrive/Pictures/Documents/SynArc/synarc-dao/hardhat.config.ts).
+
+#### 1. Core Contracts Verification
+Run the verify task with the contract address and its constructor arguments:
+
+- **SynArcToken (sARC)**:
+  ```bash
+  npx hardhat verify --network arcTestnet <TOKEN_ADDRESS>
+  ```
+- **SynArcTreasury**:
+  ```bash
+  npx hardhat verify --network arcTestnet <TREASURY_ADDRESS> "0x3600000000000000000000000000000000000000" "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a"
+  ```
+- **SynArcGovernor**:
+  ```bash
+  npx hardhat verify --network arcTestnet <GOVERNOR_ADDRESS> <TOKEN_ADDRESS> <TREASURY_ADDRESS> 60
+  ```
+
+#### 2. Creator DAO / Crowdfund Contract Verification
+Since `SynArcCrowdfund` requires complex array parameters for milestones, write a temporary `arguments.js` file to verify:
+
+Create a file named `arguments.js` in the project root:
+```javascript
+module.exports = [
+  "0xCreatorAddress...",       // Creator wallet Address
+  "0xRecipientAddress...",     // Recipient wallet Address
+  "0x3600000000000000000000000000000000000000", // USDC token address
+  5000000000n,                 // Goal (6 decimals, e.g. 5000 USDC)
+  30n,                         // Duration in days
+  false,                       // isAgent (true for AI Agents, false for Human Creator DAOs)
+  "My Creator DAO",            // Campaign Title
+  "Campaign Description",      // Campaign Description
+  "Creator DAO",               // Category
+  ["Initial Launch Phase"],    // Milestone titles (string array)
+  [5000000000n],               // Milestone budgets (uint256 array)
+  ["Release of initial backing capital to kickstart the project."] // Milestone descriptions (string array)
+];
+```
+
+Then run the verify command pointing to the arguments file:
+```bash
+npx hardhat verify --network arcTestnet --constructor-args arguments.js <DEPLOYED_CROWDFUND_ADDRESS>
+```
+
+---
+
+### Option 2: Verification via ArcScan Web UI
+
+If you want to verify manually via the web explorer interface:
+
+1. Copy the address of your deployed contract (which you can find in the console or campaign creation logs).
+2. Visit [ArcScan Testnet Explorer](https://testnet.arcscan.app).
+3. Search for the contract address.
+4. Go to the **Contract** tab and click **Verify and Publish**.
+5. Select the following settings:
+   - **Compiler Type:** Solidity (Single File) or Solidity (Standard JSON-Input)
+   - **Compiler Version:** `0.8.24`
+   - **License Type:** MIT License (MIT)
+6. Paste the flattened contract code (you can generate this using `npx hardhat flatten contracts/SynArcCrowdfund.sol`).
+7. Expand the **Constructor Arguments ABI-encoded** section.
+8. If constructor arguments are required, paste the ABI-encoded arguments. You can get these from the deployment transactions or encode them manually using a tool like [abi.hashex.org](https://abi.hashex.org) with the `SynArcCrowdfund` constructor parameters.
+9. Click **Verify and Publish**.
