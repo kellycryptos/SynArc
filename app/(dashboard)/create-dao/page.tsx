@@ -12,6 +12,8 @@ import { toast } from "react-hot-toast";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI, SynArcCrowdfundBytecode } from "@/lib/governance/SynArcCrowdfund";
+import { ARC_CHAIN } from "@/lib/arc-config";
+
 
 const TEMPLATES = [
   { icon: "🎵", name: "Music Creator", desc: "Fund your album, tour, or music video", category: "music" },
@@ -216,10 +218,11 @@ export default function CreateDaoPage() {
         toast.loading("Deploying Creator DAO smart contract to Arc...", { id: launchToastId });
 
         // 3. Deploy SynArcCrowdfund contract directly from user wallet
+        // Explicitly set chain to ARC_CHAIN and use a safer 3.5M gas limit floor
         const deployHash = await walletClient.deployContract({
           abi: SynArcCrowdfundABI,
           bytecode: SynArcCrowdfundBytecode as `0x${string}`,
-          chain: walletClient.chain,
+          chain: ARC_CHAIN,
           args: [
             address,
             recipient.trim() as `0x${string}`,
@@ -234,7 +237,7 @@ export default function CreateDaoPage() {
             milestoneAmounts,
             milestoneDescriptions
           ],
-          gas: 2000000n, // Slightly higher gas limit floor for deployment
+          gas: 3500000n, 
           ...gasParams,
         });
 
@@ -303,7 +306,16 @@ export default function CreateDaoPage() {
       console.error("handleLaunch error:", err);
       // Dismiss loading toast and show a fresh error so it always appears
       toast.dismiss(launchToastId);
-      toast.error(err?.message || "Failed to launch Creator DAO. Please try again.", { duration: 6000 });
+      
+      const errMsg = (err?.message || "").toLowerCase();
+      if (errMsg.includes("insufficient") || errMsg.includes("funds") || errMsg.includes("gas") || errMsg.includes("balance")) {
+        toast.error(
+          "Failed to deploy contract. Ensure you have native USDC gas in your wallet from faucet.circle.com.",
+          { duration: 10000 }
+        );
+      } else {
+        toast.error(err?.message || "Failed to launch Creator DAO. Please try again.", { duration: 8000 });
+      }
     } finally {
       setLaunching(false);
     }
