@@ -68,7 +68,8 @@ export async function POST(req: Request) {
       deadline,
       milestones,
       escrowAddress,
-      twitter
+      twitter,
+      image
     } = body;
 
     if (!title || !description || !recipient || !goal || !escrowAddress) {
@@ -112,6 +113,7 @@ export async function POST(req: Request) {
       proposalNumber: Math.floor(Math.random() * 50) + 16,
       escrowAddress,
       twitter: twitter || null,
+      image: image || undefined,
       sybilProtection: {
         aiScanned: true,
         reputationChecked: false,

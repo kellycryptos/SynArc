@@ -33,6 +33,8 @@ export default function CreateDaoPage() {
 
   const [launching, setLaunching] = useState(false);
   const [txHash, setTxHash] = useState("");
+  const [newDeployedAddress, setNewDeployedAddress] = useState("");
+  const [newCreatorId, setNewCreatorId] = useState("");
 
   useEffect(() => {
     initializeStore();
@@ -91,6 +93,45 @@ export default function CreateDaoPage() {
       toast.error("An error occurred during AI drafting.");
     } finally {
       setGeneratingWithAi(false);
+    }
+  };
+
+  const [imageUrl, setImageUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+
+    setUploading(true);
+    const toastId = toast.loading("Uploading cover image...");
+
+    try {
+      const uformData = new FormData();
+      uformData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: uformData,
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success && data.url) {
+        setImageUrl(data.url);
+        toast.success("Cover image uploaded successfully!", { id: toastId });
+      } else {
+        toast.error(data.error || "Failed to upload cover image.", { id: toastId });
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to upload image due to connection error.", { id: toastId });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -217,6 +258,8 @@ export default function CreateDaoPage() {
         twitter: formData.twitter || null,
         wallet: recipient,
         isAgent,
+        escrowAddress: deployedContractAddress,
+        image: imageUrl || undefined,
       });
 
       // 6. Register as a campaign in the Crowdfund Hub (Zustand + local campaigns DB)
@@ -241,13 +284,15 @@ export default function CreateDaoPage() {
         ],
         escrowAddress: deployedContractAddress,
         twitter: formData.twitter || null,
+        image: imageUrl || undefined,
       });
 
       // Show real transaction hash and success message
       toast.success(`🚀 Creator DAO successfully launched! Tx Hash: ${transactionHash.slice(0, 10)}...`, { duration: 5000 });
       
-      // Redirect to new profile page
-      router.push(`/creator/${creatorId}`);
+      setNewDeployedAddress(deployedContractAddress);
+      setNewCreatorId(creatorId);
+      setStep(4);
     } catch (err: any) {
       console.error(err);
       toast.error(err?.message || "Failed to launch Creator DAO. Please try again.", { id: "deploy-toast" });
@@ -476,6 +521,63 @@ export default function CreateDaoPage() {
                   />
                 </div>
               </div>
+
+              {/* Cover Image Upload */}
+              <div className="space-y-2 pt-2">
+                <label className="text-xs font-bold text-muted uppercase">Cover Image</label>
+                <div className="border border-dashed border-border hover:border-primary/50 rounded-2xl p-6 bg-surface/30 transition-all flex flex-col items-center justify-center gap-3 relative min-h-[140px] overflow-hidden">
+                  {imageUrl ? (
+                    <>
+                      <img 
+                        src={imageUrl} 
+                        alt="Cover Preview" 
+                        className="absolute inset-0 w-full h-full object-cover opacity-60"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+                      <div className="relative z-10 flex flex-col items-center gap-2 text-center p-2">
+                        <span className="text-[10px] bg-success/20 border border-success/30 px-2 py-0.5 rounded-full text-success font-bold">
+                          ✓ Image Uploaded
+                        </span>
+                        <p className="text-[10px] text-text-secondary truncate max-w-[200px]">Cover image active</p>
+                        <button
+                          type="button"
+                          onClick={() => setImageUrl("")}
+                          className="text-[10px] text-danger hover:underline font-bold mt-1"
+                        >
+                          Remove and replace
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-10 h-10 rounded-xl bg-surface-elevated border border-border-thin flex items-center justify-center text-xl text-text-secondary shadow-inner">
+                        🖼️
+                      </div>
+                      <div className="text-center space-y-1">
+                        <span className="text-xs font-bold text-white hover:text-primary transition-colors cursor-pointer relative block">
+                          Upload Cover Image
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={uploading}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                          />
+                        </span>
+                        <p className="text-[10px] text-text-tertiary">
+                          Recommended: 1200x630px banner image (PNG, JPG, WEBP)
+                        </p>
+                      </div>
+                    </>
+                  )}
+                  {uploading && (
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                      <span className="text-xs font-semibold text-white">Uploading to IPFS...</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </GlassCard>
 
             {/* Nav buttons */}
@@ -582,6 +684,93 @@ export default function CreateDaoPage() {
                 Back
               </button>
             </div>
+          </motion.div>
+        )}
+
+        {step === 4 && (
+          <motion.div
+            key="step4"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6 max-w-2xl mx-auto"
+          >
+            <GlassCard className="p-8 text-center space-y-6 border border-success/30 bg-success/[0.01]" hover={false}>
+              <div className="w-16 h-16 bg-success/10 border border-success/20 rounded-full flex items-center justify-center text-3xl mx-auto shadow-lg animate-bounce">
+                🎉
+              </div>
+              
+              <div className="space-y-2">
+                <h2 className="text-2xl font-extrabold text-white font-heading">Your Creator DAO has been deployed!</h2>
+                <p className="text-sm text-text-secondary">
+                  Your smart contract is live and ready to receive USDC nanopayments on the Arc Testnet.
+                </p>
+              </div>
+
+              {/* Deployed Contract Address Info */}
+              <div className="p-4 rounded-xl border border-border-thin bg-surface/30 space-y-2 text-left">
+                <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Smart Contract Address (ArcScan)</span>
+                <div className="flex items-center justify-between gap-3">
+                  <a
+                    href={`https://testnet.arcscan.app/address/${newDeployedAddress}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-xs text-primary hover:underline truncate select-all"
+                  >
+                    {newDeployedAddress}
+                  </a>
+                  <a
+                    href={`https://testnet.arcscan.app/address/${newDeployedAddress}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1.5 rounded-lg bg-surface hover:bg-surface-elevated text-[10px] font-bold text-text-secondary hover:text-white border border-border-thin transition-colors"
+                  >
+                    View ↗
+                  </a>
+                </div>
+              </div>
+
+              {/* Creator Profile Link Info */}
+              <div className="p-4 rounded-xl border border-border-thin bg-surface/30 space-y-2 text-left">
+                <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Shareable Creator Profile Link</span>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-xs text-purple-300 truncate select-all">
+                    https://synarcdao.xyz/creator/{newCreatorId}
+                  </span>
+                  <button
+                    onClick={async () => {
+                      const shareUrl = `https://synarcdao.xyz/creator/${newCreatorId}`;
+                      try {
+                        await navigator.clipboard.writeText(shareUrl);
+                        toast.success("Link copied!");
+                      } catch {
+                        toast.error("Failed to copy link.");
+                      }
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-surface hover:bg-surface-elevated text-[10px] font-bold text-text-secondary hover:text-white border border-border-thin transition-colors shrink-0"
+                  >
+                    Copy Link
+                  </button>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  onClick={() => router.push(`/creator/${newCreatorId}`)}
+                  className="flex-1 py-3 rounded-xl bg-primary hover:bg-primary/95 text-white font-extrabold text-xs transition-colors cursor-pointer shadow-[0_0_15px_rgba(124,58,237,0.2)] font-bold"
+                >
+                  Go to DAO Profile
+                </button>
+                <button
+                  onClick={() => router.push("/leaderboard")}
+                  className="flex-1 py-3 rounded-xl border border-border hover:bg-surface-elevated text-xs font-bold text-text-secondary hover:text-white transition-colors cursor-pointer"
+                >
+                  Explore Leaderboard
+                </button>
+              </div>
+            </GlassCard>
           </motion.div>
         )}
       </AnimatePresence>

@@ -121,7 +121,8 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
                 twitter: c.twitter || null,
                 wallet: c.recipient,
                 slug,
-                isAgent: c.isAgent
+                isAgent: c.isAgent,
+                image: c.image || undefined
               };
             })
           );
@@ -159,7 +160,8 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
               twitter: sc.twitter || null,
               wallet: sc.recipient,
               slug,
-              isAgent: sc.isAgent
+              isAgent: sc.isAgent,
+              image: sc.image || undefined
             };
 
             if (idx !== -1) {

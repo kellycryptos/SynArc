@@ -13,6 +13,8 @@ export interface Creator {
   wallet: string;
   slug: string;
   isAgent?: boolean;
+  escrowAddress?: string;
+  image?: string;
 }
 
 export const MOCK_CREATORS: Creator[] = [

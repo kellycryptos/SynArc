@@ -24,7 +24,8 @@ import {
   RefreshCw,
   User,
   Clock,
-  ChevronRight
+  ChevronRight,
+  Info
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { parseAbi } from "viem";
@@ -327,13 +328,29 @@ export default function CreatorProfilePage({ params }: PageProps) {
 
   return (
     <div className="max-w-5xl mx-auto py-6 px-4 space-y-8 animate-fade-in-up">
+      {/* Cover Image banner */}
+      {creator.image && (
+        <div className="w-full h-48 md:h-64 rounded-2xl overflow-hidden border border-border-thin relative group/banner shadow-xl">
+          <img 
+            src={creator.image} 
+            alt={`${creator.name} Cover`} 
+            className="w-full h-full object-cover transition-transform duration-500 group-hover/banner:scale-[1.02]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/20 to-transparent" />
+        </div>
+      )}
+
       {/* Header Profile card */}
       <GlassCard className="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden group" hover={false}>
         <div className="absolute -right-20 -top-20 w-44 h-44 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
         
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent border border-white/10 flex items-center justify-center text-3xl font-extrabold text-white shadow-lg">
-            {creator.name[0]}
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent border border-white/10 flex items-center justify-center text-3xl font-extrabold text-white shadow-lg overflow-hidden shrink-0">
+            {creator.image ? (
+              <img src={creator.image} alt={creator.name} className="w-full h-full object-cover" />
+            ) : (
+              creator.name[0]
+            )}
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
@@ -569,6 +586,15 @@ export default function CreatorProfilePage({ params }: PageProps) {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Escrow Explanation Info Box */}
+            <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex gap-2.5 text-[11px] leading-relaxed text-text-secondary">
+              <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold text-text-primary">💰 How it works:</span>{" "}
+                Your USDC is sent to a secure <span className="font-semibold text-text-primary">on-chain escrow contract</span>. Funds are locked and released to the creator <span className="font-semibold text-text-primary">only after</span> community/governance approves the milestones. This protects both supporters and creators.
+              </div>
+            </div>
 
             <div className="pt-2 border-t border-border-thin text-[10px] text-text-tertiary/60 flex items-center justify-center gap-1 font-mono">
               <ShieldCheck className="w-3.5 h-3.5 text-success" />

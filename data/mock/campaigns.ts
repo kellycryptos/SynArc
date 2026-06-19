@@ -60,6 +60,7 @@ export interface Campaign {
   escrowAddress: string;
   sybilProtection: SybilProtection;
   twitter?: string | null;
+  image?: string;
 }
 
 export const MOCK_CAMPAIGNS: Campaign[] = [
