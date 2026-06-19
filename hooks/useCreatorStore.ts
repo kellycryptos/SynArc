@@ -39,6 +39,9 @@ function getSharedPublicClient() {
   return globalPublicClient;
 }
 
+let lastFetchTime = 0;
+const CACHE_DURATION = 15000; // 15 seconds cache
+
 // Resilient on-chain event / state fetcher for deployed campaigns
 async function fetchOnChainCampaignMetrics(escrowAddress: string) {
   if (!escrowAddress || !escrowAddress.startsWith("0x") || escrowAddress.toLowerCase().includes("escrow") || escrowAddress.toLowerCase().includes("treasury") || escrowAddress.length < 42) {
@@ -48,17 +51,18 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
   try {
     const client = getSharedPublicClient();
 
-    const totalRaisedBigInt = await client.readContract({
-      address: escrowAddress as `0x${string}`,
-      abi: SynArcCrowdfundABI,
-      functionName: "totalRaised"
-    }) as bigint;
-
-    const totalContributorsBigInt = await client.readContract({
-      address: escrowAddress as `0x${string}`,
-      abi: SynArcCrowdfundABI,
-      functionName: "totalContributors"
-    }) as bigint;
+    const [totalRaisedBigInt, totalContributorsBigInt] = await Promise.all([
+      client.readContract({
+        address: escrowAddress as `0x${string}`,
+        abi: SynArcCrowdfundABI,
+        functionName: "totalRaised"
+      }),
+      client.readContract({
+        address: escrowAddress as `0x${string}`,
+        abi: SynArcCrowdfundABI,
+        functionName: "totalContributors"
+      })
+    ]) as [bigint, bigint];
 
     const raised = Number(totalRaisedBigInt) / 1_000_000;
     const contributors = Number(totalContributorsBigInt);
@@ -70,6 +74,7 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
   }
 }
 
+
 export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
   creators: [],
   supporters: {},
@@ -78,17 +83,24 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
   initializeStore: async () => {
     if (typeof window === "undefined") return;
 
+    // 15-second cache limit to avoid redundant RPC/REST requests
+    if (get().initialized && Date.now() - lastFetchTime < CACHE_DURATION) {
+      return;
+    }
+
     try {
-      // 1. Fetch campaigns from the backend API
+      // Start with all MOCK_CREATORS (which includes the 'synarc' profile)
+      let mappedCreators: Creator[] = [...MOCK_CREATORS];
+
+      // Fetch campaigns from the backend API
       const response = await fetch("/api/campaigns");
-      let mappedCreators: Creator[] = [];
 
       if (response.ok) {
         const data = await response.json();
         if (data.success && Array.isArray(data.campaigns)) {
           const rawCampaigns: Campaign[] = data.campaigns;
 
-          // 2. Hydrate real on-chain parameters for deployed campaigns
+          // Hydrate real on-chain parameters for deployed campaigns
           const hydratedCreators: Creator[] = await Promise.all(
             rawCampaigns.map(async (c) => {
               const onChain = await fetchOnChainCampaignMetrics(c.escrowAddress);
@@ -127,65 +139,80 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
             })
           );
 
-          // Get simulated campaigns from localStorage to merge
-          let simulatedCampaigns: Campaign[] = [];
-          try {
-            const stored = localStorage.getItem("synarc_simulated_campaigns");
-            if (stored) {
-              simulatedCampaigns = JSON.parse(stored);
-            }
-          } catch (err) {}
-
-          const mergedCreators = [...hydratedCreators];
-          simulatedCampaigns.forEach((sc) => {
-            const idx = mergedCreators.findIndex((c) => c.id === sc.id);
-            const deadlineDate = new Date(sc.deadline);
-            const diffTime = deadlineDate.getTime() - Date.now();
-            const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-            let category = sc.category.toLowerCase().replace(" ", "-");
-            if (category === "ai-agent-fund" || category === "ai-infrastructure") {
-              category = "ai-agent";
-            }
-            const slug = sc.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-
-            const mappedSimulated: Creator = {
-              id: sc.id,
-              name: sc.title,
-              category,
-              description: sc.description,
-              goal: sc.goal,
-              raised: sc.raised,
-              supporters: sc.contributors,
-              daysLeft,
-              twitter: sc.twitter || null,
-              wallet: sc.recipient,
-              slug,
-              isAgent: sc.isAgent,
-              image: sc.image || undefined
-            };
-
+          // Merge hydrated creators by ID/slug
+          hydratedCreators.forEach((hc) => {
+            const idx = mappedCreators.findIndex((c) => c.id === hc.id || c.slug === hc.slug);
             if (idx !== -1) {
-              mergedCreators[idx] = mappedSimulated;
+              mappedCreators[idx] = { ...mappedCreators[idx], ...hc };
             } else {
-              mergedCreators.push(mappedSimulated);
+              mappedCreators.push(hc);
             }
           });
-
-          mappedCreators = mergedCreators;
         }
       }
 
-      // If mappedCreators is empty, fallback gracefully
-      if (mappedCreators.length === 0) {
-        const storedCreatorsRaw = localStorage.getItem("synarc_creators");
-        if (storedCreatorsRaw) {
-          mappedCreators = JSON.parse(storedCreatorsRaw);
+      // Merge custom creators from localStorage (synarc_creators)
+      let localCreators: Creator[] = [];
+      try {
+        const stored = localStorage.getItem("synarc_creators");
+        if (stored) {
+          localCreators = JSON.parse(stored);
+        }
+      } catch (err) {}
+      
+      localCreators.forEach((lc) => {
+        const idx = mappedCreators.findIndex((c) => c.id === lc.id || c.slug === lc.slug);
+        if (idx !== -1) {
+          mappedCreators[idx] = { ...mappedCreators[idx], ...lc };
         } else {
-          mappedCreators = [...MOCK_CREATORS];
+          mappedCreators.push(lc);
         }
-      }
+      });
 
-      // 3. Load supporters for each creator
+      // Merge simulated campaigns from localStorage (synarc_simulated_campaigns)
+      let simulatedCampaigns: Campaign[] = [];
+      try {
+        const stored = localStorage.getItem("synarc_simulated_campaigns");
+        if (stored) {
+          simulatedCampaigns = JSON.parse(stored);
+        }
+      } catch (err) {}
+
+      simulatedCampaigns.forEach((sc) => {
+        const deadlineDate = new Date(sc.deadline);
+        const diffTime = deadlineDate.getTime() - Date.now();
+        const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+        let category = sc.category.toLowerCase().replace(" ", "-");
+        if (category === "ai-agent-fund" || category === "ai-infrastructure") {
+          category = "ai-agent";
+        }
+        const slug = sc.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+        const mappedSimulated: Creator = {
+          id: sc.id,
+          name: sc.title,
+          category,
+          description: sc.description,
+          goal: sc.goal,
+          raised: sc.raised,
+          supporters: sc.contributors,
+          daysLeft,
+          twitter: sc.twitter || null,
+          wallet: sc.recipient,
+          slug,
+          isAgent: sc.isAgent,
+          image: sc.image || undefined
+        };
+
+        const idx = mappedCreators.findIndex((c) => c.id === sc.id || c.slug === slug);
+        if (idx !== -1) {
+          mappedCreators[idx] = mappedSimulated;
+        } else {
+          mappedCreators.push(mappedSimulated);
+        }
+      });
+
+      // Load supporters for each creator
       const supportersMap: Record<string, Supporter[]> = {};
       mappedCreators.forEach((c) => {
         const storedSuppsRaw = localStorage.getItem(`synarc_creator_supporters_${c.id}`);
@@ -195,6 +222,8 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
           supportersMap[c.id] = [];
         }
       });
+
+      lastFetchTime = Date.now();
 
       set({
         creators: mappedCreators,

@@ -2,6 +2,7 @@
 
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useCreatorStore, Supporter } from "@/hooks/useCreatorStore";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
@@ -63,10 +64,66 @@ export default function CreatorProfilePage({ params }: PageProps) {
 
   if (!initialized) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
-        <RefreshCw className="w-12 h-12 text-primary animate-spin" />
-        <h2 className="text-xl font-bold text-white">Loading Creator Profile...</h2>
-        <p className="text-sm text-text-tertiary">Fetching real-time on-chain parameters from Arc Network.</p>
+      <div className="max-w-5xl mx-auto py-6 px-4 space-y-8 animate-pulse">
+        {/* Banner Skeleton */}
+        <div className="w-full h-48 md:h-64 rounded-2xl bg-white/[0.02] border border-border-thin" />
+        
+        {/* Profile Card Skeleton */}
+        <div className="glass-card p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="flex items-center gap-4 w-full">
+            <div className="w-16 h-16 rounded-2xl bg-white/[0.04] shrink-0" />
+            <div className="space-y-2 w-full">
+              <div className="h-6 bg-white/[0.04] rounded w-1/3" />
+              <div className="h-4 bg-white/[0.02] rounded w-1/4" />
+            </div>
+          </div>
+          <div className="w-28 h-10 bg-white/[0.04] rounded-xl self-stretch md:self-auto" />
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Funding Progress Skeleton */}
+            <div className="glass-card p-6 space-y-5">
+              <div className="flex justify-between">
+                <div className="h-4 bg-white/[0.04] rounded w-1/4" />
+                <div className="h-4 bg-white/[0.04] rounded w-1/6" />
+              </div>
+              <div className="h-2.5 bg-white/[0.02] rounded-full w-full" />
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-3 bg-white/[0.02] rounded w-2/3" />
+                    <div className="h-5 bg-white/[0.04] rounded w-1/2" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* About Skeleton */}
+            <div className="glass-card p-6 space-y-4">
+              <div className="h-5 bg-white/[0.04] rounded w-1/4" />
+              <div className="space-y-2">
+                <div className="h-4 bg-white/[0.02] rounded w-full" />
+                <div className="h-4 bg-white/[0.02] rounded w-5/6" />
+                <div className="h-4 bg-white/[0.02] rounded w-4/5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column Skeleton */}
+          <div className="space-y-6">
+            <div className="glass-card p-6 space-y-4">
+              <div className="h-5 bg-white/[0.04] rounded w-1/2" />
+              <div className="h-3 bg-white/[0.02] rounded w-full" />
+              <div className="space-y-2 pt-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-12 bg-white/[0.04] rounded-xl w-full" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -331,12 +388,15 @@ export default function CreatorProfilePage({ params }: PageProps) {
       {/* Cover Image banner */}
       {creator.image && (
         <div className="w-full h-48 md:h-64 rounded-2xl overflow-hidden border border-border-thin relative group/banner shadow-xl">
-          <img 
+          <Image 
             src={creator.image} 
             alt={`${creator.name} Cover`} 
-            className="w-full h-full object-cover transition-transform duration-500 group-hover/banner:scale-[1.02]"
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover transition-transform duration-500 group-hover/banner:scale-[1.02]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/20 to-transparent z-10" />
         </div>
       )}
 
@@ -345,9 +405,9 @@ export default function CreatorProfilePage({ params }: PageProps) {
         <div className="absolute -right-20 -top-20 w-44 h-44 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
         
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent border border-white/10 flex items-center justify-center text-3xl font-extrabold text-white shadow-lg overflow-hidden shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent border border-white/10 flex items-center justify-center text-3xl font-extrabold text-white shadow-lg overflow-hidden shrink-0 relative">
             {creator.image ? (
-              <img src={creator.image} alt={creator.name} className="w-full h-full object-cover" />
+              <Image src={creator.image} alt={creator.name} fill sizes="64px" className="object-cover" />
             ) : (
               creator.name[0]
             )}

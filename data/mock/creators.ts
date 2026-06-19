@@ -84,4 +84,18 @@ export const MOCK_CREATORS: Creator[] = [
     slug: 'synarc-agent-001',
     isAgent: true,
   },
+  {
+    id: 'synarc',
+    name: 'SynArc',
+    category: 'builder',
+    description: 'Decentralized platform aligning autonomous AI agents and creator economies on the Arc Network.',
+    goal: 5000,
+    raised: 3200,
+    supporters: 47,
+    daysLeft: 20,
+    twitter: 'SynArcDAO',
+    wallet: '0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53',
+    slug: 'synarc',
+  },
 ];
+

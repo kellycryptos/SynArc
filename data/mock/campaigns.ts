@@ -225,4 +225,49 @@ export const MOCK_CAMPAIGNS: Campaign[] = [
       dueDiligenceNotes: 'The iOS and Android branches have been merged, audited, and published. Escrow has successfully finished disbursements.'
     }
   },
+  {
+    id: 'synarc',
+    title: 'SynArc',
+    description: 'Decentralized platform aligning autonomous AI agents and creator economies on the Arc Network.',
+    category: 'Builder',
+    goal: 5000,
+    raised: 3200,
+    contributors: 47,
+    state: 'Active',
+    isAgent: false,
+    badge: 'HUMAN_CAMPAIGN',
+    creator: '0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53',
+    recipient: '0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53',
+    deadline: '2026-07-20',
+    milestones: [
+      { title: 'Milestone 1', amount: 5000, status: 'active', description: 'Initial launch of the SynArc Creator Economy dashboard.' }
+    ],
+    votes: { for: 15000, against: 1000, abstain: 500 },
+    fundingSources: ['individual', 'dao_treasury'],
+    proposalNumber: 16,
+    escrowAddress: '0xFE0F6bF45D363d34CD5fC1781594a7471736dC18',
+    sybilProtection: {
+      aiScanned: true,
+      reputationChecked: true,
+      stakeRequired: false
+    },
+    twitter: 'SynArcDAO',
+    aiAnalysis: {
+      recommendation: 'FUND',
+      scores: {
+        legitimacy: 95,
+        impact: 96,
+        arcAlignment: 98,
+        executionFeasibility: 92,
+        milestoneRealism: 90,
+        governanceAlignment: 95
+      },
+      riskFlags: [],
+      strengths: ['Core platform infrastructure', 'High alignment with Arc Network scaling vision'],
+      milestoneFeedback: 'Realistic and well-defined milestone requirements.',
+      treasuryRisk: 'LOW',
+      verdict: 'Highly recommended for funding as it forms the bedrock of the SynArc ecosystem.',
+      dueDiligenceNotes: 'SynArc Risk Engine verified the repository and deployer wallet address.'
+    }
+  }
 ];

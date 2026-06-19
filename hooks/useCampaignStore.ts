@@ -28,6 +28,9 @@ function getSharedPublicClient() {
   return globalPublicClient;
 }
 
+let lastFetchTime = 0;
+const CACHE_DURATION = 15000; // 15 seconds cache
+
 // Resilient on-chain event / state fetcher for deployed campaigns
 async function fetchOnChainCampaignMetrics(escrowAddress: string) {
   if (!escrowAddress || !escrowAddress.startsWith("0x") || escrowAddress.includes("Escrow") || escrowAddress.includes("Treasury") || escrowAddress.length < 42) {
@@ -37,23 +40,23 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
   try {
     const client = getSharedPublicClient();
 
-    const totalRaisedBigInt = await client.readContract({
-      address: escrowAddress as `0x${string}`,
-      abi: SynArcCrowdfundABI,
-      functionName: "totalRaised"
-    }) as bigint;
-
-    const totalContributorsBigInt = await client.readContract({
-      address: escrowAddress as `0x${string}`,
-      abi: SynArcCrowdfundABI,
-      functionName: "totalContributors"
-    }) as bigint;
-
-    const onChainMilestones = await client.readContract({
-      address: escrowAddress as `0x${string}`,
-      abi: SynArcCrowdfundABI,
-      functionName: "getMilestones"
-    }) as any[];
+    const [totalRaisedBigInt, totalContributorsBigInt, onChainMilestones] = await Promise.all([
+      client.readContract({
+        address: escrowAddress as `0x${string}`,
+        abi: SynArcCrowdfundABI,
+        functionName: "totalRaised"
+      }),
+      client.readContract({
+        address: escrowAddress as `0x${string}`,
+        abi: SynArcCrowdfundABI,
+        functionName: "totalContributors"
+      }),
+      client.readContract({
+        address: escrowAddress as `0x${string}`,
+        abi: SynArcCrowdfundABI,
+        functionName: "getMilestones"
+      })
+    ]) as [bigint, bigint, any[]];
 
     const raised = Number(totalRaisedBigInt) / 1_000_000;
     const contributors = Number(totalContributorsBigInt);
@@ -80,6 +83,11 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
   initializeStore: async () => {
     // Prevent server-side crash
     if (typeof window === "undefined") return;
+
+    // 15-second cache limit to avoid redundant RPC/REST requests
+    if (get().initialized && Date.now() - lastFetchTime < CACHE_DURATION) {
+      return;
+    }
 
     try {
       const response = await fetch("/api/campaigns");
@@ -141,6 +149,7 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
             }
           });
 
+          lastFetchTime = Date.now();
           set({ campaigns: mergedCampaigns, initialized: true });
         }
       }
@@ -160,6 +169,17 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.campaign) {
+          // Store locally to persist across serverless restarts
+          if (typeof window !== "undefined") {
+            try {
+              const stored = localStorage.getItem("synarc_simulated_campaigns");
+              const list = stored ? JSON.parse(stored) : [];
+              list.push(data.campaign);
+              localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(list));
+            } catch (err) {
+              console.warn("Failed to write new campaign to local storage:", err);
+            }
+          }
           // Re-initialize store to load fresh database + on-chain status
           await get().initializeStore();
           return data.campaign.id;

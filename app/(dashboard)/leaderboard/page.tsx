@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useCreatorStore } from "@/hooks/useCreatorStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Trophy, ChevronRight, User, Users, Star, Coins, RefreshCw } from "lucide-react";
@@ -17,10 +18,68 @@ export default function LeaderboardPage() {
 
   if (!initialized) {
     return (
-      <div className="max-w-5xl mx-auto py-12 px-4 flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
-        <RefreshCw className="w-12 h-12 text-primary animate-spin" />
-        <h2 className="text-xl font-bold text-white">Loading Leaderboard...</h2>
-        <p className="text-sm text-text-tertiary">Fetching real-time on-chain rankings.</p>
+      <div className="max-w-5xl mx-auto py-6 px-4 space-y-8 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-subtle pb-6">
+          <div className="space-y-2">
+            <div className="h-8 bg-white/[0.04] rounded w-48" />
+            <div className="h-4 bg-white/[0.02] rounded w-64" />
+          </div>
+          <div className="h-10 bg-white/[0.04] rounded-xl w-72" />
+        </div>
+
+        {/* Categories Skeleton */}
+        <div className="flex flex-wrap gap-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-8 bg-white/[0.04] rounded-xl w-16" />
+          ))}
+        </div>
+
+        {/* Podium Skeleton */}
+        <div className="grid grid-cols-3 gap-3 md:gap-6 items-end pt-8 max-w-2xl mx-auto text-center">
+          {/* 2nd place */}
+          <div className="flex flex-col items-center space-y-3">
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/[0.04] mx-auto" />
+            <div className="h-4 bg-white/[0.04] rounded w-16 mx-auto" />
+            <div className="w-full h-36 bg-white/[0.02] border-t border-x border-border-subtle/30 rounded-t-2xl" />
+          </div>
+          {/* 1st place */}
+          <div className="flex flex-col items-center space-y-3">
+            <div className="w-16 h-16 md:w-18 md:h-18 rounded-full bg-white/[0.04] mx-auto" />
+            <div className="h-4 bg-white/[0.04] rounded w-20 mx-auto" />
+            <div className="w-full h-44 bg-white/[0.02] border-t border-x border-border-subtle/30 rounded-t-2xl" />
+          </div>
+          {/* 3rd place */}
+          <div className="flex flex-col items-center space-y-3">
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/[0.04] mx-auto" />
+            <div className="h-4 bg-white/[0.04] rounded w-16 mx-auto" />
+            <div className="w-full h-28 bg-white/[0.02] border-t border-x border-border-subtle/30 rounded-t-2xl" />
+          </div>
+        </div>
+
+        {/* Table Skeleton */}
+        <div className="glass-card p-0 border border-border overflow-hidden">
+          <div className="p-4 bg-surface-elevated/20 border-b border-border-thin flex justify-between">
+            <div className="h-4 bg-white/[0.04] rounded w-12" />
+            <div className="h-4 bg-white/[0.04] rounded w-32" />
+            <div className="h-4 bg-white/[0.04] rounded w-20" />
+            <div className="h-4 bg-white/[0.04] rounded w-20" />
+          </div>
+          <div className="divide-y divide-border-subtle/35">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="p-4 flex items-center justify-between gap-4">
+                <div className="h-4 bg-white/[0.02] rounded w-6" />
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-9 h-9 rounded-xl bg-white/[0.04]" />
+                  <div className="h-4 bg-white/[0.02] rounded w-24" />
+                </div>
+                <div className="h-4 bg-white/[0.02] rounded w-16" />
+                <div className="h-4 bg-white/[0.02] rounded w-16" />
+                <div className="h-8 bg-white/[0.04] rounded-lg w-20" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -133,8 +192,12 @@ export default function LeaderboardPage() {
               <div key={spot.rank} className="flex flex-col items-center">
                 <Link href={`/creator/${creator.id}`} className="group block space-y-3 relative z-10">
                   <div className="relative">
-                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-primary to-accent border-2 border-white/10 flex items-center justify-center text-xl font-bold mx-auto group-hover:scale-105 transition-transform duration-300 shadow-md">
-                      {creator.name[0]}
+                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-primary to-accent border-2 border-white/10 flex items-center justify-center text-xl font-bold mx-auto group-hover:scale-105 transition-transform duration-300 shadow-md overflow-hidden relative">
+                      {creator.image ? (
+                        <Image src={creator.image} alt={creator.name} fill sizes="64px" className="object-cover" />
+                      ) : (
+                        creator.name[0]
+                      )}
                     </div>
                     <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-lg drop-shadow select-none">
                       {spot.text}
@@ -209,8 +272,12 @@ export default function LeaderboardPage() {
                       {/* Creator Details Column */}
                       <td className="p-4">
                         <Link href={`/creator/${creator.id}`} className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-surface-elevated border border-border-thin flex items-center justify-center font-bold text-white group-hover:scale-105 transition-transform">
-                            {creator.name[0]}
+                          <div className="w-9 h-9 rounded-xl bg-surface-elevated border border-border-thin flex items-center justify-center font-bold text-white group-hover:scale-105 transition-transform overflow-hidden shrink-0 relative">
+                            {creator.image ? (
+                              <Image src={creator.image} alt={creator.name} fill sizes="36px" className="object-cover" />
+                            ) : (
+                              creator.name[0]
+                            )}
                           </div>
                           <div>
                             <span className="font-extrabold text-white text-xs group-hover:text-primary transition-colors block">
