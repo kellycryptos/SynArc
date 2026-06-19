@@ -182,6 +182,10 @@ export default function CreateDaoPage() {
     setLaunching(true);
     setTxHash("");
 
+    // Show an immediate loading toast so the user sees feedback right away
+    const launchToastId = `launch-${Date.now()}`;
+    toast.loading("Launching Creator DAO...", { id: launchToastId });
+
     try {
       let deployedContractAddress = "";
       let transactionHash = "";
@@ -209,6 +213,8 @@ export default function CreateDaoPage() {
 
         const gasParams = await getAggressiveGasParams(publicClient);
 
+        toast.loading("Deploying Creator DAO smart contract to Arc...", { id: launchToastId });
+
         // 3. Deploy SynArcCrowdfund contract directly from user wallet
         const deployHash = await walletClient.deployContract({
           abi: SynArcCrowdfundABI,
@@ -234,7 +240,7 @@ export default function CreateDaoPage() {
 
         console.log("Deployment transaction submitted! Tx Hash:", deployHash);
         setTxHash(deployHash);
-        toast.loading("Deploying Creator DAO smart contract to Arc...", { id: "deploy-toast" });
+        toast.loading(`Confirming transaction ${deployHash.slice(0, 10)}...`, { id: launchToastId });
 
         // 4. Wait for transaction confirmation
         const receipt = await waitForTransaction(publicClient, deployHash);
@@ -245,7 +251,7 @@ export default function CreateDaoPage() {
           throw new Error("Escrow contract deployment failed — no contract address returned in receipt.");
         }
 
-        toast.success("🎉 Smart contract deployed successfully!", { id: "deploy-toast" });
+        toast.loading("Registering your Creator DAO...", { id: launchToastId });
       }
 
       // 5. Add creator to the local creator store
@@ -288,14 +294,16 @@ export default function CreateDaoPage() {
       });
 
       // Show real transaction hash and success message
-      toast.success(`🚀 Creator DAO successfully launched! Tx Hash: ${transactionHash.slice(0, 10)}...`, { duration: 5000 });
+      toast.success(`🚀 Creator DAO launched! Tx: ${transactionHash.slice(0, 10)}...`, { id: launchToastId, duration: 5000 });
       
       setNewDeployedAddress(deployedContractAddress);
       setNewCreatorId(creatorId);
       setStep(4);
     } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message || "Failed to launch Creator DAO. Please try again.", { id: "deploy-toast" });
+      console.error("handleLaunch error:", err);
+      // Dismiss loading toast and show a fresh error so it always appears
+      toast.dismiss(launchToastId);
+      toast.error(err?.message || "Failed to launch Creator DAO. Please try again.", { duration: 6000 });
     } finally {
       setLaunching(false);
     }

@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { Campaign, MOCK_CAMPAIGNS } from "@/data/mock/campaigns";
 
+
 const DB_PATH = path.join(process.cwd(), "data/campaigns.json");
 
 // In-memory fallback if file writing fails or is restricted in some environments

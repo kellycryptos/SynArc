@@ -160,32 +160,50 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
 
   addCampaign: async (campaignData) => {
     try {
+      // Strip base64 data URLs from the API payload — they can be several MB
+      // and Next.js has a 1MB body size limit. We keep the image only in localStorage.
+      const isBase64Image = typeof campaignData.image === "string" && campaignData.image.startsWith("data:");
+      const apiPayload = isBase64Image
+        ? { ...campaignData, image: undefined }
+        : campaignData;
+
       const response = await fetch("/api/campaigns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(campaignData)
+        body: JSON.stringify(apiPayload)
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.campaign) {
-          // Store locally to persist across serverless restarts
-          if (typeof window !== "undefined") {
-            try {
-              const stored = localStorage.getItem("synarc_simulated_campaigns");
-              const list = stored ? JSON.parse(stored) : [];
-              list.push(data.campaign);
-              localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(list));
-            } catch (err) {
-              console.warn("Failed to write new campaign to local storage:", err);
-            }
-          }
-          // Re-initialize store to load fresh database + on-chain status
-          await get().initializeStore();
-          return data.campaign.id;
-        }
+      if (!response.ok) {
+        const errText = await response.text().catch(() => "Unknown error");
+        throw new Error(`Campaign API error ${response.status}: ${errText}`);
       }
-      throw new Error("Failed to register campaign in backend database");
+
+      const data = await response.json();
+      if (data.success && data.campaign) {
+        // Merge the image back (even if we stripped it from the API call)
+        const campaignWithImage = campaignData.image
+          ? { ...data.campaign, image: campaignData.image }
+          : data.campaign;
+
+        // Persist to localStorage to survive serverless restarts
+        if (typeof window !== "undefined") {
+          try {
+            const stored = localStorage.getItem("synarc_simulated_campaigns");
+            const list = stored ? JSON.parse(stored) : [];
+            list.push(campaignWithImage);
+            localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(list));
+          } catch (err) {
+            console.warn("Failed to write new campaign to local storage:", err);
+          }
+        }
+
+        // Bust the cache so initializeStore always re-fetches
+        lastFetchTime = 0;
+        await get().initializeStore();
+        return data.campaign.id;
+      }
+
+      throw new Error(data.error || "Failed to register campaign in backend database");
     } catch (err: any) {
       console.error("useCampaignStore: addCampaign failed:", err);
       throw err;
