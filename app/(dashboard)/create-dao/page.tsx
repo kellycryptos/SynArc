@@ -37,6 +37,7 @@ export default function CreateDaoPage() {
   const [txHash, setTxHash] = useState("");
   const [newDeployedAddress, setNewDeployedAddress] = useState("");
   const [newCreatorId, setNewCreatorId] = useState("");
+  const [isDemoMode, setIsDemoMode] = useState(true);
 
   useEffect(() => {
     initializeStore();
@@ -204,11 +205,11 @@ export default function CreateDaoPage() {
         let deployedContractAddress = "";
         let transactionHash = "";
 
-        if (isCircle) {
+        if (isCircle || isDemoMode) {
           // Circle / simulated fallback
-          console.log("Simulating campaign deployment for Circle Wallet...");
-          await new Promise(resolve => setTimeout(resolve, 2500));
-          deployedContractAddress = `0x-circle-escrow-${Date.now()}`;
+          console.log("Simulating campaign deployment for Demo/Circle Wallet...");
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          deployedContractAddress = `0x-demo-escrow-${Date.now()}`;
           transactionHash = "0x" + Array.from({ length: 64 }, () => 
             Math.floor(Math.random() * 16).toString(16)
           ).join("");
@@ -687,6 +688,30 @@ export default function CreateDaoPage() {
                   <span className="font-bold text-white block mb-0.5">Escrow Security Policy:</span>
                   Funds raised are locked securely within decentralized milestone escrow smart contracts on Arc. Release triggers are bound cryptographically to community votes.
                 </div>
+              </div>
+
+              {/* Demo Mode Toggle */}
+              <div className="p-4 rounded-xl border border-purple-500/25 bg-purple-500/5 flex items-center justify-between text-xs">
+                <div className="flex items-start gap-2.5">
+                  <span className="text-base select-none">⚡</span>
+                  <div>
+                    <span className="font-bold text-white block mb-0.5 font-heading">Demo Mode (Instant Simulated Deploy)</span>
+                    <span className="text-text-tertiary">Bypass wallet signature prompts and deploy instantly. Recommended for testing.</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsDemoMode(!isDemoMode)}
+                  className={`w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none flex items-center p-0.5 ${
+                    isDemoMode ? "bg-accent-purple" : "bg-surface-elevated border border-border-thin"
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ${
+                      isDemoMode ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
               </div>
 
               {/* Launch Action */}
