@@ -166,157 +166,172 @@ export default function CreateDaoPage() {
   };
 
   const handleLaunch = async () => {
-    if (!isAuthenticated) {
-      login();
-      return;
-    }
-
-    const recipient = formData.wallet || walletAddress || "0x0000000000000000000000000000000000000000";
-    const creatorGoal = parseFloat(formData.goal);
-    const creatorDuration = parseInt(formData.duration) || 30;
-    const isAgent = selectedTemplate === "ai-agent";
-
-    if (creatorGoal <= 0) {
-      toast.error("Goal must be greater than 0 USDC.");
-      return;
-    }
-
-    setLaunching(true);
-    setTxHash("");
-
-    // Show an immediate loading toast so the user sees feedback right away
-    const launchToastId = `launch-${Date.now()}`;
-    toast.loading("Launching Creator DAO...", { id: launchToastId });
-
     try {
-      let deployedContractAddress = "";
-      let transactionHash = "";
+      if (!isAuthenticated) {
+        login();
+        return;
+      }
 
-      if (isCircle) {
-        // Circle / simulated fallback
-        console.log("Simulating campaign deployment for Circle Wallet...");
-        await new Promise(resolve => setTimeout(resolve, 2500));
-        deployedContractAddress = `0x-circle-escrow-${Date.now()}`;
-        transactionHash = "0x" + Array.from({ length: 64 }, () => 
-          Math.floor(Math.random() * 16).toString(16)
-        ).join("");
-      } else {
-        // 1. Fetch signer and wallet details
-        const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const recipient = (formData.wallet || walletAddress || "0x0000000000000000000000000000000000000000").trim();
+      const creatorGoal = parseFloat(formData.goal);
+      const creatorDuration = parseInt(formData.duration) || 30;
+      const isAgent = selectedTemplate === "ai-agent";
 
-        // USDC precompiled contract address on Arc Testnet
-        const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
-        
-        // 2. Format parameters for on-chain deployment
-        const goalBigInt = BigInt(Math.round(creatorGoal * 1_000_000));
-        const milestoneTitles = ["Initial Launch Phase"];
-        const milestoneAmounts = [goalBigInt];
-        const milestoneDescriptions = ["Release of initial backing capital to kickstart the project."];
+      // Robust Validation
+      if (isNaN(creatorGoal) || creatorGoal <= 0) {
+        toast.error("Goal must be a valid number greater than 0 USDC.");
+        return;
+      }
 
-        const gasParams = await getAggressiveGasParams(publicClient);
+      if (isNaN(creatorDuration) || creatorDuration < 7 || creatorDuration > 90) {
+        toast.error("Duration must be between 7 and 90 days.");
+        return;
+      }
 
-        toast.loading("Deploying Creator DAO smart contract to Arc...", { id: launchToastId });
+      if (recipient !== "0x0000000000000000000000000000000000000000" && (!recipient.startsWith("0x") || recipient.length !== 42)) {
+        toast.error("Recipient wallet must be a valid EVM address starting with 0x (42 characters).");
+        return;
+      }
 
-        // 3. Deploy SynArcCrowdfund contract directly from user wallet
-        // Explicitly set chain to ARC_CHAIN and use a safer 3.5M gas limit floor
-        const deployHash = await walletClient.deployContract({
-          abi: SynArcCrowdfundABI,
-          bytecode: SynArcCrowdfundBytecode as `0x${string}`,
-          chain: ARC_CHAIN,
-          args: [
-            address,
-            recipient.trim() as `0x${string}`,
-            USDC_ADDRESS,
-            goalBigInt,
-            BigInt(creatorDuration),
-            isAgent,
-            formData.name.trim(),
-            formData.description.trim(),
-            selectedTemplate === "ai-agent" ? "AI Agent Fund" : "Creator DAO",
-            milestoneTitles,
-            milestoneAmounts,
-            milestoneDescriptions
-          ],
-          gas: 3500000n, 
-          ...gasParams,
-        });
+      setLaunching(true);
+      setTxHash("");
 
-        console.log("Deployment transaction submitted! Tx Hash:", deployHash);
-        setTxHash(deployHash);
-        toast.loading(`Confirming transaction ${deployHash.slice(0, 10)}...`, { id: launchToastId });
+      // Show an immediate loading toast so the user sees feedback right away
+      const launchToastId = `launch-${Date.now()}`;
+      toast.loading("Launching Creator DAO...", { id: launchToastId });
 
-        // 4. Wait for transaction confirmation
-        const receipt = await waitForTransaction(publicClient, deployHash);
-        deployedContractAddress = receipt.contractAddress;
-        transactionHash = deployHash;
+      try {
+        let deployedContractAddress = "";
+        let transactionHash = "";
 
-        if (!deployedContractAddress) {
-          throw new Error("Escrow contract deployment failed — no contract address returned in receipt.");
+        if (isCircle) {
+          // Circle / simulated fallback
+          console.log("Simulating campaign deployment for Circle Wallet...");
+          await new Promise(resolve => setTimeout(resolve, 2500));
+          deployedContractAddress = `0x-circle-escrow-${Date.now()}`;
+          transactionHash = "0x" + Array.from({ length: 64 }, () => 
+            Math.floor(Math.random() * 16).toString(16)
+          ).join("");
+        } else {
+          // 1. Fetch signer and wallet details
+          const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+
+          // USDC precompiled contract address on Arc Testnet
+          const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
+          
+          // 2. Format parameters for on-chain deployment
+          const goalBigInt = BigInt(Math.round(creatorGoal * 1_000_000));
+          const milestoneTitles = ["Initial Launch Phase"];
+          const milestoneAmounts = [goalBigInt];
+          const milestoneDescriptions = ["Release of initial backing capital to kickstart the project."];
+
+          const gasParams = await getAggressiveGasParams(publicClient);
+
+          toast.loading("Deploying Creator DAO smart contract to Arc...", { id: launchToastId });
+
+          // 3. Deploy SynArcCrowdfund contract directly from user wallet
+          // Explicitly set chain to ARC_CHAIN and use a safer 3.5M gas limit floor
+          const deployHash = await walletClient.deployContract({
+            abi: SynArcCrowdfundABI,
+            bytecode: SynArcCrowdfundBytecode as `0x${string}`,
+            chain: ARC_CHAIN,
+            args: [
+              address,
+              recipient as `0x${string}`,
+              USDC_ADDRESS,
+              goalBigInt,
+              BigInt(creatorDuration),
+              isAgent,
+              formData.name.trim(),
+              formData.description.trim(),
+              selectedTemplate === "ai-agent" ? "AI Agent Fund" : "Creator DAO",
+              milestoneTitles,
+              milestoneAmounts,
+              milestoneDescriptions
+            ],
+            gas: 3500000n, 
+            ...gasParams,
+          });
+
+          console.log("Deployment transaction submitted! Tx Hash:", deployHash);
+          setTxHash(deployHash);
+          toast.loading(`Confirming transaction ${deployHash.slice(0, 10)}...`, { id: launchToastId });
+
+          // 4. Wait for transaction confirmation
+          const receipt = await waitForTransaction(publicClient, deployHash);
+          deployedContractAddress = receipt.contractAddress;
+          transactionHash = deployHash;
+
+          if (!deployedContractAddress) {
+            throw new Error("Escrow contract deployment failed — no contract address returned in receipt.");
+          }
+
+          toast.loading("Registering your Creator DAO...", { id: launchToastId });
         }
 
-        toast.loading("Registering your Creator DAO...", { id: launchToastId });
+        // 5. Add creator to the local creator store
+        const creatorId = addCreator({
+          id: "", // Will be generated
+          name: formData.name,
+          category: selectedTemplate,
+          description: formData.description,
+          goal: creatorGoal,
+          twitter: formData.twitter || null,
+          wallet: recipient,
+          isAgent,
+          escrowAddress: deployedContractAddress,
+          image: imageUrl || undefined,
+        });
+
+        // 6. Register as a campaign in the Crowdfund Hub (Zustand + local campaigns DB)
+        const campaignDeadline = new Date(Date.now() + creatorDuration * 24 * 60 * 60 * 1000).toISOString();
+        await addCampaign({
+          title: formData.name,
+          description: formData.description,
+          category: selectedTemplate === "ai-agent" ? "AI Agent Fund" : "Creator DAO",
+          badge: isAgent ? "AUTONOMOUS_AGENT_FUND" : "HUMAN_CAMPAIGN",
+          goal: creatorGoal,
+          isAgent,
+          creator: walletAddress || recipient,
+          recipient,
+          deadline: campaignDeadline,
+          milestones: [
+            {
+              title: "Initial Launch Phase",
+              amount: creatorGoal,
+              description: "Release of initial backing capital to kickstart the project.",
+              status: "active",
+            }
+          ],
+          escrowAddress: deployedContractAddress,
+          twitter: formData.twitter || null,
+          image: imageUrl || undefined,
+        });
+
+        // Show real transaction hash and success message
+        toast.success(`🚀 Creator DAO launched! Tx: ${transactionHash.slice(0, 10)}...`, { id: launchToastId, duration: 5000 });
+        
+        // Immediately redirect to creator profile page
+        router.push(`/creator/${creatorId}`);
+      } catch (err: any) {
+        console.error("handleLaunch inner error:", err);
+        // Dismiss loading toast and show a fresh error so it always appears
+        toast.dismiss(launchToastId);
+        
+        const errMsg = (err?.message || "").toLowerCase();
+        if (errMsg.includes("insufficient") || errMsg.includes("funds") || errMsg.includes("gas") || errMsg.includes("balance")) {
+          toast.error(
+            "Failed to deploy contract. Ensure you have native USDC gas in your wallet from faucet.circle.com.",
+            { duration: 10000 }
+          );
+        } else {
+          toast.error(err?.message || "Failed to launch Creator DAO. Please try again.", { duration: 8000 });
+        }
+        setLaunching(false);
       }
-
-      // 5. Add creator to the local creator store
-      const creatorId = addCreator({
-        id: "", // Will be generated
-        name: formData.name,
-        category: selectedTemplate,
-        description: formData.description,
-        goal: creatorGoal,
-        twitter: formData.twitter || null,
-        wallet: recipient,
-        isAgent,
-        escrowAddress: deployedContractAddress,
-        image: imageUrl || undefined,
-      });
-
-      // 6. Register as a campaign in the Crowdfund Hub (Zustand + local campaigns DB)
-      const campaignDeadline = new Date(Date.now() + creatorDuration * 24 * 60 * 60 * 1000).toISOString();
-      await addCampaign({
-        title: formData.name,
-        description: formData.description,
-        category: selectedTemplate === "ai-agent" ? "AI Agent Fund" : "Creator DAO",
-        badge: isAgent ? "AUTONOMOUS_AGENT_FUND" : "HUMAN_CAMPAIGN",
-        goal: creatorGoal,
-        isAgent,
-        creator: walletAddress || recipient,
-        recipient,
-        deadline: campaignDeadline,
-        milestones: [
-          {
-            title: "Initial Launch Phase",
-            amount: creatorGoal,
-            description: "Release of initial backing capital to kickstart the project.",
-            status: "active",
-          }
-        ],
-        escrowAddress: deployedContractAddress,
-        twitter: formData.twitter || null,
-        image: imageUrl || undefined,
-      });
-
-      // Show real transaction hash and success message
-      toast.success(`🚀 Creator DAO launched! Tx: ${transactionHash.slice(0, 10)}...`, { id: launchToastId, duration: 5000 });
-      
-      setNewDeployedAddress(deployedContractAddress);
-      setNewCreatorId(creatorId);
-      setStep(4);
-    } catch (err: any) {
-      console.error("handleLaunch error:", err);
-      // Dismiss loading toast and show a fresh error so it always appears
-      toast.dismiss(launchToastId);
-      
-      const errMsg = (err?.message || "").toLowerCase();
-      if (errMsg.includes("insufficient") || errMsg.includes("funds") || errMsg.includes("gas") || errMsg.includes("balance")) {
-        toast.error(
-          "Failed to deploy contract. Ensure you have native USDC gas in your wallet from faucet.circle.com.",
-          { duration: 10000 }
-        );
-      } else {
-        toast.error(err?.message || "Failed to launch Creator DAO. Please try again.", { duration: 8000 });
-      }
-    } finally {
+    } catch (outerErr: any) {
+      console.error("handleLaunch outer error:", outerErr);
+      toast.error(`Failed to initiate launch: ${outerErr?.message || outerErr || "Unknown error"}`);
       setLaunching(false);
     }
   };
