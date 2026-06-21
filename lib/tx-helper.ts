@@ -339,25 +339,18 @@ export const getAuthenticatedClient = async (
     const activeWallet = selectActiveWallet(wallets, activeAddress);
     console.log(`[getAuthenticatedClient] Connected Privy wallet address: ${activeWallet.address}`);
     
-    // Switch chain reliably
+    // Switch/enforce chain reliably using enforceChain (which handles adding the network if missing)
     try {
-      if (typeof activeWallet.switchChain === 'function') {
-        console.log(`[getAuthenticatedClient] Requesting switchChain to ${targetChainId}...`);
-        await activeWallet.switchChain(targetChainId);
-        console.log(`[getAuthenticatedClient] switchChain call sent.`);
-        // Brief sleep to let provider chain switch propagate
-        await new Promise(resolve => setTimeout(resolve, 800));
-      }
+      provider = await enforceChain(activeWallet, targetChainId);
     } catch (err: any) {
-      console.error(`[getAuthenticatedClient] switchChain failed:`, err);
+      console.error(`[getAuthenticatedClient] enforceChain failed, falling back to direct provider:`, err);
+      // Retrieve provider directly if enforceChain fails
+      provider = await (
+        (activeWallet.getEthereumProvider ? activeWallet.getEthereumProvider() : null) ||
+        (activeWallet.getProvider ? activeWallet.getProvider() : null) ||
+        (activeWallet.getEip1193Provider ? activeWallet.getEip1193Provider() : null)
+      );
     }
-
-    // Retrieve provider
-    provider = await (
-      (activeWallet.getEthereumProvider ? activeWallet.getEthereumProvider() : null) ||
-      (activeWallet.getProvider ? activeWallet.getProvider() : null) ||
-      (activeWallet.getEip1193Provider ? activeWallet.getEip1193Provider() : null)
-    );
     address = activeWallet.address as `0x${string}`;
   } 
   // 2. Fallback to injected window.ethereum
