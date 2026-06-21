@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Shield, Lock, Globe, Grid, X, Send, CheckCircle2, Award, Plus, MessageSquare, Bot, Loader2 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { AnimatePresence, motion } from "framer-motion";
-import { InteractiveShowcase } from "@/components/dashboard/InteractiveShowcase";
+
 
 interface FeatureCardProps {
   icon: string;
@@ -235,32 +235,7 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* Interactive Showcase Section */}
-      <section className="py-12 md:py-20 relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl md:text-5xl font-bold font-heading mb-4 text-text-primary">
-            Experience Creator DAOs <span className="gradient-text">in Action</span>
-          </h2>
-          <p className="text-text-secondary max-w-2xl mx-auto text-base md:text-lg">
-            Interact with our protocol interface live: stream micropayments, vote on escrow milestones, cast governance ballots, and monitor autonomous AI copilot execution.
-          </p>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <InteractiveShowcase />
-        </motion.div>
-      </section>
+
 
       {/* Features Section */}
       <section id="features" className="py-24 relative z-10 bg-surface/50 border-y border-border-thin">
