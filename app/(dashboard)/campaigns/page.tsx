@@ -146,7 +146,7 @@ export default function CampaignsPage() {
                 router.push("/campaigns/create");
               }
             }}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer shrink-0"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-purple text-white-keep font-bold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer shrink-0"
           >
             <Plus className="w-4.5 h-4.5" />
             Launch a Campaign
@@ -223,7 +223,7 @@ export default function CampaignsPage() {
                     onClick={() => setFilter(status)}
                     className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                       filter === status 
-                        ? "bg-primary text-white border-primary shadow-[0_0_15px_rgba(124,58,237,0.2)]" 
+                        ? "bg-accent-purple text-white-keep border-accent-purple shadow-[0_0_15px_rgba(124,58,237,0.2)]" 
                         : "bg-surface/50 border-border-thin text-text-secondary hover:text-foreground hover:bg-surface"
                     } border`}
                   >
@@ -311,7 +311,7 @@ export default function CampaignsPage() {
                     router.push("/campaigns/create");
                   }
                 }}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent-purple text-white-keep font-semibold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
               >
                 Launch a Campaign
               </button>

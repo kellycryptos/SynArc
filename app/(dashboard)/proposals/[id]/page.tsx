@@ -723,7 +723,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                 {!isAuthenticated ? (
                   <button
                     onClick={login}
-                    className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-sm shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-bold text-sm shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Wallet className="w-4 h-4" />
                     Connect wallet to vote
@@ -943,7 +943,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                   </p>
                   <button
                     onClick={handleAIAnalysis}
-                    className="w-full py-3 bg-primary text-white font-bold text-xs rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full py-3 bg-accent-purple text-white-keep font-bold text-xs rounded-xl hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Bot className="w-4 h-4" />
                     Get AI Analysis

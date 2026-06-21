@@ -138,7 +138,7 @@ export default function LeaderboardPage() {
           <button
             onClick={() => setPeriod("week")}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              period === "week" ? "bg-primary text-white" : "text-muted hover:text-white"
+              period === "week" ? "bg-accent-purple text-white-keep" : "text-muted hover:text-white"
             }`}
           >
             This Week
@@ -146,7 +146,7 @@ export default function LeaderboardPage() {
           <button
             onClick={() => setPeriod("month")}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              period === "month" ? "bg-primary text-white" : "text-muted hover:text-white"
+              period === "month" ? "bg-accent-purple text-white-keep" : "text-muted hover:text-white"
             }`}
           >
             This Month
@@ -154,7 +154,7 @@ export default function LeaderboardPage() {
           <button
             onClick={() => setPeriod("all")}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              period === "all" ? "bg-primary text-white" : "text-muted hover:text-white"
+              period === "all" ? "bg-accent-purple text-white-keep" : "text-muted hover:text-white"
             }`}
           >
             All Time
@@ -170,7 +170,7 @@ export default function LeaderboardPage() {
             onClick={() => setSelectedCategory(cat)}
             className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
               selectedCategory === cat
-                ? "bg-primary border-primary text-white shadow-[0_0_12px_rgba(124,58,237,0.25)]"
+                ? "bg-accent-purple border-accent-purple text-white-keep shadow-[0_0_12px_rgba(124,58,237,0.25)]"
                 : "bg-surface border-border-thin text-muted hover:text-white hover:border-border"
             }`}
           >
@@ -353,7 +353,7 @@ export default function LeaderboardPage() {
         </div>
         
         <Link href="/create-dao" className="relative z-10 shrink-0 self-stretch md:self-auto">
-          <button className="w-full px-6 py-3 rounded-xl bg-primary hover:bg-primary/95 text-white font-extrabold text-xs transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.455)] cursor-pointer flex items-center justify-center gap-1.5">
+          <button className="w-full px-6 py-3 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-extrabold text-xs transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.455)] cursor-pointer flex items-center justify-center gap-1.5">
             Launch Your Creator DAO
             <ChevronRight className="w-4 h-4" />
           </button>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Shield, Lock, Globe, Grid, X, Send, CheckCircle2, Award, Plus, MessageSquare, Bot, Loader2 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { AnimatePresence, motion } from "framer-motion";
+import { InteractiveShowcase } from "@/components/dashboard/InteractiveShowcase";
 
 interface FeatureCardProps {
   icon: string;
@@ -195,9 +196,9 @@ export default function LandingPage() {
             >
               <Link 
                 href="/create-dao"
-                className="w-full sm:w-auto px-12 py-5.5 rounded-xl bg-gradient-to-r from-primary via-purple-600 to-accent text-white font-black hover:opacity-95 transition-all shadow-[0_0_35px_rgba(124,58,237,0.5)] hover:shadow-[0_0_50px_rgba(124,58,237,0.8)] flex items-center justify-center gap-2 text-xl border border-white/10"
+                className="w-full sm:w-auto px-12 py-5.5 rounded-xl bg-gradient-to-r from-accent-purple via-purple-600 to-accent-blue text-white font-black hover:opacity-95 transition-all shadow-[0_0_35px_rgba(124,58,237,0.35)] hover:shadow-[0_0_50px_rgba(124,58,237,0.55)] flex items-center justify-center gap-2 text-xl border border-white/10"
               >
-                Launch Creator DAO &rarr;
+                <span className="text-white-keep">Launch Creator DAO &rarr;</span>
               </Link>
             </motion.div>
             <motion.div
@@ -207,7 +208,7 @@ export default function LandingPage() {
             >
               <Link 
                 href="/leaderboard"
-                className="w-full sm:w-auto px-8 py-4.5 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg"
+                className="w-full sm:w-auto px-8 py-4.5 rounded-xl border border-border hover:border-accent-purple/30 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg bg-surface"
               >
                 View Leaderboard
               </Link>
@@ -221,7 +222,7 @@ export default function LandingPage() {
                 href="https://docs.synarcdao.xyz"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-8 py-4.5 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg"
+                className="w-full sm:w-auto px-8 py-4.5 rounded-xl border border-border hover:border-accent-purple/30 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg bg-surface"
               >
                 View Docs &rarr;
               </Link>
@@ -229,8 +230,35 @@ export default function LandingPage() {
           </div>
           
           <p className="text-xs text-text-tertiary/60 mt-6 font-mono tracking-wider select-none">
-            ⚡ Powered by <span className="text-primary font-bold">@synarc/agent-sdk</span>
+            ⚡ Powered by <span className="text-accent-purple font-bold">@synarc/agent-sdk</span>
           </p>
+        </motion.div>
+      </section>
+
+      {/* Interactive Showcase Section */}
+      <section className="py-12 md:py-20 relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl md:text-5xl font-bold font-heading mb-4 text-text-primary">
+            Experience Creator DAOs <span className="gradient-text">in Action</span>
+          </h2>
+          <p className="text-text-secondary max-w-2xl mx-auto text-base md:text-lg">
+            Interact with our protocol interface live: stream micropayments, vote on escrow milestones, cast governance ballots, and monitor autonomous AI copilot execution.
+          </p>
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <InteractiveShowcase />
         </motion.div>
       </section>
 
@@ -376,7 +404,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] inline-flex items-center justify-center gap-2 text-lg cursor-pointer"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-accent-purple text-white-keep font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] inline-flex items-center justify-center gap-2 text-lg cursor-pointer"
             >
               Apply for Your DAO <ArrowRight className="w-5 h-5" />
             </button>
@@ -436,7 +464,7 @@ export default function LandingPage() {
             <Link href="/campaigns" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-white font-semibold transition-all border border-border-thin flex items-center justify-center gap-2 text-lg">
               Browse Campaigns
             </Link>
-            <Link href="/campaigns/create" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] flex items-center justify-center gap-2 text-lg">
+            <Link href="/campaigns/create" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-accent-purple text-white-keep font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] flex items-center justify-center gap-2 text-lg">
               Launch a Campaign &rarr;
             </Link>
           </div>
@@ -489,7 +517,7 @@ export default function LandingPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-4 pt-4">
-                <Link href="/docs/sdk" className="px-6 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] flex items-center gap-2">
+                <Link href="/docs/sdk" className="px-6 py-3 rounded-xl bg-accent-purple text-white-keep font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] flex items-center gap-2">
                   Get Started <ArrowRight className="w-4 h-4" />
                 </Link>
                 <a 
@@ -905,7 +933,7 @@ export default function LandingPage() {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="w-full py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.2)] disabled:opacity-50 cursor-pointer text-sm"
+                      className="w-full py-3.5 rounded-xl bg-accent-purple text-white-keep font-bold hover:bg-accent-purple/90 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.2)] disabled:opacity-50 cursor-pointer text-sm"
                     >
                       <Send className="w-4 h-4" />
                       {submitting ? "Sending Application..." : "Submit Application"}
@@ -963,7 +991,7 @@ export default function LandingPage() {
                     <div
                       className={`max-w-[80%] p-3 rounded-2xl leading-relaxed whitespace-pre-wrap ${
                         msg.role === 'user'
-                          ? 'bg-primary text-white rounded-tr-none'
+                          ? 'bg-accent-purple text-white-keep rounded-tr-none'
                           : 'bg-surface border border-border-thin text-text-secondary rounded-tl-none'
                       }`}
                     >
@@ -994,7 +1022,7 @@ export default function LandingPage() {
                 <button
                   type="submit"
                   disabled={sendingChat || !chatInput.trim()}
-                  className="p-2 rounded-xl bg-primary hover:bg-primary/95 text-white disabled:opacity-50 transition-colors cursor-pointer"
+                  className="p-2 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                 </button>

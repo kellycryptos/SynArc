@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React from "react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -313,7 +313,7 @@ export default function CreateProposalPage() {
             <p className="text-xs text-text-tertiary">Redirecting to proposal details in a few seconds...</p>
             <Link 
               href={`/proposals/${successProposalId}`} 
-              className="inline-flex items-center justify-center w-full py-3 px-5 bg-primary hover:bg-primary/95 text-white font-bold text-sm rounded-xl transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
+              className="inline-flex items-center justify-center w-full py-3 px-5 bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-bold text-sm rounded-xl transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
             >
               Go to Proposal Details →
             </Link>
@@ -429,7 +429,7 @@ export default function CreateProposalPage() {
                         type="button"
                         onClick={handleGenerateProposal}
                         disabled={aiGenerating || !userIdea}
-                        className="py-3 px-5 bg-primary hover:bg-primary/95 text-white font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                        className="py-3 px-5 bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                       >
                         {aiGenerating ? (
                           <>
@@ -538,7 +538,7 @@ export default function CreateProposalPage() {
                 <button
                   type="button"
                   onClick={login}
-                  className="px-6 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-3 rounded-xl bg-accent-purple text-white-keep font-bold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer"
                 >
                   <Wallet className="w-4 h-4" />
                   Connect wallet to continue
@@ -547,7 +547,7 @@ export default function CreateProposalPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting || (!tokenLoading && !hasEnoughBalance)}
-                  className="px-6 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-3 rounded-xl bg-accent-purple text-white-keep font-bold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isSubmitting ? (
                     <>

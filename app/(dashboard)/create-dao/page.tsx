@@ -356,7 +356,7 @@ export default function CreateDaoPage() {
               <div
                 className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border ${
                   step === s
-                    ? "bg-primary border-primary text-white shadow-[0_0_12px_rgba(124,58,237,0.4)]"
+                    ? "bg-accent-purple border-accent-purple text-white-keep shadow-[0_0_12px_rgba(124,58,237,0.4)]"
                     : step > s
                     ? "bg-success/20 border-success/30 text-success"
                     : "bg-surface-elevated/40 border-border-thin text-text-tertiary"
@@ -454,7 +454,7 @@ export default function CreateDaoPage() {
                     type="button"
                     onClick={generateCampaignWithAI}
                     disabled={generatingWithAi}
-                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-60 transition-all shrink-0"
+                    className="px-4 py-2 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-bold text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-60 transition-all shrink-0"
                   >
                     {generatingWithAi ? (
                       <>
@@ -626,7 +626,7 @@ export default function CreateDaoPage() {
               </button>
               <button
                 onClick={handleNextStep}
-                className="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-xs flex items-center gap-1 cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-bold text-xs flex items-center gap-1 cursor-pointer"
               >
                 Next
                 <ArrowRight className="w-4 h-4" />
@@ -693,7 +693,7 @@ export default function CreateDaoPage() {
               <button
                 onClick={handleLaunch}
                 disabled={launching}
-                className="w-full py-4 rounded-xl bg-primary hover:bg-primary/95 text-white font-extrabold text-sm flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.55)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-extrabold text-sm flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.55)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {launching ? (
                   <>
@@ -794,7 +794,7 @@ export default function CreateDaoPage() {
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <button
                   onClick={() => router.push(`/creator/${newCreatorId}`)}
-                  className="flex-1 py-3 rounded-xl bg-primary hover:bg-primary/95 text-white font-extrabold text-xs transition-colors cursor-pointer shadow-[0_0_15px_rgba(124,58,237,0.2)] font-bold"
+                  className="flex-1 py-3 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-extrabold text-xs transition-colors cursor-pointer shadow-[0_0_15px_rgba(124,58,237,0.2)] font-bold"
                 >
                   Go to DAO Profile
                 </button>

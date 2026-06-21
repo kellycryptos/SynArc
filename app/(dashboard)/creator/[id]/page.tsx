@@ -135,7 +135,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
         <h2 className="text-xl font-bold text-white">Creator DAO Not Found</h2>
         <p className="text-sm text-text-tertiary">This creator organization does not exist or has not been deployed yet.</p>
         <Link href="/leaderboard">
-          <button className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/95 transition-colors cursor-pointer">
+          <button className="px-6 py-2.5 rounded-xl bg-accent-purple text-white-keep text-xs font-bold hover:bg-accent-purple/90 transition-colors cursor-pointer">
             Explore Creators
           </button>
         </Link>
@@ -608,7 +608,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
                 <button
                   onClick={() => handleSupport(parseFloat(supportAmount))}
                   disabled={supporting || !supportAmount || parseFloat(supportAmount) <= 0}
-                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-5 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {supporting ? (
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />

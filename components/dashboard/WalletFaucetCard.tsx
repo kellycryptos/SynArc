@@ -313,9 +313,9 @@ export function WalletFaucetCard() {
             ) : (
               <button
                 onClick={login}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-primary text-white hover:bg-primary/95 transition-all shadow-[0_0_12px_rgba(124,58,237,0.2)] cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-accent-purple text-white-keep hover:bg-accent-purple/90 transition-all shadow-[0_0_12px_rgba(124,58,237,0.2)] cursor-pointer"
               >
-                <Wallet className="w-3.5 h-3.5" />
+                <Wallet className="w-3.5 h-3.5 text-white-keep" />
                 Connect Wallet
               </button>
             )}
@@ -486,7 +486,7 @@ export function WalletFaucetCard() {
                 disabled={faucetStatus === "requesting"}
                 className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs tracking-wide transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer
                   ${faucetStatus === "idle" || faucetStatus === "error"
-                    ? "bg-primary text-white hover:bg-primary/95 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 active:scale-[0.98]" 
+                    ? "bg-accent-purple text-white-keep hover:bg-accent-purple/90 shadow-md shadow-purple-700/20 hover:shadow-lg hover:shadow-purple-700/30 active:scale-[0.98]" 
                     : "bg-surface-elevated border border-border-thin text-text-secondary"
                   }`}
               >

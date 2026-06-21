@@ -75,11 +75,11 @@
 }
 
 .light {
-  --bg-primary: #F8FAFC;
+  --bg-primary: #F0F2F5;
   --bg-surface: #FFFFFF;
   --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #64748B;
+  --text-secondary: #334155;
+  --text-muted: #475569;
   --border: #E2E8F0;
   --accent-purple: #6D28D9;
   --accent-blue: #1D4ED8;
@@ -91,9 +91,9 @@
   --muted: var(--text-muted);
   --accent: var(--accent-purple);
   --surface: var(--bg-surface);
-  --surface-elevated: rgba(255, 255, 255, 0.85);
+  --surface-elevated: rgba(255, 255, 255, 0.95);
   
-  --border-subtle: rgba(15, 23, 42, 0.05);
+  --border-subtle: rgba(15, 23, 42, 0.06);
   --border-thin: var(--border);
   
   --text-tertiary: var(--text-muted);
@@ -101,8 +101,8 @@
   --purple-deep: var(--accent-purple);
   --arc-blue: var(--accent-blue);
 
-  --glow-purple: rgba(109, 40, 217, 0.03);
-  --glow-blue: rgba(29, 78, 216, 0.02);
+  --glow-purple: rgba(109, 40, 217, 0.06);
+  --glow-blue: rgba(29, 78, 216, 0.04);
 }
 
 @theme {
@@ -120,6 +120,7 @@
   --color-glass-border: var(--glass-border);
 
   /* Premium Design System — SynArc */
+  --color-primary: var(--accent-purple);
   --color-purple-glow: var(--purple-glow);
   --color-purple-deep: var(--purple-deep);
   --color-cyan-glow: var(--cyan-glow);
@@ -150,13 +151,20 @@ html {
 }
 
 body {
-  background-color: var(--color-background);
+  background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
 }
+
+.light body {
+  background: radial-gradient(at 0% 0%, rgba(109, 40, 217, 0.05) 0px, transparent 50%),
+              radial-gradient(at 100% 0%, rgba(29, 78, 216, 0.05) 0px, transparent 50%),
+              #F4F6F9;
+}
+
 
 h1, h2, h3, h4, h5, h6, .font-heading {
   font-family: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
@@ -201,8 +209,8 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 
 /* De-intensify home screen lighting effects in light mode */
 .light .hero-glow-effect {
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, rgba(255, 255, 255, 0) 70%) !important;
-  mix-blend-mode: multiply;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.06) 0%, rgba(59, 130, 246, 0.04) 50%, rgba(255, 255, 255, 0) 70%) !important;
+  mix-blend-mode: normal;
 }
 
 .glass-surface {
@@ -485,20 +493,21 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 
 /* Glass cards override */
 .light .glass-card {
-  background: rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
   border: 1px solid rgba(15, 23, 42, 0.08) !important;
   box-shadow: 
-    0 4px 20px rgba(15, 23, 42, 0.02),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+    0 1px 3px rgba(0, 0, 0, 0.02),
+    0 8px 24px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 .light .glass-card:hover {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border-color: rgba(109, 40, 217, 0.2) !important;
+  background: #FFFFFF !important;
+  border-color: rgba(109, 40, 217, 0.25) !important;
   box-shadow: 
-    0 12px 30px rgba(15, 23, 42, 0.05),
+    0 12px 30px rgba(15, 23, 42, 0.06),
     0 0 0 1px rgba(109, 40, 217, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
 /* Diagnostics log terminal box override */

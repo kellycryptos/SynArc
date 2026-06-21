@@ -79,7 +79,7 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
               onClick={() => setTab('privy')}
               className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-all ${
                 tab === 'privy'
-                  ? 'bg-primary text-white shadow'
+                  ? 'bg-accent-purple text-white shadow text-white-keep'
                   : 'text-text-secondary hover:text-text-primary'
               }`}
             >

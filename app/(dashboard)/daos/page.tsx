@@ -199,7 +199,7 @@ export default function DAOsPage() {
             }
             setIsModalOpen(true);
           }}
-          className="md:self-start shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer text-sm"
+          className="md:self-start shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-purple text-white-keep font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer text-sm"
         >
           <Plus className="w-4 h-4" />
         </button>
@@ -213,7 +213,7 @@ export default function DAOsPage() {
             onClick={() => setSelectedCategory(cat)}
             className={`px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
               selectedCategory === cat
-                ? "bg-primary text-white shadow-[0_0_15px_rgba(124,58,237,0.25)]"
+                ? "bg-accent-purple text-white-keep shadow-[0_0_15px_rgba(124,58,237,0.25)]"
                 : "bg-surface-elevated/40 border border-border-thin text-muted hover:text-white hover:bg-surface-elevated/60"
             }`}
           >
@@ -521,7 +521,7 @@ export default function DAOsPage() {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="w-full py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.2)] disabled:opacity-50 cursor-pointer text-sm"
+                      className="w-full py-3.5 rounded-xl bg-accent-purple text-white-keep font-bold hover:bg-accent-purple/90 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.2)] disabled:opacity-50 cursor-pointer text-sm"
                     >
                       <Send className="w-4 h-4" />
                       {submitting ? "Sending Application..." : "Submit Application"}

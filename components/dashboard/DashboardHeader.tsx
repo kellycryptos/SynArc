@@ -29,14 +29,14 @@ export function DashboardHeader() {
         {isAuthenticated ? (
           <Link
             href="/proposals/create"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary/90 transition-colors shadow-[0_0_15px_rgba(124,58,237,0.2)]"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-accent-purple text-white-keep text-sm font-medium rounded-xl hover:bg-accent-purple/90 transition-colors shadow-[0_0_15px_rgba(124,58,237,0.2)]"
           >
             Create Proposal
           </Link>
         ) : (
           <button
             onClick={login}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary/90 transition-colors shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-accent-purple text-white-keep text-sm font-medium rounded-xl hover:bg-accent-purple/90 transition-colors shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
           >
             Create Proposal
           </button>

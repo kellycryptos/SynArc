@@ -326,7 +326,7 @@ export default function FaucetPage() {
               id="faucet-sarc-btn"
               onClick={handleClaimSarc}
               disabled={sarcStatus === "loading"}
-              className="w-full py-3 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full py-3 rounded-xl bg-accent-purple text-white-keep font-bold text-sm flex items-center justify-center gap-2 hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
               {sarcStatus === "loading" ? (
                 <>

@@ -122,7 +122,7 @@ export default function DashboardOverview() {
         {/* CTA Launch shortcut */}
         <div className="flex justify-end pt-2">
           <Link href="/campaigns/create">
-            <button className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer">
+            <button className="px-4 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer">
               <Plus className="w-4 h-4" />
               🚀 Launch a Campaign
             </button>
@@ -200,7 +200,7 @@ export default function DashboardOverview() {
                 </div>
 
                 <Link href="/create-dao" className="block">
-                  <button className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.45)] cursor-pointer">
+                  <button className="w-full py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.45)] cursor-pointer">
                     <Plus className="w-4 h-4" />
                     Launch Creator DAO
                   </button>

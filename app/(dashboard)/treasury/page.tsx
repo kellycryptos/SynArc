@@ -486,7 +486,7 @@ function TreasuryPageContent() {
             {!isAuthenticated ? (
               <button 
                 onClick={login}
-                className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer shrink-0"
+                className="px-5 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer shrink-0"
               >
                 <Wallet className="w-4.5 h-4.5" />
                 Connect Wallet to Deposit
@@ -502,7 +502,7 @@ function TreasuryPageContent() {
 
                 <button 
                   onClick={() => setModalOpen(true)}
-                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer shrink-0"
+                  className="px-5 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer shrink-0"
                 >
                   <PlusCircle className="w-4.5 h-4.5" />
                   Deposit Assets
@@ -757,7 +757,7 @@ function TreasuryPageContent() {
                       }}
                       className={`p-3 rounded-xl border font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
                         selectedToken === token
-                          ? "bg-primary/10 border-primary text-white shadow-[0_0_15px_rgba(124,58,237,0.12)]"
+                          ? "bg-accent-purple border-accent-purple text-white-keep shadow-[0_0_15px_rgba(124,58,237,0.12)]"
                           : "bg-surface border-border-thin text-muted hover:text-foreground hover:bg-surface-elevated"
                       }`}
                     >
@@ -864,7 +864,7 @@ function TreasuryPageContent() {
                 <button
                   onClick={handleDepositSubmit}
                   disabled={txStep === "approving" || txStep === "depositing" || !depositAmount}
-                  className="flex-1 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="flex-1 py-3 bg-accent-purple text-white-keep font-bold text-sm rounded-xl hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {txStep === "approving" ? (
                     <>

@@ -292,7 +292,7 @@ export default function AnalyticsPage() {
                 onClick={() => setDateFilter(range)}
                 className={`px-3 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
                   dateFilter === range
-                    ? "bg-primary text-white shadow-[0_0_15px_rgba(124,58,237,0.25)]"
+                    ? "bg-accent-purple text-white-keep shadow-[0_0_15px_rgba(124,58,237,0.25)]"
                     : "text-muted hover:text-foreground hover:bg-surface-elevated"
                 }`}
               >

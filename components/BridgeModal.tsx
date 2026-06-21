@@ -439,17 +439,17 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     type="button"
                     onClick={handleBridgeConfirm}
                     disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(sourceBalance)}
-                    className="flex-1 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 bg-accent-purple text-white font-bold text-sm rounded-xl hover:bg-accent-purple/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-white-keep"
                   >
-                    Bridge USDC
+                    <span className="text-white-keep">Bridge USDC</span>
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={login}
-                    className="flex-1 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 py-3 bg-accent-purple text-white font-bold text-sm rounded-xl hover:bg-accent-purple/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer text-white-keep"
                   >
-                    Connect Wallet
+                    <span className="text-white-keep">Connect Wallet</span>
                   </button>
                 )}
               </div>
@@ -503,9 +503,9 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   <button
                     type="button"
                     onClick={handleModalClose}
-                    className="px-6 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_12px_rgba(124,58,237,0.2)] cursor-pointer"
+                    className="px-6 py-2.5 bg-accent-purple text-white font-bold text-sm rounded-xl hover:bg-accent-purple/95 transition-all shadow-[0_0_12px_rgba(124,58,237,0.2)] cursor-pointer text-white-keep"
                   >
-                    Done
+                    <span className="text-white-keep">Done</span>
                   </button>
                 </div>
               ) : (

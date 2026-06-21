@@ -150,7 +150,7 @@ export default function ProposalsPage() {
                   router.push("/proposals/create");
                 }
               }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-purple text-white-keep font-semibold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Create Proposal
@@ -169,7 +169,7 @@ export default function ProposalsPage() {
                   onClick={() => setFilter(status)}
                   className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                     filter === status 
-                      ? "bg-primary text-white border-primary" 
+                      ? "bg-accent-purple text-white-keep border-accent-purple" 
                       : "bg-surface border-border-thin text-text-secondary hover:text-foreground"
                   } border`}
                 >
@@ -211,7 +211,7 @@ export default function ProposalsPage() {
                       router.push("/proposals/create");
                     }
                   }}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent-purple text-white-keep font-semibold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
                 >
                   Create Proposal
                 </button>

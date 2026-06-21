@@ -132,17 +132,17 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
             </span>
             <button
               onClick={() => setModalOpen(true)}
-              className="group px-4 py-1.5 rounded-full bg-primary hover:bg-primary/90 text-white font-medium text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] flex items-center gap-2 cursor-pointer"
+              className="group px-4 py-1.5 rounded-full bg-accent-purple hover:bg-accent-purple/90 text-white font-medium text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] flex items-center gap-2 cursor-pointer"
             >
-              <Wallet className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              Connect Wallet
+              <Wallet className="w-4 h-4 group-hover:scale-110 transition-transform text-white-keep" />
+              <span className="text-white-keep">Connect Wallet</span>
             </button>
           </div>
         )}
 
         <button className="relative p-2 text-muted hover:text-foreground transition-colors rounded-full hover:bg-surface-elevated border border-transparent hover:border-border-thin cursor-pointer">
           <Bell className="w-5 h-5" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-background" />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-accent-purple rounded-full border-2 border-background" />
         </button>
 
         <WalletConnectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />

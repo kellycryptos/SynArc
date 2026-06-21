@@ -487,7 +487,7 @@ export default function SettingsPage() {
                   onClick={() => setTheme('dark')}
                   className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                     theme === 'dark' 
-                      ? 'bg-primary text-white shadow-md' 
+                      ? 'bg-accent-purple text-white-keep shadow-md' 
                       : 'text-muted hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -497,7 +497,7 @@ export default function SettingsPage() {
                   onClick={() => setTheme('light')}
                   className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                     theme === 'light' 
-                      ? 'bg-primary text-white shadow-md' 
+                      ? 'bg-accent-purple text-white-keep shadow-md' 
                       : 'text-muted hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -541,7 +541,7 @@ export default function SettingsPage() {
                   <button 
                     onClick={handleSubscribe}
                     disabled={subscribeLoading || !emailInput}
-                    className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2"
+                    className="w-full py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-bold text-xs transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2"
                   >
                     {subscribeLoading ? 'Subscribing...' : 'Enable Notifications'}
                   </button>
@@ -567,7 +567,7 @@ export default function SettingsPage() {
               <button
                 onClick={runDiagnostics}
                 disabled={diagnosticsRunning}
-                className="py-3 px-6 bg-primary hover:bg-primary/90 rounded-xl border border-primary/20 text-sm font-extrabold text-white transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-[0_0_20px_rgba(124,58,237,0.25)] w-full sm:w-48"
+                className="py-3 px-6 bg-accent-purple hover:bg-accent-purple/90 rounded-xl border border-primary/20 text-sm font-extrabold text-white transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-[0_0_20px_rgba(124,58,237,0.25)] w-full sm:w-48"
               >
                 {diagnosticsRunning ? (
                   <>

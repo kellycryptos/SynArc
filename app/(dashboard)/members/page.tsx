@@ -265,7 +265,7 @@ export default function MembersPage() {
               onClick={() => setActiveCategory(id)}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap border transition-all cursor-pointer ${
                 activeCategory === id
-                  ? "bg-primary text-white border-primary shadow-[0_0_12px_rgba(124,58,237,0.2)]"
+                  ? "bg-accent-purple text-white-keep border-accent-purple shadow-[0_0_12px_rgba(124,58,237,0.2)]"
                   : "bg-surface border-border-thin text-text-secondary hover:text-foreground hover:bg-surface-elevated"
               }`}
             >

@@ -223,7 +223,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
         <p className="text-muted text-sm">
           The requested crowdfunding campaign does not exist or has been removed from the prototype ledger.
         </p>
-        <Link href="/campaigns" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-xs hover:bg-primary/95 transition-all">
+        <Link href="/campaigns" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-accent-purple text-white-keep font-bold text-xs hover:bg-accent-purple/90 transition-all">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Hub
         </Link>
       </div>
@@ -519,7 +519,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
               <div key={st} className="flex items-center gap-2">
                 <span className={`px-3 py-1.5 rounded-full transition-all border ${
                   isCurrent 
-                    ? "bg-primary border-primary text-white shadow-[0_0_10px_rgba(124,58,237,0.3)]" 
+                    ? "bg-accent-purple border-accent-purple text-white-keep shadow-[0_0_10px_rgba(124,58,237,0.3)]" 
                     : isCompleted 
                       ? "bg-success/15 border-success/30 text-success" 
                       : "bg-surface/50 border-border-thin text-text-tertiary"
@@ -753,7 +753,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
                   <button
                     onClick={handleContribute}
                     disabled={contributing || contributionAmount <= 0}
-                    className="w-full py-3 rounded-xl bg-primary text-white font-extrabold text-sm hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer group"
+                    className="w-full py-3 rounded-xl bg-accent-purple text-white-keep font-extrabold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer group"
                   >
                     {contributing ? (
                       <>

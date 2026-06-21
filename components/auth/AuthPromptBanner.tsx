@@ -50,10 +50,10 @@ export function AuthPromptBanner({ action = "vote or create proposals" }: AuthPr
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={login}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-all shadow-[0_0_12px_rgba(124,58,237,0.2)] cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent-purple text-white text-xs font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_12px_rgba(124,58,237,0.2)] cursor-pointer"
           >
-            <Wallet className="w-3.5 h-3.5" />
-            Connect to Participate
+            <Wallet className="w-3.5 h-3.5 text-white-keep" />
+            <span className="text-white-keep">Connect to Participate</span>
           </button>
           <button
             onClick={() => setDismissed(true)}

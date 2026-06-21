@@ -627,7 +627,7 @@ export default function BridgePage() {
                     <button
                       type="button"
                       onClick={login}
-                      className="w-full py-4 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full py-4 bg-accent-purple text-white-keep font-bold text-sm rounded-xl hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer"
                     >
                       Connect Wallet to Bridge
                     </button>
@@ -636,7 +636,7 @@ export default function BridgePage() {
                       type="button"
                       onClick={handleBridgeConfirm}
                       disabled={!amount || parseFloat(amount) <= 0}
-                      className="w-full py-4 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-4 bg-accent-purple text-white-keep font-bold text-sm rounded-xl hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Initiate Cross-Chain Bridge
                     </button>
@@ -691,7 +691,7 @@ export default function BridgePage() {
                       <button
                         type="button"
                         onClick={handleResetForm}
-                        className="px-8 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/95 transition-all shadow-[0_0_12px_rgba(124,58,237,0.2)] cursor-pointer"
+                        className="px-8 py-3 bg-accent-purple text-white-keep font-bold text-sm rounded-xl hover:bg-accent-purple/90 transition-all shadow-[0_0_12px_rgba(124,58,237,0.2)] cursor-pointer"
                       >
                         Bridge More Assets
                       </button>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
@@ -697,7 +697,7 @@ export default function CreateCampaignPage() {
                   <button
                     type="button"
                     onClick={login}
-                    className="px-6 py-3.5 rounded-xl bg-primary text-white font-extrabold text-sm hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.35)] flex items-center gap-2 cursor-pointer"
+                    className="px-6 py-3.5 rounded-xl bg-accent-purple text-white-keep font-extrabold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.35)] flex items-center gap-2 cursor-pointer"
                   >
                     <Wallet className="w-4 h-4" />
                     Connect Wallet to Launch
@@ -706,7 +706,7 @@ export default function CreateCampaignPage() {
                   <button
                     type="submit"
                     disabled={submitting || milestoneGoalMismatch}
-                    className="px-6 py-3.5 rounded-xl bg-primary text-white font-extrabold text-sm hover:bg-primary/95 transition-all shadow-[0_0_20px_rgba(124,58,237,0.35)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                    className="px-6 py-3.5 rounded-xl bg-accent-purple text-white-keep font-extrabold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.35)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
                   >
                     {submitting ? (
                       <>
@@ -755,7 +755,7 @@ export default function CreateCampaignPage() {
                 type="button"
                 onClick={generateWithAI}
                 disabled={generatingWithAi}
-                className="w-full py-3 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)]"
+                className="w-full py-3 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)]"
               >
                 {generatingWithAi ? (
                   <>

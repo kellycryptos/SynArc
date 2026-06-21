@@ -43,10 +43,10 @@ export function WalletConnectButton() {
     return (
       <button 
         disabled
-        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary/20 text-white/50 font-medium cursor-not-allowed border border-primary/10"
+        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-accent-purple/20 text-white/50 font-medium cursor-not-allowed border border-accent-purple/10"
       >
-        <Wallet className="w-5 h-5 animate-pulse" />
-        Initializing...
+        <Wallet className="w-5 h-5 animate-pulse text-white-keep" />
+        <span className="text-white-keep opacity-60">Initializing...</span>
       </button>
     );
   }
@@ -57,16 +57,16 @@ export function WalletConnectButton() {
       <div className="space-y-3 w-full">
         <button 
           onClick={() => setModalOpen(true)}
-          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer"
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-accent-purple text-white font-medium hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer"
         >
-          <Wallet className="w-5 h-5" />
-          Connect to Participate
+          <Wallet className="w-5 h-5 text-white-keep" />
+          <span className="text-white-keep">Connect to Participate</span>
         </button>
         <p className="text-[10px] text-center text-muted px-2 leading-relaxed">
           Wallet required for governance actions.{" "}
-          <a href="/terms" className="text-primary hover:underline transition-all">Terms</a>
+          <a href="/terms" className="text-accent-purple hover:underline transition-all">Terms</a>
           {" "}&amp;{" "}
-          <a href="/privacy" className="text-primary hover:underline transition-all">Privacy</a>
+          <a href="/privacy" className="text-accent-purple hover:underline transition-all">Privacy</a>
         </p>
 
         <WalletConnectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />

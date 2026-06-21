@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -529,7 +529,7 @@ export default function AgentsPage() {
                       <button
                         type="submit"
                         disabled={registering}
-                        className="w-full py-3 rounded-xl bg-primary hover:bg-primary/95 text-white font-extrabold text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(124,58,237,0.35)]"
+                        className="w-full py-3 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-extrabold text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(124,58,237,0.35)]"
                       >
                         {registering ? (
                           <>
@@ -569,7 +569,7 @@ export default function AgentsPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setShowRegModal(true)}
-            className="px-5 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-1.5 cursor-pointer"
+            className="px-5 py-3 rounded-xl bg-accent-purple text-white-keep font-bold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Register AI Agent
           </button>

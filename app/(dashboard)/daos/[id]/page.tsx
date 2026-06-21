@@ -467,7 +467,7 @@ export default function DAODetailsPage() {
               href={dao.website}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer mt-4"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent-purple text-white-keep text-xs font-bold hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer mt-4"
             >
               Visit {dao.name} Website <ExternalLink className="w-4 h-4" />
             </a>
@@ -664,7 +664,7 @@ export default function DAODetailsPage() {
                   </p>
                   <button
                     onClick={() => setIsProposalModalOpen(true)}
-                    className="w-full py-2.5 rounded-xl bg-primary text-white font-bold text-xs hover:bg-primary/95 transition-colors cursor-pointer mt-2"
+                    className="w-full py-2.5 rounded-xl bg-accent-purple text-white-keep font-bold text-xs hover:bg-accent-purple/90 transition-colors cursor-pointer mt-2"
                   >
                     Draft Proposal
                   </button>
@@ -699,7 +699,7 @@ export default function DAODetailsPage() {
               </div>
               <button
                 onClick={() => setIsProposalModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-bold text-xs hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-purple text-white-keep font-bold text-xs hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 New Proposal
@@ -857,7 +857,7 @@ export default function DAODetailsPage() {
 
                 <button
                   onClick={() => setIsDepositModalOpen(true)}
-                  className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/95 shadow-[0_0_20px_rgba(124,58,237,0.25)] transition-all cursor-pointer text-xs"
+                  className="w-full py-3 rounded-xl bg-accent-purple text-white-keep font-bold hover:bg-accent-purple/90 shadow-[0_0_20px_rgba(124,58,237,0.25)] transition-all cursor-pointer text-xs"
                 >
                   Deposit to Treasury
                 </button>
@@ -1037,7 +1037,7 @@ export default function DAODetailsPage() {
               <button
                 type="submit"
                 disabled={submittingProposal}
-                className="w-full py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.2)] disabled:opacity-50 cursor-pointer text-sm"
+                className="w-full py-3.5 rounded-xl bg-accent-purple text-white-keep font-bold hover:bg-accent-purple/90 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.2)] disabled:opacity-50 cursor-pointer text-sm"
               >
                 <Send className="w-4 h-4" />
                 {submittingProposal ? "Publishing on-chain..." : "Submit Proposal"}
@@ -1077,7 +1077,7 @@ export default function DAODetailsPage() {
                     onClick={() => setDepositToken(tok as any)}
                     className={`flex-1 py-2 rounded-xl font-extrabold text-xs border transition-all cursor-pointer ${
                       depositToken === tok
-                        ? "bg-primary border-primary text-white"
+                        ? "bg-accent-purple border-accent-purple text-white-keep"
                         : "bg-surface border-border-thin text-muted hover:text-white"
                     }`}
                   >
@@ -1104,7 +1104,7 @@ export default function DAODetailsPage() {
               <button
                 type="submit"
                 disabled={depositing}
-                className="w-full py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.2)] disabled:opacity-50 cursor-pointer text-sm"
+                className="w-full py-3.5 rounded-xl bg-accent-purple text-white-keep font-bold hover:bg-accent-purple/90 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.2)] disabled:opacity-50 cursor-pointer text-sm"
               >
                 <Coins className="w-4 h-4" />
                 {depositing ? "Approving & Depositing..." : "Confirm Deposit"}
