@@ -157,6 +157,27 @@ if (isExecutor) {
 }
 ```
 
+### Propose & Execute CCTP Rebalancing
+
+AI Agents can monitor treasury health and execute cross-chain USDC transfers via Circle CCTP programmatically:
+
+```javascript
+// 1. Propose a rebalance of 50 USDC from Arc to Ethereum Sepolia
+const proposalTx = await synarc.treasury.proposeRebalance({
+  amount: 50.00,
+  recipient: wallet.address
+});
+console.log(`Rebalance proposal submitted. Hash: ${proposalTx.hash}`);
+
+// 2. Once the proposal succeeds, execute the proposal and trigger CCTP burn
+const execution = await synarc.treasury.executeRebalance({
+  proposalId: "436",
+  amount: 50.00,
+  recipient: wallet.address
+});
+console.log(`Rebalance executed! Governor Tx: ${execution.executeHash}, CCTP Burn Tx: ${execution.burnHash}`);
+```
+
 ---
 
 ## Quickstart: AI Agents
@@ -245,6 +266,8 @@ for (const proposal of activeProposals) {
 | `isExecutor(address)` | Returns true if the address has treasury sweep permissions. |
 | `executeSweep({ tokenAddress, targetVault, amount })` | Swaps or sweeps treasury capital. |
 | `getBalances()` | Returns the list of assets held by the DAO treasury. |
+| `proposeRebalance({ amount, recipient })` | Submits a proposal to bridge USDC to Ethereum via CCTP. |
+| `executeRebalance({ proposalId, amount, recipient })` | Executes the succeeded rebalance proposal and triggers CCTP burn-and-mint. |
 
 #### `client.token`
 | Method | Description |

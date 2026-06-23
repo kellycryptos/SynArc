@@ -267,6 +267,73 @@ export class SynArcClient {
           eurc: formatUnits(eurc, 6),
         };
       },
+
+      proposeRebalance: async (params: { amount: number; recipient: string }) => {
+        const GOVERNOR_ABI = parseAbi([
+          "function propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget) returns (uint256)"
+        ]);
+        const title = `[AGENT] Bridge ${params.amount} USDC to Ethereum via CCTP`;
+        const description = `Autonomous rebalancing of ${params.amount} USDC.`;
+        const amountRaw = parseUnits(params.amount.toString(), 6);
+
+        if (!this.walletClient) throw new Error("Signer/Private key required to write to contract");
+
+        const tx = await this.walletClient.writeContract({
+          address: CONTRACTS.governor,
+          abi: GOVERNOR_ABI,
+          functionName: "propose",
+          args: [title, description, "TREASURY_REBALANCE", 300n, amountRaw, params.recipient as `0x${string}`],
+        });
+        return { hash: tx };
+      },
+
+      executeRebalance: async (params: { proposalId: string; amount: number; recipient: string }) => {
+        const GOVERNOR_ABI = parseAbi([
+          "function execute(uint256 proposalId) external payable"
+        ]);
+        const CCTP_MESSENGER_ABI = parseAbi([
+          "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken) returns (uint64)"
+        ]);
+        const ERC20_ABI = parseAbi([
+          "function approve(address spender, uint256 amount) returns (bool)"
+        ]);
+
+        const usdcAddress = "0x3600000000000000000000000000000000000000"; // Arc Testnet USDC
+        const messengerAddress = "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA"; // Arc TokenMessenger
+        const ethSepoliaDomain = 0;
+
+        if (!this.walletClient) throw new Error("Signer/Private key required to write to contract");
+
+        // 1. Call execute on governor
+        const execTx = await this.walletClient.writeContract({
+          address: CONTRACTS.governor,
+          abi: GOVERNOR_ABI,
+          functionName: "execute",
+          args: [BigInt(params.proposalId)],
+        });
+        await this.publicClient.waitForTransactionReceipt({ hash: execTx });
+
+        // 2. Approve TokenMessenger
+        const amountRaw = parseUnits(params.amount.toString(), 6);
+        const appTx = await this.walletClient.writeContract({
+          address: usdcAddress,
+          abi: ERC20_ABI,
+          functionName: "approve",
+          args: [messengerAddress, amountRaw],
+        });
+        await this.publicClient.waitForTransactionReceipt({ hash: appTx });
+
+        // 3. Deposit for burn
+        const mintRecipient = `0x000000000000000000000000${params.recipient.slice(2)}` as `0x${string}`;
+        const burnTx = await this.walletClient.writeContract({
+          address: messengerAddress,
+          abi: CCTP_MESSENGER_ABI,
+          functionName: "depositForBurn",
+          args: [amountRaw, ethSepoliaDomain, mintRecipient, usdcAddress],
+        });
+
+        return { executeHash: execTx, burnHash: burnTx };
+      }
     };
   }
 
