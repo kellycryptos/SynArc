@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,7 +7,7 @@ import {
   Bot, Zap, Activity, Play, RotateCw, ExternalLink,
   BrainCircuit, Coins, ArrowRight, CheckCircle, XCircle,
   Clock, AlertTriangle, Shield, Cpu, Wallet, ChevronRight,
-  TrendingUp, ArrowLeftRight, CreditCard
+  TrendingUp, ArrowLeftRight, CreditCard, Plus, Users
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -71,6 +71,12 @@ export default function AgentPage() {
   const [loading, setLoading] = useState(true);
   const [autoRunning, setAutoRunning] = useState(false);
 
+  // Interactive Lepton Demo States
+  const [demoStep, setDemoStep] = useState<"idle" | "analyzing" | "proposed" | "voting" | "executing" | "success">("idle");
+  const [demoVotes, setDemoVotes] = useState(0);
+  const [cctpProgress, setCctpProgress] = useState<"idle" | "burn" | "attestation" | "mint" | "done">("idle");
+  const [demoUSDCBalance, setDemoUSDCBalance] = useState<number | null>(null);
+
   const fetchAgentState = useCallback(async () => {
     try {
       const res = await fetch("/api/agent/run");
@@ -82,6 +88,84 @@ export default function AgentPage() {
       setLoading(false);
     }
   }, []);
+
+  const startDemo = () => {
+    setDemoStep("analyzing");
+    setDemoVotes(0);
+    setCctpProgress("idle");
+    setDemoUSDCBalance(142.50);
+    
+    // Simulate AI thinking and deciding
+    setTimeout(() => {
+      setDemoStep("proposed");
+    }, 2000);
+  };
+
+  const simulateVotes = () => {
+    setDemoStep("voting");
+    let currentVotes = 0;
+    const targetVotes = 5840000;
+    const increment = Math.floor(targetVotes / 15);
+    const interval = setInterval(() => {
+      currentVotes += increment;
+      if (currentVotes >= targetVotes) {
+        currentVotes = targetVotes;
+        clearInterval(interval);
+      }
+      setDemoVotes(currentVotes);
+    }, 100);
+  };
+
+  const executeSimulatedCctp = () => {
+    setDemoStep("executing");
+    setCctpProgress("burn");
+    
+    // Stage 1: Burn
+    setTimeout(() => {
+      setCctpProgress("attestation");
+      
+      // Stage 2: Attestation
+      setTimeout(() => {
+        setCctpProgress("mint");
+        
+        // Stage 3: Mint
+        setTimeout(() => {
+          setCctpProgress("done");
+          setDemoUSDCBalance(100.00); // deduct bridged amount
+          setDemoStep("success");
+          
+          // Inject action into the history console
+          if (agentState) {
+            const newAction = {
+              timestamp: new Date().toISOString(),
+              action: "bridge_to_ethereum",
+              reasoning: "AUTONOMOUS REBALANCE SUCCESSFUL: Bridged 42.50 USDC from Arc Testnet to Ethereum Sepolia via CCTP. [Demo Simulation]",
+              txHash: "0xbc84294c718a29b01284d72856fe8d3615418b7625ea4b971aefd82b130c25d8",
+              status: "executed" as const,
+              usdcAmount: 42.50
+            };
+            setAgentState({
+              ...agentState,
+              treasury: {
+                ...agentState.treasury,
+                usdc: 100.00
+              },
+              recentActions: [newAction, ...agentState.recentActions]
+            });
+          }
+          toast.success("CCTP Rebalance Completed Autonomously!");
+        }, 2000);
+      }, 2500);
+    }, 2000);
+  };
+
+  const resetDemo = () => {
+    setDemoStep("idle");
+    setDemoVotes(0);
+    setCctpProgress("idle");
+    setDemoUSDCBalance(null);
+    fetchAgentState();
+  };
 
   const runAgent = async () => {
     setRunning(true);
@@ -176,7 +260,7 @@ export default function AgentPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "USDC Balance", value: loading ? "..." : `${(treasury?.usdc || 0).toFixed(2)}`, unit: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
+          { label: "USDC Balance", value: loading ? "..." : demoUSDCBalance !== null ? `${demoUSDCBalance.toFixed(2)}` : `${(treasury?.usdc || 0).toFixed(2)}`, unit: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
           { label: "EURC Balance", value: loading ? "..." : `${(treasury?.eurc || 0).toFixed(2)}`, unit: "EURC", icon: Coins, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
           { label: "Actions Today", value: actions.length.toString(), unit: "actions", icon: Zap, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
           { label: "Inference Paid", value: (payments?.totalSpent || 0).toFixed(4), unit: "USDC", icon: CreditCard, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
@@ -426,38 +510,219 @@ export default function AgentPage() {
             </GlassCard>
           )}
 
-          {/* Demo Flow Guide */}
-          <GlassCard className="p-5 space-y-4 border-primary/20 bg-primary/[0.01]" hover={false}>
+          {/* Interactive Lepton Demo Console */}
+          <GlassCard className="p-5 space-y-5 border-primary/30 bg-primary/[0.02] shadow-[0_0_30px_rgba(124,58,237,0.08)]" hover={false}>
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              <h2 className="text-sm font-bold text-text-primary">Lepton Demo Flow</h2>
-              <span className="ml-auto text-xs text-muted">End-to-end autonomous execution</span>
+              <h2 className="text-sm font-bold text-text-primary">Lepton Interactive Demo Console</h2>
+              <span className="ml-auto text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30 uppercase tracking-widest animate-pulse">
+                Interactive
+              </span>
             </div>
-            <div className="space-y-2">
-              {[
-                { step: "1", label: "Agent monitors treasury", desc: "Reads live USDC/EURC balances from Arc" },
-                { step: "2", label: "AI analyzes with Groq", desc: "Llama 3.3 70B decides if action needed" },
-                { step: "3", label: "Proposes rebalance", desc: "Agent submits governance proposal on-chain" },
-                { step: "4", label: "Community votes", desc: "Token holders vote FOR/AGAINST in /proposals" },
-                { step: "5", label: "Agent executes CCTP", desc: "Burns USDC on Arc, mints on Ethereum Sepolia" },
-              ].map((item) => (
-                <div key={item.step} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-[9px] font-bold text-primary">{item.step}</span>
+
+            {demoStep === "idle" && (
+              <div className="space-y-4">
+                <p className="text-xs text-muted leading-relaxed">
+                  Experience the end-to-end autonomous rebalance loop. The agent will monitor the treasury, submit a governance proposal on-chain, poll the community vote, and autonomously trigger the cross-chain CCTP transfer.
+                </p>
+                <button
+                  onClick={startDemo}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-blue text-white text-xs font-bold hover:opacity-90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.25)] cursor-pointer"
+                >
+                  <Play className="w-3.5 h-3.5" />
+                  Start Demo Walkthrough
+                </button>
+              </div>
+            )}
+
+            {demoStep === "analyzing" && (
+              <div className="flex flex-col items-center justify-center py-6 gap-3 text-center">
+                <div className="w-10 h-10 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+                <div>
+                  <p className="text-xs font-bold text-text-primary">Step 1: AI Decision Engine Analysis</p>
+                  <p className="text-[11px] text-muted mt-1">Llama 3.3 checking treasury metrics and evaluating rebalance rules...</p>
+                </div>
+              </div>
+            )}
+
+            {demoStep === "proposed" && (
+              <div className="space-y-4">
+                <div className="p-3 bg-surface-elevated/40 border border-primary/20 rounded-xl space-y-2">
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/25 border border-primary/30 text-primary uppercase">Proposal Drafted</span>
+                    <span className="text-muted ml-auto font-mono">ID: #436</span>
                   </div>
-                  <div>
-                    <span className="text-xs font-bold text-text-primary">{item.label}</span>
-                    <span className="text-xs text-muted ml-2">{item.desc}</span>
+                  <h3 className="text-xs font-bold text-text-primary">[AGENT] Bridge 42.50 USDC to Ethereum via CCTP</h3>
+                  <p className="text-[10px] text-muted leading-relaxed">
+                    <strong>AI Reasoning:</strong> USDC balance of 142.50 is above the 100 threshold. Proposing rebalancing of 42.50 USDC (30%) to Ethereum Sepolia main pool.
+                  </p>
+                </div>
+                <button
+                  onClick={simulateVotes}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/95 transition-all cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Submit Proposal to Governor
+                </button>
+              </div>
+            )}
+
+            {demoStep === "voting" && (
+              <div className="space-y-4">
+                <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-text-primary">Proposal #436 Voting Status</span>
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-success/15 border border-success/25 text-success uppercase">Active</span>
+                  </div>
+                  
+                  {/* Vote Progress Bar */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-muted">For: {demoVotes.toLocaleString()} sARC</span>
+                      <span className="font-bold text-primary">{(demoVotes > 0) ? Math.min(100, Math.floor((demoVotes / 5840000) * 100)) : 0}%</span>
+                    </div>
+                    <div className="h-1.5 bg-surface border border-border-thin rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-primary to-accent-blue transition-all duration-300"
+                        style={{ width: `${Math.min(100, (demoVotes / 5840000) * 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[8px] text-muted font-mono">
+                      <span>Quorum: 5,000,000 sARC</span>
+                      <span>Target: 5,840,000 sARC</span>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="flex gap-3 pt-1">
-              <Link href="/proposals" className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-border text-xs font-medium text-text-secondary hover:text-primary hover:border-primary/30 transition-all">
-                View Proposals <ChevronRight className="w-3.5 h-3.5" />
+
+                {demoVotes < 5840000 ? (
+                  <button
+                    onClick={simulateVotes}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-600/20 border border-purple-500/30 text-purple-300 text-xs font-bold hover:bg-purple-600/30 transition-all cursor-pointer"
+                  >
+                    <Users className="w-3.5 h-3.5 animate-pulse" />
+                    Simulate Community Votes
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-center gap-2 p-2 rounded-xl bg-success/10 border border-success/20 text-success text-xs font-bold">
+                      <CheckCircle className="w-4 h-4" />
+                      Voting Quorum Passed (Succeeded)
+                    </div>
+                    <button
+                      onClick={executeSimulatedCctp}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-blue text-white text-xs font-bold hover:opacity-90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] cursor-pointer"
+                    >
+                      <Zap className="w-3.5 h-3.5" />
+                      Execute Rebalance (CCTP)
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {demoStep === "executing" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-[10px] text-muted font-mono">
+                  <span>Source: Arc Testnet</span>
+                  <span className="animate-pulse text-primary font-bold">CCTP Tunnel Active</span>
+                  <span>Destination: Ethereum Sepolia</span>
+                </div>
+                
+                {/* Visualizer Flowchart */}
+                <div className="flex items-center justify-between gap-1 p-3.5 bg-surface-elevated/40 border border-border-thin rounded-2xl relative overflow-hidden">
+                  {/* Progress Line */}
+                  <div className="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-[3px] bg-border-thin z-0" />
+                  <div 
+                    className="absolute left-10 top-1/2 -translate-y-1/2 h-[3px] bg-gradient-to-r from-primary via-purple-500 to-blue-500 z-0 transition-all duration-[2000ms]"
+                    style={{
+                      width: cctpProgress === "burn" ? "25%" : 
+                             cctpProgress === "attestation" ? "60%" : 
+                             cctpProgress === "mint" ? "90%" : 
+                             cctpProgress === "done" ? "100%" : "0%"
+                    }}
+                  />
+
+                  {/* Node 1: Burn */}
+                  <div className="flex flex-col items-center gap-1 z-10">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-500 ${
+                      cctpProgress !== "idle" ? "bg-primary border-primary text-white shadow-[0_0_12px_rgba(124,58,237,0.5)]" : "bg-surface border-border text-muted"
+                    }`}>
+                      <Coins className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-[8px] font-bold text-text-primary">Burn Arc</span>
+                  </div>
+
+                  {/* Node 2: Attestation */}
+                  <div className="flex flex-col items-center gap-1 z-10">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-500 ${
+                      cctpProgress === "attestation" || cctpProgress === "mint" || cctpProgress === "done" ? "bg-purple-600 border-purple-500 text-white shadow-[0_0_12px_rgba(147,51,234,0.5)]" : "bg-surface border-border text-muted"
+                    }`}>
+                      <BrainCircuit className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-[8px] font-bold text-text-primary">Attest</span>
+                  </div>
+
+                  {/* Node 3: Mint */}
+                  <div className="flex flex-col items-center gap-1 z-10">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-500 ${
+                      cctpProgress === "mint" || cctpProgress === "done" ? "bg-blue-600 border-blue-500 text-white shadow-[0_0_12px_rgba(37,99,235,0.5)]" : "bg-surface border-border text-muted"
+                    }`}>
+                      <CheckCircle className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-[8px] font-bold text-text-primary">Mint Eth</span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-surface-elevated/40 rounded-xl border border-border-thin text-xs text-center text-muted min-h-[50px] flex items-center justify-center">
+                  {cctpProgress === "burn" && (
+                    <div className="space-y-1 w-full">
+                      <p className="font-bold text-text-primary text-[11px]">🔥 Burning 42.50 USDC on Arc Testnet</p>
+                      <p className="text-[8px] font-mono text-primary truncate">Tx: 0xbc84294c718a29b01284d72856fe8d3615418b7625ea4b971aefd82b130c25d8</p>
+                    </div>
+                  )}
+                  {cctpProgress === "attestation" && (
+                    <div className="space-y-1 w-full">
+                      <p className="font-bold text-text-primary text-[11px] animate-pulse">⏳ Requesting Attestation Proof</p>
+                      <p className="text-[8px] text-purple-400">Polling Circle's Iris API for signature...</p>
+                    </div>
+                  )}
+                  {cctpProgress === "mint" && (
+                    <div className="space-y-1 w-full">
+                      <p className="font-bold text-text-primary text-[11px]">🪙 Minting 42.50 USDC on Ethereum Sepolia</p>
+                      <p className="text-[8px] font-mono text-blue-400 truncate">Tx: 0x90c42d386ea4286fb96bca487fe8d3615e4f2b38f8c2b5e2b130c25d82b130c25</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {demoStep === "success" && (
+              <div className="space-y-4">
+                <div className="p-4 bg-success/10 border border-success/20 rounded-xl text-center space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-success/20 border border-success/30 flex items-center justify-center mx-auto">
+                    <CheckCircle className="w-6 h-6 text-success" />
+                  </div>
+                  <h3 className="text-sm font-bold text-success">Rebalance Complete!</h3>
+                  <p className="text-xs text-muted leading-relaxed">
+                    Successfully bridged 42.50 USDC from Arc Treasury to Ethereum Sepolia autonomously using CCTP.
+                  </p>
+                </div>
+                <button
+                  onClick={resetDemo}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border bg-surface-elevated hover:bg-surface text-xs font-semibold text-text-secondary hover:text-text-primary transition-all cursor-pointer"
+                >
+                  <RotateCw className="w-3.5 h-3.5" />
+                  Reset Interactive Demo
+                </button>
+              </div>
+            )}
+            
+            <div className="flex gap-3 pt-1 border-t border-border-thin">
+              <Link href="/proposals" className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border text-[10px] font-medium text-text-secondary hover:text-primary hover:border-primary/30 transition-all">
+                View Proposals <ChevronRight className="w-3 h-3" />
               </Link>
-              <Link href="/treasury" className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-border text-xs font-medium text-text-secondary hover:text-primary hover:border-primary/30 transition-all">
-                View Treasury <ChevronRight className="w-3.5 h-3.5" />
+              <Link href="/treasury" className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border text-[10px] font-medium text-text-secondary hover:text-primary hover:border-primary/30 transition-all">
+                View Treasury <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
           </GlassCard>
