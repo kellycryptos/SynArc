@@ -74,6 +74,8 @@ interface BridgeTx {
   id: string;
   sourceChain: string;
   sourceIcon: string;
+  destChain?: string;
+  destIcon?: string;
   amount: number;
   txHash: string;
   timestamp: string;
@@ -95,6 +97,7 @@ export default function BridgePage() {
   // Real CCTP bridge hook — handles approve → burn → attest → mint
   const { state: bridgeState, bridgeUSDC, resetState: resetBridgeState } = useCCTPBridge();
 
+  const [direction, setDirection] = useState<"in" | "out">("in");
   const [switchingNetwork, setSwitchingNetwork] = useState(false);
   const switchChainResult = useSwitchChain();
   const switchChainAsync = switchChainResult?.switchChainAsync;
@@ -102,7 +105,9 @@ export default function BridgePage() {
   const handleSwitchNetwork = async () => {
     setSwitchingNetwork(true);
     try {
-      const targetChainId = selectedChain.id === "ETH_SEPOLIA" ? 11155111 : selectedChain.id === "BASE_SEPOLIA" ? 84532 : selectedChain.id === "AVAX_FUJI" ? 43113 : 0;
+      const targetChainId = direction === "in"
+        ? (selectedChain.id === "ETH_SEPOLIA" ? 11155111 : selectedChain.id === "BASE_SEPOLIA" ? 84532 : selectedChain.id === "AVAX_FUJI" ? 43113 : 0)
+        : 5042002;
       if (targetChainId > 0) {
         await switchChainAsync({ chainId: targetChainId });
         resetBridgeState();
@@ -122,13 +127,39 @@ export default function BridgePage() {
       const provider = await (activeWallet.getEthereumProvider?.() || (activeWallet as any).getProvider?.() || (activeWallet as any).getEip1193Provider?.());
       
       let chainParams: any = null;
-      if (selectedChain.id === "ETH_SEPOLIA") {
+      if (direction === "in") {
+        if (selectedChain.id === "ETH_SEPOLIA") {
+          chainParams = {
+            chainId: "0xaa36a7", // 11155111 hex
+            chainName: "Ethereum Sepolia",
+            rpcUrls: ["https://rpc.ankr.com/eth_sepolia"],
+            nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
+            blockExplorerUrls: ["https://sepolia.etherscan.io"],
+          };
+        } else if (selectedChain.id === "BASE_SEPOLIA") {
+          chainParams = {
+            chainId: "0x14a34", // 84532 hex
+            chainName: "Base Sepolia",
+            rpcUrls: ["https://sepolia.base.org"],
+            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+            blockExplorerUrls: ["https://sepolia.basescan.org"],
+          };
+        } else if (selectedChain.id === "AVAX_FUJI") {
+          chainParams = {
+            chainId: "0xa869", // 43113 hex
+            chainName: "Avalanche Fuji",
+            rpcUrls: ["https://api.avax-test.network/ext/bc/C/rpc"],
+            nativeCurrency: { name: "Avalanche", symbol: "AVAX", decimals: 18 },
+            blockExplorerUrls: ["https://testnet.snowtrace.io"],
+          };
+        }
+      } else {
         chainParams = {
-          chainId: "0xaa36a7", // 11155111 hex
-          chainName: "Ethereum Sepolia",
-          rpcUrls: ["https://rpc.ankr.com/eth_sepolia"],
-          nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
-          blockExplorerUrls: ["https://sepolia.etherscan.io"],
+          chainId: "0x4cef52", // 5042002 hex
+          chainName: "Arc Testnet",
+          rpcUrls: ["https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f"],
+          nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 6 },
+          blockExplorerUrls: ["https://testnet.arcscan.app"],
         };
       }
       
@@ -188,8 +219,10 @@ export default function BridgePage() {
           const amountFinal = parseFloat(amount);
           const newTx: BridgeTx = {
             id: "b_" + Date.now(),
-            sourceChain: selectedChain.name,
-            sourceIcon: selectedChain.icon,
+            sourceChain: direction === "in" ? selectedChain.name : "Arc Testnet",
+            sourceIcon: direction === "in" ? selectedChain.icon : "⚡",
+            destChain: direction === "in" ? "Arc Testnet" : selectedChain.name,
+            destIcon: direction === "in" ? "⚡" : selectedChain.icon,
             amount: isNaN(amountFinal) ? 0 : amountFinal,
             txHash: bridgeState.txHash,
             timestamp: new Date().toISOString(),
@@ -212,7 +245,7 @@ export default function BridgePage() {
       setProgressState("error");
       setErrorMessage(bridgeState.errorMessage || "Bridge transaction failed.");
     }
-  }, [bridgeState.status, bridgeState.txHash, bridgeState.errorMessage, refetchArcUSDC, amount, selectedChain, walletAddress]);
+  }, [bridgeState.status, bridgeState.txHash, bridgeState.errorMessage, refetchArcUSDC, amount, selectedChain, walletAddress, direction]);
 
   // Load transaction history on first load
   useEffect(() => {
@@ -336,8 +369,11 @@ export default function BridgePage() {
     fetchSourceBalance();
   }, [selectedChain, walletAddress, fetchSourceBalance]);
 
+  const sourceBalanceToDisplay = direction === "in" ? sourceBalance : (arcUSDCBalance || "0.00");
+  const balanceLoadingToDisplay = direction === "in" ? balanceLoading : arcFetching;
+
   const handleMaxClick = () => {
-    setAmount(sourceBalance);
+    setAmount(sourceBalanceToDisplay);
   };
 
   const handleBridgeConfirm = async () => {
@@ -348,8 +384,8 @@ export default function BridgePage() {
       return;
     }
 
-    if (amountNum > parseFloat(sourceBalance)) {
-      setErrorMessage(`Insufficient balance on ${selectedChain.name}.`);
+    if (amountNum > parseFloat(sourceBalanceToDisplay)) {
+      setErrorMessage(`Insufficient balance on ${direction === "in" ? selectedChain.name : "Arc Testnet"}.`);
       setProgressState("error");
       return;
     }
@@ -370,7 +406,7 @@ export default function BridgePage() {
     }
 
     // Execute real CCTP bridge — approve → burn → attest → mint
-    await bridgeUSDC(selectedChain.id as any, amount);
+    await bridgeUSDC(selectedChain.id as any, amount, direction);
   };
 
   const handleResetForm = () => {
@@ -393,7 +429,10 @@ export default function BridgePage() {
               USDC Cross-Chain Bridge
             </h1>
             <p className="text-muted mt-1">
-              Bridge native USDC from Ethereum, Base, Avalanche, and Solana to Arc Testnet using Circle CCTP.
+              {direction === "in" 
+                ? "Bridge native USDC from Ethereum, Base, Avalanche, and Solana to Arc Testnet using Circle CCTP."
+                : "Bridge native USDC from Arc Testnet back to Ethereum, Base, Avalanche, or Solana using Circle CCTP."
+              }
             </p>
           </div>
 
@@ -404,11 +443,14 @@ export default function BridgePage() {
             </div>
             <div>
               <div className="text-[10px] text-text-tertiary font-bold uppercase tracking-wider flex items-center gap-1.5">
-                Destination Balance (Arc)
+                {direction === "in" ? "Destination Balance (Arc)" : `Destination Balance (${selectedChain.name})`}
                 {arcFetching && <Loader2 className="w-3 h-3 animate-spin text-primary" />}
               </div>
               <div className="text-lg font-bold font-mono text-white">
-                {arcUSDCBalance ? parseFloat(arcUSDCBalance).toLocaleString(undefined, { minimumFractionDigits: 2 }) : "0.00"} USDC
+                {direction === "in" 
+                  ? (arcUSDCBalance ? parseFloat(arcUSDCBalance).toLocaleString(undefined, { minimumFractionDigits: 2 }) : "0.00")
+                  : (balanceLoading ? "..." : parseFloat(sourceBalance).toLocaleString(undefined, { minimumFractionDigits: 2 }))
+                } USDC
               </div>
             </div>
           </div>
@@ -472,10 +514,42 @@ export default function BridgePage() {
           <GlassCard hover={false} className="lg:col-span-2 p-6 border border-border-thin relative overflow-hidden">
             <div className="absolute -right-24 -top-24 w-56 h-56 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
             
-            <h3 className="font-bold text-lg text-white mb-5 flex items-center gap-2">
+            <h3 className="font-bold text-lg text-white mb-4 flex items-center gap-2">
               <span>🌉</span>
               Bridge Panel
             </h3>
+
+            {/* Direction tabs */}
+            <div className="flex gap-2 p-1 bg-surface-elevated/80 border border-border-thin rounded-xl max-w-xs mb-5">
+              <button
+                type="button"
+                onClick={() => {
+                  setDirection("in");
+                  handleResetForm();
+                }}
+                className={`flex-1 py-2 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
+                  direction === "in"
+                    ? "bg-primary text-white"
+                    : "text-muted hover:text-white hover:bg-surface/10"
+                }`}
+              >
+                Deposit (IN)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDirection("out");
+                  handleResetForm();
+                }}
+                className={`flex-1 py-2 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
+                  direction === "out"
+                    ? "bg-primary text-white"
+                    : "text-muted hover:text-white hover:bg-surface/10"
+                }`}
+              >
+                Withdraw (OUT)
+              </button>
+            </div>
 
             <AnimatePresence mode="wait">
               {progressState === "idle" || progressState === "error" ? (
@@ -503,7 +577,7 @@ export default function BridgePage() {
                               <span>⚠️ Network Configuration Required</span>
                             </div>
                             <p className="text-xs text-text-secondary leading-normal">
-                              {selectedChain.name} has not been added to your wallet or is not configured.
+                              {direction === "in" ? selectedChain.name : "Arc Testnet"} has not been added to your wallet or is not configured.
                             </p>
                             <div className="flex gap-2.5 pt-1">
                               <button
@@ -538,7 +612,9 @@ export default function BridgePage() {
 
                   {/* Dropdown source selection */}
                   <div className="relative">
-                    <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-2">Select Source Chain</label>
+                    <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-2">
+                      {direction === "in" ? "Select Source Chain" : "Select Destination Chain"}
+                    </label>
                     <button
                       type="button"
                       onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -579,9 +655,19 @@ export default function BridgePage() {
                   <div className="flex items-center justify-center py-1">
                     <div className="h-px bg-border-thin flex-1" />
                     <div className="px-3 py-1 rounded-full bg-surface-elevated border border-border-thin flex items-center gap-1.5 text-[10px] font-bold text-primary shadow-sm uppercase tracking-wider">
-                      <span>CCTP Router</span>
-                      <ArrowRight className="w-3 h-3" />
-                      <span className="text-white">Arc Testnet</span>
+                      {direction === "in" ? (
+                        <>
+                          <span>{selectedChain.name}</span>
+                          <ArrowRight className="w-3 h-3 text-primary" />
+                          <span className="text-white">Arc Testnet</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-white">Arc Testnet</span>
+                          <ArrowRight className="w-3 h-3 text-primary" />
+                          <span>{selectedChain.name}</span>
+                        </>
+                      )}
                     </div>
                     <div className="h-px bg-border-thin flex-1" />
                   </div>
@@ -591,11 +677,11 @@ export default function BridgePage() {
                     <div className="flex justify-between items-center text-xs">
                       <label className="font-semibold text-muted uppercase tracking-wider">Amount to Bridge</label>
                       <div className="flex items-center gap-1.5 text-text-tertiary">
-                        <span>Available Balance:</span>
-                        {balanceLoading ? (
+                        <span>{direction === "in" ? selectedChain.name : "Arc Testnet"} Balance:</span>
+                        {balanceLoadingToDisplay ? (
                           <Loader2 className="w-3 h-3 animate-spin text-primary" />
                         ) : (
-                          <span className="font-bold font-mono text-white select-all">{sourceBalance} USDC</span>
+                          <span className="font-bold font-mono text-white select-all">{sourceBalanceToDisplay} USDC</span>
                         )}
                       </div>
                     </div>
@@ -659,7 +745,7 @@ export default function BridgePage() {
                       <div>
                         <h3 className="text-xl font-bold text-white">✅ USDC Bridge Confirmed!</h3>
                         <p className="text-xs text-text-tertiary mt-1.5 max-w-sm mx-auto leading-relaxed">
-                          Your native USDC has arrived successfully on **Arc Testnet** and is ready to use in the treasury and governance models.
+                          Your native USDC has arrived successfully on **{direction === "in" ? "Arc Testnet" : selectedChain.name}** and is ready to use.
                         </p>
                       </div>
 
@@ -670,7 +756,11 @@ export default function BridgePage() {
                         </div>
                         <div className="flex justify-between items-center text-xs">
                           <span className="text-muted">Origin Network</span>
-                          <span className="font-bold text-white">{selectedChain.name}</span>
+                          <span className="font-bold text-white">{direction === "in" ? selectedChain.name : "Arc Testnet"}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-muted">Destination Network</span>
+                          <span className="font-bold text-white">{direction === "in" ? "Arc Testnet" : selectedChain.name}</span>
                         </div>
                         {activeTxHash && (
                           <div className="flex justify-between items-center text-xs border-t border-border-thin pt-2 mt-2">
@@ -709,19 +799,19 @@ export default function BridgePage() {
                       <div className="space-y-2">
                         <h3 className="text-lg font-bold text-white uppercase tracking-wider text-sm">
                           {progressState === "initiating" && (bridgeState.status === "approving" ? "Approving USDC Spend..." : "Initiating Secure Router...")}
-                          {progressState === "burning" && "Burning USDC on Source Chain..."}
+                          {progressState === "burning" && `Burning USDC on ${direction === "in" ? selectedChain.name : "Arc Testnet"}...`}
                           {progressState === "minting" && (bridgeState.status === "waiting-attestation"
                             ? `Waiting for Circle Attestation... (${bridgeState.elapsedSeconds}s)`
-                            : "Minting USDC on Arc Testnet...")}
+                            : `Minting USDC on ${direction === "in" ? "Arc Testnet" : selectedChain.name}...`)}
                         </h3>
                         <p className="text-xs text-text-tertiary max-w-xs mx-auto leading-relaxed">
                           {progressState === "initiating" && (bridgeState.status === "approving"
-                            ? `Authorising TokenMessenger to spend ${amount} USDC on ${selectedChain.name}.`
+                            ? `Authorising TokenMessenger to spend ${amount} USDC on ${direction === "in" ? selectedChain.name : "Arc Testnet"}.`
                             : "Contacting Circle iris consensus relay to authenticate the transfer path.")}
-                          {progressState === "burning" && `Burning ${amount} USDC on ${selectedChain.name}. Generating cryptographic receipt.`}
+                          {progressState === "burning" && `Burning ${amount} USDC on ${direction === "in" ? selectedChain.name : "Arc Testnet"}. Generating cryptographic receipt.`}
                           {progressState === "minting" && (bridgeState.status === "waiting-attestation"
                             ? "Polling Circle Iris API for burn attestation. This typically takes 15–30 seconds."
-                            : "Broadcasting attestation to Arc node network. Minting native USDC.")}
+                            : `Broadcasting attestation to destination node network. Minting native USDC on ${direction === "in" ? "Arc Testnet" : selectedChain.name}.`)}
                         </p>
                       </div>
 
@@ -753,7 +843,7 @@ export default function BridgePage() {
                           <span className={`text-xs ${
                             progressState === "burning" ? "text-white font-bold" : progressState === "initiating" ? "text-text-tertiary" : "text-muted"
                           }`}>
-                            2. Burn USDC on {selectedChain.name}
+                            2. Burn USDC on {direction === "in" ? selectedChain.name : "Arc Testnet"}
                           </span>
                         </div>
 
@@ -766,7 +856,7 @@ export default function BridgePage() {
                             {progressState === "minting" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "3"}
                           </div>
                           <span className={`text-xs ${progressState === "minting" ? "text-white font-bold" : "text-text-tertiary"}`}>
-                            3. Securing proofs & Mint on Arc
+                            3. Securing proofs & Mint on {direction === "in" ? "Arc Testnet" : selectedChain.name}
                           </span>
                         </div>
                       </div>
@@ -857,7 +947,7 @@ export default function BridgePage() {
                         <div className="flex items-center gap-1.5 text-xs">
                           <span>{tx.sourceChain}</span>
                           <ArrowRight className="w-3.5 h-3.5 text-text-tertiary" />
-                          <span className="text-primary font-bold">Arc Testnet</span>
+                          <span className="text-primary font-bold">{tx.destChain || "Arc Testnet"}</span>
                         </div>
                       </td>
                       <td className="py-4 font-mono font-bold text-white">

@@ -143,47 +143,55 @@ export default function DashboardOverview() {
         </div>
 
         {/* Mini Campaigns list */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {featuredCampaigns.map((c) => {
-            const progress = Math.min(100, (c.raised / c.goal) * 100);
-            return (
-              <Link href={`/campaigns/${c.id}`} key={c.id} className="block group">
-                <div className="p-4 rounded-xl border border-border-thin/80 bg-surface/20 group-hover:border-primary/20 group-hover:bg-primary/[0.01] transition-all flex flex-col justify-between h-full gap-3">
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center">
-                      <span className={`text-[9px] px-2 py-0.2 rounded font-extrabold tracking-wide uppercase ${
-                        c.isAgent 
-                          ? "bg-purple-500/10 border border-purple-400/20 text-purple-300" 
-                          : "bg-blue-500/10 border border-blue-400/20 text-blue-300"
-                      }`}>
-                        {c.isAgent ? "🤖 Agent" : "👤 Human"}
-                      </span>
-                      <span className="text-[9px] text-muted uppercase font-bold">{c.state}</span>
+        {featuredCampaigns.length === 0 ? (
+          <div className="p-8 rounded-xl border border-dashed border-border-thin bg-surface/10 text-center space-y-2">
+            <Rocket className="w-8 h-8 text-muted mx-auto" />
+            <h4 className="text-sm font-bold text-text-primary">No Active Campaigns</h4>
+            <p className="text-xs text-muted max-w-sm mx-auto">No campaigns have been launched yet. Be the first to launch a community crowdfund campaign on Arc!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {featuredCampaigns.map((c) => {
+              const progress = Math.min(100, (c.raised / c.goal) * 100);
+              return (
+                <Link href={`/campaigns/${c.id}`} key={c.id} className="block group">
+                  <div className="p-4 rounded-xl border border-border-thin/80 bg-surface/20 group-hover:border-primary/20 group-hover:bg-primary/[0.01] transition-all flex flex-col justify-between h-full gap-3">
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className={`text-[9px] px-2 py-0.2 rounded font-extrabold tracking-wide uppercase ${
+                          c.isAgent 
+                            ? "bg-purple-500/10 border border-purple-400/20 text-purple-300" 
+                            : "bg-blue-500/10 border border-blue-400/20 text-blue-300"
+                        }`}>
+                          {c.isAgent ? "🤖 Agent" : "👤 Human"}
+                        </span>
+                        <span className="text-[9px] text-muted uppercase font-bold">{c.state}</span>
+                      </div>
+                      <h4 className="text-sm font-bold text-text-primary group-hover:text-primary transition-colors">{c.title}</h4>
+                      <p className="text-xs text-muted leading-relaxed line-clamp-1">{c.description}</p>
                     </div>
-                    <h4 className="text-sm font-bold text-text-primary group-hover:text-primary transition-colors">{c.title}</h4>
-                    <p className="text-xs text-muted leading-relaxed line-clamp-1">{c.description}</p>
-                  </div>
 
-                  <div className="space-y-1.5 pt-1">
-                    <div className="w-full h-1 bg-surface rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-300" style={{ width: `${progress}%` }} />
-                    </div>
-                    <div className="flex items-center justify-between text-[10px] text-text-tertiary">
-                      <span className="flex items-center gap-1 font-semibold text-text-secondary">
-                        <Coins className="w-3 h-3 text-primary" />
-                        {c.raised.toLocaleString()} / {c.goal.toLocaleString()} USDC
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="w-3 h-3" />
-                        {c.contributors} contributors
-                      </span>
+                    <div className="space-y-1.5 pt-1">
+                      <div className="w-full h-1 bg-surface rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-300" style={{ width: `${progress}%` }} />
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-text-tertiary">
+                        <span className="flex items-center gap-1 font-semibold text-text-secondary">
+                          <Coins className="w-3 h-3 text-primary" />
+                          {c.raised.toLocaleString()} / {c.goal.toLocaleString()} USDC
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="w-3 h-3" />
+                          {c.contributors} contributors
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
 
         {/* CTA Launch shortcut */}
         <div className="flex justify-end pt-2">
@@ -252,17 +260,23 @@ export default function DashboardOverview() {
                 {/* Top Creators Podium list */}
                 <div className="space-y-2.5">
                   <span className="text-[9px] uppercase font-bold text-muted tracking-wider block">Top Ranked Creators</span>
-                  {topCreators.map((creator, i) => (
-                    <Link href={`/creator/${creator.id}`} key={creator.id} className="block group">
-                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-surface/25 border border-border-subtle hover:border-primary/20 group-hover:bg-primary/[0.01] transition-all duration-300">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs select-none">{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
-                          <span className="text-xs font-bold text-text-primary group-hover:text-primary transition-colors">{creator.name}</span>
+                  {topCreators.length === 0 ? (
+                    <div className="p-4 rounded-xl border border-dashed border-border-thin bg-surface/10 text-center">
+                      <p className="text-xs text-muted">No creators registered yet.</p>
+                    </div>
+                  ) : (
+                    topCreators.map((creator, i) => (
+                      <Link href={`/creator/${creator.id}`} key={creator.id} className="block group">
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-surface/25 border border-border-subtle hover:border-primary/20 group-hover:bg-primary/[0.01] transition-all duration-300">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs select-none">{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
+                            <span className="text-xs font-bold text-text-primary group-hover:text-primary transition-colors">{creator.name}</span>
+                          </div>
+                          <span className="text-xs font-bold text-purple-300">{creator.raised.toLocaleString()} USDC</span>
                         </div>
-                        <span className="text-xs font-bold text-purple-300">{creator.raised.toLocaleString()} USDC</span>
-                      </div>
-                    </Link>
-                  ))}
+                      </Link>
+                    ))
+                  )}
                 </div>
 
                 <Link href="/create-dao" className="block">

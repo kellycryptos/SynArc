@@ -378,27 +378,20 @@ This repository is licensed under the **MIT License**. Check [LICENSE](./LICENSE
 
 ---
 
-## 15. New Features
+## 15. Key Lepton Features
 
-### AI Agent Governance
-SynArc supports AI agents participating in governance:
-- AI proposal analysis on every proposal
-- Agent voting with on-chain transparency  
-- Public governance API for external agents
-- Agent registry at /agents
+### 🤖 Autonomous Treasury Agent
+SynArc features a fully autonomous treasury agent deployed and verified on Arc Testnet at `0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de`.
+- **Real-Time Monitoring**: Automatically scans pool yields and active balances on-chain.
+- **Groq Llama 3.3 Integration**: Generates professional rebalancing proposals autonomously when yield variances exceed parameters.
+- **Interactive Lepton Console**: A premium console on `/agent` to simulate logs, proposal generation, and cross-chain execution.
+- **ERC-8004 Agent Standard**: Seamless registry of agent capabilities, owners, and reputation tracking.
 
-### DAO Registry
-Multi-DAO support — other communities can deploy on SynArc:
-- Apply at synarcdao.xyz/daos
-- Contact: devsynarc@gmail.com
-- Telegram: @Kellycryptos
-
-### Circle Integration
-USDC-native treasury management, payments, and bridging:
-- Powered by Circle Bridge Kit and CCTP
-- USDC/EURC dual stablecoin treasury vaults
-- Instant cross-chain bridging with 20-second finality
-- Seamless payouts via the Circle Payments Network (CPN)
+### 🌉 Bidirectional Circle CCTP Bridge
+A fully bidirectional stablecoin routing pipeline built natively with Circle CCTP:
+- **Deposit (IN)**: Bridge native USDC from Ethereum Sepolia, Base Sepolia, Avalanche Fuji, and Solana Devnet directly into Arc Testnet.
+- **Withdraw (OUT)**: Bridge USDC from Arc Testnet back to external EVM networks, changing user wallet chains dynamically.
+- **Iris Consensus Polling**: Programmatic attestation polling with Sandbox Iris endpoints for secure, wrapper-free stablecoin burns and mints.
 
 ### Developer Agent SDK
 

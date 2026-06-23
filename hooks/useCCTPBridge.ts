@@ -17,7 +17,7 @@ import {
   type Hex 
 } from "viem";
  
-import { ARC_RPC_URL } from "@/lib/arc/config";
+import { ARC_RPC_URL, ARC_RPC_URLS } from "@/lib/arc/config";
 import { getSigner, selectActiveWallet } from "@/lib/tx-helper";
 import { EVM_BRIDGE_CHAINS } from "@/lib/arc-config";
 import { useAuth } from "@/hooks/auth/useAuth";
@@ -149,13 +149,14 @@ export function useCCTPBridge() {
   // Perform full CCTP Bridge flow
   const bridgeUSDC = async (
     sourceKey: keyof typeof SOURCE_CHAINS,
-    amountString: string
+    amountString: string,
+    direction: "in" | "out" = "in"
   ) => {
     const chainConfig = SOURCE_CHAINS[sourceKey];
     const isCircleConnected = typeof window !== 'undefined' && localStorage.getItem('synarc_circle_connected') === 'true';
 
     if (isCircleConnected) {
-      await executeSolanaMockBridge(chainConfig.name, amountString);
+      await executeSolanaMockBridge(direction === "in" ? chainConfig.name : "Arc Testnet", amountString);
       return;
     }
 
@@ -183,15 +184,38 @@ export function useCCTPBridge() {
     // Amount scaled to 6 decimals (USDC standard)
     const numericAmount = BigInt(Math.round(amount * 1_000_000));
 
-    if (chainConfig.id === 103) {
+    const sourceChainConfig = direction === "in" ? chainConfig : {
+      id: 5042002,
+      name: "Arc Testnet",
+      domain: 7,
+      usdcAddress: "0x3600000000000000000000000000000000000000",
+      tokenMessenger: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
+      messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
+      rpcUrl: ARC_RPC_URL,
+      icon: "⚡"
+    };
+
+    const destChainConfig = direction === "in" ? {
+      id: 5042002,
+      name: "Arc Testnet",
+      domain: 7,
+      usdcAddress: "0x3600000000000000000000000000000000000000",
+      tokenMessenger: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
+      messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
+      rpcUrl: ARC_RPC_URL,
+      icon: "⚡"
+    } : chainConfig;
+
+    if (sourceChainConfig.id === 103 || destChainConfig.id === 103) {
       // SOLANA DEVNET -> ARC TESTNET: Graceful simulated bridging experience
-      await executeSolanaMockBridge(chainConfig.name, amountString);
+      await executeSolanaMockBridge(direction === "in" ? chainConfig.name : "Arc Testnet", amountString);
       return;
     }
 
     // Logging for debugging mismatches
     console.log('Current chain:', chain);
-    console.log('Requested source chain:', chainConfig);
+    console.log('Source chain:', sourceChainConfig);
+    console.log('Destination chain:', destChainConfig);
     console.log('Configured chains:', wagmiConfig.chains);
 
     try {
@@ -203,60 +227,93 @@ export function useCCTPBridge() {
       // Switch chain using Wagmi to the source chain
       try {
         const currentChainId = parseInt(activeWallet.chainId.replace("eip155:", ""));
-        if (currentChainId !== chainConfig.id) {
+        if (currentChainId !== sourceChainConfig.id) {
           const supportedChains = Object.keys(EVM_BRIDGE_CHAINS).map(Number);
-          if (!supportedChains.includes(chainConfig.id)) {
+          if (!supportedChains.includes(sourceChainConfig.id)) {
             toast.error("Please connect to a supported network");
             throw new Error("Source network is not configured in SynArc");
           }
-          await switchChainAsync({ chainId: chainConfig.id as any });
+          await switchChainAsync({ chainId: sourceChainConfig.id as any });
         }
       } catch (err: any) {
-        const errMsg = err?.message || String(err);
-        if (errMsg.toLowerCase().includes("chain not configured") || errMsg.toLowerCase().includes("not configured")) {
-          throw new Error("Source network is not configured in SynArc");
+        if (sourceChainConfig.id === 5042002) {
+          try {
+            const provider = await activeWallet.getEthereumProvider();
+            await provider.request({
+              method: "wallet_addEthereumChain",
+              params: [
+                {
+                  chainId: "0x4cef52", // 5042002 hex
+                  chainName: sourceChainConfig.name,
+                  rpcUrls: [sourceChainConfig.rpcUrl],
+                  nativeCurrency: {
+                    name: "USD Coin",
+                    symbol: "USDC",
+                    decimals: 6
+                  },
+                  blockExplorerUrls: ["https://testnet.arcscan.app"]
+                }
+              ]
+            });
+            await switchChainAsync({ chainId: sourceChainConfig.id as any });
+          } catch (addError: any) {
+            throw new Error(`Failed to switch to Arc Testnet: ${addError?.message || addError}`);
+          }
+        } else {
+          const errMsg = err?.message || String(err);
+          if (errMsg.toLowerCase().includes("chain not configured") || errMsg.toLowerCase().includes("not configured")) {
+            throw new Error("Source network is not configured in SynArc");
+          }
+          throw new Error(`Failed to switch wallet to ${sourceChainConfig.name}: ${err?.message || err}`);
         }
-        throw new Error(`Failed to switch wallet to ${chainConfig.name}: ${err?.message || err}`);
       }
 
-      const targetChainObj = EVM_BRIDGE_CHAINS[chainConfig.id];
+      const targetChainObj = EVM_BRIDGE_CHAINS[sourceChainConfig.id];
       const { walletClient, address } = await getSigner(wallets, targetChainObj, walletAddress || undefined);
 
       const approveData = encodeFunctionData({
         abi: erc20Abi,
         functionName: "approve",
-        args: [chainConfig.tokenMessenger as `0x${string}`, numericAmount]
+        args: [sourceChainConfig.tokenMessenger as `0x${string}`, numericAmount]
       });
 
       let approveTxHash: string;
       try {
-        approveTxHash = await walletClient.sendTransaction({
-          to: chainConfig.usdcAddress as `0x${string}`,
+        const txParams: any = {
+          to: sourceChainConfig.usdcAddress as `0x${string}`,
           data: approveData,
           account: address,
           chain: targetChainObj
-        });
+        };
+        if (sourceChainConfig.id === 5042002) {
+          txParams.gas = 150000n;
+          txParams.gasPrice = 10000000n;
+        }
+        approveTxHash = await walletClient.sendTransaction(txParams);
       } catch (err: any) {
         throw new Error(`USDC Approval rejected by user: ${err?.message || err}`);
       }
 
       // Wait for approval confirmation with dynamic, resilient fallback RPCs to prevent delays
-      const rpcUrls = [
-        chainConfig.rpcUrl,
-      ];
-      if (chainConfig.id === 11155111) { // Sepolia fallbacks
-        rpcUrls.push("https://ethereum-sepolia-rpc.publicnode.com");
-        rpcUrls.push("https://sepolia.gateway.tenderly.co");
-        rpcUrls.push("https://rpc.borderless.xyz/sepolia");
-      } else if (chainConfig.id === 84532) { // Base Sepolia fallbacks
-        rpcUrls.push("https://base-sepolia-rpc.publicnode.com");
-        rpcUrls.push("https://sepolia.base.org");
-      } else if (chainConfig.id === 43113) { // Avalanche Fuji fallbacks
-        rpcUrls.push("https://avalanche-fuji-c-chain-rpc.publicnode.com");
+      let rpcUrls: string[] = [];
+      if (sourceChainConfig.id === 5042002) {
+        rpcUrls = ARC_RPC_URLS;
+      } else {
+        rpcUrls = [sourceChainConfig.rpcUrl];
+        if (sourceChainConfig.id === 11155111) { // Sepolia fallbacks
+          rpcUrls.push("https://ethereum-sepolia-rpc.publicnode.com");
+          rpcUrls.push("https://sepolia.gateway.tenderly.co");
+          rpcUrls.push("https://rpc.borderless.xyz/sepolia");
+        } else if (sourceChainConfig.id === 84532) { // Base Sepolia fallbacks
+          rpcUrls.push("https://base-sepolia-rpc.publicnode.com");
+          rpcUrls.push("https://sepolia.base.org");
+        } else if (sourceChainConfig.id === 43113) { // Avalanche Fuji fallbacks
+          rpcUrls.push("https://avalanche-fuji-c-chain-rpc.publicnode.com");
+        }
       }
 
       const sourcePublicClient = createPublicClient({
-        chain: chainConfig.id === 11155111 ? sepolia : undefined,
+        chain: sourceChainConfig.id === 11155111 ? sepolia : (sourceChainConfig.id === 5042002 ? arcTestnet : undefined),
         transport: fallback(
           rpcUrls.map(url => http(url, { timeout: 10000 })),
           { rank: true }
@@ -280,20 +337,25 @@ export function useCCTPBridge() {
         functionName: "depositForBurn",
         args: [
           numericAmount,
-          DESTINATION_CHAIN.domain,
+          destChainConfig.domain,
           mintRecipientBytes32,
-          chainConfig.usdcAddress as `0x${string}`
+          sourceChainConfig.usdcAddress as `0x${string}`
         ]
       });
 
       let burnTxHash: string;
       try {
-        burnTxHash = await walletClient.sendTransaction({
-          to: chainConfig.tokenMessenger as `0x${string}`,
+        const txParams: any = {
+          to: sourceChainConfig.tokenMessenger as `0x${string}`,
           data: burnData,
           account: address,
           chain: targetChainObj
-        });
+        };
+        if (sourceChainConfig.id === 5042002) {
+          txParams.gas = 300000n;
+          txParams.gasPrice = 10000000n;
+        }
+        burnTxHash = await walletClient.sendTransaction(txParams);
       } catch (err: any) {
         throw new Error(`CCTP Burn transaction rejected: ${err?.message || err}`);
       }
@@ -380,37 +442,40 @@ export function useCCTPBridge() {
       const finalAttestation = attestation as `0x${string}`;
 
       // ==========================================
-      // STEP 4 — Mint on Arc Testnet
+      // STEP 4 — Mint on destination chain
       // ==========================================
       setState(prev => ({ ...prev, status: "minting" }));
 
-      // Switch chain to Arc Testnet
+      // Switch chain to Destination Chain
       try {
-        await switchChainAsync({ chainId: DESTINATION_CHAIN.id as any });
+        await switchChainAsync({ chainId: destChainConfig.id as any });
       } catch (switchError: any) {
-        // Fallback: request wallet to add Arc Testnet
-        try {
-          const provider = await activeWallet.getEthereumProvider();
-          await provider.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: "0x4cef52", // 5042002 hex
-                chainName: DESTINATION_CHAIN.name,
-                rpcUrls: [DESTINATION_CHAIN.rpcUrl],
-                nativeCurrency: {
-                  name: "USD Coin",
-                  symbol: "USDC",
-                  decimals: 6
-                },
-                blockExplorerUrls: ["https://testnet.arcscan.app"]
-              }
-            ]
-          });
-          // Switch after adding
-          await switchChainAsync({ chainId: DESTINATION_CHAIN.id as any });
-        } catch (addError: any) {
-          throw new Error(`Failed to add or switch to Arc Testnet (0x4cef52): ${addError?.message || addError}`);
+        if (destChainConfig.id === 5042002) {
+          try {
+            const provider = await activeWallet.getEthereumProvider();
+            await provider.request({
+              method: "wallet_addEthereumChain",
+              params: [
+                {
+                  chainId: "0x4cef52", // 5042002 hex
+                  chainName: destChainConfig.name,
+                  rpcUrls: [destChainConfig.rpcUrl],
+                  nativeCurrency: {
+                    name: "USD Coin",
+                    symbol: "USDC",
+                    decimals: 6
+                  },
+                  blockExplorerUrls: ["https://testnet.arcscan.app"]
+                }
+              ]
+            });
+            // Switch after adding
+            await switchChainAsync({ chainId: destChainConfig.id as any });
+          } catch (addError: any) {
+            throw new Error(`Failed to add or switch to Arc Testnet (0x4cef52): ${addError?.message || addError}`);
+          }
+        } else {
+          throw new Error(`Failed to switch to destination chain ${destChainConfig.name}: ${switchError?.message || switchError}`);
         }
       }
 
@@ -420,19 +485,22 @@ export function useCCTPBridge() {
         args: [finalMessageBytes, finalAttestation]
       });
 
-      // Submit mint transaction on Arc Testnet with explicit gas overrides
+      // Submit mint transaction on destination chain
       let mintTxHash: string;
       try {
-        const targetDestChain = EVM_BRIDGE_CHAINS[DESTINATION_CHAIN.id];
+        const targetDestChain = EVM_BRIDGE_CHAINS[destChainConfig.id];
         const { walletClient: destWalletClient, address: destAddress } = await getSigner(wallets, targetDestChain, walletAddress || undefined);
-        mintTxHash = await destWalletClient.sendTransaction({
-          to: DESTINATION_CHAIN.messageTransmitter as `0x${string}`,
+        const txParams: any = {
+          to: destChainConfig.messageTransmitter as `0x${string}`,
           data: mintData,
           account: destAddress,
-          chain: targetDestChain,
-          gas: 300000n,
-          gasPrice: 10000000n
-        } as any);
+          chain: targetDestChain
+        };
+        if (destChainConfig.id === 5042002) {
+          txParams.gas = 300000n;
+          txParams.gasPrice = 10000000n;
+        }
+        mintTxHash = await destWalletClient.sendTransaction(txParams);
       } catch (err: any) {
         throw new Error(`Minting transaction rejected: ${err?.message || err}`);
       }
