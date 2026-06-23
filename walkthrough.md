@@ -19,7 +19,7 @@ We have successfully implemented the real on-chain rebalancing logic for the Syn
   - `campaigns`: Launches escrows on-chain, lists campaigns, and sends USDC nanopayments.
   - `agent`: Registers agents on the ERC-8004 registry contract on-chain.
   - `governance`: Fetches active proposals on-chain, casts votes with reasons, and queries proposal details.
-  - `treasury`: Checks executor permissions and withdraws assets.
+  - `treasury`: Checks executor permissions, sweeps assets, proposes rebalances (`proposeRebalance`), and executes rebalances with CCTP burns (`executeRebalance`).
   - `token`: Checks sARC balances, delegates voting power, and self-delegates.
 - **Import Alias Registry**: Added the `"@synarc/agent-sdk"` path mapping to `tsconfig.json`. Developers can now import client classes using `import { SynArcAgentClient } from '@synarc/agent-sdk'` inside the Next.js workspace, matching the exact import path documented in the developer guides.
 
