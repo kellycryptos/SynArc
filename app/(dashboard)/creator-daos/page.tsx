@@ -123,7 +123,7 @@ export default function CampaignsPage() {
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Auth prompt banner */}
-        <AuthPromptBanner action="launch or contribute to crowdfunding campaigns" />
+        <AuthPromptBanner action="launch or contribute to Creator DAOs" />
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -132,10 +132,10 @@ export default function CampaignsPage() {
               <span className="p-2 rounded-xl bg-primary/10 border border-primary/20 text-primary">
                 <Rocket className="w-8 h-8" />
               </span>
-              SynArc Crowdfund Hub
+              SynArc Creator DAOs
             </h1>
             <p className="text-muted mt-2 text-sm sm:text-base leading-relaxed">
-              Permissionless USDC crowdfunding for humans and autonomous AI agents on Arc.
+              Milestone-locked funding, templates, and governance for humans, developers, and AI agents on Arc.
             </p>
           </div>
           <button
@@ -143,13 +143,13 @@ export default function CampaignsPage() {
               if (!isAuthenticated) {
                 login();
               } else {
-                router.push("/campaigns/create");
+                router.push("/create-dao");
               }
             }}
             className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-purple text-white-keep font-bold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer shrink-0"
           >
             <Plus className="w-4.5 h-4.5" />
-            Launch a Campaign
+            Launch Creator DAO
           </button>
         </div>
 
@@ -176,14 +176,14 @@ export default function CampaignsPage() {
             <div>
               <h4 className="text-sm font-bold text-purple-300 flex items-center gap-2">
                 <span className="p-1 rounded bg-purple-500/15 border border-purple-400/20 text-purple-300">⚡</span>
-                Crowdfund Hub
+                Creator DAOs
               </h4>
               <p className="text-xs text-muted leading-relaxed mt-1">
                 Permissionless coordinate platforms, dynamic milestone-locked escrows, and automated AI Risk due diligence.
               </p>
             </div>
-            <Link href="/campaigns" className="text-xs font-bold text-purple-300 hover:text-purple-200 flex items-center gap-1 pt-3">
-              Browse Campaigns <ArrowRight className="w-3.5 h-3.5" />
+            <Link href="/creator-daos" className="text-xs font-bold text-purple-300 hover:text-purple-200 flex items-center gap-1 pt-3">
+              Explore Creator DAOs <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
@@ -191,7 +191,7 @@ export default function CampaignsPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <GlassCard className="p-5 flex flex-col gap-1 border border-border-thin" hover={false}>
-            <span className="text-[10px] sm:text-xs uppercase font-extrabold tracking-widest text-muted/60">Total Campaigns</span>
+            <span className="text-[10px] sm:text-xs uppercase font-extrabold tracking-widest text-muted/60">Total Creator DAOs</span>
             <span className="text-2xl sm:text-3xl font-extrabold font-heading text-text-primary mt-1">{totalCampaigns}</span>
           </GlassCard>
           <GlassCard className="p-5 flex flex-col gap-1 border border-border-thin" hover={false}>
@@ -201,11 +201,11 @@ export default function CampaignsPage() {
             </span>
           </GlassCard>
           <GlassCard className="p-5 flex flex-col gap-1 border border-border-thin" hover={false}>
-            <span className="text-[10px] sm:text-xs uppercase font-extrabold tracking-widest text-muted/60">Active Campaigns</span>
+            <span className="text-[10px] sm:text-xs uppercase font-extrabold tracking-widest text-muted/60">Active DAOs</span>
             <span className="text-2xl sm:text-3xl font-extrabold font-heading text-success mt-1">{activeCount}</span>
           </GlassCard>
           <GlassCard className="p-5 flex flex-col gap-1 border border-border-thin" hover={false}>
-            <span className="text-[10px] sm:text-xs uppercase font-extrabold tracking-widest text-muted/60">Campaigns Funded</span>
+            <span className="text-[10px] sm:text-xs uppercase font-extrabold tracking-widest text-muted/60">DAOs Funded</span>
             <span className="text-2xl sm:text-3xl font-extrabold font-heading text-arc-blue mt-1">{fundedCount}</span>
           </GlassCard>
         </div>
@@ -238,7 +238,7 @@ export default function CampaignsPage() {
               <Search className="w-4.5 h-4.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
               <input 
                 type="text" 
-                placeholder="Search campaigns..."
+                placeholder="Search Creator DAOs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-surface/50 border border-border-thin rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
@@ -253,7 +253,7 @@ export default function CampaignsPage() {
               {[
                 { key: "All", label: "All Types" },
                 { key: "Agent", label: "🤖 Autonomous Agent Fund" },
-                { key: "Human", label: "👤 Human Campaign" }
+                { key: "Human", label: "👤 Human Creator DAO" }
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -300,20 +300,20 @@ export default function CampaignsPage() {
           </div>
         ) : filteredCampaigns.length === 0 ? (
           <EmptyState
-            title="No campaigns found"
-            description="Be the first to launch a permissionless crowdfunding campaign on Arc Network."
+            title="No Creator DAOs found"
+            description="Be the first to launch a permissionless Creator DAO on Arc Network."
             action={
               <button
                 onClick={() => {
                   if (!isAuthenticated) {
                     login();
                   } else {
-                    router.push("/campaigns/create");
+                    router.push("/create-dao");
                   }
                 }}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent-purple text-white-keep font-semibold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
               >
-                Launch a Campaign
+                Launch Creator DAO
               </button>
             }
           />
@@ -344,7 +344,7 @@ export default function CampaignsPage() {
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider bg-blue-500/15 border border-blue-400/25 text-blue-300">
-                            👤 HUMAN CAMPAIGN
+                            👤 HUMAN CREATOR DAO
                           </span>
                         )}
 
@@ -414,10 +414,10 @@ export default function CampaignsPage() {
                       </div>
 
                       <Link 
-                        href={`/campaigns/${campaign.id}`}
+                        href={`/creator-daos/${campaign.id}`}
                         className="inline-flex items-center gap-1 font-bold text-xs text-primary group-hover:text-primary-glow hover:underline transition-all cursor-pointer"
                       >
-                        View Campaign
+                        View Creator DAO
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </Link>
                     </div>
@@ -439,7 +439,7 @@ export default function CampaignsPage() {
                 🌐 The Future — Agentic Capital Coordination
               </h2>
               <p className="text-sm text-muted max-w-2xl mx-auto leading-relaxed">
-                SynArc campaigns are evolving into autonomous economic actors. Each campaign will eventually transform into a self-governing subDAO with its own:
+                SynArc Creator DAOs are evolving into autonomous economic actors. Each Creator DAO will eventually transform into a self-governing subDAO with its own:
               </p>
             </div>
 

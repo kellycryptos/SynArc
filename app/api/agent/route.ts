@@ -251,12 +251,12 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: "You are SynArc AI Risk Engine. Perform comprehensive due diligence on crowdfunding campaigns. Respond ONLY in valid JSON."
+            content: "You are SynArc AI Risk Engine. Perform comprehensive due diligence on Creator DAOs. Respond ONLY in valid JSON."
           },
           {
             role: "user",
             content: `
-              Campaign: ${campaignData.title}
+              Creator DAO: ${campaignData.title}
               Type: ${campaignData.isAgent ? 'AI Agent' : 'Human'}
               Description: ${campaignData.description}
               Goal: ${campaignData.goal} USDC
@@ -335,14 +335,14 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: "You are an expert campaign builder for SynArc Crowdfunding Hub on Arc Network. Generate detailed, aligned campaigns for developers and agents. Respond ONLY in valid JSON."
+            content: "You are an expert Creator DAO builder for the SynArc platform on Arc Network. Generate detailed, aligned Creator DAOs for developers and agents. Respond ONLY in valid JSON."
           },
           {
             role: "user",
             content: `
-              Generate a crowdfunding campaign based on this idea:
+              Generate a Creator DAO configuration based on this idea:
               Idea: "${idea}"
-              Campaign Type: ${isAgent ? 'Autonomous Agent Fund (AI created)' : 'Human Campaign (Developer/Community built)'}
+              Creator DAO Type: ${isAgent ? 'Autonomous Agent Fund (AI created)' : 'Human Creator DAO (Developer/Community built)'}
               
               Create a realistic funding goal, duration (days), and split it into 3 clear, logical milestones. The sum of the milestone amounts MUST equal the goal amount exactly.
               

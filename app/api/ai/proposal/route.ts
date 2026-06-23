@@ -46,12 +46,12 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: "You are an expert campaign builder for SynArc Crowdfunding Hub on Arc Network. Generate detailed, aligned campaigns for creators, developers, and autonomous AI agents. Respond ONLY in valid JSON. Do not wrap the JSON in markdown code blocks."
+            content: "You are an expert Creator DAO builder for the SynArc platform on Arc Network. Generate detailed, aligned Creator DAOs for developers and agents. Respond ONLY in valid JSON. Do not wrap the JSON in markdown code blocks."
           },
           {
             role: "user",
             content: `
-              Generate a Creator DAO campaign proposal based on:
+              Generate a Creator DAO configuration proposal based on:
               Topic/Idea: "${topic}"
               Context: ${context || "Creator DAO on Arc with USDC nanopayments"}
               

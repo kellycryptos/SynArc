@@ -219,11 +219,11 @@ export default function CampaignDetailPage({ params }: PageProps) {
     return (
       <div className="pt-28 pb-16 max-w-md mx-auto text-center space-y-6 px-4">
         <AlertTriangle className="w-16 h-16 text-danger mx-auto animate-bounce" />
-        <h2 className="text-2xl font-bold font-heading text-text-primary">Campaign Not Found</h2>
+        <h2 className="text-2xl font-bold font-heading text-text-primary">Creator DAO Not Found</h2>
         <p className="text-muted text-sm">
-          The requested crowdfunding campaign does not exist or has been removed from the prototype ledger.
+          The requested Creator DAO does not exist or has been removed from the prototype ledger.
         </p>
-        <Link href="/campaigns" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-accent-purple text-white-keep font-bold text-xs hover:bg-accent-purple/90 transition-all">
+        <Link href="/creator-daos" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-accent-purple text-white-keep font-bold text-xs hover:bg-accent-purple/90 transition-all">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Hub
         </Link>
       </div>
@@ -493,8 +493,8 @@ export default function CampaignDetailPage({ params }: PageProps) {
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-8 animate-fade-in">
       
       {/* Return Link */}
-      <Link href="/campaigns" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-foreground font-semibold transition-colors">
-        <ArrowLeft className="w-3.5 h-3.5" /> Back to Crowdfund Hub
+      <Link href="/creator-daos" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-foreground font-semibold transition-colors">
+        <ArrowLeft className="w-3.5 h-3.5" /> Back to Creator DAOs
       </Link>
 
       {/* 4. Lifecycle Progress Stepper Bar */}
@@ -577,14 +577,11 @@ export default function CampaignDetailPage({ params }: PageProps) {
             </div>
 
             {/* 1. Add Escrow Trust Messaging */}
-            <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/10 text-xs text-purple-300 leading-normal flex items-start gap-3">
-              <Lock className="w-5 h-5 shrink-0 text-primary mt-0.5" />
-              <div>
-                <strong className="block text-purple-200">🔒 Vault-Locked Security Guarantee</strong>
-                <span className="block mt-0.5 text-muted leading-relaxed text-[11px]">
-                  USDC contributed to this campaign is secured directly within decentralized milestone escrow vaults. SynArc DAO treasury cannot arbitrarily drain or redirect these funds — capital release requires cryptographic proof of deliverable approval.
-                </span>
-              </div>
+            <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[10.5px] text-purple-300 leading-normal flex items-start gap-2 max-w-sm">
+              <span className="shrink-0 text-xs">🔒</span>
+              <span>
+                USDC contributed to this Creator DAO is secured directly within decentralized milestone escrow vaults. SynArc DAO treasury cannot arbitrarily drain or redirect these funds — capital release requires cryptographic proof of deliverable approval.
+              </span>
             </div>
           </GlassCard>
 
@@ -592,7 +589,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
           <GlassCard className="p-6 sm:p-8 space-y-6 border border-border-thin" hover={false}>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-text-secondary font-medium">Campaign Funding Progress</span>
+                <span className="text-text-secondary font-medium">Creator DAO Funding Progress</span>
                 <span className="font-bold text-text-primary">{raisedPercent.toFixed(0)}% Completed</span>
               </div>
               
@@ -706,7 +703,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
           {/* Description Card */}
           <GlassCard className="p-6 sm:p-8 space-y-4 border border-border-thin" hover={false}>
-            <h2 className="text-lg font-bold font-heading text-text-primary">About this campaign</h2>
+            <h2 className="text-lg font-bold font-heading text-text-primary">About this Creator DAO</h2>
             <p className="text-muted text-sm leading-relaxed whitespace-pre-wrap">
               {campaign.description}
             </p>
@@ -719,7 +716,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
           {/* Backer escrow Card (Active status) */}
           {campaign.state === 'Active' && (
             <GlassCard className="p-6 border border-primary/20 bg-primary/[0.01] space-y-4 relative" hover={false}>
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-primary">Back this Campaign</h3>
+              <h3 className="text-sm font-extrabold uppercase tracking-wider text-primary">Back this Creator DAO</h3>
               <p className="text-xs text-muted leading-relaxed">
                 Contribute USDC gas-free. Funds are securely locked in milestone-based smart contract escrows.
               </p>
@@ -774,7 +771,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
               <div className="p-3 rounded-xl bg-surface/30 border border-border-thin text-[10.5px] text-muted space-y-1">
                 <span className="text-purple-300 font-bold block">🔒 Escrow Vault Locks:</span>
                 <span className="block leading-relaxed">
-                  Your USDC is locked in a smart contract escrow vault. Funds only release when the community votes to approve each milestone. You can claim a refund if the campaign fails.
+                  Your USDC is locked in a smart contract escrow vault. Funds only release when the community votes to approve each milestone. You can claim a refund if the Creator DAO funding fails.
                 </span>
               </div>
             </GlassCard>
@@ -1058,7 +1055,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
                 </div>
 
                 <p className="text-[10.5px] text-muted leading-relaxed bg-purple-500/5 p-3 rounded-xl border border-purple-500/10">
-                  ℹ️ This campaign was autonomously compiled and launched by an AI agent based on on-chain treasury analysis. All milestone disbursements are safely gated and require community governor consensus to release.
+                  ℹ️ This Creator DAO was autonomously compiled and launched by an AI agent based on on-chain treasury analysis. All milestone disbursements are safely gated and require community governor consensus to release.
                 </p>
               </div>
             </GlassCard>
@@ -1071,7 +1068,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
                 <span>💰</span> Funding Sources
               </h3>
               <p className="text-[11px] text-muted mt-1 leading-relaxed">
-                This crowdfund campaign is eligible to receive deposits in USDC from multiple coordination vectors:
+                This Creator DAO is eligible to receive deposits in USDC from multiple coordination vectors:
               </p>
             </div>
 
@@ -1079,7 +1076,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
               <FundingSourceItem
                 icon="👤"
                 title="Individual Contributors"
-                description="Anyone on Arc Testnet can back campaigns directly using stablecoins."
+                description="Anyone on Arc Testnet can back Creator DAOs directly using stablecoins."
                 status="Active"
               />
               <FundingSourceItem

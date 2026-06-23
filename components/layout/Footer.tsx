@@ -13,9 +13,8 @@ const productLinks = [
   { label: "Treasury", href: "/treasury" },
   { label: "Roadmap", href: "/#roadmap" },
   { label: "DAOs", href: "/daos" },
-  { label: "AI Agents", href: "/agents" },
   { label: "Creator DAOs", href: "/leaderboard" },
-  { label: "Crowdfund Hub", href: "/campaigns" },
+  { label: "Creator DAO", href: "/creator-daos" },
   { label: "Bridge", href: "/bridge" },
 ];
 

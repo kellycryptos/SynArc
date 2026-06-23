@@ -114,22 +114,22 @@ export default function DashboardOverview() {
         </div>
       </GlassCard>
 
-      {/* ⚡ Crowdfund Hub Section */}
+      {/* ⚡ Creator DAOs Section */}
       <GlassCard className="p-6 border border-primary/20 bg-primary/[0.01] space-y-6" hover={false}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Rocket className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold font-heading text-text-primary">⚡ Crowdfund Hub</h2>
+            <h2 className="text-xl font-bold font-heading text-text-primary">⚡ Creator DAOs</h2>
           </div>
-          <Link href="/campaigns" className="text-xs font-bold text-primary hover:text-primary-glow flex items-center gap-1 transition-all">
-            View All Campaigns <ArrowRight className="w-3.5 h-3.5" />
+          <Link href="/creator-daos" className="text-xs font-bold text-primary hover:text-primary-glow flex items-center gap-1 transition-all">
+            View All Creator DAOs <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         {/* Dynamic Aggregated Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div className="px-4 py-3 rounded-xl bg-surface/30 border border-border-thin/60">
-            <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Active Campaigns</span>
+            <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Active DAOs</span>
             <span className="text-lg font-bold text-success mt-1 block">{activeCampaigns}</span>
           </div>
           <div className="px-4 py-3 rounded-xl bg-surface/30 border border-border-thin/60">
@@ -137,24 +137,24 @@ export default function DashboardOverview() {
             <span className="text-lg font-bold text-purple-300 mt-1 block">{totalRaised.toLocaleString()} USDC</span>
           </div>
           <div className="px-4 py-3 rounded-xl bg-surface/30 border border-border-thin/60">
-            <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Campaigns Funded</span>
+            <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">DAOs Funded</span>
             <span className="text-lg font-bold text-arc-blue mt-1 block">{fundedCount}</span>
           </div>
         </div>
 
-        {/* Mini Campaigns list */}
+        {/* Mini Creator DAOs list */}
         {featuredCampaigns.length === 0 ? (
           <div className="p-8 rounded-xl border border-dashed border-border-thin bg-surface/10 text-center space-y-2">
             <Rocket className="w-8 h-8 text-muted mx-auto" />
-            <h4 className="text-sm font-bold text-text-primary">No Active Campaigns</h4>
-            <p className="text-xs text-muted max-w-sm mx-auto">No campaigns have been launched yet. Be the first to launch a community crowdfund campaign on Arc!</p>
+            <h4 className="text-sm font-bold text-text-primary">No Active DAOs</h4>
+            <p className="text-xs text-muted max-w-sm mx-auto">No DAOs have been launched yet. Be the first to launch a community Creator DAO on Arc!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {featuredCampaigns.map((c) => {
               const progress = Math.min(100, (c.raised / c.goal) * 100);
               return (
-                <Link href={`/campaigns/${c.id}`} key={c.id} className="block group">
+                <Link href={`/creator-daos/${c.id}`} key={c.id} className="block group">
                   <div className="p-4 rounded-xl border border-border-thin/80 bg-surface/20 group-hover:border-primary/20 group-hover:bg-primary/[0.01] transition-all flex flex-col justify-between h-full gap-3">
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
@@ -195,10 +195,10 @@ export default function DashboardOverview() {
 
         {/* CTA Launch shortcut */}
         <div className="flex justify-end pt-2">
-          <Link href="/campaigns/create">
+          <Link href="/create-dao">
             <button className="px-4 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer">
               <Plus className="w-4 h-4" />
-              🚀 Launch a Campaign
+              🚀 Launch Creator DAO
             </button>
           </Link>
         </div>

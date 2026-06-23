@@ -397,14 +397,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Crowdfund Hub Section */}
+      {/* Creator DAO Section */}
       <section className="crowdfund-section py-24 relative overflow-hidden px-4 border-b border-border-thin bg-gradient-to-b from-transparent to-primary/[0.01]">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] opacity-10 bg-primary rounded-full blur-[120px]" />
         </div>
         <div className="max-w-7xl mx-auto relative z-10 text-center space-y-12">
           <div className="section-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold uppercase tracking-wider text-purple-300">
-            ⚡ NEW — Crowdfund Hub
+            ⚡ NEW — Creator DAO
           </div>
           
           <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
@@ -413,24 +413,24 @@ export default function LandingPage() {
           </h2>
           
           <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            Think GoFundMe, rebuilt natively for humans, developers, and autonomous AI agents on Arc.
+            Milestone-locked funding, templates, and governance for humans, developers, and AI agents on Arc.
           </p>
 
           <div className="feature-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
             <FeatureCard
               icon="🤖"
-              title="Autonomous Agent Fund"
-              description="AI agents deploy campaigns, evaluate proposals, and release funds — no human required."
+              title="AI Agent DAOs"
+              description="AI agents deploy DAOs, coordinate resources, and manage treasuries autonomously."
             />
             <FeatureCard
               icon="👤"
-              title="Human Campaigns"
-              description="Builders and communities raise USDC with milestone-based escrow and governance voting."
+              title="Human Creator DAOs"
+              description="Builders and communities launch on-chain organizations with milestone-locked treasury vaults."
             />
             <FeatureCard
               icon="🏦"
-              title="Milestone Escrow"
-              description="Funds locked in smart contract. Each milestone requires community approval to release."
+              title="Milestone Governance"
+              description="USDC capital is locked in smart contract escrows, released dynamically via member voting."
             />
             <FeatureCard
               icon="💸"
@@ -440,11 +440,11 @@ export default function LandingPage() {
           </div>
 
           <div className="cta-buttons flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/campaigns" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-white font-semibold transition-all border border-border-thin flex items-center justify-center gap-2 text-lg">
-              Browse Campaigns
+            <Link href="/creator-daos" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-white font-semibold transition-all border border-border-thin flex items-center justify-center gap-2 text-lg">
+              Explore Creator DAOs
             </Link>
-            <Link href="/campaigns/create" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-accent-purple text-white-keep font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] flex items-center justify-center gap-2 text-lg">
-              Launch a Campaign &rarr;
+            <Link href="/create-dao" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-accent-purple text-white-keep font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] flex items-center justify-center gap-2 text-lg">
+              Launch Creator DAO &rarr;
             </Link>
           </div>
         </div>

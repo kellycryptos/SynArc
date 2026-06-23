@@ -33,7 +33,7 @@ SynArc is a multi-DAO governance and funding layer built natively on Arc Testnet
 - Cover image support via the profile editor.
 - **Share Button**: Uses native Web Share API on mobile, or copies the URL to clipboard on desktop. Shows a "Link copied!" toast. URL format: https://synarcdao.xyz/creator/[slug]
 - Preset donation buttons: $0.01, $0.10, $1, $5, $10, or custom — triggers real on-chain USDC transfer when wallet is connected.
-- AI Agent Audit: Llama 3.3-powered legitimacy score, impact rating, and due diligence notes for every campaign.
+- AI Agent Audit: Llama 3.3-powered legitimacy score, impact rating, and due diligence notes for every Creator DAO.
 - Social links: Twitter/X handle integration.
 
 ### USDC Nanopayments ($0.01 minimum)
@@ -50,7 +50,7 @@ SynArc is a multi-DAO governance and funding layer built natively on Arc Testnet
 - Raised capital is LOCKED in the isolated escrow until milestones are approved.
 - Creators claim funds progressively per milestone, not all at once.
 - Community votes on-chain to approve or reject each milestone release.
-- If campaign fails goal or milestones rejected: contributors can claimRefund() to recover their USDC.
+- If Creator DAO fails goal or milestones rejected: contributors can claimRefund() to recover their USDC.
 
 ---
 

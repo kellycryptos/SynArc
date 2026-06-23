@@ -284,7 +284,7 @@ export default function CreateDaoPage() {
           image: imageUrl || undefined,
         });
 
-        // 6. Register as a campaign in the Crowdfund Hub (Zustand + local campaigns DB)
+        // 6. Register as a Creator DAO campaign (Zustand + local campaigns DB)
         const campaignDeadline = new Date(Date.now() + creatorDuration * 24 * 60 * 60 * 1000).toISOString();
         await addCampaign({
           title: formData.name,

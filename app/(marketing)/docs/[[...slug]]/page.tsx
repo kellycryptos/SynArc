@@ -32,7 +32,7 @@ const docsNav = [
   { label: "Overview", slug: "" },
   { label: "Governance", slug: "governance" },
   { label: "Treasury", slug: "treasury" },
-  { label: "Crowdfund Hub", slug: "crowdfund" },
+  { label: "Creator DAO", slug: "crowdfund" },
   { label: "Creator Economy", slug: "creator-economy" },
   { label: "AI Agents", slug: "ai-agents" },
   { label: "Agent SDK", slug: "sdk" },
