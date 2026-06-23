@@ -1,45 +1,35 @@
-# Walkthrough — Redesign Bridge UI to Feel Like a Real Bridge
+# Walkthrough — Build Real Treasury Rebalancer Agent with CCTP on Testnet
 
-We have successfully redesigned the USDC Cross-Chain Bridge UI to align with standard web3 design patterns (like Uniswap, Stargate, or Hop Protocol). The bridge is fully functional bidirectionally, uses the native Circle CCTP burn-and-mint flows under the hood, and includes a premium layout.
+We have successfully implemented the real on-chain rebalancing logic for the SynArc Treasury Agent, together with the code for the `@synarc/agent-sdk` client library.
 
 ---
 
 ## What was Changed
 
-### 1. Uniswap-Style Swap Layout
-- Centered the swap interface into a focused glassmorphism container: `backdrop-blur-xl bg-surface-elevated/45 border border-border-thin/80 rounded-3xl`.
-- Refactored inputs into distinct **From** (Origin) and **To** (Destination) boxes.
-- Enabled select dropdown network lists on active external chains, and locked the opposing chain to the **Arc Testnet** badge depending on whether we are depositing or withdrawing.
-- Placed a central switch button containing a down arrow that rotates on hover. Clicking it swaps the bridging direction (Deposit IN $\leftrightarrow$ Withdraw OUT) and refreshes state.
-- Formatted the amount input to support large font displays and a clickable inline `Max` badge.
-- Added live output previews ("You will receive X USDC") matching the input amount.
+### 1. Autonomous On-Chain Rebalance Execution Loop
+- **Succeeded Proposal Scanner**: Implemented `executeSucceededProposals()` in `lib/agent/treasury-agent.ts`. This queries proposal count on-chain from the `SynArcGovernor` contract, reviews each proposal, and identifies those in the `Succeeded` state (index `4`) that are tagged as `[AGENT]` and designate the agent's hot-wallet executor address as target.
+- **Governor Payout Trigger**: Calls `governor.execute(proposalId)` on-chain using the agent's hot-wallet executor wallet. This executes the proposal and withdraws the approved USDC rebalance amount from the Treasury contract directly to the agent's hot wallet address.
+- **CCTP Bridge Activation**: Instantiates `CCTPExecutor` and calls `bridgeToEthereum()` to approve USDC, trigger `depositForBurn()` on Arc Testnet targeting the Ethereum Sepolia domain, and generate the burn transaction hash.
+- **Backend Trigger**: Integrated the rebalance check-and-execute logic directly into the agent's periodic `run()` execution flow. When a user runs the agent from the dashboard or a POST request is received at `/api/agent/run`, any succeeded proposals are autonomously executed and bridged.
+- **Resilient Fallback Private Key**: The agent constructor falls back to `process.env.DEPLOYER_PRIVATE_KEY` if hot-wallet variables are unset, ensuring it executes transactions out of the box with the funded deployer account.
 
-### 2. Collapsible Details Accordion
-- Introduced a **Bridge Details** accordion containing:
-  - **Slippage & Wrappers**: Notes that native CCTP swaps are 1:1.
-  - **Estimated Time**: Shows standard processing time (`~20 seconds`).
-  - **Bridge Protocol Fee**: Shows `0.00 USDC` (Free).
-  - **Network Fee**: Shows `Gas only`.
-  - **Verification method**: Notes secure validation via Circle Iris Attestation.
-
-### 3. Inline Progress Stepper Overlay
-- Rather than rendering a separate page, the progress status displays an inline loading/success screen inside the swap card.
-- Implemented a step checklist indicating progress across the CCTP flow:
-  1. Authorizing spend allowance.
-  2. Burning USDC on the origin network.
-  3. Receiving the attestation and minting USDC on the destination network (displays an elapsed seconds timer).
-- Implemented a success receipt showing a green checkmark, origin/destination chains with icons, exact amounts, and clickable links to view transaction receipts on explorers (ArcScan/Etherscan).
-
-### 4. Tidy Recent Activities Log
-- Moved the transaction history table into a collapsible panel below the swap card so it stays clean and out of the way, displaying active count badges when transactions are logged.
+### 2. SynArc Client SDK (`@synarc/agent-sdk`)
+- **SDK Implementation**: Created a fully typed, Next.js compatible TypeScript client `SynArcClient` / `SynArcAgentClient` inside `lib/sdk/index.ts`.
+- **EVM and Arc-Native API Methods**:
+  - `campaigns`: Launches escrows on-chain, lists campaigns, and sends USDC nanopayments.
+  - `agent`: Registers agents on the ERC-8004 registry contract on-chain.
+  - `governance`: Fetches active proposals on-chain, casts votes with reasons, and queries proposal details.
+  - `treasury`: Checks executor permissions and withdraws assets.
+  - `token`: Checks sARC balances, delegates voting power, and self-delegates.
+- **Import Alias Registry**: Added the `"@synarc/agent-sdk"` path mapping to `tsconfig.json`. Developers can now import client classes using `import { SynArcAgentClient } from '@synarc/agent-sdk'` inside the Next.js workspace, matching the exact import path documented in the developer guides.
 
 ---
 
 ## Verification Performed
 
-### Production Build
-- Ran `npm run build` and confirmed the Next.js production bundle compiles successfully with no TypeScript type check failures or routing issues.
+### Production Next.js Build
+- Ran `npm run build` to confirm compilation and TypeScript type checking. The project compiles successfully without any errors or warning failures.
 
-### Manual Layout Inspection
-- Verified that the alignment of elements fits correctly in the web page.
-- Confirmed network-switching triggers switch or request chain additions dynamically according to the chosen direction.
+### On-Chain Simulation Check
+- Checked local settings and verified the private key fallback.
+- Confirmed that `/api/agent/run` GET/POST APIs execute their checking and on-chain logic cleanly.
