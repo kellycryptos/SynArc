@@ -1,7 +1,8 @@
-﻿import Groq from 'groq-sdk'
-import { createPublicClient, createWalletClient, http, fallback, parseAbi } from 'viem'
+import Groq from 'groq-sdk'
+import { createPublicClient, createWalletClient, http, fallback, parseAbi, parseUnits } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS, ARC_GAS } from '@/lib/arc-config'
+import { CCTPExecutor } from '@/lib/agent/cctp-executor'
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
@@ -21,6 +22,10 @@ const TREASURY_ABI = parseAbi([
 
 const GOVERNOR_ABI = parseAbi([
   'function propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget) returns (uint256)',
+  'function execute(uint256 proposalId) external payable',
+  'function state(uint256 proposalId) view returns (uint8)',
+  'function proposalCount() view returns (uint256)',
+  'function getProposal(uint256 proposalId) view returns (uint256 id, address proposer, string title, string description, string category, uint256 votingDuration, uint256 startTime, uint256 endTime, uint256 forVotes, uint256 againstVotes, uint256 abstainVotes, bool canceled, bool executed, uint256 treasuryImpactValue, address executionTarget)'
 ])
 
 export class TreasuryAgent {
@@ -28,11 +33,14 @@ export class TreasuryAgent {
   private publicClient: any
   private account: any
   private actions: AgentAction[] = []
+  private privateKey: `0x${string}`
 
   constructor() {
-    const privateKey = (process.env.FAUCET_PRIVATE_KEY || process.env.AGENT_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000001') as `0x${string}`
+    const key = (process.env.FAUCET_PRIVATE_KEY || process.env.AGENT_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000001') as `0x${string}`
+    this.privateKey = key.startsWith('0x') ? key : `0x${key}` as `0x${string}`
+
     try {
-      this.account = privateKeyToAccount(privateKey)
+      this.account = privateKeyToAccount(this.privateKey)
     } catch {
       this.account = { address: '0x0000000000000000000000000000000000000000' }
     }
@@ -84,11 +92,19 @@ export class TreasuryAgent {
       ? `[AGENT] Bridge ${decision.proposedAmount} USDC to Ethereum via CCTP`
       : `[AGENT] Treasury Rebalancing — ${decision.action}`
     const description = `AUTONOMOUS AGENT PROPOSAL\nAction: ${decision.action}\nAmount: ${decision.proposedAmount || 0} USDC\nAgent: ${this.account.address}\nTimestamp: ${new Date().toISOString()}\n\nAI Reasoning:\n${decision.reasoning}\n\nThis proposal was created autonomously by the SynArc Treasury Agent.`
+    
     const txHash = await this.walletClient.writeContract({
       address: CONTRACTS.governor,
       abi: GOVERNOR_ABI,
       functionName: 'propose',
-      args: [title, description, 'TREASURY_REBALANCE', 300n, BigInt(Math.floor((decision.proposedAmount || 0) * 1_000_000)), '0x0000000000000000000000000000000000000000' as `0x${string}`],
+      args: [
+        title, 
+        description, 
+        'TREASURY_REBALANCE', 
+        300n, 
+        BigInt(Math.floor((decision.proposedAmount || 0) * 1_000_000)), 
+        this.account.address as `0x${string}`
+      ],
       gas: ARC_GAS.propose,
       gasPrice: ARC_GAS.gasPrice,
     })
@@ -96,19 +112,74 @@ export class TreasuryAgent {
     return txHash
   }
 
-  async executeCCTPIfApproved(proposalId: string, amount: number): Promise<string | null> {
+  /**
+   * Scans and autonomously executes succeeded rebalance proposals on-chain
+   */
+  async executeSucceededProposals(): Promise<string[]> {
+    const executedTxHashes: string[] = []
     try {
-      const GOVERNOR_STATE_ABI = parseAbi(['function state(uint256 proposalId) view returns (uint8)'])
-      const state = await this.publicClient.readContract({ address: CONTRACTS.governor, abi: GOVERNOR_STATE_ABI, functionName: 'state', args: [BigInt(proposalId)] })
-      if (Number(state) === 4) {
-        // State 4 = Succeeded — CCTP execution would happen here
-        console.log(`[TreasuryAgent] Proposal ${proposalId} succeeded — CCTP execution ready for ${amount} USDC`)
-        return null // CCTPExecutor handles this
+      const count = await this.publicClient.readContract({
+        address: CONTRACTS.governor,
+        abi: GOVERNOR_ABI,
+        functionName: 'proposalCount'
+      })
+
+      for (let i = 1; i <= Number(count); i++) {
+        const state = await this.publicClient.readContract({
+          address: CONTRACTS.governor,
+          abi: GOVERNOR_ABI,
+          functionName: 'state',
+          args: [BigInt(i)]
+        })
+
+        // State 4 = Succeeded
+        if (Number(state) === 4) {
+          const prop = await this.publicClient.readContract({
+            address: CONTRACTS.governor,
+            abi: GOVERNOR_ABI,
+            functionName: 'getProposal',
+            args: [BigInt(i)]
+          }) as any
+
+          const title = prop[2]
+          const target = prop[14]
+          const impact = prop[13]
+
+          // Only execute agent's own rebalance proposals
+          if (title.includes('[AGENT]') && target.toLowerCase() === this.account.address.toLowerCase()) {
+            console.log(`[TreasuryAgent] Found succeeded proposal #${i}: "${title}". Executing...`)
+
+            // 1. Call execute on governor
+            const execTx = await this.walletClient.writeContract({
+              address: CONTRACTS.governor,
+              abi: GOVERNOR_ABI,
+              functionName: 'execute',
+              args: [BigInt(i)],
+              gas: 500000n,
+              gasPrice: ARC_GAS.gasPrice,
+            })
+            await this.publicClient.waitForTransactionReceipt({ hash: execTx })
+            console.log(`[TreasuryAgent] Governor executed proposal #${i}. Hash: ${execTx}`)
+
+            // Wait a few seconds for blockchain settlement
+            await new Promise(resolve => setTimeout(resolve, 3000))
+
+            // 2. Trigger CCTP transfer on Arc Testnet
+            const amountUsdc = Number(impact) / 1_000_000
+            console.log(`[TreasuryAgent] Initiating CCTP bridge for ${amountUsdc} USDC to Ethereum Sepolia...`)
+
+            const cctp = new CCTPExecutor(this.privateKey)
+            const bridgeRes = await cctp.bridgeToEthereum(amountUsdc, this.account.address)
+            console.log(`[TreasuryAgent] CCTP burn transaction submitted. Hash: ${bridgeRes.burnTxHash}`)
+
+            executedTxHashes.push(bridgeRes.burnTxHash)
+          }
+        }
       }
     } catch (err) {
-      console.warn('[TreasuryAgent] executeCCTPIfApproved error:', err)
+      console.error('[TreasuryAgent] Failed to check/execute succeeded proposals:', err)
     }
-    return null
+    return executedTxHashes
   }
 
   logAction(action: AgentAction) {
@@ -119,6 +190,21 @@ export class TreasuryAgent {
   async run(): Promise<AgentAction> {
     const startTime = new Date().toISOString()
     try {
+      // 1. Execute any succeeded proposals first (autonomous execution)
+      const executedTxHashes = await this.executeSucceededProposals()
+      if (executedTxHashes.length > 0) {
+        const action: AgentAction = {
+          timestamp: startTime,
+          action: 'bridge_to_ethereum',
+          reasoning: `AUTONOMOUS EXECUTION SUCCESSFUL: Detected succeeded rebalancing proposal on-chain. Executed payouts from Governor and initiated cross-chain CCTP transfer for USDC to Ethereum Sepolia. Transactions: ${executedTxHashes.join(', ')}`,
+          status: 'executed',
+          txHash: executedTxHashes[0]
+        }
+        this.logAction(action)
+        return action
+      }
+
+      // 2. Check treasury and proposal creation rules
       const treasury = await this.checkTreasury()
       const decision = await this.analyzeAndDecide(treasury)
       if (!decision.shouldAct) {
@@ -126,6 +212,7 @@ export class TreasuryAgent {
         this.logAction(action)
         return action
       }
+      
       let txHash: string | undefined
       try {
         txHash = await this.createRebalancingProposal(decision)
