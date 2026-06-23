@@ -26,7 +26,14 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 
-const activeLinks = [
+interface ActiveLink {
+  href: string;
+  label: string;
+  icon: any;
+  isNew?: boolean;
+}
+
+const activeLinks: ActiveLink[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/daos", label: "DAOs", icon: Grid },
   { href: "/agents", label: "AI Agents", icon: Bot },
