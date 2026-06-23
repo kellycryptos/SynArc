@@ -1,46 +1,45 @@
-# Walkthrough - Cleanup, Bidirectional CCTP, Verification, & Docs
+# Walkthrough — Redesign Bridge UI to Feel Like a Real Bridge
 
-We have successfully completed all the post-pivot tasks: removing mock data, upgrading CCTP to support bidirectional routing, deploying and verifying the `SynArcAgent` contract on ArcScan, and updating product documentation.
-
----
-
-## 1. Removed All Mock Data
-
-We cleaned up all mock creator profiles and campaigns so that the app displays live on-chain metrics and empty states gracefully when no campaigns have been launched yet.
-- **Mock profiles cleared**: Emptied `MOCK_CREATORS` in [creators.ts](file:///c:/Users/HP/OneDrive/Pictures/Documents/SynArc/synarc-dao/data/mock/creators.ts).
-- **Mock campaigns cleared**: Emptied `MOCK_CAMPAIGNS` in [campaigns.ts](file:///c:/Users/HP/OneDrive/Pictures/Documents/SynArc/synarc-dao/data/mock/campaigns.ts).
-- **Database cleared**: Overwrote [campaigns.json](file:///c:/Users/HP/OneDrive/Pictures/Documents/SynArc/synarc-dao/data/campaigns.json) with `[]` to remove mock startup campaigns.
-- **Graceful Empty States**: Added clean empty state banners to the featured campaigns grid and creator ranking leaderboard inside the main dashboard [page.tsx](file:///c:/Users/HP/OneDrive/Pictures/Documents/SynArc/synarc-dao/app/(dashboard)/dashboard/page.tsx).
+We have successfully redesigned the USDC Cross-Chain Bridge UI to align with standard web3 design patterns (like Uniswap, Stargate, or Hop Protocol). The bridge is fully functional bidirectionally, uses the native Circle CCTP burn-and-mint flows under the hood, and includes a premium layout.
 
 ---
 
-## 2. Bidirectional Circle CCTP Bridge
+## What was Changed
 
-We extended the CCTP bridge hook and UI page to support bidirectional transfers (both Deposit IN and Withdraw OUT).
-- **Hook Generalization**: Updated the `bridgeUSDC` function in [useCCTPBridge.ts](file:///c:/Users/HP/OneDrive/Pictures/Documents/SynArc/synarc-dao/hooks/useCCTPBridge.ts) to accept `direction: "in" | "out"`.
-  - **Deposit (IN)**: Bridges USDC from origin chains to Arc Testnet.
-  - **Withdraw (OUT)**: Bridges USDC from Arc Testnet back to origin chains. Swaps source/dest configurations dynamically, requests wallet switch/add network for Arc Testnet on initialization, approves TokenMessenger, burns USDC, polls Sandbox Iris API, and mints USDC on the destination chain with specific gas overrides to avoid sticking.
-- **UI Refactoring**: Updated [bridge/page.tsx](file:///c:/Users/HP/OneDrive/Pictures/Documents/SynArc/synarc-dao/app/(dashboard)/bridge/page.tsx) to render **Deposit (IN)** and **Withdraw (OUT)** selector tabs, adjusting available balance sources, network indicators, path visualizations, checklists, and success screens.
-- **Activity Table**: Upgraded transaction logs history to support dynamic destination chain columns.
+### 1. Uniswap-Style Swap Layout
+- Centered the swap interface into a focused glassmorphism container: `backdrop-blur-xl bg-surface-elevated/45 border border-border-thin/80 rounded-3xl`.
+- Refactored inputs into distinct **From** (Origin) and **To** (Destination) boxes.
+- Enabled select dropdown network lists on active external chains, and locked the opposing chain to the **Arc Testnet** badge depending on whether we are depositing or withdrawing.
+- Placed a central switch button containing a down arrow that rotates on hover. Clicking it swaps the bridging direction (Deposit IN $\leftrightarrow$ Withdraw OUT) and refreshes state.
+- Formatted the amount input to support large font displays and a clickable inline `Max` badge.
+- Added live output previews ("You will receive X USDC") matching the input amount.
+
+### 2. Collapsible Details Accordion
+- Introduced a **Bridge Details** accordion containing:
+  - **Slippage & Wrappers**: Notes that native CCTP swaps are 1:1.
+  - **Estimated Time**: Shows standard processing time (`~20 seconds`).
+  - **Bridge Protocol Fee**: Shows `0.00 USDC` (Free).
+  - **Network Fee**: Shows `Gas only`.
+  - **Verification method**: Notes secure validation via Circle Iris Attestation.
+
+### 3. Inline Progress Stepper Overlay
+- Rather than rendering a separate page, the progress status displays an inline loading/success screen inside the swap card.
+- Implemented a step checklist indicating progress across the CCTP flow:
+  1. Authorizing spend allowance.
+  2. Burning USDC on the origin network.
+  3. Receiving the attestation and minting USDC on the destination network (displays an elapsed seconds timer).
+- Implemented a success receipt showing a green checkmark, origin/destination chains with icons, exact amounts, and clickable links to view transaction receipts on explorers (ArcScan/Etherscan).
+
+### 4. Tidy Recent Activities Log
+- Moved the transaction history table into a collapsible panel below the swap card so it stays clean and out of the way, displaying active count badges when transactions are logged.
 
 ---
 
-## 3. Smart Contract Deployment & Verification
+## Verification Performed
 
-We successfully unblocked and verified the smart contracts on Arc Testnet.
-- **Queue Clearing**: Identified a stuck transaction on deployer nonce `127` due to gas price changes on Arc Testnet (22 gwei network gas price vs. 15 gwei submitted). We submitted overriding speedup transactions on nonces `127`, `128`, and `129` at `50 gwei` to clear the mempool queue.
-- **Contract Deployment**: Re-deployed `SynArcAgent` contract with safe overrides (`30 gwei` gas price) to address `0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de`.
-- **ArcScan Verification**: Verified the new contract successfully on ArcScan:
-  - `npx hardhat verify --network arcTestnet 0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de 0x35630dFE2592AB19d979ec1B173697aEa554b66b 0x35630dFE2592AB19d979ec1B173697aEa554b66b "Groq Llama 3.3 70B"`
-  - Verified URL: [0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de on ArcScan](https://testnet.arcscan.app/address/0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de#code)
-- **Core Verification Status**: Verified that all other core contracts (`SynArcToken`, `SynArcTreasury`, and `SynArcGovernor`) are successfully verified on ArcScan.
+### Production Build
+- Ran `npm run build` and confirmed the Next.js production bundle compiles successfully with no TypeScript type check failures or routing issues.
 
----
-
-## 4. Updated Product Documentation
-
-We updated the documentation pages to align with the new Lepton consol and bidirectional bridge:
-- **README**: Updated [README.md](file:///c:/Users/HP/OneDrive/Pictures/Documents/SynArc/synarc-dao/README.md) to highlight the Autonomous Treasury Agent and the bidirectional CCTP bridge.
-- **Bridge Docs**: Refactored [06-bridge.md](file:///c:/Users/HP/OneDrive/Pictures/Documents/SynArc/synarc-dao/docs/06-bridge.md) with details of the bidirectional routing mechanics, sequence flows, and official contract addresses.
-- **AI Agent Docs**: Refactored [04-ai-agents.md](file:///c:/Users/HP/OneDrive/Pictures/Documents/SynArc/synarc-dao/docs/04-ai-agents.md) detailing Lepton console simulation inputs.
-- **Contracts Docs**: Updated [07-smart-contracts.md](file:///c:/Users/HP/OneDrive/Pictures/Documents/SynArc/synarc-dao/docs/07-smart-contracts.md) to include the verified agent address and verification commands.
+### Manual Layout Inspection
+- Verified that the alignment of elements fits correctly in the web page.
+- Confirmed network-switching triggers switch or request chain additions dynamically according to the chosen direction.
