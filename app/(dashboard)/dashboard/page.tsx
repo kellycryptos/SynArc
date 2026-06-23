@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { OverviewCards } from "@/components/dashboard/OverviewCards";
 import { WalletFaucetCard } from "@/components/dashboard/WalletFaucetCard";
@@ -8,7 +8,7 @@ import { ProposalFeed } from "@/components/proposals/ProposalFeed";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { ArrowRight, Rocket, Plus, Coins, Users, Trophy } from "lucide-react";
+import { ArrowRight, Rocket, Plus, Coins, Users, Trophy, Zap, Bot, Activity } from "lucide-react";
 import Link from "next/link";
 import { useCreatorStore } from "@/hooks/useCreatorStore";
 
@@ -41,12 +41,78 @@ export default function DashboardOverview() {
     <div className="space-y-8 animate-fade-in-up">
       {/* Auth-aware header: banner + Create Proposal button */}
       <DashboardHeader />
+
+      {/* ⚡ Agent Status Banner */}
+      <Link href="/agent" className="block">
+        <div className="flex items-center justify-between gap-4 px-5 py-3.5 rounded-xl border border-primary/25 bg-primary/5 hover:bg-primary/8 hover:border-primary/40 transition-all group cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Bot className="w-5 h-5 text-primary" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary animate-ping" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
+            </div>
+            <div>
+              <span className="text-sm font-bold text-text-primary">Treasury Agent Active</span>
+              <span className="ml-3 text-xs text-muted">Monitoring treasury · Groq AI · CCTP ready</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-primary text-xs font-bold group-hover:gap-3 transition-all">
+            <Activity className="w-3.5 h-3.5 animate-pulse" />
+            View Agent
+            <ArrowRight className="w-3.5 h-3.5" />
+          </div>
+        </div>
+      </Link>
   
       {/* Metrics */}
       <OverviewCards />
   
       {/* Wallet Balance & Arc Testnet Faucet */}
       <WalletFaucetCard />
+
+      {/* ⚡ Treasury Agent Feature Card — Star of Lepton */}
+      <GlassCard className="p-6 border border-primary/30 bg-primary/[0.02] space-y-5 relative overflow-hidden" hover={false}>
+        <div className="absolute top-0 right-0 w-64 h-32 bg-primary/5 blur-3xl rounded-full" />
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-primary/15 border border-primary/25">
+              <Zap className="w-5 h-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold font-heading text-text-primary">Autonomous Treasury Management</h2>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-primary/20 border border-primary/30 text-primary">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping inline-block" />
+              LIVE
+            </span>
+          </div>
+          <Link href="/agent" className="text-xs font-bold text-primary hover:text-primary-glow flex items-center gap-1 transition-all">
+            View Agent Dashboard <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+        <p className="text-sm text-muted relative z-10 max-w-2xl">
+          AI agent monitors your treasury 24/7, creates governance proposals autonomously, and executes CCTP cross-chain transfers when approved by community vote. Deep Circle integration: CCTP burn-and-mint, Gateway nanopayments, Modular Smart Account.
+        </p>
+        <div className="grid grid-cols-3 gap-4 relative z-10">
+          {[
+            { label: "Agent Status", value: "WATCHING", color: "text-primary" },
+            { label: "AI Model", value: "Groq Llama 3.3", color: "text-purple-400" },
+            { label: "CCTP Enabled", value: "Arc → Sepolia", color: "text-blue-400" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-surface-elevated/60 rounded-xl p-3 border border-border-thin">
+              <p className="text-xs text-muted mb-1">{stat.label}</p>
+              <p className={`text-sm font-bold ${stat.color}`}>{stat.value}</p>
+            </div>
+          ))}
+        </div>
+        <div className="relative z-10">
+          <Link
+            href="/agent"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-accent-purple to-accent-blue text-white text-sm font-bold rounded-xl hover:opacity-90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)]"
+          >
+            <Zap className="w-4 h-4" />
+            Open Treasury Agent
+          </Link>
+        </div>
+      </GlassCard>
 
       {/* ⚡ Crowdfund Hub Section */}
       <GlassCard className="p-6 border border-primary/20 bg-primary/[0.01] space-y-6" hover={false}>

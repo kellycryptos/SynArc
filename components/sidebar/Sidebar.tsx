@@ -18,6 +18,7 @@ import {
   Bot,
   Rocket,
   Trophy,
+  Zap,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { WalletConnectButton } from "@/components/ui/WalletConnectButton";
@@ -28,8 +29,8 @@ import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 const activeLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/daos", label: "DAOs", icon: Grid },
-  { href: "/agents", label: "AI Agents", icon: Bot, isNew: true },
-  { href: "/campaigns", label: "Crowdfund Hub", icon: Rocket, isNew: true },
+  { href: "/agents", label: "AI Agents", icon: Bot },
+  { href: "/campaigns", label: "Crowdfund Hub", icon: Rocket },
   { href: "/proposals", label: "Proposals", icon: FileText },
   { href: "/treasury", label: "Treasury", icon: Shield },
   { href: "/bridge", label: "Bridge", icon: ArrowRightLeft },
@@ -80,6 +81,40 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
       </div>
 
       <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+        {/* ⚡ AGENT — Primary Feature for Lepton */}
+        {(() => {
+          const href = "/agent";
+          const active = pathname === href || pathname.startsWith(href + "/");
+          return (
+            <button
+              onClick={() => handleNavClick(href)}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold transition-all duration-200 group cursor-pointer text-left mb-2",
+                active
+                  ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_24px_rgba(124,58,237,0.18)]"
+                  : "text-foreground hover:text-primary hover:bg-primary/10 border border-primary/20 hover:border-primary/40 hover:shadow-[0_0_16px_rgba(124,58,237,0.12)] bg-primary/5"
+              )}
+            >
+              <Zap
+                className={cn(
+                  "w-4.5 h-4.5 shrink-0 transition-colors duration-200",
+                  active ? "text-primary" : "text-primary/80 group-hover:text-primary"
+                )}
+              />
+              <span>Treasury Agent</span>
+              {!active && (
+                <span className="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-primary/20 border border-primary/30 text-primary tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping inline-block" />
+                  LIVE
+                </span>
+              )}
+              {active && (
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(124,58,237,0.8)]" />
+              )}
+            </button>
+          );
+        })()}
+
         {/* Section label */}
         <p className="px-3 pb-2 text-[10px] uppercase tracking-[0.15em] font-semibold text-muted/50">
           Governance
@@ -126,76 +161,40 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
           );
         })}
 
-        {/* Creators Section */}
+        {/* TEMPORARILY HIDDEN FOR LEPTON — Creator economy links
         <p className="px-3 pt-5 pb-2 text-[10px] uppercase tracking-[0.15em] font-semibold text-muted/50">
           Creators
         </p>
 
-        {/* Leaderboard link */}
         {(() => {
           const href = "/leaderboard";
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <button
               onClick={() => handleNavClick(href)}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer text-left",
-                active
-                  ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_18px_rgba(124,58,237,0.12)]"
-                  : "text-muted hover:text-foreground hover:bg-surface-elevated border border-transparent hover:border-border-thin hover:shadow-[0_0_10px_rgba(124,58,237,0.05)]"
-              )}
+              className={...}
             >
-              <Trophy
-                className={cn(
-                  "w-4.5 h-4.5 shrink-0 transition-colors duration-200",
-                  active ? "text-primary" : "text-muted group-hover:text-foreground"
-                )}
-              />
+              <Trophy ... />
               <span>Leaderboard</span>
-              {!active && (
-                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-amber-500/15 border border-amber-500/25 text-amber-400 tracking-wider">
-                  NEW
-                </span>
-              )}
-              {active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(124,58,237,0.8)]" />
-              )}
             </button>
           );
         })()}
 
-        {/* Launch Creator DAO link */}
         {(() => {
           const href = "/create-dao";
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <button
               onClick={() => handleNavClick(href)}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer text-left",
-                active
-                  ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_18px_rgba(124,58,237,0.12)]"
-                  : "text-muted hover:text-foreground hover:bg-surface-elevated border border-transparent hover:border-border-thin hover:shadow-[0_0_10px_rgba(124,58,237,0.05)]"
-              )}
+              className={...}
             >
-              <Rocket
-                className={cn(
-                  "w-4.5 h-4.5 shrink-0 transition-colors duration-200",
-                  active ? "text-primary" : "text-muted group-hover:text-foreground"
-                )}
-              />
+              <Rocket ... />
               <span>Launch Creator DAO</span>
-              {!active && (
-                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 tracking-wider animate-pulse">
-                  NEW
-                </span>
-              )}
-              {active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(124,58,237,0.8)]" />
-              )}
             </button>
           );
         })()}
+        END TEMPORARILY HIDDEN */}
+
 
         {/* Divider & Roadmap if any coming soon */}
         {comingSoonLinks.length > 0 && (

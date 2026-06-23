@@ -174,45 +174,49 @@ export default function LandingPage() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="max-w-7xl mx-auto relative z-10 text-center"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-elevated border border-border-thin text-sm font-medium mb-8">
-            <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            Arc Testnet is Live
+          {/* Lepton badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-elevated border border-primary/30 text-sm font-medium mb-8">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            ⚡ Live CCTP Agent on Arc Testnet
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold font-heading tracking-tight mb-6 leading-tight text-text-primary">
-            Launch Your Creator DAO <br className="hidden md:block" />
-            <span className="gradient-text">on Arc</span>
+            Autonomous Treasury Agent <br className="hidden md:block" />
+            <span className="gradient-text">for DAOs on Arc</span>
           </h1>
           
           <p className="text-xl md:text-2xl text-text-secondary max-w-3xl mx-auto mb-10">
-            The easiest way for creators and AI agents to launch, fund, and govern on-chain organizations with USDC nanopayments.
+            An autonomous on-chain agent that monitors your DAO treasury, creates rebalancing proposals, and executes CCTP transfers — no human required.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            {/* Primary CTA — Agent */}
             <motion.div
               whileHover={{ scale: 1.04, y: -2 }}
               whileTap={{ scale: 0.98 }}
               className="w-full sm:w-auto"
             >
               <Link 
-                href="/create-dao"
+                href="/agent"
                 className="w-full sm:w-auto px-12 py-5.5 rounded-xl bg-gradient-to-r from-accent-purple via-purple-600 to-accent-blue text-white font-black hover:opacity-95 transition-all shadow-[0_0_35px_rgba(124,58,237,0.35)] hover:shadow-[0_0_50px_rgba(124,58,237,0.55)] flex items-center justify-center gap-2 text-xl border border-white/10"
               >
-                <span className="text-white-keep">Launch Creator DAO &rarr;</span>
+                <span className="text-white-keep">View Treasury Agent &rarr;</span>
               </Link>
             </motion.div>
+            {/* Secondary CTA — Dashboard */}
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="w-full sm:w-auto"
             >
               <Link 
-                href="/leaderboard"
+                href="/dashboard"
                 className="w-full sm:w-auto px-8 py-4.5 rounded-xl border border-border hover:border-accent-purple/30 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg bg-surface"
               >
-                View Leaderboard
+                Launch Dashboard
               </Link>
             </motion.div>
+            {/* Docs CTA */}
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -230,7 +234,7 @@ export default function LandingPage() {
           </div>
           
           <p className="text-xs text-text-tertiary/60 mt-6 font-mono tracking-wider select-none">
-            ⚡ Powered by <span className="text-accent-purple font-bold">@synarc/agent-sdk</span>
+            ⚡ Powered by <span className="text-accent-purple font-bold">@synarc/agent-sdk</span> · CCTP · Circle Modular Wallets
           </p>
         </motion.div>
       </section>

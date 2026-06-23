@@ -22,7 +22,7 @@ export function DashboardHeader() {
         <div className="space-y-1">
           <h1 className="text-3xl font-bold font-heading tracking-tight">Overview</h1>
           <p className="text-muted">
-            Monitor governance activity and treasury health across the SynArc ecosystem.
+            Autonomous Treasury Management on Arc — monitor, govern, and execute.
           </p>
         </div>
 
