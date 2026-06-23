@@ -367,19 +367,27 @@ export function useCCTPBridge() {
 
       // Extract messageBytes from logs
       let messageBytes: `0x${string}` | null = null;
+      const MESSAGE_SENT_TOPIC = "0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036";
+
       for (const log of burnReceipt.logs) {
-        try {
-          const decoded = decodeEventLog({
-            abi: messageTransmitterAbi,
-            data: log.data,
-            topics: log.topics
-          });
-          if (decoded.eventName === "MessageSent") {
+        if (log.topics && log.topics[0] === MESSAGE_SENT_TOPIC) {
+          try {
+            const decoded = decodeEventLog({
+              abi: [
+                {
+                  name: "MessageSent",
+                  type: "event",
+                  inputs: [{ name: "message", type: "bytes", indexed: false }]
+                }
+              ] as const,
+              data: log.data,
+              topics: log.topics
+            });
             messageBytes = decoded.args.message;
             break;
+          } catch (decodeErr) {
+            console.error("Failed to decode MessageSent event log:", decodeErr);
           }
-        } catch (_) {
-          // Ignore logs from other events or contracts
         }
       }
 

@@ -492,7 +492,7 @@ export default function BridgePage() {
               USDC Bridge
             </h1>
             <p className="text-muted mt-1 text-sm">
-              Powered by **Circle CCTP** — Native burn-and-mint bridge protocol. 100% backed by Circle, zero wrapping risk.
+              Powered by <strong className="text-white font-bold">Circle CCTP</strong> - Native burn-and-mint bridge protocol. 100% backed by Circle, zero wrapping risk.
             </p>
           </div>
 
@@ -961,7 +961,7 @@ export default function BridgePage() {
             <div className="text-center">
               <span className="text-[10px] text-text-tertiary tracking-wider font-semibold select-none flex items-center justify-center gap-1 uppercase">
                 <ShieldCheck className="w-3.5 h-3.5 text-success" />
-                Powered by Circle CCTP — fast and secure USDC bridging
+                Powered by Circle CCTP - fast and secure USDC bridging
               </span>
             </div>
           </div>

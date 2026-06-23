@@ -169,13 +169,13 @@ const proposalTx = await synarc.treasury.proposeRebalance({
 });
 console.log(`Rebalance proposal submitted. Hash: ${proposalTx.hash}`);
 
-// 2. Once the proposal succeeds, execute the proposal and trigger CCTP burn
+// 2. Once the proposal succeeds, execute the proposal and trigger the full CCTP burn-and-mint pipeline
 const execution = await synarc.treasury.executeRebalance({
   proposalId: "436",
   amount: 50.00,
   recipient: wallet.address
 });
-console.log(`Rebalance executed! Governor Tx: ${execution.executeHash}, CCTP Burn Tx: ${execution.burnHash}`);
+console.log(`Rebalance executed! Governor Tx: ${execution.executeHash}, CCTP Burn Tx: ${execution.burnHash}, CCTP Mint Tx: ${execution.mintHash}`);
 ```
 
 ---
@@ -267,7 +267,7 @@ for (const proposal of activeProposals) {
 | `executeSweep({ tokenAddress, targetVault, amount })` | Swaps or sweeps treasury capital. |
 | `getBalances()` | Returns the list of assets held by the DAO treasury. |
 | `proposeRebalance({ amount, recipient })` | Submits a proposal to bridge USDC to Ethereum via CCTP. |
-| `executeRebalance({ proposalId, amount, recipient })` | Executes the succeeded rebalance proposal and triggers CCTP burn-and-mint. |
+| `executeRebalance({ proposalId, amount, recipient })` | Executes the succeeded rebalance proposal, triggers CCTP burn on Arc, polls for Circle Iris attestation, and mints native USDC on Ethereum Sepolia. |
 
 #### `client.token`
 | Method | Description |

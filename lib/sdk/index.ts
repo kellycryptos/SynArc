@@ -1,6 +1,7 @@
-import { createPublicClient, createWalletClient, http, fallback, parseAbi, parseUnits, formatUnits } from "viem";
+import { createPublicClient, createWalletClient, http, fallback, parseAbi, parseUnits, formatUnits, decodeEventLog, keccak256 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { arcTestnet, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
+import { sepolia } from "viem/chains";
 
 export interface SDKConfig {
   network: "arc-testnet" | "arc-mainnet";
@@ -294,6 +295,10 @@ export class SynArcClient {
         const CCTP_MESSENGER_ABI = parseAbi([
           "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken) returns (uint64)"
         ]);
+        const MESSAGE_TRANSMITTER_ABI = parseAbi([
+          "event MessageSent(bytes message)",
+          "function receiveMessage(bytes message, bytes attestation) returns (bool)"
+        ]);
         const ERC20_ABI = parseAbi([
           "function approve(address spender, uint256 amount) returns (bool)"
         ]);
@@ -301,6 +306,7 @@ export class SynArcClient {
         const usdcAddress = "0x3600000000000000000000000000000000000000"; // Arc Testnet USDC
         const messengerAddress = "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA"; // Arc TokenMessenger
         const ethSepoliaDomain = 0;
+        const ethSepoliaTransmitter = "0xe737e5cebeeba77efe34d4aa090756590b1ce275";
 
         if (!this.walletClient) throw new Error("Signer/Private key required to write to contract");
 
@@ -331,8 +337,96 @@ export class SynArcClient {
           functionName: "depositForBurn",
           args: [amountRaw, ethSepoliaDomain, mintRecipient, usdcAddress],
         });
+        const burnReceipt = await this.publicClient.waitForTransactionReceipt({ hash: burnTx });
 
-        return { executeHash: execTx, burnHash: burnTx };
+        // 4. Extract messageBytes from logs
+        let messageBytes: `0x${string}` | null = null;
+        for (const log of burnReceipt.logs) {
+          try {
+            const decoded = decodeEventLog({
+              abi: MESSAGE_TRANSMITTER_ABI,
+              data: log.data,
+              topics: log.topics
+            });
+            if (decoded.eventName === "MessageSent") {
+              messageBytes = decoded.args.message;
+              break;
+            }
+          } catch (_) {
+            // Ignore logs from other events or contracts
+          }
+        }
+
+        if (!messageBytes) {
+          throw new Error("MessageSent event was not found in burn transaction logs.");
+        }
+
+        const messageHash = keccak256(messageBytes);
+        console.log(`[SynArc SDK] CCTP message hash: ${messageHash}`);
+
+        // 5. Poll Circle Attestation API
+        const attestationUrl = `https://iris-api-sandbox.circle.com/v1/attestations/${messageHash}`;
+        let attestation: string | null = null;
+
+        // Poll up to 30 times (2.5 minutes)
+        for (let i = 0; i < 30; i++) {
+          try {
+            const response = await fetch(attestationUrl);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.status === "complete") {
+                attestation = data.attestation;
+                break;
+              }
+            }
+          } catch (pollErr) {
+            console.error("[SynArc SDK] Error polling Circle Iris API:", pollErr);
+          }
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
+
+        if (!attestation) {
+          throw new Error("Circle attestation polling timed out or failed.");
+        }
+
+        // 6. Submit receiveMessage on destination chain (Ethereum Sepolia) if account is available
+        let mintTx: `0x${string}` | undefined;
+        if (this.account) {
+          try {
+            const sepoliaRpcUrls = [
+              "https://rpc.ankr.com/eth_sepolia",
+              "https://ethereum-sepolia-rpc.publicnode.com",
+              "https://sepolia.gateway.tenderly.co"
+            ];
+            const sepoliaTransport = fallback(sepoliaRpcUrls.map(url => http(url)));
+            const sepoliaPublicClient = createPublicClient({
+              chain: sepolia,
+              transport: sepoliaTransport
+            });
+            const sepoliaWalletClient = createWalletClient({
+              account: this.account,
+              chain: sepolia,
+              transport: sepoliaTransport
+            });
+
+            console.log("[SynArc SDK] Submitting CCTP mint transaction on Ethereum Sepolia...");
+            mintTx = await sepoliaWalletClient.writeContract({
+              address: ethSepoliaTransmitter as `0x${string}`,
+              abi: MESSAGE_TRANSMITTER_ABI,
+              functionName: "receiveMessage",
+              args: [messageBytes as `0x${string}`, attestation as `0x${string}`],
+              account: this.account
+            });
+            await sepoliaPublicClient.waitForTransactionReceipt({ hash: mintTx });
+            console.log(`[SynArc SDK] CCTP Mint transaction confirmed: ${mintTx}`);
+          } catch (mintErr) {
+            console.error("[SynArc SDK] Failed to execute mint on Ethereum Sepolia:", mintErr);
+          }
+        } else {
+          console.warn("[SynArc SDK] No private key/account available to sign mint transaction on Ethereum Sepolia. Bridge transfer must be completed manually.");
+        }
+
+        return { executeHash: execTx, burnHash: burnTx, mintHash: mintTx };
       }
     };
   }
