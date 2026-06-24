@@ -70,7 +70,7 @@ export default function DashboardOverview() {
       {/* Wallet Balance & Arc Testnet Faucet */}
       <WalletFaucetCard />
 
-      {/* ⚡ Treasury Agent Feature Card — Star of Lepton */}
+      {/* ⚡ Treasury Agent Feature Card */}
       <GlassCard className="p-6 border border-primary/30 bg-primary/[0.02] space-y-5 relative overflow-hidden" hover={false}>
         <div className="absolute top-0 right-0 w-64 h-32 bg-primary/5 blur-3xl rounded-full" />
         <div className="flex items-center justify-between relative z-10">

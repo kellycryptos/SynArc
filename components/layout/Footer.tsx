@@ -219,7 +219,7 @@ export function Footer() {
               <div className="mt-6 inline-flex items-center gap-2 bg-background-primary border border-border text-text-secondary px-3 py-1 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-glow animate-pulse" />
                 <span className="text-[11px] font-medium tracking-wide uppercase">
-                  Built for the Arc agentic economy.
+                  Built for Creator DAOs on Arc.
                 </span>
               </div>
             </motion.div>

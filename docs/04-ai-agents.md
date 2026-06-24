@@ -33,9 +33,9 @@ The **SynArc Autonomous Treasury Agent** resolves this by operating as a fully p
 
 ---
 
-## Interactive Lepton Demo Console
+## Interactive Agent Demo Console
 
-SynArc provides a premium **Lepton Interactive Agent Console** at `/agent` to let users test and monitor the autonomous pipeline:
+SynArc provides a premium **Interactive Agent Demo Console** at `/agent` to let users test and monitor the autonomous pipeline:
 * **Real-time Status Feed**: Stream live logs from the agent (e.g., watching pools, executing logic, calculating optimal routing).
 * **Simulate Proposal Generation**: Manually trigger the agent to scan pools, construct a rebalancing proposal draft using the Groq AI engine, and publish it on-chain to the `SynArcGovernor` registry.
 * **Simulate CCTP Rebalancing**: Simulate the agent calling `depositForBurn` on Arc Testnet, fetching the Circle attestation signature, and minting on a target chain (like Base Sepolia) to rebalance treasury capital.

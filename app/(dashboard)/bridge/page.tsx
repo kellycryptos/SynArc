@@ -492,7 +492,7 @@ export default function BridgePage() {
               USDC Bridge
             </h1>
             <p className="text-muted mt-1 text-sm">
-              Powered by <strong className="text-white font-bold">Circle CCTP</strong> - Native burn-and-mint bridge protocol. 100% backed by Circle, zero wrapping risk.
+              Send USDC from Arc to Ethereum and vice versa. Zero wrapping risk, fast and secure.
             </p>
           </div>
 
@@ -890,18 +890,18 @@ export default function BridgePage() {
 
                         <div className="space-y-1">
                           <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                            {progressState === "initiating" && (bridgeState.status === "approving" ? "Approving spend allowance..." : "Preparing secure router...")}
-                            {progressState === "burning" && `Burning USDC on ${fromChain.name}...`}
+                            {progressState === "initiating" && (bridgeState.status === "approving" ? "Approving transfer..." : "Preparing secure router...")}
+                            {progressState === "burning" && `Sending USDC on ${fromChain.name}...`}
                             {progressState === "minting" && (bridgeState.status === "waiting-attestation"
-                              ? `Fetching Attestation... (${bridgeState.elapsedSeconds}s)`
-                              : `Minting USDC on ${toChain.name}...`)}
+                              ? `Verifying transfer... (${bridgeState.elapsedSeconds}s)`
+                              : `Delivering USDC on ${toChain.name}...`)}
                           </h3>
                           <p className="text-[11px] text-text-tertiary max-w-xs mx-auto leading-relaxed">
-                            {progressState === "initiating" && "Authorizing TokenMessenger contract to burn USDC on your origin account."}
-                            {progressState === "burning" && `Broadcasting USDC burn logs to the ${fromChain.name} network.`}
+                            {progressState === "initiating" && "Approving your wallet to send USDC."}
+                            {progressState === "burning" && `Broadcasting transfer to the ${fromChain.name} network.`}
                             {progressState === "minting" && (bridgeState.status === "waiting-attestation"
-                              ? "Waiting for Circle consensus attestation signature. This usually takes 15–20 seconds in sandbox."
-                              : "Attestation received. Minting USDC on destination network.")}
+                              ? "Waiting for transaction verification. This usually takes 15-20 seconds."
+                              : "Transfer verified. Delivering USDC to destination network.")}
                           </p>
                         </div>
 
@@ -916,7 +916,7 @@ export default function BridgePage() {
                               {progressState === "initiating" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                             </div>
                             <span className={`text-[11px] ${progressState === "initiating" ? "text-white font-bold" : "text-muted"}`}>
-                              1. Authorize Spend Allowance
+                              1. Approve USDC Transfer
                             </span>
                           </div>
 
@@ -933,7 +933,7 @@ export default function BridgePage() {
                             <span className={`text-[11px] ${
                               progressState === "burning" ? "text-white font-bold" : progressState === "initiating" ? "text-text-tertiary" : "text-muted"
                             }`}>
-                              2. Burn USDC on {fromChain.name}
+                              2. Send USDC from {fromChain.name}
                             </span>
                           </div>
 
@@ -946,7 +946,7 @@ export default function BridgePage() {
                               {progressState === "minting" ? <Loader2 className="w-3 h-3 animate-spin" /> : "3"}
                             </div>
                             <span className={`text-[11px] ${progressState === "minting" ? "text-white font-bold" : "text-text-tertiary"}`}>
-                              3. Receive attestation & Mint on {toChain.name}
+                              3. Verify & claim USDC on {toChain.name}
                             </span>
                           </div>
                         </div>
@@ -957,11 +957,10 @@ export default function BridgePage() {
               </AnimatePresence>
             </GlassCard>
             
-            {/* Powered by Circle stamp */}
             <div className="text-center">
               <span className="text-[10px] text-text-tertiary tracking-wider font-semibold select-none flex items-center justify-center gap-1 uppercase">
                 <ShieldCheck className="w-3.5 h-3.5 text-success" />
-                Powered by Circle CCTP - fast and secure USDC bridging
+                Fast and secure USDC bridging
               </span>
             </div>
           </div>
@@ -977,9 +976,9 @@ export default function BridgePage() {
                 <div className="flex gap-2.5">
                   <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-[10px] shrink-0">1</div>
                   <div>
-                    <h5 className="font-bold text-white mb-0.5">Burn on Origin</h5>
+                    <h5 className="font-bold text-white mb-0.5">1. Send USDC</h5>
                     <p className="text-text-tertiary leading-normal">
-                      The bridge burns your USDC on the origin network, permanently removing it from circulation.
+                      USDC is sent from your wallet on the starting chain.
                     </p>
                   </div>
                 </div>
@@ -987,9 +986,9 @@ export default function BridgePage() {
                 <div className="flex gap-2.5">
                   <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-[10px] shrink-0">2</div>
                   <div>
-                    <h5 className="font-bold text-white mb-0.5">Circle Attestation</h5>
+                    <h5 className="font-bold text-white mb-0.5">2. Verification</h5>
                     <p className="text-text-tertiary leading-normal">
-                      Circle's secure oracle network watches the burn logs and issues a cryptographic attestation receipt.
+                      The transfer is verified securely on-chain.
                     </p>
                   </div>
                 </div>
@@ -997,17 +996,17 @@ export default function BridgePage() {
                 <div className="flex gap-2.5">
                   <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-[10px] shrink-0">3</div>
                   <div>
-                    <h5 className="font-bold text-white mb-0.5">Mint on Destination</h5>
+                    <h5 className="font-bold text-white mb-0.5">3. Receive USDC</h5>
                     <p className="text-text-tertiary leading-normal">
-                      The signature is delivered to the destination domain, which mints 1:1 fresh native USDC directly to your wallet.
+                      USDC is delivered directly to your wallet on the destination chain.
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="p-3 bg-primary/5 rounded-xl border border-primary/15 text-[10px] text-text-tertiary leading-relaxed">
-                <p className="font-semibold text-white mb-1">💡 No Wrapping Slippage</p>
-                Because CCTP burns and mints native tokens directly, there is no wrapping contract. You always receive exactly 1:1 your USDC minus standard network gas fees.
+                <p className="font-semibold text-white mb-1">💡 Safe and Direct</p>
+                No wrapped tokens or intermediary pools. You always receive exactly 1:1 value of your USDC minus standard gas fees.
               </div>
             </GlassCard>
           </div>

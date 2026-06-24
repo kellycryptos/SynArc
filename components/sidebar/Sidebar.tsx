@@ -86,7 +86,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
       </div>
 
       <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-        {/* ⚡ AGENT — Primary Feature for Lepton */}
+        {/* ⚡ AGENT — Primary Feature */}
         {(() => {
           const href = "/agent";
           const active = pathname === href || pathname.startsWith(href + "/");
@@ -166,7 +166,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
           );
         })}
 
-        {/* TEMPORARILY HIDDEN FOR LEPTON — Creator economy links
+        {/* TEMPORARILY HIDDEN — Creator economy links
         <p className="px-3 pt-5 pb-2 text-[10px] uppercase tracking-[0.15em] font-semibold text-muted/50">
           Creators
         </p>

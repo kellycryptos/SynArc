@@ -71,7 +71,7 @@ export default function AgentPage() {
   const [loading, setLoading] = useState(true);
   const [autoRunning, setAutoRunning] = useState(false);
 
-  // Interactive Lepton Demo States
+  // Interactive Demo States
   const [demoStep, setDemoStep] = useState<"idle" | "analyzing" | "proposed" | "voting" | "executing" | "success">("idle");
   const [demoVotes, setDemoVotes] = useState(0);
   const [cctpProgress, setCctpProgress] = useState<"idle" | "burn" | "attestation" | "mint" | "done">("idle");
@@ -230,7 +230,7 @@ export default function AgentPage() {
                 LIVE
               </span>
             </div>
-            <p className="text-sm text-muted">Autonomous treasury management on Arc · Groq Llama 3.3 · CCTP</p>
+            <p className="text-sm text-muted">Helps monitor and rebalance your treasury capital between Arc and Ethereum.</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -372,7 +372,7 @@ export default function AgentPage() {
               </div>
             </div>
             <p className="text-xs text-muted">
-              Agent executes governance-approved CCTP burn-and-mint. All transfers require community vote.
+              The agent bridges USDC once a community vote passes. Transfers are fully secure and direct.
             </p>
           </GlassCard>
         </div>
@@ -463,7 +463,7 @@ export default function AgentPage() {
           <GlassCard className="p-5 space-y-4" hover={false}>
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" />
-              <h2 className="text-sm font-bold text-text-primary">Deep Circle Integration</h2>
+              <h2 className="text-sm font-bold text-text-primary">Circle Integrations</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {AGENT_INTEGRATIONS.map((integration) => (
@@ -510,11 +510,11 @@ export default function AgentPage() {
             </GlassCard>
           )}
 
-          {/* Interactive Lepton Demo Console */}
+          {/* Interactive Demo Console */}
           <GlassCard className="p-5 space-y-5 border-primary/30 bg-primary/[0.02] shadow-[0_0_30px_rgba(124,58,237,0.08)]" hover={false}>
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              <h2 className="text-sm font-bold text-text-primary">Lepton Interactive Demo Console</h2>
+              <h2 className="text-sm font-bold text-text-primary">Interactive Demo Console</h2>
               <span className="ml-auto text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30 uppercase tracking-widest animate-pulse">
                 Interactive
               </span>

@@ -429,17 +429,17 @@ export default function CampaignsPage() {
           </div>
         )}
 
-        {/* 10. Agentic Capital Vision Section */}
+        {/* 10. Future Vision Section */}
         <div className="pt-8">
           <GlassCard className="p-8 border border-primary/20 bg-gradient-to-b from-primary/[0.01] to-primary/[0.03] space-y-6 text-center overflow-hidden relative" hover={false}>
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.06),transparent_60%)] pointer-events-none" />
             
             <div className="space-y-2 relative z-10">
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-heading text-text-primary">
-                🌐 The Future — Agentic Capital Coordination
+                🌐 The Future of Creator Funding
               </h2>
               <p className="text-sm text-muted max-w-2xl mx-auto leading-relaxed">
-                SynArc Creator DAOs are evolving into autonomous economic actors. Each Creator DAO will eventually transform into a self-governing subDAO with its own:
+                Creator DAOs are the building blocks of community-owned projects. Every Creator DAO has access to:
               </p>
             </div>
 
@@ -472,7 +472,7 @@ export default function CampaignsPage() {
             </div>
 
             <p className="text-xs font-bold italic text-purple-300 tracking-wider relative z-10 pt-4">
-              SynArc is becoming programmable capital infrastructure for the agentic internet. Built on Arc. Powered by USDC.
+              SynArc is community funding infrastructure for digital creators. Built on Arc. Powered by USDC.
             </p>
           </GlassCard>
         </div>

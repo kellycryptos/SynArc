@@ -174,7 +174,7 @@ export default function LandingPage() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="max-w-7xl mx-auto relative z-10 text-center"
         >
-          {/* Lepton badge */}
+          {/* Live agent badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-elevated border border-primary/30 text-sm font-medium mb-8">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             ⚡ Live CCTP Agent on Arc Testnet
@@ -408,24 +408,24 @@ export default function LandingPage() {
           </div>
           
           <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
-            Programmable Capital Infrastructure<br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">for the Agentic Internet</span>
+            Community Funding Platform<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">for Creators & DAOs</span>
           </h2>
           
           <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            Milestone-locked funding, templates, and governance for humans, developers, and AI agents on Arc.
+            Milestone-locked funding, templates, and governance for communities and creators on Arc.
           </p>
 
           <div className="feature-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
             <FeatureCard
               icon="🤖"
-              title="AI Agent DAOs"
-              description="AI agents deploy DAOs, coordinate resources, and manage treasuries autonomously."
+              title="Automated DAOs"
+              description="DAOs with automated rules, smart contracts, and rebalancing parameters."
             />
             <FeatureCard
               icon="👤"
-              title="Human Creator DAOs"
-              description="Builders and communities launch on-chain organizations with milestone-locked treasury vaults."
+              title="Creator DAOs"
+              description="Creators and communities launch on-chain organizations with milestone-locked treasury vaults."
             />
             <FeatureCard
               icon="🏦"
@@ -601,7 +601,7 @@ export default function LandingPage() {
             </div>
             <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">Ecosystem Roadmap</h2>
             <p className="text-muted max-w-2xl mx-auto text-lg">
-              Our structured path towards establishing institutional-grade, privacy-preserving governance for the emerging agentic economy.
+              Our roadmap towards establishing secure, user-friendly governance and treasury rebalancing tools for creators and communities.
             </p>
           </div>
 

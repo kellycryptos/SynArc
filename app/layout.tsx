@@ -10,10 +10,10 @@ const sora = { variable: "--font-sora" };
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.synarcdao.xyz"),
   title: "SynArc",
-  description: "SynArc is governance infrastructure for the agentic economy — enabling DAOs, AI agents, and autonomous systems to coordinate, vote, and manage USDC-native treasuries on Arc. The first multi-DAO governance layer built natively on Arc with Circle’s full stablecoin stack.",
+  description: "SynArc is the governance platform for Creator DAOs — enabling creators and communities to coordinate, vote, and manage USDC treasuries on Arc. Send support, rebalance treasuries, and coordinate seamlessly.",
   openGraph: {
-    title: "SynArc — Governance Infrastructure",
-    description: "SynArc is governance infrastructure for the agentic economy — enabling DAOs, AI agents, and autonomous systems to coordinate, vote, and manage USDC-native treasuries on Arc. The first multi-DAO governance layer built natively on Arc with Circle’s full stablecoin stack.",
+    title: "SynArc — Creator DAO Governance",
+    description: "SynArc is the governance platform for Creator DAOs — enabling creators and communities to coordinate, vote, and manage USDC treasuries on Arc. Send support, rebalance treasuries, and coordinate seamlessly.",
     url: "https://www.synarcdao.xyz",
     siteName: "SynArc",
     images: [

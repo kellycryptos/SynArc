@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Agent Smart Account — Circle Modular Wallets
  * Defines the on-chain identity for the SynArc Treasury Agent
  */
@@ -15,18 +15,18 @@ export const AGENT_CONFIG = {
 }
 
 export const AGENT_CAPABILITIES = [
-  'Monitor DAO treasury balances in real-time',
-  'Create governance proposals autonomously',
-  'Execute CCTP cross-chain transfers when approved',
-  'Pay for AI inference via Circle Gateway (x402)',
-  'Analyze treasury health with Groq Llama 3.3 70B',
-  'Register identity on ERC-8004 Trustless Agent Registry',
+  'Monitor treasury balances',
+  'Suggest rebalancing when needed',
+  'Bridge USDC once community votes to approve',
+  'Pay for AI processing dynamically',
+  'Analyze treasury data',
+  'Verify identity on-chain',
 ]
 
 export const AGENT_INTEGRATIONS = [
-  { name: 'CCTP', description: 'Cross-chain USDC transfers (Arc ↔ Ethereum)', status: 'active' },
-  { name: 'Circle Gateway', description: 'Nanopayments for AI inference (x402)', status: 'active' },
-  { name: 'Modular Wallets', description: 'ERC-4337 Smart Account with passkey auth', status: 'active' },
-  { name: 'Groq AI', description: 'Llama 3.3 70B for treasury analysis', status: 'active' },
-  { name: 'ERC-8004', description: 'Trustless Agent Identity Registry', status: 'active' },
+  { name: 'CCTP', description: 'Secure USDC transfers between Arc and Ethereum', status: 'active' },
+  { name: 'Circle Gateway', description: 'Automated payments for AI analysis', status: 'active' },
+  { name: 'Modular Wallets', description: 'Smart account for secure community-governed funds', status: 'active' },
+  { name: 'Groq AI', description: 'AI model for treasury analysis', status: 'active' },
+  { name: 'ERC-8004', description: 'On-chain verification registry for agents', status: 'active' },
 ]

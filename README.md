@@ -378,13 +378,13 @@ This repository is licensed under the **MIT License**. Check [LICENSE](./LICENSE
 
 ---
 
-## 15. Key Lepton Features
+## 15. Key Agent Features
 
 ### 🤖 Autonomous Treasury Agent
 SynArc features a fully autonomous treasury agent deployed and verified on Arc Testnet at `0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de`.
 - **Real-Time Monitoring**: Automatically scans pool yields and active balances on-chain.
 - **Groq Llama 3.3 Integration**: Generates professional rebalancing proposals autonomously when yield variances exceed parameters.
-- **Interactive Lepton Console**: A premium console on `/agent` to simulate logs, proposal generation, and cross-chain execution.
+- **Interactive Agent Console**: A premium console on `/agent` to simulate logs, proposal generation, and cross-chain execution.
 - **ERC-8004 Agent Standard**: Seamless registry of agent capabilities, owners, and reputation tracking.
 
 ### 🌉 Bidirectional Circle CCTP Bridge
