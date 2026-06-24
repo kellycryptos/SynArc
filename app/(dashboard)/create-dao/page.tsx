@@ -26,7 +26,7 @@ const TEMPLATES = [
 
 export default function CreateDaoPage() {
   const router = useRouter();
-  const { walletAddress, isAuthenticated, login, isCircle } = useAuth();
+  const { walletAddress, isAuthenticated, login } = useAuth();
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   
@@ -37,7 +37,6 @@ export default function CreateDaoPage() {
   const [txHash, setTxHash] = useState("");
   const [newDeployedAddress, setNewDeployedAddress] = useState("");
   const [newCreatorId, setNewCreatorId] = useState("");
-  const [isDemoMode, setIsDemoMode] = useState(true);
 
   useEffect(() => {
     initializeStore();
@@ -205,70 +204,60 @@ export default function CreateDaoPage() {
         let deployedContractAddress = "";
         let transactionHash = "";
 
-        if (isCircle || isDemoMode) {
-          // Circle / simulated fallback
-          console.log("Simulating campaign deployment for Demo/Circle Wallet...");
-          await new Promise(resolve => setTimeout(resolve, 1500));
-          deployedContractAddress = `0x-demo-escrow-${Date.now()}`;
-          transactionHash = "0x" + Array.from({ length: 64 }, () => 
-            Math.floor(Math.random() * 16).toString(16)
-          ).join("");
-        } else {
-          // 1. Fetch signer and wallet details
-          const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+        // 1. Fetch signer and wallet details
+        const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
 
-          // USDC precompiled contract address on Arc Testnet
-          const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
-          
-          // 2. Format parameters for on-chain deployment
-          const goalBigInt = BigInt(Math.round(creatorGoal * 1_000_000));
-          const milestoneTitles = ["Initial Launch Phase"];
-          const milestoneAmounts = [goalBigInt];
-          const milestoneDescriptions = ["Release of initial backing capital to kickstart the project."];
+        // USDC precompiled contract address on Arc Testnet
+        const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
+        
+        // 2. Format parameters for on-chain deployment
+        const goalBigInt = BigInt(Math.round(creatorGoal * 1_000_000));
+        const milestoneTitles = ["Initial Launch Phase"];
+        const milestoneAmounts = [goalBigInt];
+        const milestoneDescriptions = ["Release of initial backing capital to kickstart the project."];
 
-          const gasParams = await getAggressiveGasParams(publicClient);
+        const gasParams = await getAggressiveGasParams(publicClient);
 
-          toast.loading("Deploying Creator DAO smart contract to Arc...", { id: launchToastId });
+        toast.loading("Deploying Creator DAO smart contract to Arc...", { id: launchToastId });
 
-          // 3. Deploy SynArcCrowdfund contract directly from user wallet
-          // Explicitly set chain to ARC_CHAIN and use a safer 3.5M gas limit floor
-          const deployHash = await walletClient.deployContract({
-            abi: SynArcCrowdfundABI,
-            bytecode: SynArcCrowdfundBytecode as `0x${string}`,
-            chain: ARC_CHAIN,
-            args: [
-              address,
-              recipient as `0x${string}`,
-              USDC_ADDRESS,
-              goalBigInt,
-              BigInt(creatorDuration),
-              isAgent,
-              formData.name.trim(),
-              formData.description.trim(),
-              selectedTemplate === "ai-agent" ? "AI Agent Fund" : "Creator DAO",
-              milestoneTitles,
-              milestoneAmounts,
-              milestoneDescriptions
-            ],
-            gas: 3500000n, 
-            ...gasParams,
-          });
+        // 3. Deploy SynArcCrowdfund contract directly from user wallet
+        // Explicitly set chain to ARC_CHAIN and use a safer 3.5M gas limit floor
+        const deployHash = await walletClient.deployContract({
+          abi: SynArcCrowdfundABI,
+          bytecode: SynArcCrowdfundBytecode as `0x${string}`,
+          chain: ARC_CHAIN,
+          args: [
+            address,
+            recipient as `0x${string}`,
+            USDC_ADDRESS,
+            goalBigInt,
+            BigInt(creatorDuration),
+            isAgent,
+            formData.name.trim(),
+            formData.description.trim(),
+            selectedTemplate === "ai-agent" ? "AI Agent Fund" : "Creator DAO",
+            milestoneTitles,
+            milestoneAmounts,
+            milestoneDescriptions
+          ],
+          gas: 3500000n, 
+          ...gasParams,
+        });
 
-          console.log("Deployment transaction submitted! Tx Hash:", deployHash);
-          setTxHash(deployHash);
-          toast.loading(`Confirming transaction ${deployHash.slice(0, 10)}...`, { id: launchToastId });
+        console.log("Deployment transaction submitted! Tx Hash:", deployHash);
+        setTxHash(deployHash);
+        toast.loading(`Confirming transaction ${deployHash.slice(0, 10)}...`, { id: launchToastId });
 
-          // 4. Wait for transaction confirmation
-          const receipt = await waitForTransaction(publicClient, deployHash);
-          deployedContractAddress = receipt.contractAddress;
-          transactionHash = deployHash;
+        // 4. Wait for transaction confirmation
+        const receipt = await waitForTransaction(publicClient, deployHash);
+        deployedContractAddress = receipt.contractAddress;
+        transactionHash = deployHash;
 
-          if (!deployedContractAddress) {
-            throw new Error("Escrow contract deployment failed — no contract address returned in receipt.");
-          }
-
-          toast.loading("Registering your Creator DAO...", { id: launchToastId });
+        if (!deployedContractAddress) {
+          throw new Error("Escrow contract deployment failed — no contract address returned in receipt.");
         }
+
+        toast.loading("Registering your Creator DAO...", { id: launchToastId });
 
         // 5. Add creator to the local creator store
         const creatorId = addCreator({
@@ -690,29 +679,7 @@ export default function CreateDaoPage() {
                 </div>
               </div>
 
-              {/* Demo Mode Toggle */}
-              <div className="p-4 rounded-xl border border-purple-500/25 bg-purple-500/5 flex items-center justify-between text-xs">
-                <div className="flex items-start gap-2.5">
-                  <span className="text-base select-none">⚡</span>
-                  <div>
-                    <span className="font-bold text-white block mb-0.5 font-heading">Demo Mode (Instant Simulated Deploy)</span>
-                    <span className="text-text-tertiary">Bypass wallet signature prompts and deploy instantly. Recommended for testing.</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsDemoMode(!isDemoMode)}
-                  className={`w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none flex items-center p-0.5 ${
-                    isDemoMode ? "bg-accent-purple" : "bg-surface-elevated border border-border-thin"
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ${
-                      isDemoMode ? "translate-x-5" : "translate-x-0"
-                    }`}
-                  />
-                </button>
-              </div>
+
 
               {/* Launch Action */}
               <button
