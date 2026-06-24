@@ -1,4 +1,4 @@
-import { createWalletClient, createPublicClient, http, custom, fallback } from 'viem'
+import { createWalletClient, createPublicClient, http, custom, fallback, getAddress } from 'viem'
 import { ARC_CHAIN, ARC_RPC_URLS, ARC_GAS } from './arc-config'
 import { BrowserProvider, Contract, ZeroAddress } from 'ethers'
 
@@ -244,7 +244,9 @@ export const getSigner = async (wallets?: any[], targetChain?: any, activeAddres
       transport: custom(provider)
     })
     const [resolved] = await tempClient.getAddresses()
-    address = resolved;
+    address = getAddress(resolved) as `0x${string}`;
+  } else {
+    address = getAddress(address) as `0x${string}`;
   }
 
   if (!address) throw new Error('No account address found on provider')
@@ -388,7 +390,9 @@ export const getAuthenticatedClient = async (
       transport: custom(provider)
     });
     const [resolved] = await tempClient.getAddresses();
-    address = resolved;
+    address = getAddress(resolved) as `0x${string}`;
+  } else {
+    address = getAddress(address) as `0x${string}`;
   }
 
   if (!address) {

@@ -13,6 +13,7 @@ import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI, SynArcCrowdfundBytecode } from "@/lib/governance/SynArcCrowdfund";
 import { ARC_CHAIN } from "@/lib/arc-config";
+import { getAddress, isAddress } from "viem";
 
 
 const TEMPLATES = [
@@ -157,6 +158,15 @@ export default function CreateDaoPage() {
         toast.error("Goal must be greater than 0 USDC.");
         return;
       }
+      const duration = parseInt(formData.duration) || 30;
+      if (isNaN(duration) || duration < 7 || duration > 90) {
+        toast.error("Duration must be between 7 and 90 days.");
+        return;
+      }
+      if (formData.wallet && !isAddress(formData.wallet.trim().toLowerCase())) {
+        toast.error("Recipient wallet must be a valid EVM address.");
+        return;
+      }
       setStep(3);
     }
   };
@@ -188,8 +198,16 @@ export default function CreateDaoPage() {
         return;
       }
 
-      if (recipient !== "0x0000000000000000000000000000000000000000" && (!recipient.startsWith("0x") || recipient.length !== 42)) {
-        toast.error("Recipient wallet must be a valid EVM address starting with 0x (42 characters).");
+      if (recipient !== "0x0000000000000000000000000000000000000000" && !isAddress(recipient.toLowerCase())) {
+        toast.error("Recipient wallet must be a valid EVM address.");
+        return;
+      }
+
+      let cleanRecipient: `0x${string}`;
+      try {
+        cleanRecipient = getAddress(recipient) as `0x${string}`;
+      } catch (err) {
+        toast.error("Recipient wallet must be a valid EVM address.");
         return;
       }
 
@@ -206,6 +224,7 @@ export default function CreateDaoPage() {
 
         // 1. Fetch signer and wallet details
         const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+        const cleanAddress = getAddress(address) as `0x${string}`;
 
         // USDC precompiled contract address on Arc Testnet
         const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
@@ -227,8 +246,8 @@ export default function CreateDaoPage() {
           bytecode: SynArcCrowdfundBytecode as `0x${string}`,
           chain: ARC_CHAIN,
           args: [
-            address,
-            recipient as `0x${string}`,
+            cleanAddress,
+            cleanRecipient,
             USDC_ADDRESS,
             goalBigInt,
             BigInt(creatorDuration),
@@ -267,7 +286,7 @@ export default function CreateDaoPage() {
           description: formData.description,
           goal: creatorGoal,
           twitter: formData.twitter || null,
-          wallet: recipient,
+          wallet: cleanRecipient,
           isAgent,
           escrowAddress: deployedContractAddress,
           image: imageUrl || undefined,
@@ -282,8 +301,8 @@ export default function CreateDaoPage() {
           badge: isAgent ? "AUTONOMOUS_AGENT_FUND" : "HUMAN_CAMPAIGN",
           goal: creatorGoal,
           isAgent,
-          creator: walletAddress || recipient,
-          recipient,
+          creator: cleanAddress,
+          recipient: cleanRecipient,
           deadline: campaignDeadline,
           milestones: [
             {
