@@ -25,6 +25,11 @@ const TEMPLATES = [
   { icon: "🏗️", name: "Arc Builder", desc: "Fund your Arc ecosystem project", category: "builder" },
 ];
 
+const isValidEVMAddress = (addr: string) => {
+  if (!addr) return false;
+  return /^0x[a-fA-F0-9]{40}$/.test(addr.trim());
+};
+
 export default function CreateDaoPage() {
   const router = useRouter();
   const { walletAddress, isAuthenticated, login } = useAuth();
@@ -173,7 +178,7 @@ export default function CreateDaoPage() {
         toast.error("Duration must be between 7 and 90 days.");
         return;
       }
-      if (formData.wallet && !isAddress(formData.wallet.trim().toLowerCase())) {
+      if (formData.wallet && formData.wallet.trim() !== "" && !isValidEVMAddress(formData.wallet)) {
         toast.error("Recipient wallet must be a valid EVM address.");
         return;
       }
@@ -208,7 +213,7 @@ export default function CreateDaoPage() {
         return;
       }
 
-      if (recipient !== "0x0000000000000000000000000000000000000000" && !isAddress(recipient.toLowerCase())) {
+      if (recipient !== "0x0000000000000000000000000000000000000000" && !isValidEVMAddress(recipient)) {
         toast.error("Recipient wallet must be a valid EVM address.");
         return;
       }
@@ -568,7 +573,7 @@ export default function CreateDaoPage() {
                   <input
                     type="text"
                     name="wallet"
-                    placeholder={walletAddress ? `${walletAddress.slice(0, 10)}... (Your Connected Wallet)` : "0x..."}
+                    placeholder="0x... (Recipient wallet for released funds — optional)"
                     value={formData.wallet}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2.5 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white font-mono transition-colors"
