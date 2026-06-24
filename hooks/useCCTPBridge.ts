@@ -10,6 +10,7 @@ import {
   createPublicClient, 
   http, 
   fallback,
+  custom,
   parseAbi, 
   encodeFunctionData, 
   decodeEventLog, 
@@ -32,7 +33,7 @@ export const SOURCE_CHAINS = {
     usdcAddress: "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238",
     tokenMessenger: "0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa",
     messageTransmitter: "0xe737e5cebeeba77efe34d4aa090756590b1ce275",
-    rpcUrl: "https://rpc.ankr.com/eth_sepolia",
+    rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
     icon: "🪙"
   },
   BASE_SEPOLIA: {
@@ -81,16 +82,16 @@ const DESTINATION_CHAIN = {
 const erc20Abi = parseAbi([
   "function approve(address spender, uint256 amount) returns (bool)",
   "function balanceOf(address owner) view returns (uint256)"
-]);
+] as const);
 
 const tokenMessengerAbi = parseAbi([
   "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken) returns (uint64)"
-]);
+] as const);
 
 const messageTransmitterAbi = parseAbi([
   "event MessageSent(bytes message)",
   "function receiveMessage(bytes message, bytes attestation) returns (bool)"
-]);
+] as const);
 
 export type BridgeStatus =
   | "idle"
@@ -295,30 +296,19 @@ export function useCCTPBridge() {
         throw new Error(`USDC Approval rejected by user: ${err?.message || err}`);
       }
 
-      // Wait for approval confirmation with dynamic, resilient fallback RPCs to prevent delays
-      let rpcUrls: string[] = [];
-      if (sourceChainConfig.id === 5042002) {
-        rpcUrls = ARC_RPC_URLS;
-      } else {
-        rpcUrls = [sourceChainConfig.rpcUrl];
-        if (sourceChainConfig.id === 11155111) { // Sepolia fallbacks
-          rpcUrls.push("https://ethereum-sepolia-rpc.publicnode.com");
-          rpcUrls.push("https://sepolia.gateway.tenderly.co");
-          rpcUrls.push("https://rpc.borderless.xyz/sepolia");
-        } else if (sourceChainConfig.id === 84532) { // Base Sepolia fallbacks
-          rpcUrls.push("https://base-sepolia-rpc.publicnode.com");
-          rpcUrls.push("https://sepolia.base.org");
-        } else if (sourceChainConfig.id === 43113) { // Avalanche Fuji fallbacks
-          rpcUrls.push("https://avalanche-fuji-c-chain-rpc.publicnode.com");
-        }
+      // Get Ethereum provider from the active wallet to build a reliable public client
+      const provider = await (
+        activeWallet.getEthereumProvider?.() || 
+        activeWallet.getEip1193Provider?.() || 
+        (activeWallet as any).getProvider?.()
+      );
+      if (!provider) {
+        throw new Error("No provider available from the active wallet.");
       }
 
       const sourcePublicClient = createPublicClient({
-        chain: sourceChainConfig.id === 11155111 ? sepolia : (sourceChainConfig.id === 5042002 ? arcTestnet : undefined),
-        transport: fallback(
-          rpcUrls.map(url => http(url, { timeout: 10000 })),
-          { rank: true }
-        )
+        chain: targetChainObj,
+        transport: custom(provider)
       });
 
       const approveReceipt = await sourcePublicClient.waitForTransactionReceipt({
@@ -383,18 +373,14 @@ export function useCCTPBridge() {
           try {
             // First attempt using decodeEventLog
             const decoded = decodeEventLog({
-              abi: [
-                {
-                  name: "MessageSent",
-                  type: "event",
-                  inputs: [{ name: "message", type: "bytes", indexed: false }]
-                }
-              ] as const,
+              abi: messageTransmitterAbi,
               data: log.data,
-              topics: log.topics as any
+              topics: log.topics
             });
-            messageBytes = decoded.args.message;
-            break;
+            if (decoded.eventName === "MessageSent") {
+              messageBytes = decoded.args.message;
+              break;
+            }
           } catch (decodeErr) {
             console.warn("Failed to decode MessageSent event log via decodeEventLog, falling back to manual decode:", decodeErr);
             try {

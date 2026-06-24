@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http, fallback, parseAbi, parseUnits, formatUnits, decodeEventLog, keccak256 } from "viem";
+import { createPublicClient, createWalletClient, http, fallback, parseAbi, parseUnits, formatUnits, decodeEventLog, keccak256, decodeAbiParameters } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { arcTestnet, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 import { sepolia } from "viem/chains";
@@ -341,19 +341,32 @@ export class SynArcClient {
 
         // 4. Extract messageBytes from logs
         let messageBytes: `0x${string}` | null = null;
+        const MESSAGE_SENT_TOPIC = "0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036";
+
         for (const log of burnReceipt.logs) {
-          try {
-            const decoded = decodeEventLog({
-              abi: MESSAGE_TRANSMITTER_ABI,
-              data: log.data,
-              topics: log.topics
-            });
-            if (decoded.eventName === "MessageSent") {
-              messageBytes = decoded.args.message;
-              break;
+          if (log.topics && log.topics[0] && log.topics[0].toLowerCase() === MESSAGE_SENT_TOPIC.toLowerCase()) {
+            try {
+              const decoded = decodeEventLog({
+                abi: MESSAGE_TRANSMITTER_ABI,
+                data: log.data,
+                topics: log.topics
+              });
+              if (decoded.eventName === "MessageSent") {
+                messageBytes = decoded.args.message;
+                break;
+              }
+            } catch (decodeErr) {
+              console.warn("[SynArc SDK] decodeEventLog failed, trying manual decode fallback:", decodeErr);
+              try {
+                const decodedParams = decodeAbiParameters([{ type: "bytes" }], log.data);
+                if (decodedParams && decodedParams[0]) {
+                  messageBytes = decodedParams[0] as `0x${string}`;
+                  break;
+                }
+              } catch (manualErr) {
+                console.error("[SynArc SDK] Manual decoding fallback failed:", manualErr);
+              }
             }
-          } catch (_) {
-            // Ignore logs from other events or contracts
           }
         }
 

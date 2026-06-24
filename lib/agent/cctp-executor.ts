@@ -1,6 +1,6 @@
-import { createWalletClient, createPublicClient, http, fallback, parseUnits, parseAbi, decodeEventLog, keccak256 } from 'viem'
+import { createWalletClient, createPublicClient, http, fallback, parseUnits, parseAbi, decodeEventLog, keccak256, decodeAbiParameters } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { ARC_CHAIN, ARC_GAS } from '@/lib/arc-config'
+import { ARC_CHAIN, ARC_GAS, ARC_RPC_URLS } from '@/lib/arc-config'
 import { sepolia } from 'viem/chains'
 
 // Circle CCTP contract addresses
@@ -40,23 +40,25 @@ export class CCTPExecutor {
 
   constructor(privateKey: `0x${string}`) {
     this.account = privateKeyToAccount(privateKey)
+    const arcTransport = fallback(
+      ARC_RPC_URLS.map(url => http(url, { timeout: 10000 }))
+    )
     this.arcPublicClient = createPublicClient({
       chain: ARC_CHAIN,
-      transport: http(process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.network'),
+      transport: arcTransport,
     })
     this.arcWalletClient = createWalletClient({
       account: this.account,
       chain: ARC_CHAIN,
-      transport: http(process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.network'),
+      transport: arcTransport,
     })
 
-    // Sepolia clients
+    // Sepolia clients with robust fallback RPCs (avoiding unauthorized Ankr)
     const sepoliaRpcUrls = [
-      'https://rpc.ankr.com/eth_sepolia',
       'https://ethereum-sepolia-rpc.publicnode.com',
       'https://sepolia.gateway.tenderly.co'
     ]
-    const sepoliaTransport = fallback(sepoliaRpcUrls.map(url => http(url)))
+    const sepoliaTransport = fallback(sepoliaRpcUrls.map(url => http(url, { timeout: 10000 })))
     this.sepoliaPublicClient = createPublicClient({
       chain: sepolia,
       transport: sepoliaTransport
@@ -113,19 +115,32 @@ export class CCTPExecutor {
 
     // Extract messageBytes from logs
     let messageBytes: `0x${string}` | null = null
+    const MESSAGE_SENT_TOPIC = "0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036"
+
     for (const log of burnReceipt.logs) {
-      try {
-        const decoded = decodeEventLog({
-          abi: MESSAGE_TRANSMITTER_ABI,
-          data: log.data,
-          topics: log.topics
-        })
-        if (decoded.eventName === 'MessageSent') {
-          messageBytes = decoded.args.message
-          break
+      if (log.topics && log.topics[0] && log.topics[0].toLowerCase() === MESSAGE_SENT_TOPIC.toLowerCase()) {
+        try {
+          const decoded = decodeEventLog({
+            abi: MESSAGE_TRANSMITTER_ABI,
+            data: log.data,
+            topics: log.topics
+          })
+          if (decoded.eventName === 'MessageSent') {
+            messageBytes = decoded.args.message
+            break
+          }
+        } catch (decodeErr) {
+          console.warn('[CCTPExecutor] decodeEventLog failed, trying manual decode fallback:', decodeErr)
+          try {
+            const decodedParams = decodeAbiParameters([{ type: 'bytes' }], log.data)
+            if (decodedParams && decodedParams[0]) {
+              messageBytes = decodedParams[0] as `0x${string}`
+              break
+            }
+          } catch (manualErr) {
+            console.error('[CCTPExecutor] Manual decoding fallback failed:', manualErr)
+          }
         }
-      } catch (_) {
-        // Ignore logs from other events or contracts
       }
     }
 
