@@ -1,6 +1,8 @@
 'use client'
 import { createContext, useContext, useEffect, useState } from 'react'
 
+import { Toaster } from 'react-hot-toast'
+
 type Theme = 'dark' | 'light'
 
 const ThemeContext = createContext<{
@@ -24,6 +26,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
+      <Toaster 
+        toastOptions={{
+          style: {
+            background: theme === 'dark' ? '#0F172A' : '#FFFFFF',
+            color: theme === 'dark' ? '#FFFFFF' : '#0F172A',
+            border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)',
+            fontSize: '12px',
+          }
+        }}
+        position="top-right"
+      />
       {children}
     </ThemeContext.Provider>
   )

@@ -13,6 +13,7 @@ import {
   parseAbi, 
   encodeFunctionData, 
   decodeEventLog, 
+  decodeAbiParameters,
   keccak256, 
   type Hex 
 } from "viem";
@@ -320,9 +321,13 @@ export function useCCTPBridge() {
         )
       });
 
-      await sourcePublicClient.waitForTransactionReceipt({
+      const approveReceipt = await sourcePublicClient.waitForTransactionReceipt({
         hash: approveTxHash as `0x${string}`
       });
+
+      if (approveReceipt.status === "reverted") {
+        throw new Error("USDC approval transaction reverted on-chain. Please verify gas fees and balances.");
+      }
 
       // ==========================================
       // STEP 2 — Burn on source chain
@@ -365,13 +370,18 @@ export function useCCTPBridge() {
         hash: burnTxHash as `0x${string}`
       });
 
+      if (burnReceipt.status === "reverted") {
+        throw new Error("Burn transaction reverted on-chain. Please check your USDC balance and try again.");
+      }
+
       // Extract messageBytes from logs
       let messageBytes: `0x${string}` | null = null;
       const MESSAGE_SENT_TOPIC = "0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036";
 
       for (const log of burnReceipt.logs) {
-        if (log.topics && log.topics[0] === MESSAGE_SENT_TOPIC) {
+        if (log.topics && log.topics[0] && log.topics[0].toLowerCase() === MESSAGE_SENT_TOPIC.toLowerCase()) {
           try {
+            // First attempt using decodeEventLog
             const decoded = decodeEventLog({
               abi: [
                 {
@@ -381,18 +391,29 @@ export function useCCTPBridge() {
                 }
               ] as const,
               data: log.data,
-              topics: log.topics
+              topics: log.topics as any
             });
             messageBytes = decoded.args.message;
             break;
           } catch (decodeErr) {
-            console.error("Failed to decode MessageSent event log:", decodeErr);
+            console.warn("Failed to decode MessageSent event log via decodeEventLog, falling back to manual decode:", decodeErr);
+            try {
+              // Fallback to manual ABI parameter decoding
+              const decodedParams = decodeAbiParameters([{ type: "bytes" }], log.data);
+              if (decodedParams && decodedParams[0]) {
+                messageBytes = decodedParams[0] as `0x${string}`;
+                break;
+              }
+            } catch (manualErr) {
+              console.error("Manual decoding also failed:", manualErr);
+            }
           }
         }
       }
 
       if (!messageBytes) {
-        throw new Error("MessageSent event was not found in burn transaction logs.");
+        console.error("CCTP extraction failed. Receipt logs:", burnReceipt.logs);
+        throw new Error("MessageSent event was not found in burn transaction logs. Please verify that you called the correct TokenMessenger contract.");
       }
 
       const messageHash = keccak256(messageBytes);
