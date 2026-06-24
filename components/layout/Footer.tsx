@@ -11,11 +11,10 @@ import { GlowOrb } from "@/components/ui/GlowOrb";
 const productLinks = [
   { label: "Proposals", href: "/proposals" },
   { label: "Treasury", href: "/treasury" },
-  { label: "Roadmap", href: "/#roadmap" },
-  { label: "DAOs", href: "/daos" },
-  { label: "Creator DAOs", href: "/leaderboard" },
+  { label: "Treasury Agent", href: "/agent" },
   { label: "Creator DAO", href: "/creator-daos" },
   { label: "Bridge", href: "/bridge" },
+  { label: "Roadmap", href: "/#roadmap" },
 ];
 
 const developerLinks = [
