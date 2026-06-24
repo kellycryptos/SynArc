@@ -322,6 +322,9 @@ export const writeWithRetry = async (
   throw lastError
 }
 
+// Global cache for the public client to avoid re-instantiation overhead and latency-ping storms
+let globalPublicClientInstance: any = null;
+
 /**
  * Unified helper to get an authenticated walletClient and publicClient
  * supporting Privy embedded wallets, Circle wallets, and external injected wallets.
@@ -402,31 +405,32 @@ export const getAuthenticatedClient = async (
 
   console.log(`[getAuthenticatedClient] Final resolved wallet address: ${address}`);
 
-  // Create public client with resilient fallback transport
-  const rpcUrls = [
-    process.env.NEXT_PUBLIC_ARC_RPC_URL,
-    'https://rpc.testnet.arc.network',
-    'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev',
-    ...ARC_RPC_URLS
-  ].filter(Boolean) as string[];
+  // Create public client with resilient fallback transport (cached globally)
+  if (!globalPublicClientInstance) {
+    const rpcUrls = [
+      process.env.NEXT_PUBLIC_ARC_RPC_URL,
+      ...ARC_RPC_URLS
+    ].filter(Boolean) as string[];
 
-  const uniqueRpcUrls = Array.from(new Set(rpcUrls));
+    const uniqueRpcUrls = Array.from(new Set(rpcUrls));
 
-  const publicClient = createPublicClient({
-    chain: ARC_CHAIN,
-    transport: fallback(
-      uniqueRpcUrls.map((url) =>
-        http(url, {
-          timeout: 4000,   // Fast failover for slow RPCs
-          retryCount: 2,   // Shorter retries per node to switch quickly
-          retryDelay: 800,
-        })
+    globalPublicClientInstance = createPublicClient({
+      chain: ARC_CHAIN,
+      transport: fallback(
+        uniqueRpcUrls.map((url) =>
+          http(url, {
+            timeout: 15000,   // Wait longer for actual transaction submissions
+            retryCount: 3,
+            retryDelay: 1000,
+          })
+        ),
+        {
+          rank: false // Use priority order (Canteen first), avoiding pre-transaction latency check overhead
+        }
       ),
-      {
-        rank: true // dynamically rank RPCs by latency!
-      }
-    ),
-  });
+    });
+  }
+  const publicClient = globalPublicClientInstance;
 
   const walletClient = createWalletClient({
     chain: ARC_CHAIN,
@@ -450,8 +454,14 @@ export const getAggressiveGasParams = async (publicClient: any) => {
   const minMaxFeePerGas = 20000000000n;         // Floor: 20 Gwei/units
   const minMaxPriorityFeePerGas = 15000000000n; // Floor: 15 Gwei/units
 
+  // Set a fast 3-second timeout for estimation so we don't block the wallet confirmation popup
+  const estimatePromise = publicClient.estimateFeesPerGas();
+  const estimateTimeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error("Gas estimation timeout")), 3000)
+  );
+
   try {
-    const fees = await publicClient.estimateFeesPerGas();
+    const fees = await Promise.race([estimatePromise, estimateTimeout]);
     if (fees.maxFeePerGas && fees.maxPriorityFeePerGas) {
       // Apply 1.5x multiplier to the estimated gas fees for faster inclusion
       const estMax = (fees.maxFeePerGas * 150n) / 100n;
@@ -463,17 +473,21 @@ export const getAggressiveGasParams = async (publicClient: any) => {
       };
     }
   } catch (err) {
-    console.warn('[getAggressiveGasParams] estimateFeesPerGas failed, using aggressive floors:', err);
+    console.warn('[getAggressiveGasParams] estimateFeesPerGas failed or timed out, trying fast gasPrice check:', err);
   }
 
   try {
-    const gasPrice = await publicClient.getGasPrice();
+    const gasPricePromise = publicClient.getGasPrice();
+    const gasPriceTimeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Gas price timeout")), 2000)
+    );
+    const gasPrice = await Promise.race([gasPricePromise, gasPriceTimeout]);
     const estGasPrice = (gasPrice * 150n) / 100n;
     return {
       gasPrice: estGasPrice > minMaxFeePerGas ? estGasPrice : minMaxFeePerGas,
     };
   } catch (err) {
-    console.warn('[getAggressiveGasParams] getGasPrice failed, using defaults.');
+    console.warn('[getAggressiveGasParams] getGasPrice failed or timed out, using default floors.');
     return {
       gasPrice: minMaxFeePerGas,
     };

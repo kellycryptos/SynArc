@@ -58,6 +58,16 @@ export default function CreateDaoPage() {
   const [aiIdeaInput, setAiIdeaInput] = useState("");
   const [generatingWithAi, setGeneratingWithAi] = useState(false);
 
+  // Pre-warm the provider and trigger network switching on Step 3 (Launch Confirmation)
+  useEffect(() => {
+    if (step === 3 && isAuthenticated) {
+      console.log("[CreateDaoPage] Pre-warming authenticated client on confirmation screen...");
+      getAuthenticatedClient(wallets, 5042002, walletAddress).catch((err) => {
+        console.warn("[CreateDaoPage] Client pre-warming failed (will retry on launch click):", err);
+      });
+    }
+  }, [step, isAuthenticated, wallets, walletAddress]);
+
   const generateCampaignWithAI = async () => {
     if (!aiIdeaInput.trim()) {
       toast.error("Please enter a brief idea first.");
@@ -216,7 +226,7 @@ export default function CreateDaoPage() {
 
       // Show an immediate loading toast so the user sees feedback right away
       const launchToastId = `launch-${Date.now()}`;
-      toast.loading("Launching Creator DAO...", { id: launchToastId });
+      toast.loading("Preparing transaction & pre-warming wallet...", { id: launchToastId });
 
       try {
         let deployedContractAddress = "";
