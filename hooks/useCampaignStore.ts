@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Campaign, Milestone, CampaignAIAnalysis } from "@/data/mock/campaigns";
+import { Campaign, Milestone, CampaignAIAnalysis } from "@/types";
 import { createPublicClient, http } from "viem";
 import { arcTestnet } from "@/lib/arc-config";
 import { getArcRpcUrl } from "@/lib/rpc/config";

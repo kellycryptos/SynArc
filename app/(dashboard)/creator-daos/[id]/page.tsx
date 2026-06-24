@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
+import { Milestone } from "@/types";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
@@ -237,7 +238,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
   const abstainPercent = totalVotes > 0 ? (campaign.votes.abstain / totalVotes) * 100 : 0;
 
   // Active milestone for governance votes
-  const activeMilestone = campaign.milestones.find(m => m.status === 'active') || campaign.milestones[0];
+  const activeMilestone = campaign.milestones.find((m: Milestone) => m.status === 'active') || campaign.milestones[0];
 
   const isCreator = walletAddress && campaign.creator && walletAddress.toLowerCase() === campaign.creator.toLowerCase();
 

@@ -23,17 +23,17 @@ export function GlowOrb({
   const isLight = theme === "light";
 
   const colorMap = {
-    purple: isLight ? "rgba(168, 85, 247, 0.06)" : "rgba(168, 85, 247, 0.35)",
-    cyan: isLight ? "rgba(34, 211, 238, 0.05)" : "rgba(34, 211, 238, 0.35)",
-    blue: isLight ? "rgba(59, 130, 246, 0.05)" : "rgba(59, 130, 246, 0.35)",
-    mixed: isLight ? "rgba(168, 85, 247, 0.04)" : "rgba(168, 85, 247, 0.25)",
+    purple: isLight ? "rgba(99, 102, 241, 0.02)" : "rgba(99, 102, 241, 0.12)",
+    cyan: isLight ? "rgba(59, 130, 246, 0.02)" : "rgba(59, 130, 246, 0.12)",
+    blue: isLight ? "rgba(59, 130, 246, 0.02)" : "rgba(59, 130, 246, 0.12)",
+    mixed: isLight ? "rgba(99, 102, 241, 0.02)" : "rgba(99, 102, 241, 0.1)",
   };
 
   const secondaryColorMap = {
-    purple: isLight ? "rgba(124, 58, 237, 0.03)" : "rgba(124, 58, 237, 0.2)",
-    cyan: isLight ? "rgba(6, 182, 212, 0.03)" : "rgba(6, 182, 212, 0.2)",
-    blue: isLight ? "rgba(37, 99, 235, 0.03)" : "rgba(37, 99, 235, 0.2)",
-    mixed: isLight ? "rgba(34, 211, 238, 0.03)" : "rgba(34, 211, 238, 0.2)",
+    purple: isLight ? "rgba(79, 70, 229, 0.01)" : "rgba(79, 70, 229, 0.06)",
+    cyan: isLight ? "rgba(37, 99, 235, 0.01)" : "rgba(37, 99, 235, 0.06)",
+    blue: isLight ? "rgba(29, 78, 216, 0.01)" : "rgba(29, 78, 216, 0.06)",
+    mixed: isLight ? "rgba(59, 130, 246, 0.01)" : "rgba(59, 130, 246, 0.05)",
   };
 
   return (

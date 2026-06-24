@@ -2,24 +2,24 @@
 @import "tailwindcss";
 
 :root {
-  --success: #22c55e;
+  --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
   --accent-foreground: #ffffff;
 
-  --purple-glow: rgba(168, 85, 247, 1);
-  --cyan-glow: rgba(34, 211, 238, 1);
-  --cyan-soft: #06b6d4;
+  --purple-glow: rgba(99, 102, 241, 0.4);
+  --cyan-glow: rgba(59, 130, 246, 0.4);
+  --cyan-soft: #3b82f6;
   --arc-blue-soft: #60a5fa;
 
   /* Default theme is dark */
-  --bg-primary: #0A0A0F;
-  --bg-surface: #12121A;
-  --text-primary: #FFFFFF;
-  --text-secondary: #A0AEC0;
-  --text-muted: #718096;
-  --border: #1A1A26;
-  --accent-purple: #7C3AED;
+  --bg-primary: #0B0F19;
+  --bg-surface: #111827;
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-muted: #9CA3AF;
+  --border: #1F2937;
+  --accent-purple: #4F46E5; /* Indigo-600 */
   --accent-blue: #3B82F6;
 
   --background: var(--bg-primary);
@@ -29,7 +29,7 @@
   --muted: var(--text-muted);
   --accent: var(--accent-purple);
   --surface: var(--bg-surface);
-  --surface-elevated: rgba(20, 20, 32, 0.6);
+  --surface-elevated: rgba(17, 24, 39, 0.65);
   
   --border-subtle: rgba(255, 255, 255, 0.05);
   --border-thin: var(--border);
@@ -39,18 +39,18 @@
   --purple-deep: var(--accent-purple);
   --arc-blue: var(--accent-blue);
 
-  --glow-purple: rgba(168, 85, 247, 0.15);
-  --glow-blue: rgba(59, 130, 246, 0.08);
+  --glow-purple: rgba(99, 102, 241, 0.04);
+  --glow-blue: rgba(59, 130, 246, 0.02);
 }
 
 .dark {
-  --bg-primary: #07070B;
-  --bg-surface: #0F0E15;
-  --text-primary: #FFFFFF;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --border: #1A1926;
-  --accent-purple: #8B5CF6;
+  --bg-primary: #0B0F19;
+  --bg-surface: #111827;
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-muted: #9CA3AF;
+  --border: #1F2937;
+  --accent-purple: #6366F1; /* Indigo-500 */
   --accent-blue: #3B82F6;
 
   --background: var(--bg-primary);
@@ -60,7 +60,7 @@
   --muted: var(--text-muted);
   --accent: var(--accent-purple);
   --surface: var(--bg-surface);
-  --surface-elevated: rgba(15, 14, 21, 0.7);
+  --surface-elevated: rgba(17, 24, 39, 0.7);
   
   --border-subtle: rgba(255, 255, 255, 0.04);
   --border-thin: var(--border);
@@ -70,18 +70,18 @@
   --purple-deep: var(--accent-purple);
   --arc-blue: var(--accent-blue);
 
-  --glow-purple: rgba(139, 92, 246, 0.12);
-  --glow-blue: rgba(59, 130, 246, 0.06);
+  --glow-purple: rgba(99, 102, 241, 0.03);
+  --glow-blue: rgba(59, 130, 246, 0.02);
 }
 
 .light {
-  --bg-primary: #F0F2F5;
+  --bg-primary: #F8FAFC;
   --bg-surface: #FFFFFF;
   --text-primary: #0F172A;
   --text-secondary: #334155;
-  --text-muted: #475569;
+  --text-muted: #64748B;
   --border: #E2E8F0;
-  --accent-purple: #6D28D9;
+  --accent-purple: #4338CA; /* Indigo-700 */
   --accent-blue: #1D4ED8;
   
   --background: var(--bg-primary);
@@ -93,7 +93,7 @@
   --surface: var(--bg-surface);
   --surface-elevated: rgba(255, 255, 255, 0.95);
   
-  --border-subtle: rgba(15, 23, 42, 0.06);
+  --border-subtle: rgba(15, 23, 42, 0.05);
   --border-thin: var(--border);
   
   --text-tertiary: var(--text-muted);
@@ -101,8 +101,8 @@
   --purple-deep: var(--accent-purple);
   --arc-blue: var(--accent-blue);
 
-  --glow-purple: rgba(109, 40, 217, 0.06);
-  --glow-blue: rgba(29, 78, 216, 0.04);
+  --glow-purple: rgba(79, 70, 229, 0.01);
+  --glow-blue: rgba(29, 78, 216, 0.01);
 }
 
 @theme {
@@ -160,9 +160,9 @@ body {
 }
 
 .light body {
-  background: radial-gradient(at 0% 0%, rgba(109, 40, 217, 0.05) 0px, transparent 50%),
-              radial-gradient(at 100% 0%, rgba(29, 78, 216, 0.05) 0px, transparent 50%),
-              #F4F6F9;
+  background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.03) 0px, transparent 50%),
+              radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.02) 0px, transparent 50%),
+              #F8FAFC;
 }
 
 
@@ -340,7 +340,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   left: 0;
   width: 0;
   height: 1px;
-  background: linear-gradient(90deg, #a855f7, #22d3ee);
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -413,18 +413,18 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.3);
+  background: rgba(99, 102, 241, 0.25);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.5);
+  background: rgba(99, 102, 241, 0.4);
 }
 
 /* ── Selection ── */
 ::selection {
-  background: rgba(168, 85, 247, 0.3);
-  color: #f1f5f9;
+  background: rgba(99, 102, 241, 0.2);
+  color: inherit;
 }
 
 /* ── Recharts Theme Adapters ── */
@@ -493,21 +493,21 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 
 /* Glass cards override */
 .light .glass-card {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
   box-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.02),
-    0 8px 24px rgba(15, 23, 42, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+    0 1px 3px rgba(0, 0, 0, 0.01),
+    0 4px 12px rgba(15, 23, 42, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
 }
 
 .light .glass-card:hover {
   background: #FFFFFF !important;
-  border-color: rgba(109, 40, 217, 0.25) !important;
+  border-color: var(--accent-purple) !important;
   box-shadow: 
-    0 12px 30px rgba(15, 23, 42, 0.06),
-    0 0 0 1px rgba(109, 40, 217, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    0 10px 20px rgba(15, 23, 42, 0.04),
+    0 0 0 1px var(--accent-purple),
+    inset 0 1px 0 rgba(255, 255, 255, 1) !important;
 }
 
 /* Diagnostics log terminal box override */
@@ -582,6 +582,15 @@ a:focus-visible, button:focus-visible {
 }
 .hover-scale:hover {
   transform: scale(1.02);
+}
+
+/* Reduce and tone down neon purple glowing shadows site-wide */
+[class*="shadow-"][class*="rgba(124"] {
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08) !important;
+}
+
+[class*="shadow-"][class*="rgba(124"]:hover {
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15) !important;
 }
 
 

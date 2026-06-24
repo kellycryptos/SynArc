@@ -4,12 +4,13 @@
 // In production/mainnet, this store will connect directly to the Crowdfund Hub contract to query campaigns, track contributions, and fetch on-chain states.
 
 import { create } from "zustand";
-import { Creator, MOCK_CREATORS } from "@/data/mock/creators";
+import { Creator, Campaign } from "@/types";
 import { createPublicClient, http } from "viem";
 import { arcTestnet } from "@/lib/arc-config";
 import { getArcRpcUrl } from "@/lib/rpc/config";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
-import { Campaign } from "@/data/mock/campaigns";
+
+const MOCK_CREATORS: Creator[] = [];
 
 export interface Supporter {
   address: string;
