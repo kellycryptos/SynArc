@@ -29,8 +29,7 @@ SynArc is the first multi-DAO governance and funding layer built natively on **A
 | [Governance](/docs/governance) | Proposals, voting, delegation |
 | [Treasury](/docs/treasury) | Deposits, fund management, releases |
 | [Smart Contracts](/docs/smart-contracts) | Deployed addresses, security, verification |
-| [Crowdfund Hub](/docs/crowdfund) | Milestone escrow details |
-| [AI Agents](/docs/ai-agents) | ERC-8004 agent registration |
+| [Treasury Agent](/docs/ai-agents) | Autonomous rebalancing & monitoring |
 | [FAQ](/docs/faq) | Common questions answered |
 
 ---

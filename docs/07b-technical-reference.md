@@ -29,7 +29,7 @@ SynArc is designed as a modular, stablecoin-native governance layer on the Arc n
                  │ (Allocates Gas & Capital)
                  ▼
      ┌───────────────────────┐
-     │  Crowdfund Campaigns  │
+     │     Creator DAOs      │
      └───────────────────────┘
 ```
 
@@ -69,9 +69,9 @@ interface IERC8004 {
 
 ## Treasury Escrow Flow
 
-SynArc's Crowdfunding mechanism protects contributors by holding funds in campaign-specific escrows (`SynArcCrowdfund.sol`) that release tokens based on milestone approvals.
+SynArc's Creator DAO mechanism protects contributors by holding funds in campaign-specific escrows (`SynArcCrowdfund.sol`) that release tokens based on milestone approvals.
 
-1. **Campaign Creation**: Creator deploys a `SynArcCrowdfund` contract.
+1. **DAO Creation**: Creator deploys a `SynArcCrowdfund` contract.
 2. **Capital Contribution**: Backers deposit USDC or EURC into the escrow.
 3. **Milestone Locks**: Funds are partitioned into milestones (e.g., 30% / 40% / 30%).
 4. **Milestone Verification**: The creator requests a release, triggering a DAO proposal.

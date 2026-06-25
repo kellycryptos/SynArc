@@ -56,27 +56,107 @@ SynArc is the infrastructure layer that makes this future possible today.
 
 ---
 
+## 2a. How it Works
+
+SynArc coordinates funding and governance through a simple, four-step lifecycle:
+
+1. **Launch a Creator DAO**: A creator (human or AI agent) deploys a custom, isolated `SynArcCrowdfund` milestone escrow contract directly from their wallet.
+2. **Contribute Nanopayments**: Backers fund the DAO with stable, near-gasless USDC nanopayments ($0.01 minimum) on Arc Testnet.
+3. **Milestone-Based Governance**: Raised funds are locked in the escrow contract and only released as the creator completes milestones and sARC token holders vote to approve them.
+4. **Autonomous Rebalancing**: The Autonomous Treasury Agent monitors reserves, proposes optimal yield allocations, and executes cross-chain stablecoin movements via Circle CCTP.
+
+---
+
 ## 3. Features
 
 ### 🎨 Creator Economy
-*   **⚡ Creator DAOs**: One-click launch of a fully on-chain Creator DAO — each with its own isolated, milestone-gated escrow contract deployed directly from your wallet.
-*   **💸 USDC Nanopayments ($0.01 minimum)**: Instant micro-tipping and creator support enabled by Arc's ultra-low fee environment. Supporters can tip any amount, from $0.01 upward, directly to a creator's escrow.
-*   **🏆 Creator Leaderboard**: Dynamic weekly / monthly / all-time rankings of top-performing creators by funds raised and backer count.
-*   **👤 Creator Profile Pages**: Public, shareable creator profiles with preset donation buttons, native Web Share API integration, AI-driven audits, cover images, and live on-chain metrics.
-*   **🔗 Share Links**: Every creator profile has a canonical shareable URL (`https://synarcdao.xyz/creator/[slug]`) with full Web Share API and clipboard fallback support.
-*   **⚡ Crowdfund Hub**: Permissionless USDC crowdfunding for humans and AI agents — no platform gatekeeping.
-*   **🤖 Autonomous Agent Fund**: AI-created campaigns with on-chain validation and ERC-8004 agent identity registration.
-*   **🏦 Milestone Escrow**: Funds locked in isolated smart contracts and released progressively only upon community vote approval.
-*   **💸 1:1 USDC Releases**: Direct stablecoin payouts to the beneficiary upon milestone approval — no intermediaries.
+*   **⚡ Creator DAOs**: One-click template-based DAO launches with isolated milestone-based escrow contracts deployed directly from the user's wallet.
+*   **💸 USDC Nanopayments ($0.01+)**: Direct micro-tipping and creator support enabled by Arc's low-fee transactions.
+*   **🏆 Creator Leaderboard**: Real-time rankings of top Creator DAOs by total funds raised and backer count.
+*   **👤 Creator Profile Pages**: Customizable profiles with live on-chain metrics, social links, and AI-driven legitimacy audits.
+*   **🏦 Milestone Escrows**: Backer protection via secure on-chain lockups released progressively upon community vote approval.
 
-### 🏛️ Governance
-*   **Proposals**: Create, discuss, and vote on governance proposals.
-*   **Treasury**: Real-time management and analytics of DAO assets in USDC.
-*   **Wallet Connect**: Hybrid wallet system supporting both Privy embedded wallets and Circle Programmable Wallets, giving users the choice between standard (social/Google/external) and fully gasless USDC-native governance participation.
-*   **Arc Testnet Integration**: Native support for Arc Testnet with zero-latency execution.
-*   **USDC Balance Display**: Real-time balance tracking and treasury visualization.
-*   **Dashboard Analytics**: Governance participation metrics and voting trends.
-*   **Responsive Design**: Mobile-first interface with glassmorphism effects.
+### 🏛️ Governance & Treasury
+*   **Proposals & Voting**: Secure on-chain proposals and cryptographic voting signatures.
+*   **Multi-Asset Treasury**: Vault management supporting both USDC and EURC stablecoins.
+*   **Autonomous Rebalancing**: Real-time monitoring and rebalancing of treasury allocations via an AI agent.
+
+### 🌉 Circle CCTP Bridge
+*   **Bidirectional Routing**: Slippage-free stablecoin bridging between Arc Testnet and external chains (Ethereum Sepolia, Base Sepolia, Avalanche Fuji, Solana Devnet).
+*   **Native Burns & Mints**: Secure attestation polling without using risky wrapper tokens or liquidity pools.
+
+---
+
+## 3a. Creator DAOs & How to Launch
+
+Creator DAOs are decentralized funding and governance structures that allow builders, artists, developers, and AI agents to raise capital and align with their community transparently.
+
+### How to Launch a Creator DAO
+
+1. **Choose a Template**: Select from predefined templates (Music Creator, Artist, AI Agent, or Arc Builder) on the **Create DAO** page.
+2. **Set Milestones**: Define the phases of your project and assign a USDC funding amount to each milestone.
+3. **Deploy the Escrow**: Click **Launch Creator DAO** to deploy your independent `SynArcCrowdfund` escrow smart contract directly to Arc Testnet.
+4. **Share and Fund**: Copy your public profile URL (e.g., `https://synarcdao.xyz/creator/[slug]`) and invite your community to back you using USDC nanopayments.
+
+---
+
+## 3b. Autonomous Treasury Agent
+
+SynArc features a fully autonomous treasury agent deployed and verified on Arc Testnet at `0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de`.
+
+- **Real-Time Monitoring**: Automatically scans pool yields and active balances on-chain.
+- **AI-Driven Proposals**: Generates professional rebalancing proposals autonomously using **Groq Llama 3.3** when yield variances exceed parameters.
+- **Autonomous Execution**: Coordinates with Circle CCTP to execute stablecoin burns and mints to maximize DAO treasury health.
+- **ERC-8004 Agent Standard**: Verified registry of agent capabilities, owners, and reputation tracking directly on-chain.
+
+---
+
+## 3c. Bidirectional Circle CCTP Bridge
+
+A fully bidirectional stablecoin routing pipeline built natively with Circle CCTP to enable frictionless capital mobility:
+
+- **Deposit (IN)**: Bridge native USDC from Ethereum Sepolia, Base Sepolia, Avalanche Fuji, and Solana Devnet directly into Arc Testnet.
+- **Withdraw (OUT)**: Bridge USDC from Arc Testnet back to external EVM networks, changing user wallet chains dynamically.
+- **Consensus Polling**: Programmatic attestation polling with Circle Sandbox Iris endpoints for secure, wrapper-free stablecoin transfers.
+
+---
+
+## 3d. Developer Agent SDK
+
+Integrate autonomous agents and decentralized organizations programmatically using the `@synarc/agent-sdk` npm package.
+
+### Installation
+
+```bash
+npm install @synarc/agent-sdk
+```
+
+### Quickstart Example
+
+```typescript
+import { SynArcAgent } from '@synarc/agent-sdk';
+
+// Initialize agent client
+const agent = new SynArcAgent({ 
+  rpcUrl: 'https://rpc.testnet.arc.network',
+  privateKey: process.env.PRIVATE_KEY 
+});
+
+// Register ERC-8004 on-chain agent identity
+await agent.registerIdentity({
+  name: "Autonomous Portfolio Rebalancer",
+  capabilities: ["treasury-monitoring", "cctp-rebalancing"],
+  metadataUri: "https://metadata.synarcdao.xyz/agents/rebalancer-01.json"
+});
+
+// Cast a programmatic vote on a proposal
+const proposalId = "0x...";
+await agent.vote(proposalId, 1 /* For */);
+```
+
+- **npm Package**: [@synarc/agent-sdk](https://www.npmjs.com/package/@synarc/agent-sdk)
+- **Repository**: [kellycryptos/synarc-agent-sdk](https://github.com/kellycryptos/synarc-agent-sdk)
+- **Documentation**: [synarcdao.xyz/docs/sdk](https://www.synarcdao.xyz/docs/sdk)
 
 ---
 
@@ -257,7 +337,7 @@ synarc-dao/
     *   [x] Enable secure embedded wallets with background keys.
     *   [x] Enable zero-gas cryptographic signature verification.
     *   [x] Integrate live balance polling from Arc Testnet nodes.
-    *   [x] Crowdfund Hub prototype (milestone escrow, AI governance, human + agent campaigns)
+    *   [x] Creator DAO prototype (milestone escrow, AI governance, human + agent campaigns)
     *   [x] SynArcCrowdfund escrow contract deployment and dynamic wallet compiler
     *   [x] Live USDC milestone escrow approvals and releases on-chain
 
@@ -281,7 +361,6 @@ synarc-dao/
     *   [ ] Cross-DAO nanopayment routing — pay a creator on any DAO from any other.
 
 ### Planned Features
-*   **Members**: Member management and delegation interfaces
 *   **Analytics**: Advanced governance analytics and reporting
 *   **Settings**: DAO configuration and parameter management
 *   **Mainnet Integration**: Production deployment on Arc Mainnet for real-asset management
@@ -375,49 +454,6 @@ SynArc is developed with a strict security-first mindset, preparing for institut
 ## 14. License
 
 This repository is licensed under the **MIT License**. Check [LICENSE](./LICENSE) for additional details.
-
----
-
-## 15. Key Agent Features
-
-### 🤖 Autonomous Treasury Agent
-SynArc features a fully autonomous treasury agent deployed and verified on Arc Testnet at `0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de`.
-- **Real-Time Monitoring**: Automatically scans pool yields and active balances on-chain.
-- **Groq Llama 3.3 Integration**: Generates professional rebalancing proposals autonomously when yield variances exceed parameters.
-- **Interactive Agent Console**: A premium console on `/agent` to simulate logs, proposal generation, and cross-chain execution.
-- **ERC-8004 Agent Standard**: Seamless registry of agent capabilities, owners, and reputation tracking.
-
-### 🌉 Bidirectional Circle CCTP Bridge
-A fully bidirectional stablecoin routing pipeline built natively with Circle CCTP:
-- **Deposit (IN)**: Bridge native USDC from Ethereum Sepolia, Base Sepolia, Avalanche Fuji, and Solana Devnet directly into Arc Testnet.
-- **Withdraw (OUT)**: Bridge USDC from Arc Testnet back to external EVM networks, changing user wallet chains dynamically.
-- **Iris Consensus Polling**: Programmatic attestation polling with Sandbox Iris endpoints for secure, wrapper-free stablecoin burns and mints.
-
-### Developer Agent SDK
-
-Integrate autonomous agents and organizations programmatically using the **`@synarc/agent-sdk`** npm package:
-
-```bash
-npm install @synarc/agent-sdk
-# or
-yarn add @synarc/agent-sdk
-```
-
-```typescript
-import { SynArcAgent } from '@synarc/agent-sdk';
-
-const agent = new SynArcAgent({ rpcUrl: process.env.ARC_RPC_URL });
-await agent.registerIdentity();
-await agent.vote(proposalId, 1 /* For */);
-```
-
-- **Easy Integration**: Fully typed SDK for JavaScript/TypeScript agent runners.
-- **Full Governance & Treasury**: Register agent identities on the ERC-8004 registry, self-delegate voting power, check and cast programmatic votes, and trigger timelocked treasury sweeps.
-- **Creator DAO Support**: Programmatically launch Creator DAOs, contribute to escrows, and read live campaign metrics.
-- **Multi-wallet Compatibility**: Works seamlessly with Circle Programmable Wallets, Privy, MetaMask, and WalletConnect.
-- **Repository**: [kellycryptos/synarc-agent-sdk](https://github.com/kellycryptos/synarc-agent-sdk)
-- **npm**: [@synarc/agent-sdk](https://www.npmjs.com/package/@synarc/agent-sdk)
-- **Documentation**: [synarcdao.xyz/docs/sdk](https://www.synarcdao.xyz/docs/sdk)
 
 ---
 

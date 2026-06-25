@@ -3,7 +3,7 @@
 * [Getting Started](README.md)
 * [Governance](02-governance.md)
 * [Treasury](03-treasury.md)
-* [AI Agents](04-ai-agents.md)
+* [Treasury Agent](04-ai-agents.md)
 * [Agent SDK](04b-sdk.md)
 * [DAO Registry](05-dao-registry.md)
 * [Bridge](06-bridge.md)
