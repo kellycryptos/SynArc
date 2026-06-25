@@ -26,7 +26,24 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         uint256 timestamp;
     }
 
+    struct QueuedWithdrawal {
+        uint256 id;
+        address recipient;
+        uint256 amount;
+        address token;
+        string tokenSymbol;
+        string description;
+        uint256 executionTime;
+        bool executed;
+        bool canceled;
+    }
+
     Transaction[] public transactions;
+    
+    // Withdrawal Queue mapping and counter
+    mapping(uint256 => QueuedWithdrawal) public queuedWithdrawals;
+    uint256 public withdrawalCount;
+    uint256 public withdrawalDelay = 86400; // 24 hours delay default
 
     event DepositUSDC(address indexed depositor, uint256 amount, uint256 timestamp);
     event DepositEURC(address indexed depositor, uint256 amount, uint256 timestamp);
@@ -36,8 +53,25 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
     event Inflow(address indexed sender, uint256 amount, string tokenSymbol, string description, uint256 timestamp);
     event Outflow(address indexed recipient, uint256 amount, string tokenSymbol, string description, uint256 timestamp);
 
+    event WithdrawalQueued(
+        uint256 indexed id,
+        address indexed recipient,
+        uint256 amount,
+        address token,
+        string tokenSymbol,
+        uint256 executionTime
+    );
+    event WithdrawalExecuted(uint256 indexed id, address indexed recipient, uint256 amount, address token);
+    event WithdrawalCanceled(uint256 indexed id);
+    event WithdrawalDelayUpdated(uint256 oldDelay, uint256 newDelay);
+
     modifier onlyGovernor() {
         require(msg.sender == governor, "Only governor can call");
+        _;
+    }
+
+    modifier onlyGovernorOrOwner() {
+        require(msg.sender == governor || msg.sender == owner(), "Only governor or owner can call");
         _;
     }
 
@@ -51,7 +85,14 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         governor = _governor;
     }
 
-    // Pause / Unpause deposits (owner only in emergency)
+    // Configure withdrawal delay (minimum 24 hours)
+    function setWithdrawalDelay(uint256 newDelay) external onlyGovernorOrOwner {
+        require(newDelay >= 86400, "Delay must be at least 24 hours");
+        emit WithdrawalDelayUpdated(withdrawalDelay, newDelay);
+        withdrawalDelay = newDelay;
+    }
+
+    // Pause / Unpause deposits & execution (owner only in emergency)
     function pause() external onlyOwner {
         _pause();
     }
@@ -82,39 +123,111 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         emit Inflow(msg.sender, amount, "EURC", "EURC Deposit", block.timestamp);
     }
 
-    // Withdrawal functions (governor only)
-    function withdrawUSDC(address recipient, uint256 amount) external onlyGovernor nonReentrant {
+    // Withdrawal queueing functions (governor only, subject to timelock)
+    function withdrawUSDC(address recipient, uint256 amount) external onlyGovernor nonReentrant whenNotPaused {
         require(amount > 0, "Amount must be greater than 0");
         require(usdcBalance >= amount, "Insufficient USDC balance");
-        usdcBalance -= amount;
-        IERC20(usdcToken).safeTransfer(recipient, amount);
+        usdcBalance -= amount; // Reserved immediately
         
-        transactions.push(Transaction("Outflow", recipient, amount, "USDC", "Governance approved USDC withdraw", block.timestamp));
-        emit WithdrawalUSDC(recipient, amount, block.timestamp);
-        emit Outflow(recipient, amount, "USDC", "Governance approved USDC withdraw", block.timestamp);
+        withdrawalCount++;
+        queuedWithdrawals[withdrawalCount] = QueuedWithdrawal({
+            id: withdrawalCount,
+            recipient: recipient,
+            amount: amount,
+            token: usdcToken,
+            tokenSymbol: "USDC",
+            description: "Governance approved USDC withdraw",
+            executionTime: block.timestamp + withdrawalDelay,
+            executed: false,
+            canceled: false
+        });
+
+        emit WithdrawalQueued(withdrawalCount, recipient, amount, usdcToken, "USDC", block.timestamp + withdrawalDelay);
     }
 
-    function withdrawEURC(address recipient, uint256 amount) external onlyGovernor nonReentrant {
+    function withdrawEURC(address recipient, uint256 amount) external onlyGovernor nonReentrant whenNotPaused {
         require(amount > 0, "Amount must be greater than 0");
         require(eurcBalance >= amount, "Insufficient EURC balance");
-        eurcBalance -= amount;
-        IERC20(eurcToken).safeTransfer(recipient, amount);
+        eurcBalance -= amount; // Reserved immediately
         
-        transactions.push(Transaction("Outflow", recipient, amount, "EURC", "Governance approved EURC withdraw", block.timestamp));
-        emit WithdrawalEURC(recipient, amount, block.timestamp);
-        emit Outflow(recipient, amount, "EURC", "Governance approved EURC withdraw", block.timestamp);
+        withdrawalCount++;
+        queuedWithdrawals[withdrawalCount] = QueuedWithdrawal({
+            id: withdrawalCount,
+            recipient: recipient,
+            amount: amount,
+            token: eurcToken,
+            tokenSymbol: "EURC",
+            description: "Governance approved EURC withdraw",
+            executionTime: block.timestamp + withdrawalDelay,
+            executed: false,
+            canceled: false
+        });
+
+        emit WithdrawalQueued(withdrawalCount, recipient, amount, eurcToken, "EURC", block.timestamp + withdrawalDelay);
     }
 
     // Legacy withdrawal compatibility for Governor contract calls
-    function withdraw(address recipient, uint256 amount) external onlyGovernor nonReentrant {
+    function withdraw(address recipient, uint256 amount) external onlyGovernor nonReentrant whenNotPaused {
         require(amount > 0, "Amount must be greater than 0");
         require(usdcBalance >= amount, "Insufficient USDC balance");
-        usdcBalance -= amount;
-        IERC20(usdcToken).safeTransfer(recipient, amount);
+        usdcBalance -= amount; // Reserved immediately
         
-        transactions.push(Transaction("Outflow", recipient, amount, "USDC", "Governance approved withdraw", block.timestamp));
-        emit WithdrawalUSDC(recipient, amount, block.timestamp);
-        emit Outflow(recipient, amount, "USDC", "Governance approved withdraw", block.timestamp);
+        withdrawalCount++;
+        queuedWithdrawals[withdrawalCount] = QueuedWithdrawal({
+            id: withdrawalCount,
+            recipient: recipient,
+            amount: amount,
+            token: usdcToken,
+            tokenSymbol: "USDC",
+            description: "Governance approved withdraw",
+            executionTime: block.timestamp + withdrawalDelay,
+            executed: false,
+            canceled: false
+        });
+
+        emit WithdrawalQueued(withdrawalCount, recipient, amount, usdcToken, "USDC", block.timestamp + withdrawalDelay);
+    }
+
+    // Execute a queued withdrawal after the delay (anyone can trigger execution when ready)
+    function executeWithdrawal(uint256 id) external nonReentrant whenNotPaused {
+        require(id > 0 && id <= withdrawalCount, "Invalid withdrawal ID");
+        QueuedWithdrawal storage q = queuedWithdrawals[id];
+        require(!q.executed, "Already executed");
+        require(!q.canceled, "Canceled");
+        require(block.timestamp >= q.executionTime, "Timelock not expired");
+
+        q.executed = true;
+        IERC20(q.token).safeTransfer(q.recipient, q.amount);
+
+        transactions.push(Transaction("Outflow", q.recipient, q.amount, q.tokenSymbol, q.description, block.timestamp));
+        
+        if (q.token == usdcToken) {
+            emit WithdrawalUSDC(q.recipient, q.amount, block.timestamp);
+        } else if (q.token == eurcToken) {
+            emit WithdrawalEURC(q.recipient, q.amount, block.timestamp);
+        }
+        
+        emit Outflow(q.recipient, q.amount, q.tokenSymbol, q.description, block.timestamp);
+        emit WithdrawalExecuted(id, q.recipient, q.amount, q.token);
+    }
+
+    // Cancel a queued withdrawal (emergency action by governor or owner)
+    function cancelWithdrawal(uint256 id) external onlyGovernorOrOwner nonReentrant {
+        require(id > 0 && id <= withdrawalCount, "Invalid withdrawal ID");
+        QueuedWithdrawal storage q = queuedWithdrawals[id];
+        require(!q.executed, "Already executed");
+        require(!q.canceled, "Already canceled");
+
+        q.canceled = true;
+        
+        // Restore balance reservation
+        if (q.token == usdcToken) {
+            usdcBalance += q.amount;
+        } else if (q.token == eurcToken) {
+            eurcBalance += q.amount;
+        }
+
+        emit WithdrawalCanceled(id);
     }
 
     // Legacy balance view (returns USDC balance)
@@ -129,5 +242,14 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
 
     function getTransactions() external view returns (Transaction[] memory) {
         return transactions;
+    }
+
+    // Get all queued withdrawals for frontend queries
+    function getQueuedWithdrawals() external view returns (QueuedWithdrawal[] memory) {
+        QueuedWithdrawal[] memory list = new QueuedWithdrawal[](withdrawalCount);
+        for (uint256 i = 1; i <= withdrawalCount; i++) {
+            list[i - 1] = queuedWithdrawals[i];
+        }
+        return list;
     }
 }

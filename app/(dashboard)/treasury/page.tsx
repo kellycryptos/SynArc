@@ -59,7 +59,7 @@ import {
   PieChart as RechartsPieChart, Pie, Cell, Legend
 } from "recharts";
 import { 
-  ArrowUpRight, ArrowDownRight, Activity, Wallet, Shield, PieChart, Coins, Info, PlusCircle, X, Check
+  ArrowUpRight, ArrowDownRight, Activity, Wallet, Shield, PieChart, Coins, Info, PlusCircle, X, Check, Clock
 } from "lucide-react";
 import { BridgeModal } from "@/components/BridgeModal";
 
@@ -70,6 +70,7 @@ function TreasuryPageContent() {
     usdcBalance, 
     eurcBalance, 
     activities, 
+    queuedWithdrawals,
     isLoading: treasuryLoading, 
     refetch: refetchTreasury 
   } = useTreasuryBalances();
@@ -81,6 +82,107 @@ function TreasuryPageContent() {
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
+
+  const [executingId, setExecutingId] = useState<string | null>(null);
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(Math.floor(Date.now() / 1000));
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Math.floor(Date.now() / 1000));
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const pendingWithdrawals = useMemo(() => {
+    return (queuedWithdrawals || []).filter(q => !q.executed && !q.canceled);
+  }, [queuedWithdrawals]);
+
+  const handleExecuteWithdrawal = async (id: string) => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    
+    setExecutingId(id);
+    const toastId = toast.loading("Initiating withdrawal execution...");
+    
+    try {
+      if (isCircle) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        toast.success("Withdrawal executed successfully (Circle Simulation)!", { id: toastId });
+        refetchTreasury();
+        setExecutingId(null);
+        return;
+      }
+      
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const gasParams = await getAggressiveGasParams(publicClient);
+      
+      const hash = await walletClient.writeContract({
+        address: GOVERNANCE_CONTRACTS.treasury,
+        abi: TreasuryABI,
+        functionName: 'executeWithdrawal',
+        args: [BigInt(id)],
+        account: address,
+        gas: 300000n,
+        ...gasParams
+      });
+      
+      toast.loading("⏳ Confirming withdrawal execution...", { id: toastId });
+      await waitForTransaction(publicClient, hash);
+      toast.success("Withdrawal executed successfully! ✅", { id: toastId });
+      refetchTreasury();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(parseArcError(err), { id: toastId });
+    } finally {
+      setExecutingId(null);
+    }
+  };
+
+  const handleCancelWithdrawal = async (id: string) => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    
+    setCancelingId(id);
+    const toastId = toast.loading("Initiating withdrawal cancellation...");
+    
+    try {
+      if (isCircle) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        toast.success("Withdrawal canceled successfully (Circle Simulation)!", { id: toastId });
+        refetchTreasury();
+        setCancelingId(null);
+        return;
+      }
+      
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const gasParams = await getAggressiveGasParams(publicClient);
+      
+      const hash = await walletClient.writeContract({
+        address: GOVERNANCE_CONTRACTS.treasury,
+        abi: TreasuryABI,
+        functionName: 'cancelWithdrawal',
+        args: [BigInt(id)],
+        account: address,
+        gas: 300000n,
+        ...gasParams
+      });
+      
+      toast.loading("⏳ Confirming cancellation...", { id: toastId });
+      await waitForTransaction(publicClient, hash);
+      toast.success("Withdrawal canceled successfully! ✅", { id: toastId });
+      refetchTreasury();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(parseArcError(err), { id: toastId });
+    } finally {
+      setCancelingId(null);
+    }
+  };
 
   const userAddress = walletAddress;
   // Wagmi hooks return undefined when no wagmi wallet is connected (Circle-only).
@@ -641,6 +743,84 @@ function TreasuryPageContent() {
             </div>
           </GlassCard>
         </div>
+
+        {/* Pending Withdrawals (Timelocks) */}
+        {pendingWithdrawals.length > 0 && (
+          <GlassCard className="p-6 border border-warning/20 bg-warning/[0.01]">
+            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-warning" />
+              Pending Withdrawals (Timelocked)
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border-thin text-text-tertiary text-xs uppercase tracking-wider">
+                    <th className="pb-4 font-bold pl-2">ID</th>
+                    <th className="pb-4 font-bold">Recipient</th>
+                    <th className="pb-4 font-bold">Amount</th>
+                    <th className="pb-4 font-bold">Purpose / Details</th>
+                    <th className="pb-4 font-bold">Status / Countdown</th>
+                    <th className="pb-4 font-bold text-right pr-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  {pendingWithdrawals.map((q) => {
+                    const diff = q.executionTime - currentTime;
+                    const isReady = diff <= 0;
+                    const timeLeftStr = isReady 
+                      ? "Ready to Execute" 
+                      : `${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m left`;
+
+                    return (
+                      <tr key={q.id} className="border-b border-border-thin/50 hover:bg-surface-elevated/30 transition-colors">
+                        <td className="py-4 pl-2 font-mono font-bold text-white">#W-{q.id}</td>
+                        <td className="py-4">
+                          <span className="font-mono text-xs text-text-secondary bg-surface-elevated px-2 py-1 rounded border border-border-subtle" title={q.recipient}>
+                            {q.recipient.slice(0, 6)}...{q.recipient.slice(-4)}
+                          </span>
+                        </td>
+                        <td className="py-4 font-mono font-bold text-white">
+                          -{q.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {q.tokenSymbol}
+                        </td>
+                        <td className="py-4 text-text-secondary">{q.description}</td>
+                        <td className="py-4">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold ${
+                            isReady 
+                              ? "bg-success/15 text-success border border-success/20" 
+                              : "bg-warning/15 text-warning border border-warning/20"
+                          }`}>
+                            {timeLeftStr}
+                          </span>
+                        </td>
+                        <td className="py-4 text-right pr-2 space-x-2">
+                          <button
+                            onClick={() => handleExecuteWithdrawal(q.id)}
+                            disabled={!isReady || executingId === q.id}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              isReady
+                                ? "bg-success text-black hover:bg-success/90 shadow-[0_0_10px_rgba(34,197,94,0.2)] font-extrabold"
+                                : "bg-surface-elevated text-text-tertiary border border-border-thin cursor-not-allowed font-extrabold"
+                            }`}
+                          >
+                            {executingId === q.id ? "Executing..." : "Execute"}
+                          </button>
+                          
+                          <button
+                            onClick={() => handleCancelWithdrawal(q.id)}
+                            disabled={cancelingId === q.id}
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-danger/10 border border-danger/25 text-danger hover:bg-danger/20 transition-all cursor-pointer font-extrabold"
+                          >
+                            {cancelingId === q.id ? "Canceling..." : "Cancel (Admin)"}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </GlassCard>
+        )}
 
         {/* Transactions Table */}
         <GlassCard className="p-6">

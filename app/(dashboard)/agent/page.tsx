@@ -1,17 +1,24 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import {
   Bot, Zap, Activity, Play, RotateCw, ExternalLink,
   BrainCircuit, Coins, ArrowRight, CheckCircle, XCircle,
   Clock, AlertTriangle, Shield, Cpu, Wallet, ChevronRight,
-  TrendingUp, ArrowLeftRight, CreditCard, Plus, Users
+  TrendingUp, ArrowLeftRight, CreditCard, Plus, Users, X, Check
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { AGENT_CAPABILITIES, AGENT_INTEGRATIONS, AGENT_CONFIG } from "@/lib/agent/smart-account";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
+import { createPublicClient, http, fallback, parseUnits } from "viem";
+import { ARC_CHAIN, ARC_RPC_URLS } from "@/lib/arc-config";
+import { AgentABI } from "@/lib/governance/contracts";
+import { parseArcError } from "@/lib/utils";
+import { getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
 
 interface AgentAction {
   timestamp: string;
@@ -70,6 +77,343 @@ export default function AgentPage() {
   const [running, setRunning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [autoRunning, setAutoRunning] = useState(false);
+
+  // On-Chain State Hooks & Variables
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
+  const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
+
+  const [onChainPaused, setOnChainPaused] = useState<boolean>(false);
+  const [maxRebalanceAmount, setMaxRebalanceAmount] = useState<number>(50);
+  const [queuedWithdrawals, setQueuedWithdrawals] = useState<any[]>([]);
+  const [onChainLoading, setOnChainLoading] = useState<boolean>(true);
+  const [isPausing, setIsPausing] = useState<boolean>(false);
+  const [isSettingLimit, setIsSettingLimit] = useState<boolean>(false);
+  const [newLimitInput, setNewLimitInput] = useState<string>("");
+  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
+
+  const [executingWithdrawalId, setExecutingWithdrawalId] = useState<string | null>(null);
+  const [cancelingWithdrawalId, setCancelingWithdrawalId] = useState<string | null>(null);
+
+  const [currentTime, setCurrentTime] = useState(Math.floor(Date.now() / 1000));
+
+  const [showWithdrawalModal, setShowWithdrawalModal] = useState<boolean>(false);
+  const [withdrawalToken, setWithdrawalToken] = useState<string>("0x3600000000000000000000000000000000000000");
+  const [withdrawalRecipient, setWithdrawalRecipient] = useState<string>("");
+  const [withdrawalAmount, setWithdrawalAmount] = useState<string>("");
+  const [isQueueingWithdrawal, setIsQueueingWithdrawal] = useState<boolean>(false);
+
+  const fetchOnChainState = useCallback(async () => {
+    setOnChainLoading(true);
+    const publicClient = createPublicClient({
+      chain: ARC_CHAIN,
+      transport: fallback(ARC_RPC_URLS.map((url) => http(url))),
+    });
+
+    const agentAddr = (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
+                      process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
+                      "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D") as `0x${string}`;
+
+    try {
+      const [paused, limit, rawQueued] = await Promise.all([
+        publicClient.readContract({
+          address: agentAddr,
+          abi: AgentABI,
+          functionName: 'paused',
+        }).catch(() => false),
+        publicClient.readContract({
+          address: agentAddr,
+          abi: AgentABI,
+          functionName: 'maxRebalanceAmount',
+        }).catch(() => 50n * 10n**6n),
+        publicClient.readContract({
+          address: agentAddr,
+          abi: AgentABI,
+          functionName: 'getQueuedWithdrawals',
+        }).catch(() => [] as any),
+      ]);
+
+      setOnChainPaused(paused);
+      setMaxRebalanceAmount(Number(limit) / 1_000_000);
+      
+      const formattedQueued = (rawQueued || []).map((q: any) => ({
+        id: q.id.toString(),
+        token: q.token,
+        recipient: q.recipient,
+        amount: Number(q.amount) / 1_000_000,
+        executionTime: Number(q.executionTime),
+        executed: q.executed,
+        canceled: q.canceled,
+      }));
+      setQueuedWithdrawals(formattedQueued);
+    } catch (err) {
+      console.error("fetchOnChainState error:", err);
+    } finally {
+      setOnChainLoading(false);
+    }
+  }, []);
+
+  const handlePauseToggle = async () => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    
+    setIsPausing(true);
+    const toastId = toast.loading(onChainPaused ? "Initiating agent unpause..." : "Initiating agent pause (emergency stop)...");
+    
+    try {
+      if (isCircle) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        toast.success(onChainPaused ? "Agent unpaused (Circle Simulation)!" : "Agent paused (Circle Simulation)!", { id: toastId });
+        setOnChainPaused(!onChainPaused);
+        setIsPausing(false);
+        return;
+      }
+      
+      const agentAddr = (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
+                        process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
+                        "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D") as `0x${string}`;
+
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const gasParams = await getAggressiveGasParams(publicClient);
+      
+      const hash = await walletClient.writeContract({
+        address: agentAddr,
+        abi: AgentABI,
+        functionName: onChainPaused ? 'unpause' : 'pause',
+        args: [],
+        account: address,
+        gas: 300000n,
+        ...gasParams
+      });
+      
+      toast.loading(onChainPaused ? "⏳ Confirming unpause..." : "⏳ Confirming pause...", { id: toastId });
+      await waitForTransaction(publicClient, hash);
+      toast.success(onChainPaused ? "Agent resumed successfully! ✅" : "Agent paused successfully! 🛑", { id: toastId });
+      fetchOnChainState();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(parseArcError(err), { id: toastId });
+    } finally {
+      setIsPausing(false);
+    }
+  };
+
+  const handleUpdateLimit = async (newLimit: number) => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    
+    setIsSettingLimit(true);
+    const toastId = toast.loading("Updating rebalance limit...");
+    
+    try {
+      if (isCircle) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        toast.success(`Limit updated to ${newLimit} USDC (Circle Simulation)!`, { id: toastId });
+        setMaxRebalanceAmount(newLimit);
+        setIsSettingLimit(false);
+        setShowLimitModal(false);
+        return;
+      }
+      
+      const agentAddr = (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
+                        process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
+                        "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D") as `0x${string}`;
+
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const gasParams = await getAggressiveGasParams(publicClient);
+      
+      const limitInUnits = parseUnits(newLimit.toString(), 6);
+      
+      const hash = await walletClient.writeContract({
+        address: agentAddr,
+        abi: AgentABI,
+        functionName: 'setMaxRebalanceAmount',
+        args: [limitInUnits],
+        account: address,
+        gas: 300000n,
+        ...gasParams
+      });
+      
+      toast.loading("⏳ Confirming limit update...", { id: toastId });
+      await waitForTransaction(publicClient, hash);
+      toast.success(`Limit successfully updated to ${newLimit} USDC! ✅`, { id: toastId });
+      setShowLimitModal(false);
+      fetchOnChainState();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(parseArcError(err), { id: toastId });
+    } finally {
+      setIsSettingLimit(false);
+    }
+  };
+
+  const handleExecuteAgentWithdrawal = async (id: string) => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    
+    setExecutingWithdrawalId(id);
+    const toastId = toast.loading("Executing agent withdrawal...");
+    
+    try {
+      if (isCircle) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        toast.success("Agent withdrawal executed (Circle Simulation)!", { id: toastId });
+        fetchOnChainState();
+        return;
+      }
+      
+      const agentAddr = (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
+                        process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
+                        "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D") as `0x${string}`;
+
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const gasParams = await getAggressiveGasParams(publicClient);
+      
+      const hash = await walletClient.writeContract({
+        address: agentAddr,
+        abi: AgentABI,
+        functionName: 'executeWithdrawal',
+        args: [BigInt(id)],
+        account: address,
+        gas: 300000n,
+        ...gasParams
+      });
+      
+      toast.loading("⏳ Confirming execution...", { id: toastId });
+      await waitForTransaction(publicClient, hash);
+      toast.success("Agent withdrawal executed successfully! ✅", { id: toastId });
+      fetchOnChainState();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(parseArcError(err), { id: toastId });
+    } finally {
+      setExecutingWithdrawalId(null);
+    }
+  };
+
+  const handleCancelAgentWithdrawal = async (id: string) => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    
+    setCancelingWithdrawalId(id);
+    const toastId = toast.loading("Canceling agent withdrawal...");
+    
+    try {
+      if (isCircle) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        toast.success("Agent withdrawal canceled (Circle Simulation)!", { id: toastId });
+        fetchOnChainState();
+        return;
+      }
+      
+      const agentAddr = (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
+                        process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
+                        "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D") as `0x${string}`;
+
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const gasParams = await getAggressiveGasParams(publicClient);
+      
+      const hash = await walletClient.writeContract({
+        address: agentAddr,
+        abi: AgentABI,
+        functionName: 'cancelWithdrawal',
+        args: [BigInt(id)],
+        account: address,
+        gas: 300000n,
+        ...gasParams
+      });
+      
+      toast.loading("⏳ Confirming cancellation...", { id: toastId });
+      await waitForTransaction(publicClient, hash);
+      toast.success("Agent withdrawal canceled successfully! ✅", { id: toastId });
+      fetchOnChainState();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(parseArcError(err), { id: toastId });
+    } finally {
+      setCancelingWithdrawalId(null);
+    }
+  };
+
+  const handleQueueWithdrawal = async () => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    if (!withdrawalRecipient || !withdrawalAmount) {
+      toast.error("Please fill in all fields.");
+      return;
+    }
+    
+    setIsQueueingWithdrawal(true);
+    const toastId = toast.loading("Queueing agent withdrawal...");
+    
+    try {
+      if (isCircle) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        toast.success("Withdrawal queued successfully (Circle Simulation)!", { id: toastId });
+        setShowWithdrawalModal(false);
+        setIsQueueingWithdrawal(false);
+        setQueuedWithdrawals([
+          ...queuedWithdrawals,
+          {
+            id: (queuedWithdrawals.length + 1).toString(),
+            token: withdrawalToken,
+            recipient: withdrawalRecipient,
+            amount: parseFloat(withdrawalAmount),
+            executionTime: Math.floor(Date.now() / 1000) + 86400,
+            executed: false,
+            canceled: false,
+          }
+        ]);
+        return;
+      }
+      
+      const agentAddr = (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
+                        process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
+                        "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D") as `0x${string}`;
+
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const gasParams = await getAggressiveGasParams(publicClient);
+      
+      const decimals = withdrawalToken.toLowerCase() === "0x3600000000000000000000000000000000000000" || 
+                       withdrawalToken.toLowerCase() === "0x89b50855aa3be2f677cd6303cec089b5f319d72a" ? 6 : 18;
+      const amountInUnits = parseUnits(withdrawalAmount, decimals);
+      
+      const hash = await walletClient.writeContract({
+        address: agentAddr,
+        abi: AgentABI,
+        functionName: 'queueWithdrawal',
+        args: [withdrawalToken as `0x${string}`, withdrawalRecipient as `0x${string}`, amountInUnits],
+        account: address,
+        gas: 300000n,
+        ...gasParams
+      });
+      
+      toast.loading("⏳ Confirming queued withdrawal...", { id: toastId });
+      await waitForTransaction(publicClient, hash);
+      toast.success("Withdrawal queued successfully! ✅ (24h delay enforced)", { id: toastId });
+      setShowWithdrawalModal(false);
+      fetchOnChainState();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(parseArcError(err), { id: toastId });
+    } finally {
+      setIsQueueingWithdrawal(false);
+    }
+  };
+
+  const pendingAgentWithdrawals = useMemo(() => {
+    return (queuedWithdrawals || []).filter(q => !q.executed && !q.canceled);
+  }, [queuedWithdrawals]);
 
   // Interactive Demo States
   const [demoStep, setDemoStep] = useState<"idle" | "analyzing" | "proposed" | "voting" | "executing" | "success">("idle");
@@ -195,10 +539,21 @@ export default function AgentPage() {
 
   useEffect(() => {
     fetchAgentState();
+    fetchOnChainState();
     // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchAgentState, 30_000);
+    const interval = setInterval(() => {
+      fetchAgentState();
+      fetchOnChainState();
+    }, 30_000);
     return () => clearInterval(interval);
-  }, [fetchAgentState]);
+  }, [fetchAgentState, fetchOnChainState]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Math.floor(Date.now() / 1000));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const treasury = agentState?.treasury;
   const actions = agentState?.recentActions || [];
@@ -212,6 +567,19 @@ export default function AgentPage() {
   return (
     <div className="space-y-8 animate-fade-in-up">
 
+      {/* On-chain Pause Alert Banner */}
+      {onChainPaused && (
+        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-start gap-3 animate-pulse">
+          <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-bold text-red-500">Emergency Stop Active</h3>
+            <p className="text-xs text-muted mt-1">
+              The Treasury Agent is currently paused on-chain. All autonomous proposal creations, voting, and rebalance activities have been suspended. Only the owner can unpause the agent.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -219,33 +587,76 @@ export default function AgentPage() {
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent-blue/20 border border-primary/30 flex items-center justify-center">
               <Bot className="w-8 h-8 text-primary" />
             </div>
-            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-primary border-2 border-background animate-ping" />
-            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-primary border-2 border-background" />
+            {!onChainPaused && (
+              <>
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-primary border-2 border-background animate-ping" />
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-primary border-2 border-background" />
+              </>
+            )}
+            {onChainPaused && (
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-500 border-2 border-background" />
+            )}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold font-heading text-text-primary">Treasury Agent</h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-primary/20 border border-primary/30 text-primary">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping inline-block" />
-                LIVE
-              </span>
+              {onChainPaused ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-500/20 border border-red-500/30 text-red-500">
+                  PAUSED
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-primary/20 border border-primary/30 text-primary">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping inline-block" />
+                  LIVE
+                </span>
+              )}
             </div>
             <p className="text-sm text-muted">Helps monitor and rebalance your treasury capital between Arc and Ethereum.</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={fetchAgentState}
+            onClick={() => {
+              fetchAgentState();
+              fetchOnChainState();
+            }}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border-thin bg-surface-elevated hover:bg-surface text-sm font-medium text-text-secondary hover:text-text-primary transition-all cursor-pointer"
           >
             <RotateCw className="w-3.5 h-3.5" />
             Refresh
           </button>
+          
+          <motion.button
+            onClick={handlePauseToggle}
+            disabled={isPausing}
+            whileHover={{ scale: isPausing ? 1 : 1.02 }}
+            whileTap={{ scale: isPausing ? 1 : 0.98 }}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all shadow-md cursor-pointer disabled:cursor-not-allowed ${
+              onChainPaused
+                ? "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20"
+                : "bg-red-600 hover:bg-red-500 shadow-red-600/20"
+            }`}
+          >
+            {isPausing ? (
+              <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+            ) : onChainPaused ? (
+              <>
+                <Play className="w-4 h-4" />
+                Resume Agent
+              </>
+            ) : (
+              <>
+                <XCircle className="w-4 h-4" />
+                Emergency Stop
+              </>
+            )}
+          </motion.button>
+
           <motion.button
             onClick={runAgent}
-            disabled={running}
-            whileHover={{ scale: running ? 1 : 1.02 }}
-            whileTap={{ scale: running ? 1 : 0.98 }}
+            disabled={running || onChainPaused}
+            whileHover={{ scale: (running || onChainPaused) ? 1 : 1.02 }}
+            whileTap={{ scale: (running || onChainPaused) ? 1 : 0.98 }}
             className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-blue text-white text-sm font-bold hover:opacity-90 disabled:opacity-60 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer disabled:cursor-not-allowed"
           >
             {running ? (
@@ -325,6 +736,27 @@ export default function AgentPage() {
                   <span className="text-text-secondary font-medium">{row.value}</span>
                 </div>
               ))}
+              
+              <div className="flex items-center justify-between text-xs pt-1 border-t border-border-thin/40">
+                <span className="text-muted">Max Rebalance Limit</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-text-secondary font-bold font-mono">
+                    {onChainLoading ? "..." : `${maxRebalanceAmount} USDC`}
+                  </span>
+                  {isAuthenticated && (
+                    <button
+                      onClick={() => {
+                        setNewLimitInput(maxRebalanceAmount.toString());
+                        setShowLimitModal(true);
+                      }}
+                      className="text-primary hover:text-primary-glow text-[10px] font-bold cursor-pointer bg-transparent border-0 p-0"
+                    >
+                      (Edit)
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {agentState?.agentAddress && (
                 <div className="pt-2 border-t border-border-thin space-y-2">
                   <div>
@@ -359,6 +791,22 @@ export default function AgentPage() {
                       </a>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {isAuthenticated && (
+                <div className="pt-2 border-t border-border-thin">
+                  <button
+                    onClick={() => {
+                      setWithdrawalRecipient("");
+                      setWithdrawalAmount("");
+                      setShowWithdrawalModal(true);
+                    }}
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-xs font-bold text-primary hover:bg-primary/20 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Queue New Withdrawal (Admin)
+                  </button>
                 </div>
               )}
             </div>
@@ -671,8 +1119,244 @@ export default function AgentPage() {
             </div>
           </GlassCard>
 
+          {/* Agent Queued Withdrawals Section */}
+          {pendingAgentWithdrawals.length > 0 && (
+            <GlassCard className="p-5 border border-warning/20 bg-warning/[0.01]">
+              <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-warning" />
+                Agent Pending Withdrawals (24h Timelocked)
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border-thin text-text-tertiary text-[10px] uppercase tracking-wider">
+                      <th className="pb-3 font-bold pl-2">ID</th>
+                      <th className="pb-3 font-bold">Recipient</th>
+                      <th className="pb-3 font-bold">Amount</th>
+                      <th className="pb-3 font-bold">Token</th>
+                      <th className="pb-3 font-bold">Countdown</th>
+                      <th className="pb-3 font-bold text-right pr-2">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-xs text-text-secondary">
+                    {pendingAgentWithdrawals.map((q) => {
+                      const diff = q.executionTime - currentTime;
+                      const isReady = diff <= 0;
+                      const timeLeftStr = isReady 
+                        ? "Ready to Execute" 
+                        : `${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m ${diff % 60}s`;
+
+                      const tokenSymbol = q.token.toLowerCase() === "0x3600000000000000000000000000000000000000" ? "USDC" : 
+                                          q.token.toLowerCase() === "0x89b50855aa3be2f677cd6303cec089b5f319d72a" ? "EURC" : 
+                                          q.token === "0x0000000000000000000000000000000000000000" ? "ARC" : "TOKEN";
+
+                      return (
+                        <tr key={q.id} className="border-b border-border-thin/50 hover:bg-surface-elevated/30 transition-colors">
+                          <td className="py-3 pl-2 font-mono font-bold text-white">#W-{q.id}</td>
+                          <td className="py-3">
+                            <span className="font-mono text-[10px] text-text-secondary bg-surface-elevated px-1.5 py-0.5 rounded border border-border-subtle" title={q.recipient}>
+                              {q.recipient.slice(0, 6)}...{q.recipient.slice(-4)}
+                            </span>
+                          </td>
+                          <td className="py-3 font-mono font-bold text-white">
+                            {q.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="py-3 font-medium text-text-secondary">{tokenSymbol}</td>
+                          <td className="py-3">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${
+                              isReady 
+                                ? "bg-success/15 text-success border border-success/20 animate-pulse" 
+                                : "bg-warning/15 text-warning border border-warning/20"
+                            }`}>
+                              {timeLeftStr}
+                            </span>
+                          </td>
+                          <td className="py-3 text-right pr-2 space-x-1.5">
+                            <button
+                              onClick={() => handleExecuteAgentWithdrawal(q.id)}
+                              disabled={!isReady || executingWithdrawalId === q.id}
+                              className={`px-2 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                                isReady
+                                  ? "bg-success text-black hover:bg-success/90 shadow-[0_0_10px_rgba(34,197,94,0.2)]"
+                                  : "bg-surface-elevated text-text-tertiary border border-border-thin cursor-not-allowed"
+                              }`}
+                            >
+                              {executingWithdrawalId === q.id ? "..." : "Execute"}
+                            </button>
+                            
+                            <button
+                              onClick={() => handleCancelAgentWithdrawal(q.id)}
+                              disabled={cancelingWithdrawalId === q.id}
+                              className="px-2 py-1 rounded text-[10px] font-bold bg-danger/10 border border-danger/25 text-danger hover:bg-danger/20 transition-all cursor-pointer"
+                            >
+                              {cancelingWithdrawalId === q.id ? "..." : "Cancel"}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </GlassCard>
+          )}
+
         </div>
       </div>
+
+      {/* Edit Limit Modal */}
+      <AnimatePresence>
+        {showLimitModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
+            >
+              <button 
+                onClick={() => setShowLimitModal(false)}
+                className="absolute top-4 right-4 text-muted hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                <Shield className="w-5 h-5 text-primary" />
+                Update Max Rebalance Limit
+              </h3>
+              <p className="text-xs text-muted mb-4">
+                Set the maximum amount of USDC the agent is allowed to transfer per rebalance operation.
+              </p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted mb-1.5">New Limit (USDC)</label>
+                  <input
+                    type="number"
+                    value={newLimitInput}
+                    onChange={(e) => setNewLimitInput(e.target.value)}
+                    placeholder="e.g. 50"
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-primary/50 font-mono font-bold"
+                  />
+                  {parseFloat(newLimitInput) > 50 && (
+                    <div className="mt-2 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                      <p className="text-[10px] text-amber-400">
+                        Warning: Limits above 50 USDC exceed recommended safety parameters. Large proposals will require a 66% community supermajority.
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setShowLimitModal(false)}
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-white transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleUpdateLimit(parseFloat(newLimitInput))}
+                    disabled={isSettingLimit || !newLimitInput || parseFloat(newLimitInput) <= 0}
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-black hover:bg-primary-glow text-sm font-bold transition-all disabled:opacity-50 cursor-pointer"
+                  >
+                    {isSettingLimit ? "Updating..." : "Save Limit"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Queue Withdrawal Modal */}
+      <AnimatePresence>
+        {showWithdrawalModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
+            >
+              <button 
+                onClick={() => setShowWithdrawalModal(false)}
+                className="absolute top-4 right-4 text-muted hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                <Plus className="w-5 h-5 text-primary" />
+                Queue Agent Withdrawal (Admin)
+              </h3>
+              <p className="text-xs text-muted mb-4">
+                Queue a withdrawal from the Agent contract. Funds will be timelocked for 24 hours before they can be executed.
+              </p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted mb-1.5">Asset Token</label>
+                  <select
+                    value={withdrawalToken}
+                    onChange={(e) => setWithdrawalToken(e.target.value)}
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-primary/50"
+                  >
+                    <option value="0x3600000000000000000000000000000000000000">USDC (Stable)</option>
+                    <option value="0x89b50855aa3be2f677cd6303cec089b5f319d72a">EURC (Stable)</option>
+                    <option value="0x0000000000000000000000000000000000000000">ARC / Native ETH</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted mb-1.5">Recipient Address</label>
+                  <input
+                    type="text"
+                    value={withdrawalRecipient}
+                    onChange={(e) => setWithdrawalRecipient(e.target.value)}
+                    placeholder="0x..."
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-primary/50 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted mb-1.5">Amount</label>
+                  <input
+                    type="number"
+                    value={withdrawalAmount}
+                    onChange={(e) => setWithdrawalAmount(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-primary/50 font-mono"
+                  />
+                </div>
+
+                <div className="p-3 bg-warning/5 border border-warning/20 rounded-xl flex items-start gap-2.5">
+                  <Clock className="w-4.5 h-4.5 text-warning shrink-0 mt-0.5" />
+                  <p className="text-[10px] text-muted leading-relaxed font-sans">
+                    Once queued, this withdrawal cannot be bypassed or accelerated. A 24-hour public countdown will begin immediately on-chain.
+                  </p>
+                </div>
+                
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setShowWithdrawalModal(false)}
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-white transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleQueueWithdrawal}
+                    disabled={isQueueingWithdrawal || !withdrawalRecipient || !withdrawalAmount}
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-black hover:bg-primary-glow text-sm font-bold transition-all disabled:opacity-50 cursor-pointer"
+                  >
+                    {isQueueingWithdrawal ? "Queueing..." : "Queue Withdrawal"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

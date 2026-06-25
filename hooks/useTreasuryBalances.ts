@@ -34,11 +34,46 @@ const TREASURY_ABI = [
       },
     ],
   },
+  {
+    name: 'getQueuedWithdrawals',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [
+      {
+        type: 'tuple[]',
+        name: '',
+        components: [
+          { name: 'id', type: 'uint256' },
+          { name: 'recipient', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+          { name: 'token', type: 'address' },
+          { name: 'tokenSymbol', type: 'string' },
+          { name: 'description', type: 'string' },
+          { name: 'executionTime', type: 'uint256' },
+          { name: 'executed', type: 'bool' },
+          { name: 'canceled', type: 'bool' },
+        ],
+      },
+    ],
+  },
 ] as const;
 
 const USDC_ADDRESS = '0x3600000000000000000000000000000000000000' as `0x${string}`;
 const EURC_ADDRESS = (process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS ||
   '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}`;
+
+export interface QueuedWithdrawal {
+  id: string;
+  recipient: string;
+  amount: number;
+  token: string;
+  tokenSymbol: string;
+  description: string;
+  executionTime: number;
+  executed: boolean;
+  canceled: boolean;
+}
 
 export const useTreasuryBalances = (customTreasuryAddress?: string) => {
   const treasuryAddress = (customTreasuryAddress ||
@@ -49,6 +84,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
   const [usdcBalance, setUsdcBalance] = useState(0);
   const [eurcBalance, setEurcBalance] = useState(0);
   const [activities, setActivities] = useState<TreasuryActivity[]>([]);
+  const [queuedWithdrawals, setQueuedWithdrawals] = useState<QueuedWithdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,8 +98,8 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
     });
 
     try {
-      // Fetch USDC, EURC, and activities in parallel
-      const [usdcBal, eurcBal, rawActivities] = await Promise.all([
+      // Fetch USDC, EURC, activities, and queued withdrawals in parallel
+      const [usdcBal, eurcBal, rawActivities, rawQueued] = await Promise.all([
         publicClient.readContract({
           address: USDC_ADDRESS,
           abi: ERC20_ABI,
@@ -81,6 +117,11 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
           abi: TREASURY_ABI,
           functionName: 'getTransactions',
         }).catch(() => [] as any),
+        publicClient.readContract({
+          address: treasuryAddress,
+          abi: TREASURY_ABI,
+          functionName: 'getQueuedWithdrawals',
+        }).catch(() => [] as any),
       ]);
 
       const usdcVal = Number(usdcBal) / 1_000_000;
@@ -96,6 +137,21 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
         description: act.description,
         txHash: "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("")
       }));
+
+      // Format queued withdrawals
+      const formattedQueued: QueuedWithdrawal[] = rawQueued.map((q: any) => ({
+        id: q.id.toString(),
+        recipient: q.recipient,
+        amount: Number(q.amount) / 1_000_000,
+        token: q.token,
+        tokenSymbol: q.tokenSymbol || "USDC",
+        description: q.description,
+        executionTime: Number(q.executionTime),
+        executed: q.executed,
+        canceled: q.canceled,
+      }));
+
+      setQueuedWithdrawals(formattedQueued);
 
       // Merge simulated activities from localStorage
       let simulatedActivities: TreasuryActivity[] = [];
@@ -160,6 +216,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
     usdcBalance,
     eurcBalance,
     activities,
+    queuedWithdrawals,
     loading,
     isLoading: loading,
     error,

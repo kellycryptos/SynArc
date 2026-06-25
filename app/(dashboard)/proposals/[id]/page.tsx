@@ -188,6 +188,57 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   const [votingError, setVotingError] = useState<string | null>(null);
   const [hasUserVotedOnChain, setHasUserVotedOnChain] = useState(false);
 
+  interface VoterRecord {
+    voter: string;
+    support: number; // 0=Against, 1=For, 2=Abstain
+    weight: number;
+    reason: string;
+  }
+  const [voters, setVoters] = useState<VoterRecord[]>([]);
+  const [loadingVoters, setLoadingVoters] = useState(true);
+
+  useEffect(() => {
+    async function fetchVoters() {
+      if (!proposal) return;
+      const rawId = Number(proposal.id.replace("SIP-", ""));
+      if (isNaN(rawId)) {
+        setLoadingVoters(false);
+        return;
+      }
+      try {
+        const provider = await getResilientProvider();
+        const governorContract = new Contract(
+          process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e",
+          GovernorABI,
+          provider
+        );
+        const filter = governorContract.filters.VoteCast(null, rawId);
+        const events = await governorContract.queryFilter(filter);
+        
+        const list: VoterRecord[] = events.map((event: any) => {
+          const parsed = governorContract.interface.parseLog({
+            topics: [...event.topics],
+            data: event.data
+          });
+          return {
+            voter: parsed?.args.voter || "",
+            support: Number(parsed?.args.support),
+            weight: Number(formatUnits(parsed?.args.weight || 0n, 18)),
+            reason: parsed?.args.reason || ""
+          };
+        });
+        
+        list.sort((a, b) => b.weight - a.weight);
+        setVoters(list);
+      } catch (err) {
+        console.error("Failed to fetch voters", err);
+      } finally {
+        setLoadingVoters(false);
+      }
+    }
+    fetchVoters();
+  }, [proposal, voting, initialized]);
+
   useEffect(() => {
     async function checkVoted() {
       if (!walletAddress || !proposal) return;
@@ -602,6 +653,20 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
 
+        {/* Large Withdrawal Warning Banner */}
+        {Math.abs(proposal.treasuryImpactValue) > 50 && (
+          <div className="p-4 bg-warning/15 border border-warning/30 rounded-2xl text-xs text-warning flex items-start gap-3 shadow-[0_0_20px_rgba(245,158,11,0.05)]">
+            <AlertCircle className="w-5 h-5 shrink-0 text-warning mt-0.5" />
+            <div className="space-y-1">
+              <p className="font-bold text-sm text-amber-300">Large Treasury Withdrawal Safeguard Active</p>
+              <p className="text-text-secondary leading-normal">
+                This proposal requests a withdrawal of <span className="font-bold text-white font-mono">{Math.abs(proposal.treasuryImpactValue).toLocaleString()} USDC</span>, which exceeds the secure threshold of <span className="font-bold text-white">50 USDC</span>. 
+                Accordingly, this proposal requires a <span className="font-bold text-white">66% supermajority</span> of voting power to pass, and will undergo a mandatory <span className="font-bold text-white">24-hour execution timelock</span> in the Treasury if approved.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Main Content */}
@@ -622,7 +687,9 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                   <h3 className="text-sm font-bold text-text-tertiary uppercase tracking-wider mb-4">Execution Details</h3>
                   <div className="bg-background border border-border-thin rounded-xl p-4 space-y-3">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-text-secondary">Target Contract</span>
+                      <span className="text-text-secondary">
+                        {proposal.treasuryImpactValue !== 0 ? "Recipient Address" : "Target Contract"}
+                      </span>
                       <span className="font-mono text-primary text-xs bg-primary/10 px-2 py-1 rounded">{proposal.executionTarget}</span>
                     </div>
                     {proposal.treasuryImpactValue !== 0 && (
@@ -665,6 +732,48 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                 ))}
               </div>
             </div>
+            {/* Voters List */}
+            <GlassCard className="p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center justify-between">
+                <span>Voters Transparency</span>
+                <span className="text-xs text-text-tertiary bg-surface-elevated px-2.5 py-0.5 rounded-full border border-border-thin font-bold">
+                  {voters.length} {voters.length === 1 ? 'voter' : 'voters'}
+                </span>
+              </h3>
+              
+              {loadingVoters ? (
+                <div className="py-4 text-center">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
+                </div>
+              ) : voters.length > 0 ? (
+                <div className="space-y-3.5 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                  {voters.map((v, i) => (
+                    <div key={i} className="flex justify-between items-center text-xs border-b border-border-thin/40 pb-3 last:border-b-0 last:pb-0">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Link href={`https://testnet.arcscan.app/address/${v.voter}`} target="_blank" className="font-mono text-primary hover:underline">
+                            {v.voter.slice(0, 6)}...{v.voter.slice(-4)}
+                          </Link>
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${
+                            v.support === 1 ? "bg-success/15 text-success border border-success/20" :
+                            v.support === 0 ? "bg-danger/15 text-danger border border-danger/20" :
+                            "bg-surface-elevated text-text-tertiary border border-border-thin"
+                          }`}>
+                            {v.support === 1 ? "FOR" : v.support === 0 ? "AGAINST" : "ABSTAIN"}
+                          </span>
+                        </div>
+                        {v.reason && (
+                          <p className="text-text-tertiary italic text-[11px] leading-relaxed">&quot;{v.reason}&quot;</p>
+                        )}
+                      </div>
+                      <span className="font-mono font-bold text-white text-[11px]">{v.weight.toLocaleString(undefined, { maximumFractionDigits: 0 })} VP</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-text-tertiary text-center py-4">No votes cast yet.</p>
+              )}
+            </GlassCard>
           </div>
 
           {/* Sidebar - Voting & Metrics */}

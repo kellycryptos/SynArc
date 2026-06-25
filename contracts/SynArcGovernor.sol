@@ -33,6 +33,11 @@ contract SynArcGovernor {
     mapping(uint256 => mapping(address => bool)) public hasVoted;
     uint256 public executionDelay;
 
+    // Large withdrawal threshold config (default 50 USDC, i.e., 50 * 10^6)
+    uint256 public largeWithdrawalThreshold = 50 * 10**6;
+    // Supermajority voting threshold percentage (default 66, i.e., 66%)
+    uint256 public largeWithdrawalVotingThreshold = 66;
+
     event ProposalCreated(
         uint256 indexed proposalId,
         address indexed proposer,
@@ -55,11 +60,26 @@ contract SynArcGovernor {
 
     event ProposalExecuted(uint256 indexed proposalId);
     event ProposalCanceled(uint256 indexed proposalId);
+    event LargeWithdrawalConfigUpdated(uint256 oldThreshold, uint256 newThreshold, uint256 oldVotingThreshold, uint256 newVotingThreshold);
 
     constructor(address _token, address payable _treasury, uint256 _executionDelay) {
         token = SynArcToken(_token);
         treasury = SynArcTreasury(_treasury);
         executionDelay = _executionDelay;
+    }
+
+    // Config setters (only callable by the governor itself via proposal execution)
+    function setLargeWithdrawalThreshold(uint256 _threshold) external {
+        require(msg.sender == address(this), "Only governor can call");
+        emit LargeWithdrawalConfigUpdated(largeWithdrawalThreshold, _threshold, largeWithdrawalVotingThreshold, largeWithdrawalVotingThreshold);
+        largeWithdrawalThreshold = _threshold;
+    }
+
+    function setLargeWithdrawalVotingThreshold(uint256 _votingThreshold) external {
+        require(msg.sender == address(this), "Only governor can call");
+        require(_votingThreshold > 50 && _votingThreshold <= 100, "Invalid voting threshold percentage");
+        emit LargeWithdrawalConfigUpdated(largeWithdrawalThreshold, largeWithdrawalThreshold, largeWithdrawalVotingThreshold, _votingThreshold);
+        largeWithdrawalVotingThreshold = _votingThreshold;
     }
 
     function propose(
@@ -182,7 +202,17 @@ contract SynArcGovernor {
         }
         
         // After end time:
-        if (p.forVotes > p.againstVotes) {
+        bool passes;
+        if (p.treasuryImpactValue > largeWithdrawalThreshold && p.executionTarget != address(0)) {
+            // Large withdrawal requires supermajority (default 66%)
+            uint256 totalActiveVotes = p.forVotes + p.againstVotes;
+            passes = (totalActiveVotes > 0 && p.forVotes * 100 >= totalActiveVotes * largeWithdrawalVotingThreshold);
+        } else {
+            // Standard proposal requires simple majority
+            passes = (p.forVotes > p.againstVotes);
+        }
+
+        if (passes) {
             if (block.timestamp < p.endTime + executionDelay) {
                 return ProposalState.Queued;
             }

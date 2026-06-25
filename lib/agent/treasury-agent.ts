@@ -123,9 +123,9 @@ export class TreasuryAgent {
 
   async createRebalancingProposal(decision: { action: string; reasoning: string; proposedAmount?: number }): Promise<string> {
     const title = decision.action === 'bridge_to_ethereum'
-      ? `[AGENT] Bridge ${decision.proposedAmount} USDC to Ethereum via CCTP`
-      : `[AGENT] Treasury Rebalancing — ${decision.action}`
-    const description = `AUTONOMOUS AGENT PROPOSAL\nAction: ${decision.action}\nAmount: ${decision.proposedAmount || 0} USDC\nAgent: ${this.getAgentAddress()}\nTimestamp: ${new Date().toISOString()}\n\nAI Reasoning:\n${decision.reasoning}\n\nThis proposal was created autonomously by the SynArc Treasury Agent.`
+      ? `Proposed by Treasury Agent — Bridge ${decision.proposedAmount} USDC`
+      : `Proposed by Treasury Agent — Rebalancing: ${decision.action}`
+    const description = `Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: ${decision.action}\nAmount: ${decision.proposedAmount || 0} USDC\nAgent: ${this.getAgentAddress()}\nTimestamp: ${new Date().toISOString()}\n\nAI Reasoning:\n${decision.reasoning}\n\nThis proposal was created autonomously by the SynArc Treasury Agent.`
     
     const txHash = await this.walletClient.writeContract({
       address: CONTRACTS.governor,
@@ -180,7 +180,7 @@ export class TreasuryAgent {
           const impact = prop[13]
 
           // Only execute agent's own rebalance proposals targeting this agent
-          if (title.includes('[AGENT]') && target.toLowerCase() === agentAddr) {
+          if ((title.includes('[AGENT]') || title.includes('Proposed by Treasury Agent')) && target.toLowerCase() === agentAddr) {
             console.log(`[TreasuryAgent] Found succeeded proposal #${i}: "${title}". Executing...`)
 
             // 1. Call execute on governor
@@ -277,7 +277,7 @@ export class TreasuryAgent {
           const target = prop[14]
 
           // Only vote on agent's own rebalance proposals targeting this agent
-          if (title.includes('[AGENT]') && target.toLowerCase() === agentAddr) {
+          if ((title.includes('[AGENT]') || title.includes('Proposed by Treasury Agent')) && target.toLowerCase() === agentAddr) {
             const voted = await this.publicClient.readContract({
               address: CONTRACTS.governor,
               abi: GOVERNOR_ABI,
@@ -333,6 +333,28 @@ export class TreasuryAgent {
   async run(): Promise<AgentAction> {
     const startTime = new Date().toISOString()
     try {
+      // Check if the agent is paused on-chain before running
+      try {
+        const isPaused = await this.publicClient.readContract({
+          address: this.getAgentAddress(),
+          abi: parseAbi(['function paused() view returns (bool)']),
+          functionName: 'paused'
+        })
+        if (isPaused) {
+          console.log('[TreasuryAgent] Agent is paused on-chain. Skipping execution.')
+          const pauseAction: AgentAction = {
+            timestamp: startTime,
+            action: 'monitoring',
+            reasoning: 'Agent execution skipped: The Treasury Agent is currently paused on-chain via the emergency stop toggle.',
+            status: 'executed'
+          }
+          this.logAction(pauseAction)
+          return pauseAction
+        }
+      } catch (pauseErr) {
+        console.warn('[TreasuryAgent] Failed to check on-chain paused state:', pauseErr)
+      }
+
       // 1. Execute any succeeded proposals first (autonomous execution)
       const executedTxHashes = await this.executeSucceededProposals()
       if (executedTxHashes.length > 0) {

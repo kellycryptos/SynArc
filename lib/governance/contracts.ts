@@ -175,6 +175,20 @@ export const GovernorABI = [
     ],
   },
   {
+    type: 'function',
+    name: 'largeWithdrawalThreshold',
+    inputs: [],
+    outputs: [{ type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'largeWithdrawalVotingThreshold',
+    inputs: [],
+    outputs: [{ type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
     type: 'event',
     name: 'ProposalExecuted',
     inputs: [
@@ -296,6 +310,74 @@ export const TreasuryABI = [
     stateMutability: 'nonpayable',
   },
   {
+    type: 'function',
+    name: 'withdrawalDelay',
+    inputs: [],
+    outputs: [{ type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'withdrawalCount',
+    inputs: [],
+    outputs: [{ type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'queuedWithdrawals',
+    inputs: [{ name: 'id', type: 'uint256' }],
+    outputs: [
+      { name: 'id', type: 'uint256' },
+      { name: 'recipient', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+      { name: 'token', type: 'address' },
+      { name: 'tokenSymbol', type: 'string' },
+      { name: 'description', type: 'string' },
+      { name: 'executionTime', type: 'uint256' },
+      { name: 'executed', type: 'bool' },
+      { name: 'canceled', type: 'bool' }
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'getQueuedWithdrawals',
+    inputs: [],
+    outputs: [
+      {
+        type: 'tuple[]',
+        name: '',
+        components: [
+          { name: 'id', type: 'uint256' },
+          { name: 'recipient', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+          { name: 'token', type: 'address' },
+          { name: 'tokenSymbol', type: 'string' },
+          { name: 'description', type: 'string' },
+          { name: 'executionTime', type: 'uint256' },
+          { name: 'executed', type: 'bool' },
+          { name: 'canceled', type: 'bool' }
+        ]
+      }
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'executeWithdrawal',
+    inputs: [{ name: 'id', type: 'uint256' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'cancelWithdrawal',
+    inputs: [{ name: 'id', type: 'uint256' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
     type: 'event',
     name: 'Withdrawal',
     inputs: [
@@ -377,3 +459,32 @@ export function getVoteTypeLabel(voteType: VoteType): string {
   };
   return labels[voteType] || 'Unknown';
 }
+
+/**
+ * Agent Contract ABI
+ */
+export const AgentABI = [
+  { type: 'function', name: 'paused', inputs: [], outputs: [{ type: 'bool' }], stateMutability: 'view' },
+  { type: 'function', name: 'pause', inputs: [], outputs: [], stateMutability: 'nonpayable' },
+  { type: 'function', name: 'unpause', inputs: [], outputs: [], stateMutability: 'nonpayable' },
+  { type: 'function', name: 'maxRebalanceAmount', inputs: [], outputs: [{ type: 'uint256' }], stateMutability: 'view' },
+  { type: 'function', name: 'setMaxRebalanceAmount', inputs: [{ name: '_newLimit', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
+  { type: 'function', name: 'getQueuedWithdrawals', inputs: [], outputs: [
+    {
+      type: 'tuple[]',
+      name: '',
+      components: [
+        { name: 'id', type: 'uint256' },
+        { name: 'token', type: 'address' },
+        { name: 'recipient', type: 'address' },
+        { name: 'amount', type: 'uint256' },
+        { name: 'executionTime', type: 'uint256' },
+        { name: 'executed', type: 'bool' },
+        { name: 'canceled', type: 'bool' }
+      ]
+    }
+  ], stateMutability: 'view' },
+  { type: 'function', name: 'executeWithdrawal', inputs: [{ name: 'id', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
+  { type: 'function', name: 'cancelWithdrawal', inputs: [{ name: 'id', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
+  { type: 'function', name: 'queueWithdrawal', inputs: [{ name: 'token', type: 'address' }, { name: 'recipient', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' }
+] as const satisfies Abi;

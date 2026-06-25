@@ -176,8 +176,8 @@ describe("SynArc Governance System", function () {
       );
     });
 
-    it("should succeed and execute proposal to withdraw funds from treasury", async function () {
-      // Create proposal
+    it("should succeed and queue proposal withdrawal, then execute it after delay", async function () {
+      // Create proposal (100 USDC withdrawal, which is > 50 USDC threshold)
       await governor.propose(
         proposalTitle,
         proposalDesc,
@@ -204,19 +204,109 @@ describe("SynArc Governance System", function () {
       state = await governor.state(1n);
       expect(state).to.equal(4); // 4 = Succeeded
 
-      // Execute proposal
-      const initialTargetBalance = await mockUSDC.balanceOf(executionTarget.address);
-      
+      // Execute proposal (this will queue withdrawal in treasury)
       await expect(governor.execute(1n))
         .to.emit(governor, "ProposalExecuted")
+        .to.emit(treasury, "WithdrawalQueued");
+
+      // Verify withdrawal is queued in treasury
+      const queued = await treasury.queuedWithdrawals(1n);
+      expect(queued.recipient).to.equal(executionTarget.address);
+      expect(queued.amount).to.equal(treasuryImpact);
+      expect(queued.executed).to.be.false;
+
+      // Verify target balance has NOT changed yet
+      const initialTargetBalance = await mockUSDC.balanceOf(executionTarget.address);
+      expect(initialTargetBalance).to.equal(0n);
+
+      // Try executing withdrawal before timelock (should revert)
+      await expect(treasury.executeWithdrawal(1n)).to.be.revertedWith("Timelock not expired");
+
+      // Fast-forward past treasury delay (1 day = 86400s)
+      await ethers.provider.send("evm_increaseTime", [86400]);
+      await ethers.provider.send("evm_mine", []);
+
+      // Execute withdrawal
+      await expect(treasury.executeWithdrawal(1n))
+        .to.emit(treasury, "WithdrawalExecuted")
         .to.emit(treasury, "WithdrawalUSDC");
 
       // Verify funds were transferred to target address
       const finalTargetBalance = await mockUSDC.balanceOf(executionTarget.address);
-      expect(finalTargetBalance - initialTargetBalance).to.equal(treasuryImpact);
+      expect(finalTargetBalance).to.equal(treasuryImpact);
 
       state = await governor.state(1n);
       expect(state).to.equal(7); // 7 = Executed
+    });
+
+    it("should require 66% supermajority for large withdrawals (>50 USDC) and fail if simple majority is not enough", async function () {
+      // Transfer more voting tokens to voter2 to have 600 votes
+      await token.transfer(voter2.address, 100n * 10n ** 18n);
+      await token.connect(voter2).delegate(voter2.address);
+      await ethers.provider.send("evm_mine", []);
+
+      // Create proposal (100 USDC withdrawal, which is > 50 USDC threshold)
+      await governor.propose(
+        proposalTitle,
+        proposalDesc,
+        proposalCategory,
+        duration,
+        treasuryImpact,
+        executionTarget.address
+      );
+
+      // Vote: Voter1 (1000 votes) For, Voter2 (600 votes) Against
+      // Total For: 1000 (62.5%), Total Against: 600 (37.5%).
+      // Simple majority (1000 > 600) is true, but supermajority (62.5% < 66%) is false.
+      await governor.connect(voter1).castVote(1n, 1); // 1 = For
+      await governor.connect(voter2).castVote(1n, 0); // 0 = Against
+
+      // Fast-forward time past end time + execution delay
+      await ethers.provider.send("evm_increaseTime", [duration + EXECUTION_DELAY + 10]);
+      await ethers.provider.send("evm_mine", []);
+
+      // Proposal state should be Defeated because it failed the supermajority check
+      const state = await governor.state(1n);
+      expect(state).to.equal(3); // 3 = Defeated
+
+      // Try executing (should revert)
+      await expect(governor.execute(1n)).to.be.revertedWith("Proposal cannot be executed");
+    });
+
+    it("should allow emergency pause and cancellation of withdrawals by owner", async function () {
+      // Create and execute a passed proposal to queue a withdrawal
+      await governor.propose(
+        proposalTitle,
+        proposalDesc,
+        proposalCategory,
+        duration,
+        treasuryImpact,
+        executionTarget.address
+      );
+      await governor.connect(voter1).castVote(1n, 1);
+      
+      await ethers.provider.send("evm_increaseTime", [duration + EXECUTION_DELAY + 10]);
+      await ethers.provider.send("evm_mine", []);
+
+      await governor.execute(1n); // Queues withdrawal #1
+
+      // Pause the treasury
+      await treasury.pause();
+
+      // Try to execute withdrawal while paused (should revert)
+      await ethers.provider.send("evm_increaseTime", [86400]);
+      await ethers.provider.send("evm_mine", []);
+      await expect(treasury.executeWithdrawal(1n)).to.be.revertedWithCustomError(treasury, "EnforcedPause");
+
+      // Cancel the withdrawal
+      await expect(treasury.cancelWithdrawal(1n))
+        .to.emit(treasury, "WithdrawalCanceled");
+
+      // Unpause the treasury
+      await treasury.unpause();
+
+      // Try to execute the canceled withdrawal (should revert)
+      await expect(treasury.executeWithdrawal(1n)).to.be.revertedWith("Canceled");
     });
   });
 });
