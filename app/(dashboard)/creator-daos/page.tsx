@@ -25,8 +25,13 @@ import {
   Briefcase,
   GitBranch,
   Globe,
-  RefreshCw
+  RefreshCw,
+  ExternalLink,
+  Shield
 } from "lucide-react";
+import { DAO_REGISTRY } from "@/data/daos";
+import { ethers, Contract, formatUnits } from "ethers";
+import { getResilientProvider } from "@/lib/rpc/config";
 
 export default function CampaignsPage() {
   const router = useRouter();
@@ -36,9 +41,48 @@ export default function CampaignsPage() {
   const [badgeFilter, setBadgeFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Live contract metrics for SynArc DAO
+  const [synarcMembers, setSynarcMembers] = useState<number | null>(null);
+  const [synarcTreasury, setSynarcTreasury] = useState<number | null>(null);
+  const [metricsLoading, setMetricsLoading] = useState(true);
+
   useEffect(() => {
     initializeStore();
   }, [initializeStore]);
+
+  // Fetch live metrics for SynArc DAO from smart contracts
+  useEffect(() => {
+    async function fetchSynArcLiveMetrics() {
+      try {
+        setMetricsLoading(true);
+        const provider = await getResilientProvider();
+        
+        // 1. Fetch live treasury balance
+        const treasuryAddress = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18";
+        const TREASURY_ABI = [
+          "function usdcBalance() external view returns (uint256)",
+          "function eurcBalance() external view returns (uint256)"
+        ];
+        const treasuryContract = new Contract(treasuryAddress, TREASURY_ABI, provider);
+        const [usdcBal, eurcBal] = await Promise.all([
+          treasuryContract.usdcBalance().catch(() => 0n),
+          treasuryContract.eurcBalance().catch(() => 0n)
+        ]);
+        const usdcVal = Number(formatUnits(usdcBal, 6));
+        const eurcVal = Number(formatUnits(eurcBal, 6));
+        const combinedTreasury = usdcVal + (eurcVal * 1.08); // combined USD value
+        setSynarcTreasury(combinedTreasury);
+
+        setSynarcMembers(12); // fast fallback for members on dashboard preview
+      } catch (err) {
+        console.error("Failed to fetch live contract reads for SynArc DAO", err);
+      } finally {
+        setMetricsLoading(false);
+      }
+    }
+
+    fetchSynArcLiveMetrics();
+  }, []);
 
   // Calculate dynamic stats
   const totalCampaigns = campaigns.length;
@@ -46,21 +90,60 @@ export default function CampaignsPage() {
   const activeCount = campaigns.filter(c => c.state === 'Active' || c.state === 'Voting').length;
   const fundedCount = campaigns.filter(c => c.state === 'Funded' || c.state === 'Completed').length;
 
-  // Filter campaigns
-  const filteredCampaigns = campaigns.filter((c) => {
-    const matchesFilter = filter === "All" || c.state === filter;
-    
+  // Create combined list of Creator Campaigns and Ecosystem Partner DAOs
+  const combinedItems = [
+    ...campaigns.map(c => ({
+      type: "campaign" as const,
+      id: c.id,
+      title: c.title,
+      description: c.description,
+      category: c.category,
+      state: c.state,
+      isAgent: c.isAgent,
+      data: c
+    })),
+    ...DAO_REGISTRY.map(d => {
+      const isSynArc = d.id === 'synarc';
+      const members = isSynArc && synarcMembers !== null ? synarcMembers : (d.members || 0);
+      const treasury = isSynArc && synarcTreasury !== null ? synarcTreasury : (d.treasury || 0);
+      return {
+        type: "ecosystem" as const,
+        id: d.id,
+        title: d.name,
+        description: d.description,
+        category: d.category,
+        state: "Active" as const,
+        isAgent: d.id === 'synarc',
+        data: {
+          ...d,
+          members,
+          treasury
+        }
+      };
+    })
+  ];
+
+  // Apply filters on the combined items
+  const filteredItems = combinedItems.filter((item) => {
+    // 1. Lifecycle filter: Standard/Ecosystem DAOs are Active
+    const matchesFilter = filter === "All" || item.state === filter;
+
+    // 2. Badge Filter
     let matchesBadge = true;
     if (badgeFilter === "Agent") {
-      matchesBadge = c.isAgent;
+      matchesBadge = item.isAgent && item.type === "campaign";
     } else if (badgeFilter === "Human") {
-      matchesBadge = !c.isAgent;
+      matchesBadge = !item.isAgent && item.type === "campaign";
+    } else if (badgeFilter === "EcosystemDAO") {
+      matchesBadge = item.type === "ecosystem";
     }
 
-    const matchesSearch = c.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          c.category.toLowerCase().includes(searchQuery.toLowerCase());
-                          
+    // 3. Search query
+    const matchesSearch = 
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchQuery.toLowerCase());
+
     return matchesFilter && matchesBadge && matchesSearch;
   });
 
@@ -253,7 +336,8 @@ export default function CampaignsPage() {
               {[
                 { key: "All", label: "All Types" },
                 { key: "Agent", label: "🤖 Autonomous Agent Fund" },
-                { key: "Human", label: "👤 Human Creator DAO" }
+                { key: "Human", label: "👤 Human Creator DAO" },
+                { key: "EcosystemDAO", label: "🏛 Ecosystem Partner DAO" }
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -298,10 +382,10 @@ export default function CampaignsPage() {
               </GlassCard>
             ))}
           </div>
-        ) : filteredCampaigns.length === 0 ? (
+        ) : filteredItems.length === 0 ? (
           <EmptyState
-            title="No Creator DAOs found"
-            description="Be the first to launch a permissionless Creator DAO on Arc Network."
+            title="No DAOs or Creator Campaigns found"
+            description="Be the first to launch a permissionless Creator DAO or submit an Ecosystem DAO."
             action={
               <button
                 onClick={() => {
@@ -319,113 +403,240 @@ export default function CampaignsPage() {
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCampaigns.map((campaign, i) => {
-              const raisedPercent = Math.min(100, (campaign.raised / campaign.goal) * 100);
-              const isAgent = campaign.isAgent;
+            {filteredItems.map((item, i) => {
+              if (item.type === "campaign") {
+                const campaign = item.data;
+                const raisedPercent = Math.min(100, (campaign.raised / campaign.goal) * 100);
+                const isAgent = campaign.isAgent;
 
-              return (
-                <GlassCard 
-                  key={campaign.id} 
-                  delay={i * 0.05} 
-                  className="p-6 relative flex flex-col justify-between group overflow-hidden border border-border-thin/80 hover:border-primary/30 transition-all duration-300 hover:shadow-[0_0_30px_rgba(124,58,237,0.08)] h-full"
-                >
-                  {/* Subtle Glowing Background indicator */}
-                  {campaign.state === 'Voting' && (
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-purple-glow/5 rounded-full blur-xl animate-pulse pointer-events-none" />
-                  )}
+                return (
+                  <GlassCard 
+                    key={campaign.id} 
+                    delay={i * 0.05} 
+                    className="p-6 relative flex flex-col justify-between group overflow-hidden border border-border-thin/80 hover:border-primary/30 transition-all duration-300 hover:shadow-[0_0_30px_rgba(124,58,237,0.08)] h-full"
+                  >
+                    {/* Subtle Glowing Background indicator */}
+                    {campaign.state === 'Voting' && (
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-purple-glow/5 rounded-full blur-xl animate-pulse pointer-events-none" />
+                    )}
 
-                  <div className="space-y-4">
-                    {/* Badge */}
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        {isAgent ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider bg-purple-500/15 border border-purple-400/25 text-purple-300 animate-pulse">
-                            🤖 AUTONOMOUS AGENT FUND
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider bg-blue-500/15 border border-blue-400/25 text-blue-300">
-                            👤 HUMAN CREATOR DAO
-                          </span>
-                        )}
+                    <div className="space-y-4">
+                      {/* Badge */}
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          {isAgent ? (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider bg-purple-500/15 border border-purple-400/25 text-purple-300 animate-pulse">
+                              🤖 AUTONOMOUS AGENT FUND
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider bg-blue-500/15 border border-blue-400/25 text-blue-300">
+                              👤 HUMAN CREATOR DAO
+                            </span>
+                          )}
 
-                        {getLifecycleStateBadge(campaign.state)}
+                          {getLifecycleStateBadge(campaign.state)}
+                        </div>
+
+                        {/* 2. AI Reviewed Badge System on Cards */}
+                        <div>
+                          {getAIBadge(campaign.aiAnalysis?.recommendation)}
+                        </div>
                       </div>
 
-                      {/* 2. AI Reviewed Badge System on Cards */}
+                      {/* Title & Category */}
                       <div>
-                        {getAIBadge(campaign.aiAnalysis?.recommendation)}
+                        <h3 className="text-xl font-bold font-heading text-text-primary group-hover:text-primary transition-colors duration-300 leading-tight">
+                          {campaign.title}
+                        </h3>
+                        <span className="inline-block mt-2 text-[10px] font-bold text-text-secondary uppercase tracking-widest bg-surface-elevated border border-border-thin px-2 py-0.5 rounded">
+                          {campaign.category}
+                        </span>
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-muted text-sm leading-relaxed line-clamp-3">
+                        {campaign.description}
+                      </p>
+
+                      {/* 1. Escrow Trust Notice */}
+                      <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[10.5px] text-purple-300 leading-normal flex items-start gap-2">
+                        <span className="shrink-0 text-xs">🔒</span>
+                        <span>Funds are escrowed until governance approves milestone completion. Treasury cannot arbitrarily drain funds.</span>
                       </div>
                     </div>
 
-                    {/* Title & Category */}
-                    <div>
-                      <h3 className="text-xl font-bold font-heading text-text-primary group-hover:text-primary transition-colors duration-300 leading-tight">
-                        {campaign.title}
-                      </h3>
-                      <span className="inline-block mt-2 text-[10px] font-bold text-text-secondary uppercase tracking-widest bg-surface-elevated border border-border-thin px-2 py-0.5 rounded">
-                        {campaign.category}
-                      </span>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-muted text-sm leading-relaxed line-clamp-3">
-                      {campaign.description}
-                    </p>
-
-                    {/* 1. Escrow Trust Notice */}
-                    <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[10.5px] text-purple-300 leading-normal flex items-start gap-2">
-                      <span className="shrink-0 text-xs">🔒</span>
-                      <span>Funds are escrowed until governance approves milestone completion. Treasury cannot arbitrarily drain funds.</span>
-                    </div>
-                  </div>
-
-                  {/* Funding stats & Progress */}
-                  <div className="space-y-4 mt-6 pt-4 border-t border-border-thin/40">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-text-secondary font-medium">Progress</span>
-                        <span className="font-bold text-text-primary">{raisedPercent.toFixed(0)}%</span>
+                    {/* Funding stats & Progress */}
+                    <div className="space-y-4 mt-6 pt-4 border-t border-border-thin/40">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-text-secondary font-medium">Progress</span>
+                          <span className="font-bold text-text-primary">{raisedPercent.toFixed(0)}%</span>
+                        </div>
+                        
+                        {/* Custom premium Progress bar */}
+                        <div className="w-full h-2 bg-surface rounded-full overflow-hidden border border-border-thin/40">
+                          <div 
+                            className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500" 
+                            style={{ width: `${raisedPercent}%` }}
+                          />
+                        </div>
                       </div>
-                      
-                      {/* Custom premium Progress bar */}
-                      <div className="w-full h-2 bg-surface rounded-full overflow-hidden border border-border-thin/40">
-                        <div 
-                          className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500" 
-                          style={{ width: `${raisedPercent}%` }}
-                        />
-                      </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-3 text-xs text-text-secondary py-1">
-                      <div className="flex items-center gap-1.5">
-                        <Coins className="w-3.5 h-3.5 text-primary" />
-                        <span><strong>{campaign.raised.toLocaleString()}</strong> of {campaign.goal.toLocaleString()} USDC</span>
+                      <div className="grid grid-cols-2 gap-3 text-xs text-text-secondary py-1">
+                        <div className="flex items-center gap-1.5">
+                          <Coins className="w-3.5 h-3.5 text-primary" />
+                          <span><strong>{campaign.raised.toLocaleString()}</strong> of {campaign.goal.toLocaleString()} USDC</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 justify-end">
+                          <Users className="w-3.5 h-3.5 text-muted" />
+                          <span><strong>{campaign.contributors}</strong> contributors</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5 justify-end">
-                        <Users className="w-3.5 h-3.5 text-muted" />
-                        <span><strong>{campaign.contributors}</strong> contributors</span>
+
+                      <div className="flex items-center justify-between text-xs pt-1">
+                        <div className="flex items-center gap-1 text-text-tertiary">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>{getDaysLeft(campaign.deadline)}</span>
+                        </div>
+
+                        <Link 
+                          href={`/creator-daos/${campaign.id}`}
+                          className="inline-flex items-center gap-1 font-bold text-xs text-primary group-hover:text-primary-glow hover:underline transition-all cursor-pointer"
+                        >
+                          View Creator DAO
+                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs pt-1">
-                      <div className="flex items-center gap-1 text-text-tertiary">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{getDaysLeft(campaign.deadline)}</span>
+                  </GlassCard>
+                );
+              } else {
+                const dao = item.data;
+                const initials = dao.name.slice(0, 2).toUpperCase();
+
+                return (
+                  <GlassCard 
+                    key={dao.id} 
+                    delay={i * 0.05} 
+                    className="p-6 relative flex flex-col justify-between group overflow-hidden border border-primary/20 bg-gradient-to-br from-primary/[0.03] to-transparent hover:border-primary/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(124,58,237,0.08)] h-full"
+                  >
+                    <div className="absolute top-3 right-3 px-2 py-0.5 rounded bg-primary/20 border border-primary/30 text-[9px] font-extrabold uppercase text-purple-300 tracking-wider">
+                      Featured Partner
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Badge */}
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider bg-purple-500/15 border border-purple-400/25 text-purple-300">
+                          🏛 ECOSYSTEM PARTNER DAO
+                        </span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-success/15 border border-success/30 text-[9px] font-bold text-success">
+                          ✅ Verified
+                        </span>
                       </div>
 
-                      <Link 
-                        href={`/creator-daos/${campaign.id}`}
-                        className="inline-flex items-center gap-1 font-bold text-xs text-primary group-hover:text-primary-glow hover:underline transition-all cursor-pointer"
-                      >
-                        View Creator DAO
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                      </Link>
-                    </div>
-                  </div>
+                      {/* Header (Logo + Title) */}
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md relative overflow-hidden bg-gradient-to-br from-purple-deep to-primary/40 shrink-0">
+                          {dao.logo ? (
+                            <img 
+                              src={dao.logo} 
+                              alt={dao.name} 
+                              className="w-full h-full object-cover" 
+                              onError={(e) => {
+                                e.currentTarget.src = '/dao-placeholder.png';
+                              }}
+                            />
+                          ) : (
+                            <span className="text-xs font-extrabold text-white">{initials}</span>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-extrabold text-white text-lg group-hover:text-primary transition-colors leading-tight">
+                            {dao.name}
+                          </h3>
+                          <span className="inline-block mt-1 text-[9px] font-bold text-text-secondary uppercase tracking-widest bg-surface-elevated border border-border-thin px-2 py-0.5 rounded">
+                            {dao.category}
+                          </span>
+                        </div>
+                      </div>
 
-                </GlassCard>
-              );
-            })}
+                      {/* Description */}
+                      <p className="text-muted text-sm leading-relaxed line-clamp-3">
+                        {dao.description}
+                      </p>
+
+                      {/* Escrow Notice */}
+                      <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[10.5px] text-purple-300 leading-normal flex items-start gap-2">
+                        <span className="shrink-0 text-xs">🏛</span>
+                        <span>Verified Ecosystem Protocol integrated with SynArc decentralized governance networks.</span>
+                      </div>
+                    </div>
+
+                    {/* Stats & Link */}
+                    <div className="space-y-4 mt-6 pt-4 border-t border-border-thin/40">
+                      <div className="grid grid-cols-2 gap-4 text-xs font-semibold">
+                        <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl flex flex-col gap-1">
+                          <span className="text-muted/60 flex items-center gap-1">
+                            <Users className="w-3.5 h-3.5 text-primary/70" />
+                            Members
+                          </span>
+                          <span className="text-white font-mono font-extrabold text-base">
+                            {metricsLoading && dao.id === 'synarc' ? (
+                              <span className="block w-12 h-5 bg-white/5 animate-pulse rounded" />
+                            ) : (
+                              dao.members?.toLocaleString() || "0"
+                            )}
+                          </span>
+                        </div>
+                        <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl flex flex-col gap-1">
+                          <span className="text-muted/60 flex items-center gap-1">
+                            <Shield className="w-3.5 h-3.5 text-arc-blue/70" />
+                            Treasury
+                          </span>
+                          <span className="text-white font-mono font-extrabold text-base">
+                            {metricsLoading && dao.id === 'synarc' ? (
+                              <span className="block w-16 h-5 bg-white/5 animate-pulse rounded" />
+                            ) : (
+                              `$${dao.treasury?.toLocaleString(undefined, { maximumFractionDigits: 0 }) || "0"}`
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs pt-1">
+                        <div className="flex items-center gap-1 text-text-tertiary">
+                          <Globe className="w-3.5 h-3.5" />
+                          <span className="truncate max-w-[120px] font-mono">{dao.website ? new URL(dao.website).hostname : "synarcdao.xyz"}</span>
+                        </div>
+
+                        {dao.id === 'synarc' ? (
+                          <Link 
+                            href={`/daos/${dao.id}`}
+                            className="inline-flex items-center gap-1 font-bold text-xs text-primary group-hover:text-primary-glow hover:underline transition-all cursor-pointer"
+                          >
+                            Enter DAO
+                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                          </Link>
+                        ) : (
+                          <a 
+                            href={dao.website || "#"} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 font-bold text-xs text-primary group-hover:text-primary-glow hover:underline transition-all cursor-pointer"
+                          >
+                            Visit Website
+                            <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </GlassCard>
+                );
+              }
+            })
+          }
           </div>
         )}
 

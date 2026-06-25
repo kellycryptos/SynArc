@@ -250,7 +250,8 @@ export default function BridgePage() {
         
         // Append to history
         setBridgeHistory(prev => {
-          const exists = prev.some(tx => tx.txHash === bridgeState.txHash);
+          const primaryTxHash = bridgeState.burnTxHash || bridgeState.txHash;
+          const exists = prev.some(tx => tx.txHash === primaryTxHash);
           if (exists) return prev;
           
           const amountFinal = parseFloat(amount);
@@ -261,7 +262,7 @@ export default function BridgePage() {
             destChain: direction === "in" ? "Arc Testnet" : selectedChain.name,
             destIcon: direction === "in" ? "⚡" : selectedChain.icon,
             amount: isNaN(amountFinal) ? 0 : amountFinal,
-            txHash: bridgeState.txHash,
+            txHash: primaryTxHash,
             timestamp: new Date().toISOString(),
             status: "success"
           };
@@ -282,7 +283,7 @@ export default function BridgePage() {
       setProgressState("error");
       setErrorMessage(bridgeState.errorMessage || "Bridge transaction failed.");
     }
-  }, [bridgeState.status, bridgeState.txHash, bridgeState.errorMessage, refetchArcUSDC, amount, selectedChain, walletAddress, direction]);
+  }, [bridgeState.status, bridgeState.txHash, bridgeState.burnTxHash, bridgeState.errorMessage, refetchArcUSDC, amount, selectedChain, walletAddress, direction]);
 
   // Load history from localStorage
   useEffect(() => {
@@ -854,10 +855,30 @@ export default function BridgePage() {
                               <span>{toChain.icon}</span> {toChain.name}
                             </span>
                           </div>
-                          {activeTxHash && (
+                          
+                          {/* Burn Tx Link */}
+                          {bridgeState.burnTxHash && (
                             <div className="flex justify-between items-center border-t border-border-thin/40 pt-2.5 mt-2.5">
                               <span className="text-muted flex items-center gap-1">
-                                Explorer Receipt
+                                Burn Transaction (Origin)
+                              </span>
+                              <a
+                                href={direction === "in" ? `https://sepolia.etherscan.io/tx/${bridgeState.burnTxHash}` : `https://testnet.arcscan.app/tx/${bridgeState.burnTxHash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline font-mono font-bold flex items-center gap-1"
+                              >
+                                {bridgeState.burnTxHash.slice(0, 8)}...{bridgeState.burnTxHash.slice(-6)}
+                                <ExternalLink className="w-3 h-3 text-primary" />
+                              </a>
+                            </div>
+                          )}
+
+                          {/* Mint Tx Link */}
+                          {activeTxHash && (
+                            <div className={`${bridgeState.burnTxHash ? "" : "border-t border-border-thin/40 pt-2.5 mt-2.5"} flex justify-between items-center`}>
+                              <span className="text-muted flex items-center gap-1">
+                                Mint Transaction (Dest)
                               </span>
                               <a
                                 href={direction === "in" ? `https://testnet.arcscan.app/tx/${activeTxHash}` : `https://sepolia.etherscan.io/tx/${activeTxHash}`}
@@ -890,63 +911,82 @@ export default function BridgePage() {
 
                         <div className="space-y-1">
                           <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                            {progressState === "initiating" && (bridgeState.status === "approving" ? "Approving transfer..." : "Preparing secure router...")}
-                            {progressState === "burning" && `Sending USDC on ${fromChain.name}...`}
-                            {progressState === "minting" && (bridgeState.status === "waiting-attestation"
-                              ? `Verifying transfer... (${bridgeState.elapsedSeconds}s)`
-                              : `Delivering USDC on ${toChain.name}...`)}
+                            {bridgeState.status === "approving" && `Approving USDC on ${fromChain.name}...`}
+                            {bridgeState.status === "burning" && `Burning USDC on ${fromChain.name}...`}
+                            {bridgeState.status === "waiting-attestation" && `Waiting for Circle Attestation... (${bridgeState.elapsedSeconds}s)`}
+                            {bridgeState.status === "minting" && `Minting USDC on ${toChain.name}...`}
                           </h3>
-                          <p className="text-[11px] text-text-tertiary max-w-xs mx-auto leading-relaxed">
-                            {progressState === "initiating" && "Approving your wallet to send USDC."}
-                            {progressState === "burning" && `Broadcasting transfer to the ${fromChain.name} network.`}
-                            {progressState === "minting" && (bridgeState.status === "waiting-attestation"
-                              ? "Waiting for transaction verification. This usually takes 15-20 seconds."
-                              : "Transfer verified. Delivering USDC to destination network.")}
+                          <p className="text-[11px] text-text-tertiary max-w-xs mx-auto leading-relaxed font-medium">
+                            {bridgeState.status === "approving" && `Please approve the USDC allowance on ${fromChain.name} in your connected wallet.`}
+                            {bridgeState.status === "burning" && `Submitting transaction to burn USDC on ${fromChain.name}.`}
+                            {bridgeState.status === "waiting-attestation" && "Polling Circle Sandbox Iris API for consensus validation (usually takes 15-20 seconds)."}
+                            {bridgeState.status === "minting" && `Submitting Circle proofs to mint native USDC on ${toChain.name}.`}
                           </p>
                         </div>
 
                         {/* Step checklist */}
-                        <div className="max-w-sm mx-auto p-4 bg-surface/50 border border-border-thin rounded-2xl text-left space-y-3">
+                        <div className="max-w-sm mx-auto p-4 bg-surface/50 border border-border-thin rounded-2xl text-left space-y-3.5">
+                          {/* Step 1: Approve */}
                           <div className="flex items-center gap-3">
                             <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[9px] ${
-                              progressState === "initiating" 
+                              bridgeState.status === "approving" 
                                 ? "bg-primary/20 border-primary text-primary animate-pulse font-bold" 
                                 : "bg-success/15 border-success text-success"
                             }`}>
-                              {progressState === "initiating" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                              {bridgeState.status === "approving" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                             </div>
-                            <span className={`text-[11px] ${progressState === "initiating" ? "text-white font-bold" : "text-muted"}`}>
-                              1. Approve USDC Transfer
+                            <span className={`text-[11px] ${bridgeState.status === "approving" ? "text-white font-bold" : "text-muted"}`}>
+                              1. Approve USDC Spending
                             </span>
                           </div>
 
+                          {/* Step 2: Burn */}
                           <div className="flex items-center gap-3">
                             <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[9px] ${
-                              progressState === "initiating"
+                              bridgeState.status === "approving"
                                 ? "bg-surface border-border-thin text-text-tertiary"
-                                : progressState === "burning"
+                                : bridgeState.status === "burning"
                                 ? "bg-primary/20 border-primary text-primary animate-pulse font-bold"
                                 : "bg-success/15 border-success text-success"
                             }`}>
-                              {progressState === "initiating" ? "2" : progressState === "burning" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                              {bridgeState.status === "approving" ? "2" : bridgeState.status === "burning" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                             </div>
                             <span className={`text-[11px] ${
-                              progressState === "burning" ? "text-white font-bold" : progressState === "initiating" ? "text-text-tertiary" : "text-muted"
+                              bridgeState.status === "burning" ? "text-white font-bold" : bridgeState.status === "approving" ? "text-text-tertiary" : "text-muted"
                             }`}>
-                              2. Send USDC from {fromChain.name}
+                              2. Burn USDC on {fromChain.name}
                             </span>
                           </div>
 
+                          {/* Step 3: Attestation */}
                           <div className="flex items-center gap-3">
                             <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[9px] ${
-                              progressState === "minting"
+                              bridgeState.status === "approving" || bridgeState.status === "burning"
+                                ? "bg-surface border-border-thin text-text-tertiary"
+                                : bridgeState.status === "waiting-attestation"
+                                ? "bg-primary/20 border-primary text-primary animate-pulse font-bold"
+                                : "bg-success/15 border-success text-success"
+                            }`}>
+                              {bridgeState.status === "approving" || bridgeState.status === "burning" ? "3" : bridgeState.status === "waiting-attestation" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                            </div>
+                            <span className={`text-[11px] ${
+                              bridgeState.status === "waiting-attestation" ? "text-white font-bold" : (bridgeState.status === "approving" || bridgeState.status === "burning") ? "text-text-tertiary" : "text-muted"
+                            }`}>
+                              3. Poll Circle Attestation
+                            </span>
+                          </div>
+
+                          {/* Step 4: Mint */}
+                          <div className="flex items-center gap-3">
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[9px] ${
+                              bridgeState.status === "minting"
                                 ? "bg-primary/20 border-primary text-primary animate-pulse font-bold"
                                 : "bg-surface border-border-thin text-text-tertiary"
                             }`}>
-                              {progressState === "minting" ? <Loader2 className="w-3 h-3 animate-spin" /> : "3"}
+                              {bridgeState.status === "minting" ? <Loader2 className="w-3 h-3 animate-spin" /> : "4"}
                             </div>
-                            <span className={`text-[11px] ${progressState === "minting" ? "text-white font-bold" : "text-text-tertiary"}`}>
-                              3. Verify & claim USDC on {toChain.name}
+                            <span className={`text-[11px] ${bridgeState.status === "minting" ? "text-white font-bold" : "text-text-tertiary"}`}>
+                              4. Mint USDC on {toChain.name}
                             </span>
                           </div>
                         </div>

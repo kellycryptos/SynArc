@@ -484,9 +484,23 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                       <span className="text-muted">Destination</span>
                       <span className="font-bold text-success">Arc Testnet</span>
                     </div>
-                    {bridgeState.txHash && (
+                    {bridgeState.burnTxHash && (
                       <div className="flex justify-between items-center text-xs border-t border-border-thin pt-2 mt-2">
-                        <span className="text-muted">Arcscan Mint Tx</span>
+                        <span className="text-muted">Burn Tx (Origin)</span>
+                        <a
+                          href={`https://sepolia.etherscan.io/tx/${bridgeState.burnTxHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline font-mono font-bold flex items-center gap-1"
+                        >
+                          {bridgeState.burnTxHash.slice(0, 6)}...{bridgeState.burnTxHash.slice(-4)}
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    )}
+                    {bridgeState.txHash && (
+                      <div className={`flex justify-between items-center text-xs ${bridgeState.burnTxHash ? "" : "border-t border-border-thin pt-2 mt-2"}`}>
+                        <span className="text-muted">Mint Tx (Dest)</span>
                         <a
                           href={`https://testnet.arcscan.app/tx/${bridgeState.txHash}`}
                           target="_blank"

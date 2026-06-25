@@ -293,7 +293,7 @@ export class SynArcClient {
           "function execute(uint256 proposalId) external payable"
         ]);
         const CCTP_MESSENGER_ABI = parseAbi([
-          "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken) returns (uint64)"
+          "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken, bytes32 destinationCaller, uint256 maxFee, uint32 minFinalityThreshold) returns (uint64)"
         ]);
         const MESSAGE_TRANSMITTER_ABI = parseAbi([
           "event MessageSent(bytes message)",
@@ -331,11 +331,12 @@ export class SynArcClient {
 
         // 3. Deposit for burn
         const mintRecipient = `0x000000000000000000000000${params.recipient.slice(2)}` as `0x${string}`;
+        const zeroBytes32 = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`;
         const burnTx = await this.walletClient.writeContract({
           address: messengerAddress,
           abi: CCTP_MESSENGER_ABI,
           functionName: "depositForBurn",
-          args: [amountRaw, ethSepoliaDomain, mintRecipient, usdcAddress],
+          args: [amountRaw, ethSepoliaDomain, mintRecipient, usdcAddress, zeroBytes32, 0n, 0],
         });
         const burnReceipt = await this.publicClient.waitForTransactionReceipt({ hash: burnTx });
 

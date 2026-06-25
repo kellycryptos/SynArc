@@ -84,8 +84,12 @@ const erc20Abi = parseAbi([
   "function balanceOf(address owner) view returns (uint256)"
 ] as const);
 
-const tokenMessengerAbi = parseAbi([
+const tokenMessengerV1Abi = parseAbi([
   "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken) returns (uint64)"
+] as const);
+
+const tokenMessengerV2Abi = parseAbi([
+  "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken, bytes32 destinationCaller, uint256 maxFee, uint32 minFinalityThreshold) returns (uint64)"
 ] as const);
 
 const messageTransmitterAbi = parseAbi([
@@ -107,6 +111,7 @@ export interface BridgeState {
   elapsedSeconds: number;
   errorMessage: string;
   txHash: string;
+  burnTxHash?: string;
 }
 
 export function useCCTPBridge() {
@@ -123,7 +128,8 @@ export function useCCTPBridge() {
     status: "idle",
     elapsedSeconds: 0,
     errorMessage: "",
-    txHash: ""
+    txHash: "",
+    burnTxHash: ""
   });
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -140,7 +146,8 @@ export function useCCTPBridge() {
       status: "idle",
       elapsedSeconds: 0,
       errorMessage: "",
-      txHash: ""
+      txHash: "",
+      burnTxHash: ""
     });
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -296,19 +303,12 @@ export function useCCTPBridge() {
         throw new Error(`USDC Approval rejected by user: ${err?.message || err}`);
       }
 
-      // Get Ethereum provider from the active wallet to build a reliable public client
-      const provider = await (
-        activeWallet.getEthereumProvider?.() || 
-        activeWallet.getEip1193Provider?.() || 
-        (activeWallet as any).getProvider?.()
-      );
-      if (!provider) {
-        throw new Error("No provider available from the active wallet.");
-      }
-
       const sourcePublicClient = createPublicClient({
         chain: targetChainObj,
-        transport: custom(provider)
+        transport: http(sourceChainConfig.rpcUrl, {
+          timeout: 15000,
+          retryCount: 3,
+        })
       });
 
       const approveReceipt = await sourcePublicClient.waitForTransactionReceipt({
@@ -327,16 +327,36 @@ export function useCCTPBridge() {
       // User address formatted to bytes32 for TokenMessenger
       const mintRecipientBytes32 = `0x${activeWallet.address.replace(/^0x/, "").padStart(64, "0")}` as `0x${string}`;
 
-      const burnData = encodeFunctionData({
-        abi: tokenMessengerAbi,
-        functionName: "depositForBurn",
-        args: [
-          numericAmount,
-          destChainConfig.domain,
-          mintRecipientBytes32,
-          sourceChainConfig.usdcAddress as `0x${string}`
-        ]
-      });
+      let burnData: Hex;
+      if (sourceChainConfig.id === 5042002) {
+        // Arc Testnet uses CCTP V2 with 7 parameters
+        const zeroBytes32 = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`;
+        burnData = encodeFunctionData({
+          abi: tokenMessengerV2Abi,
+          functionName: "depositForBurn",
+          args: [
+            numericAmount,
+            destChainConfig.domain,
+            mintRecipientBytes32,
+            sourceChainConfig.usdcAddress as `0x${string}`,
+            zeroBytes32,
+            0n,
+            0
+          ]
+        });
+      } else {
+        // Other chains use CCTP V1 with 4 parameters
+        burnData = encodeFunctionData({
+          abi: tokenMessengerV1Abi,
+          functionName: "depositForBurn",
+          args: [
+            numericAmount,
+            destChainConfig.domain,
+            mintRecipientBytes32,
+            sourceChainConfig.usdcAddress as `0x${string}`
+          ]
+        });
+      }
 
       let burnTxHash: string;
       try {
@@ -363,6 +383,8 @@ export function useCCTPBridge() {
       if (burnReceipt.status === "reverted") {
         throw new Error("Burn transaction reverted on-chain. Please check your USDC balance and try again.");
       }
+
+      setState(prev => ({ ...prev, burnTxHash: burnTxHash }));
 
       // Extract messageBytes from logs
       let messageBytes: `0x${string}` | null = null;
@@ -428,10 +450,12 @@ export function useCCTPBridge() {
       let attestation: string | null = null;
       let apiMessageBytes: string | null = null;
 
-      // Poll every 5 seconds until attestation signature is ready
-      while (!attestation) {
+      // Poll every 5 seconds until attestation signature is ready (limit to 60 polls = 5 mins)
+      let pollCount = 0;
+      while (!attestation && pollCount < 60) {
         try {
           await new Promise(resolve => setTimeout(resolve, 5000));
+          pollCount++;
           const response = await fetch(attestationUrl);
           
           if (response.ok) {
@@ -451,6 +475,10 @@ export function useCCTPBridge() {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
+      }
+
+      if (!attestation) {
+        throw new Error("Circle attestation polling timed out (5 minutes elapsed). The transfer is still processing; you can claim it later using the attestation.");
       }
 
       const finalMessageBytes = (apiMessageBytes || messageBytes) as `0x${string}`;
@@ -518,6 +546,23 @@ export function useCCTPBridge() {
         mintTxHash = await destWalletClient.sendTransaction(txParams);
       } catch (err: any) {
         throw new Error(`Minting transaction rejected: ${err?.message || err}`);
+      }
+
+      // Wait for mint transaction confirmation
+      const destPublicClient = createPublicClient({
+        chain: EVM_BRIDGE_CHAINS[destChainConfig.id],
+        transport: http(destChainConfig.rpcUrl, {
+          timeout: 15000,
+          retryCount: 3,
+        })
+      });
+
+      const mintReceipt = await destPublicClient.waitForTransactionReceipt({
+        hash: mintTxHash as `0x${string}`
+      });
+
+      if (mintReceipt.status === "reverted") {
+        throw new Error("Minting transaction reverted on-chain. Please verify gas fees and try again.");
       }
 
       // Done

@@ -1,4 +1,4 @@
-import { createWalletClient, createPublicClient, http, fallback, parseUnits, parseAbi, decodeEventLog, keccak256, decodeAbiParameters } from 'viem'
+import { createWalletClient, createPublicClient, http, fallback, parseUnits, parseAbi, decodeEventLog, keccak256, decodeAbiParameters, encodeFunctionData } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { ARC_CHAIN, ARC_GAS, ARC_RPC_URLS } from '@/lib/arc-config'
 import { sepolia } from 'viem/chains'
@@ -18,7 +18,7 @@ export const CCTP_CONTRACTS = {
 }
 
 const TOKEN_MESSENGER_ABI = parseAbi([
-  'function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken) returns (uint64 nonce)',
+  'function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken, bytes32 destinationCaller, uint256 maxFee, uint32 minFinalityThreshold)',
 ])
 
 const MESSAGE_TRANSMITTER_ABI = parseAbi([
@@ -74,7 +74,11 @@ export class CCTPExecutor {
    * Execute CCTP bridge — Arc Testnet → Ethereum Sepolia
    * Burns USDC on Arc, polls attestation, and mints USDC on Sepolia
    */
-  async bridgeToEthereum(amountUSDC: number, recipientAddress: `0x${string}`): Promise<{
+  async bridgeToEthereum(
+    amountUSDC: number,
+    recipientAddress: `0x${string}`,
+    onProgress?: (msg: string) => void
+  ): Promise<{
     burnTxHash: string
     mintTxHash: string
     status: string
@@ -82,35 +86,64 @@ export class CCTPExecutor {
     destinationChain: string
   }> {
     const amountRaw = parseUnits(amountUSDC.toString(), 6)
-
-    console.log(`[CCTPExecutor] Step 1: Approving TokenMessenger to spend ${amountUSDC} USDC on Arc...`)
-    // Step 1 — Approve USDC spend on TokenMessenger
-    const approveTx = await this.arcWalletClient.writeContract({
-      address: CCTP_CONTRACTS.arcTestnet.usdc,
-      abi: ERC20_ABI,
-      functionName: 'approve',
-      args: [CCTP_CONTRACTS.arcTestnet.tokenMessenger, amountRaw],
-      gas: ARC_GAS.approve,
-      gasPrice: ARC_GAS.gasPrice,
-    })
-    await this.arcPublicClient.waitForTransactionReceipt({ hash: approveTx })
-    console.log(`[CCTPExecutor] Approval tx confirmed: ${approveTx}`)
-
-    // Step 2 — Burn USDC on Arc (initiates CCTP cross-chain transfer)
-    console.log(`[CCTPExecutor] Step 2: Depositing for burn on Arc...`)
+    const agentAddress = process.env.NEXT_PUBLIC_AGENT_ADDRESS as `0x${string}` | undefined
     const mintRecipient = `0x000000000000000000000000${recipientAddress.slice(2)}` as `0x${string}`
 
-    const burnTx = await this.arcWalletClient.writeContract({
-      address: CCTP_CONTRACTS.arcTestnet.tokenMessenger,
-      abi: TOKEN_MESSENGER_ABI,
-      functionName: 'depositForBurn',
-      args: [amountRaw, CCTP_CONTRACTS.ethSepolia.domain, mintRecipient, CCTP_CONTRACTS.arcTestnet.usdc],
-      gas: 300000n,
-      gasPrice: ARC_GAS.gasPrice,
-    })
+    let burnTx: string
+
+    const zeroBytes32 = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`
+
+    if (agentAddress) {
+      const msgText = `[CCTP Step 1/3] Using Smart Account: ${agentAddress}. Encoding depositForBurn and executing...`
+      console.log(`[CCTPExecutor] ${msgText}`)
+      if (onProgress) onProgress(msgText)
+
+      const calldata = encodeFunctionData({
+        abi: TOKEN_MESSENGER_ABI,
+        functionName: 'depositForBurn',
+        args: [amountRaw, CCTP_CONTRACTS.ethSepolia.domain, mintRecipient, CCTP_CONTRACTS.arcTestnet.usdc, zeroBytes32, 0n, 0]
+      })
+
+      burnTx = await this.arcWalletClient.writeContract({
+        address: agentAddress,
+        abi: parseAbi([
+          'function executeYieldStrategy(address targetContract, address token, uint256 amount, bytes calldata data) external'
+        ]),
+        functionName: 'executeYieldStrategy',
+        args: [
+          CCTP_CONTRACTS.arcTestnet.tokenMessenger,
+          CCTP_CONTRACTS.arcTestnet.usdc,
+          amountRaw,
+          calldata
+        ],
+      })
+    } else {
+      const msgText = `[CCTP Step 1/3] Approving TokenMessenger to spend ${amountUSDC} USDC on Arc (EOA)...`
+      console.log(`[CCTPExecutor] ${msgText}`)
+      if (onProgress) onProgress(msgText)
+
+      const approveTx = await this.arcWalletClient.writeContract({
+        address: CCTP_CONTRACTS.arcTestnet.usdc,
+        abi: ERC20_ABI,
+        functionName: 'approve',
+        args: [CCTP_CONTRACTS.arcTestnet.tokenMessenger, amountRaw],
+      })
+      await this.arcPublicClient.waitForTransactionReceipt({ hash: approveTx, timeout: 120_000 })
+      
+      const msgText2 = `[CCTP Step 1/3] Approval tx confirmed. Depositing for burn on Arc (EOA)...`
+      console.log(`[CCTPExecutor] ${msgText2}`)
+      if (onProgress) onProgress(msgText2)
+
+      burnTx = await this.arcWalletClient.writeContract({
+        address: CCTP_CONTRACTS.arcTestnet.tokenMessenger,
+        abi: TOKEN_MESSENGER_ABI,
+        functionName: 'depositForBurn',
+        args: [amountRaw, CCTP_CONTRACTS.ethSepolia.domain, mintRecipient, CCTP_CONTRACTS.arcTestnet.usdc, zeroBytes32, 0n, 0],
+      })
+    }
     
     console.log(`[CCTPExecutor] Burn tx submitted: ${burnTx}. Waiting for confirmation...`)
-    const burnReceipt = await this.arcPublicClient.waitForTransactionReceipt({ hash: burnTx })
+    const burnReceipt = await this.arcPublicClient.waitForTransactionReceipt({ hash: burnTx, timeout: 120_000 })
     console.log(`[CCTPExecutor] Burn tx confirmed! Parsing logs for CCTP message...`)
 
     // Extract messageBytes from logs
@@ -152,7 +185,10 @@ export class CCTPExecutor {
     console.log(`[CCTPExecutor] CCTP message hash: ${messageHash}`)
 
     // Step 3 — Poll Circle Attestation API
-    console.log(`[CCTPExecutor] Step 3: Polling Circle Sandbox Iris API for attestation...`)
+    const msgText3 = `[CCTP Step 2/3] Burn transaction confirmed: ${burnTx}. Polling Circle Sandbox Iris API for attestation...`
+    console.log(`[CCTPExecutor] ${msgText3}`)
+    if (onProgress) onProgress(msgText3)
+
     const attestationUrl = `https://iris-api-sandbox.circle.com/v1/attestations/${messageHash}`
     let attestation: string | null = null
 
@@ -176,10 +212,12 @@ export class CCTPExecutor {
     if (!attestation) {
       throw new Error('Circle attestation polling timed out or failed.')
     }
-    console.log(`[CCTPExecutor] Circle attestation acquired!`)
+    
+    const msgText4 = `[CCTP Step 3/3] Circle attestation acquired! Minting USDC on Ethereum Sepolia...`
+    console.log(`[CCTPExecutor] ${msgText4}`)
+    if (onProgress) onProgress(msgText4)
 
     // Step 4 — Mint USDC on Ethereum Sepolia
-    console.log(`[CCTPExecutor] Step 4: Minting USDC on Ethereum Sepolia...`)
     const mintTx = await this.sepoliaWalletClient.writeContract({
       address: CCTP_CONTRACTS.ethSepolia.messageTransmitter,
       abi: MESSAGE_TRANSMITTER_ABI,
@@ -188,8 +226,11 @@ export class CCTPExecutor {
     })
 
     console.log(`[CCTPExecutor] Mint tx submitted: ${mintTx}. Waiting for confirmation...`)
-    await this.sepoliaPublicClient.waitForTransactionReceipt({ hash: mintTx })
-    console.log(`[CCTPExecutor] Mint tx confirmed! CCTP bridge completed successfully.`)
+    await this.sepoliaPublicClient.waitForTransactionReceipt({ hash: mintTx, timeout: 120_000 })
+    
+    const msgText5 = `[CCTP Success] Rebalance complete! Bridged ${amountUSDC} USDC to Ethereum Sepolia. Burn Tx: ${burnTx}, Mint Tx: ${mintTx}`
+    console.log(`[CCTPExecutor] ${msgText5}`)
+    if (onProgress) onProgress(msgText5)
 
     return {
       burnTxHash: burnTx,

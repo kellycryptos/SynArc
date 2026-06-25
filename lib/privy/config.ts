@@ -1,5 +1,6 @@
 import { PrivyClientConfig } from '@privy-io/react-auth';
 import { arcTestnet } from '@/lib/arc-config';
+import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains';
 
 // Define a stable version of Arc Testnet for Privy's embedded wallet.
 // Privy's backend pings the first RPC in the chain's list to verify network health.
@@ -30,7 +31,8 @@ export const privyConfig: PrivyClientConfig = {
     showWalletUIs: false,
     noPromptOnSignature: false,
   } as any,
-  supportedChains: [privyArcTestnet],
+  supportedChains: [privyArcTestnet, sepolia, baseSepolia, avalancheFuji],
   defaultChain: privyArcTestnet,
 };
+
 
