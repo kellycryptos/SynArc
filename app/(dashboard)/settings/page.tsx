@@ -611,6 +611,8 @@ export default function SettingsPage() {
                 { name: "SynArc Treasury", address: process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18", id: "treasury" },
                 { name: "sARC Token (Voting Power)", address: process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e", id: "token" },
                 { name: "EURC Token", address: process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS || "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a", id: "eurc" },
+                { name: "SynArc Treasury Agent", address: process.env.NEXT_PUBLIC_AGENT_ADDRESS || "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D", id: "agent" },
+                { name: "ERC-8004 Identity Registry", address: "0x8004A818BFB912233c491871b3d84c89A494BD9e", id: "registry" },
               ].map((contract) => (
                 <div key={contract.id} className="flex items-center justify-between gap-3 p-4 bg-surface-elevated rounded-xl border border-border-thin w-full">
                   <div className="min-w-0 flex-1">

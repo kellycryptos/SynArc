@@ -21,7 +21,7 @@ SynArc contracts are deployed on the Arc Testnet (`chainId: 5042002`) and are ve
 | **SynArcToken (sARC)** | `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e` | [View on ArcScan](https://testnet.arcscan.app/address/0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e) |
 | **EURC Token (Circle)** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | [View on ArcScan](https://testnet.arcscan.app/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a) |
 | **ERC-8004 Registry** | `0x8004A818BFB912233c491871b3d84c89A494BD9e` | [View on ArcScan](https://testnet.arcscan.app/address/0x8004A818BFB912233c491871b3d84c89A494BD9e) |
-| **SynArcAgent** | `0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de` | [View on ArcScan](https://testnet.arcscan.app/address/0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de) |
+| **SynArcAgent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | [View on ArcScan](https://testnet.arcscan.app/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
 | **SynArcCrowdfund** | Dynamic — per Creator DAO | — |
 
 ---
@@ -48,7 +48,7 @@ SynArc contracts are deployed on the Arc Testnet (`chainId: 5042002`) and are ve
 * **Description:** ERC20 voting asset with checkpoint history tracking to authorize DAO voting power weight.
 
 ### 4. SynArcAgent (`SynArcAgent.sol`)
-* **Address:** `0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de`
+* **Address:** `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D`
 * **Description:** Represents an autonomous AI Agent on-chain. Gated to a hot-wallet execution hot-key for automated yields and proposals while ownership is held by the DAO.
 * **Constructor Arguments:**
   - Owner address: `0x35630dFE2592AB19d979ec1B173697aEa554b66b`
@@ -101,5 +101,5 @@ etherscan: {
 
 4. **Verify SynArcAgent**:
    ```bash
-   npx hardhat verify --network arcTestnet 0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de 0x35630dFE2592AB19d979ec1B173697aEa554b66b 0x35630dFE2592AB19d979ec1B173697aEa554b66b "Groq Llama 3.3 70B"
+   npx hardhat verify --network arcTestnet 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D 0x35630dFE2592AB19d979ec1B173697aEa554b66b 0x35630dFE2592AB19d979ec1B173697aEa554b66b "Groq Llama 3.3 70B"
    ```

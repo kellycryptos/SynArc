@@ -37,6 +37,47 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
     return false;
   };
 
+  const getChainParams = (chainId: number, chainIdHex: string) => {
+    if (isArc(chainId)) {
+      const rpcUrls = chainId === 5042002 
+        ? ARC_RPC_URLS 
+        : ['https://rpc.testnet.arc.network'];
+      const chainName = chainId === 5042002 ? "Arc Testnet" : "Arc Testnet (1303)";
+      return {
+        chainId: chainIdHex,
+        chainName: chainName,
+        rpcUrls: rpcUrls,
+        nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
+        blockExplorerUrls: ["https://testnet.arcscan.app"],
+      };
+    } else if (chainId === 11155111) {
+      return {
+        chainId: chainIdHex,
+        chainName: "Ethereum Sepolia",
+        rpcUrls: ["https://ethereum-sepolia-rpc.publicnode.com"],
+        nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
+        blockExplorerUrls: ["https://sepolia.etherscan.io"],
+      };
+    } else if (chainId === 84532) {
+      return {
+        chainId: chainIdHex,
+        chainName: "Base Sepolia",
+        rpcUrls: ["https://sepolia.base.org"],
+        nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+        blockExplorerUrls: ["https://sepolia.basescan.org"],
+      };
+    } else if (chainId === 43113) {
+      return {
+        chainId: chainIdHex,
+        chainName: "Avalanche Fuji",
+        rpcUrls: ["https://api.avax-test.network/ext/bc/C/rpc"],
+        nativeCurrency: { name: "Avalanche", symbol: "AVAX", decimals: 18 },
+        blockExplorerUrls: ["https://testnet.snowtrace.io"],
+      };
+    }
+    return null;
+  };
+
   // Fast path: if Privy already claims to be on the correct or compatible chain, return the provider immediately
   if (chainsCompatible(walletChainId, targetChainId)) {
     const provider = await (
@@ -61,22 +102,14 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
       console.log(`[enforceChain] Privy embedded wallet detected. Running add-then-switch flow.`);
       // Add Ethereum chain first
       try {
-        const rpcUrls = targetChainId === 5042002 
-          ? ARC_RPC_URLS 
-          : ['https://rpc.testnet.arc.network'];
-        const chainName = targetChainId === 5042002 ? "Arc Testnet" : "Arc Testnet (1303)";
-        
-        await provider.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: targetHex,
-            chainName: chainName,
-            rpcUrls: rpcUrls,
-            nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
-            blockExplorerUrls: ["https://testnet.arcscan.app"],
-          }]
-        });
-        console.log(`[enforceChain] wallet_addEthereumChain completed for Privy embedded wallet.`);
+        const chainParams = getChainParams(targetChainId, targetHex);
+        if (chainParams) {
+          await provider.request({
+            method: 'wallet_addEthereumChain',
+            params: [chainParams]
+          });
+          console.log(`[enforceChain] wallet_addEthereumChain completed for Privy embedded wallet.`);
+        }
       } catch (addError) {
         console.warn(`[enforceChain] wallet_addEthereumChain failed:`, addError);
       }
@@ -126,30 +159,24 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
       if (typeof window !== 'undefined' && provider.request) {
         console.log(`[enforceChain] Requesting wallet_addEthereumChain for chain ${targetChainId}...`);
         
-        // Define standard RPC networks parameter
-        const isArcTest = isArc(targetChainId);
-        if (isArcTest) {
+        const chainParams = getChainParams(targetChainId, targetHex);
+        if (chainParams) {
           try {
-            const rpcUrls = targetChainId === 5042002 
-              ? ARC_RPC_URLS 
-              : ['https://rpc.testnet.arc.network'];
-            const chainName = targetChainId === 5042002 ? "Arc Testnet" : "Arc Testnet (1303)";
-
             await provider.request({
               method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: targetHex,
-                chainName: chainName,
-                rpcUrls: rpcUrls,
-                nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
-                blockExplorerUrls: ["https://testnet.arcscan.app/"],
-              }]
+              params: [chainParams]
             });
             await new Promise(resolve => setTimeout(resolve, 600));
+            // Try switching after adding
+            await provider.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: targetHex }]
+            }).catch(() => null);
+            await new Promise(resolve => setTimeout(resolve, 400));
             providerChainIdHex = await provider.request({ method: 'eth_chainId' }).catch(() => null);
             providerChainId = providerChainIdHex ? parseInt(providerChainIdHex, 16) : 0;
           } catch (addError) {
-            console.error('[enforceChain] Failed to add compatible Arc Testnet chain to provider:', addError);
+            console.error('[enforceChain] Failed to add compatible chain to provider:', addError);
           }
         }
       }
@@ -214,7 +241,7 @@ export const getSigner = async (wallets?: any[], targetChain?: any, activeAddres
                 params: [{
                   chainId: `0x${chainToUse.id.toString(16)}`,
                   chainName: chainToUse.name,
-                  rpcUrls: ARC_RPC_URLS,
+                  rpcUrls: chainToUse.rpcUrls?.default?.http || chainToUse.rpcUrls?.public?.http || ARC_RPC_URLS,
                   nativeCurrency: chainToUse.nativeCurrency || { name: 'USDC', symbol: 'USDC', decimals: 6 },
                   blockExplorerUrls: [chainToUse.blockExplorers?.default?.url || 'https://testnet.arcscan.app']
                 }]

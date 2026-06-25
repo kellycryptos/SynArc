@@ -102,7 +102,7 @@ Creator DAOs are decentralized funding and governance structures that allow buil
 
 ## 3b. Autonomous Treasury Agent
 
-SynArc features a fully autonomous treasury agent deployed and verified on Arc Testnet at `0x4625f81f72dB9BfE78eAce6b0Da249658eBE64de`.
+SynArc features a fully autonomous treasury agent deployed and verified on Arc Testnet at `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D`.
 
 - **Real-Time Monitoring**: Automatically scans pool yields and active balances on-chain.
 - **AI-Driven Proposals**: Generates professional rebalancing proposals autonomously using **Groq Llama 3.3** when yield variances exceed parameters.
@@ -388,6 +388,23 @@ https://www.synarcdao.xyz/
 1.  Log into your dashboard at [privy.io](https://privy.io).
 2.  Add your production URL to the **Allowed Origins** whitelist.
 3.  Ensure the "Embedded Wallets" toggle is set to `Enabled` under login methods.
+
+---
+
+## 10a. Deployed Contracts
+
+All core SynArc smart contracts are deployed on the Arc Testnet (`chainId: 5042002`) and are verified on the ArcScan block explorer:
+
+| Contract Name | Address | Description | ArcScan |
+| :--- | :--- | :--- | :--- |
+| **SynArc Governor** | `0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e` | Proposal voting and supermajority execution logic | [Inspect](https://testnet.arcscan.app/address/0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e) |
+| **SynArc Treasury** | `0xFE0F6bF45D363d34CD5fC1781594a7471736dC18` | Vault managing USDC/EURC stablecoin deposits and timelocked releases | [Inspect](https://testnet.arcscan.app/address/0xFE0F6bF45D363d34CD5fC1781594a7471736dC18) |
+| **SynArcToken (sARC)** | `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e` | ERC20 governance token authorizing user voting weight checkpoints | [Inspect](https://testnet.arcscan.app/address/0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e) |
+| **EURC Token** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | Circle stablecoin accepted for treasury operations and campaigns | [Inspect](https://testnet.arcscan.app/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a) |
+| **ERC-8004 Registry** | `0x8004A818BFB912233c491871b3d84c89A494BD9e` | Trustless Agents Identity Registry for agent verification | [Inspect](https://testnet.arcscan.app/address/0x8004A818BFB912233c491871b3d84c89A494BD9e) |
+| **SynArcAgent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | Autonomous portfolio monitoring, rebalancing, and CCTP bridge triggers | [Inspect](https://testnet.arcscan.app/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
+
+> ℹ️ All contracts are deployed on Arc Testnet. Verified contracts have direct explorer links.
 
 ---
 
