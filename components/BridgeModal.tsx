@@ -89,9 +89,17 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     setSwitchingNetwork(true);
     try {
       const targetChainId = selectedChain.id === "ETH_SEPOLIA" ? 11155111 : selectedChain.id === "BASE_SEPOLIA" ? 84532 : selectedChain.id === "AVAX_FUJI" ? 43113 : 0;
-      if (targetChainId > 0) {
-        await switchChainAsync({ chainId: targetChainId });
-        resetState();
+      if (targetChainId > 0 && switchChainAsync) {
+        try {
+          await switchChainAsync({ chainId: targetChainId });
+          resetState();
+        } catch (switchError: any) {
+          if (switchError.code === 4902 || switchError.message?.toLowerCase().includes("unrecognized chain")) {
+            await handleAddNetwork();
+          } else {
+            throw switchError;
+          }
+        }
       }
     } catch (err) {
       console.error("Manual network switch failed:", err);
@@ -115,6 +123,22 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
           nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
           blockExplorerUrls: ["https://sepolia.etherscan.io"],
         };
+      } else if (selectedChain.id === "BASE_SEPOLIA") {
+        chainParams = {
+          chainId: "0x14a34", // 84532 hex
+          chainName: "Base Sepolia",
+          rpcUrls: ["https://sepolia.base.org"],
+          nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+          blockExplorerUrls: ["https://sepolia.basescan.org"],
+        };
+      } else if (selectedChain.id === "AVAX_FUJI") {
+        chainParams = {
+          chainId: "0xa869", // 43113 hex
+          chainName: "Avalanche Fuji",
+          rpcUrls: ["https://api.avax-test.network/ext/bc/C/rpc"],
+          nativeCurrency: { name: "Avalanche", symbol: "AVAX", decimals: 18 },
+          blockExplorerUrls: ["https://testnet.snowtrace.io"],
+        };
       }
       
       if (chainParams) {
@@ -122,7 +146,9 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
           method: "wallet_addEthereumChain",
           params: [chainParams],
         });
-        await switchChainAsync({ chainId: parseInt(chainParams.chainId, 16) });
+        if (switchChainAsync) {
+          await switchChainAsync({ chainId: parseInt(chainParams.chainId, 16) });
+        }
         resetState();
       }
     } catch (err) {
