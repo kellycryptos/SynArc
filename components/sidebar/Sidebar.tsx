@@ -35,7 +35,6 @@ interface ActiveLink {
 
 const activeLinks: ActiveLink[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/daos", label: "DAOs", icon: Grid },
   { href: "/creator-daos", label: "Creator DAO", icon: Rocket },
   { href: "/proposals", label: "Proposals", icon: FileText },
   { href: "/treasury", label: "Treasury", icon: Shield },
