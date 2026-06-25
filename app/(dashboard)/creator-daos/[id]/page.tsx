@@ -258,7 +258,11 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
     setContributing(true);
 
-    const isSimulated = campaign.id.includes("-") && isNaN(Number(campaign.id));
+    const hasRealEscrow = campaign.escrowAddress && 
+      campaign.escrowAddress.startsWith("0x") && 
+      campaign.escrowAddress.length === 42 &&
+      !campaign.escrowAddress.toLowerCase().includes("escrow");
+    const isSimulated = isCircle || !hasRealEscrow;
     if (isCircle || isSimulated) {
       try {
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -366,7 +370,11 @@ export default function CampaignDetailPage({ params }: PageProps) {
     
     setReleasingMilestone(true);
     try {
-      const isSimulated = campaign.id.includes("-") && isNaN(Number(campaign.id));
+      const hasRealEscrow = campaign.escrowAddress && 
+        campaign.escrowAddress.startsWith("0x") && 
+        campaign.escrowAddress.length === 42 &&
+        !campaign.escrowAddress.toLowerCase().includes("escrow");
+      const isSimulated = isCircle || !hasRealEscrow;
       if (isCircle || isSimulated) {
         await new Promise(resolve => setTimeout(resolve, 2000));
         
