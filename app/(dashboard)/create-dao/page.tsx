@@ -13,7 +13,7 @@ import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI, SynArcCrowdfundBytecode } from "@/lib/governance/SynArcCrowdfund";
 import { ARC_CHAIN } from "@/lib/arc-config";
-import { getAddress, isAddress } from "viem";
+import { getAddress, isAddress, encodeDeployData } from "viem";
 
 
 const TEMPLATES = [
@@ -243,6 +243,41 @@ export default function CreateDaoPage() {
 
         // USDC precompiled contract address on Arc Testnet
         const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
+
+        // Pre-Transaction USDC Gas Balance Check
+        const ERC20_ABI = [
+          {
+            name: 'balanceOf',
+            type: 'function',
+            stateMutability: 'view',
+            inputs: [{ name: 'account', type: 'address' }],
+            outputs: [{ name: '', type: 'uint256' }],
+          },
+        ] as const;
+
+        let usdcBalance = 0;
+        try {
+          const rawBalance = await publicClient.readContract({
+            address: USDC_ADDRESS,
+            abi: ERC20_ABI,
+            functionName: 'balanceOf',
+            args: [cleanAddress],
+          });
+          usdcBalance = Number(rawBalance) / 1_000_000;
+          console.log(`[handleLaunch] Deployer address: ${cleanAddress}, USDC Balance: ${usdcBalance} USDC`);
+        } catch (balanceErr) {
+          console.warn("[handleLaunch] Failed to query USDC balance, proceeding anyway:", balanceErr);
+          usdcBalance = 20.0; // Fallback to bypass blocking check if RPC fails
+        }
+
+        if (usdcBalance < 0.1) { // 0.1 USDC is a tiny threshold for gas
+          toast.error(`Insufficient USDC balance for gas on Arc Testnet. You have ${usdcBalance.toFixed(2)} USDC available.`);
+          setLaunching(false);
+          return;
+        }
+
+        // Show clear user feedback that we are using USDC as native gas
+        toast.loading(`Using USDC as gas on Arc Testnet. You have ${usdcBalance.toFixed(2)} USDC available. Preparing wallet popup...`, { id: launchToastId });
         
         // 2. Format parameters for on-chain deployment
         const goalBigInt = BigInt(Math.round(creatorGoal * 1_000_000));
@@ -252,10 +287,45 @@ export default function CreateDaoPage() {
 
         const gasParams = await getAggressiveGasParams(publicClient);
 
+        // Estimate contract deployment gas limit dynamically
+        let gasLimit: bigint;
+        try {
+          const deployData = encodeDeployData({
+            abi: SynArcCrowdfundABI as any,
+            bytecode: SynArcCrowdfundBytecode as `0x${string}`,
+            args: [
+              cleanAddress,
+              cleanRecipient,
+              USDC_ADDRESS,
+              goalBigInt,
+              BigInt(creatorDuration),
+              isAgent,
+              formData.name.trim(),
+              formData.description.trim(),
+              selectedTemplate === "ai-agent" ? "AI Agent Fund" : "Creator DAO",
+              milestoneTitles,
+              milestoneAmounts,
+              milestoneDescriptions
+            ]
+          });
+
+          const gasEstimate = await publicClient.estimateGas({
+            account: cleanAddress,
+            data: deployData
+          });
+          
+          // Apply a safe 30% gas buffer
+          gasLimit = (gasEstimate * 130n) / 100n;
+          console.log(`[handleLaunch] Estimated gas: ${gasEstimate.toString()}, with 30% buffer: ${gasLimit.toString()}`);
+        } catch (gasErr) {
+          console.warn("[handleLaunch] Gas estimation failed, falling back to 1.8M gas limit ceiling:", gasErr);
+          gasLimit = 1800000n;
+        }
+
         toast.loading("Deploying Creator DAO smart contract to Arc...", { id: launchToastId });
 
         // 3. Deploy SynArcCrowdfund contract directly from user wallet
-        // Explicitly set chain to ARC_CHAIN and use a safer 3.5M gas limit floor
+        // Explicitly set chain to ARC_CHAIN and use the dynamic gas limit
         const deployHash = await walletClient.deployContract({
           abi: SynArcCrowdfundABI,
           bytecode: SynArcCrowdfundBytecode as `0x${string}`,
@@ -274,7 +344,7 @@ export default function CreateDaoPage() {
             milestoneAmounts,
             milestoneDescriptions
           ],
-          gas: 3500000n, 
+          gas: gasLimit, 
           ...gasParams,
         });
 
@@ -345,11 +415,11 @@ export default function CreateDaoPage() {
         const errMsg = (err?.message || "").toLowerCase();
         if (errMsg.includes("insufficient") || errMsg.includes("funds") || errMsg.includes("gas") || errMsg.includes("balance")) {
           toast.error(
-            "Failed to deploy contract. Ensure you have native USDC gas in your wallet from faucet.circle.com.",
-            { duration: 10000 }
+            `Failed to deploy contract. Ensure you have native USDC gas in your wallet. Details: ${err?.message || err}`,
+            { duration: 12000 }
           );
         } else {
-          toast.error(err?.message || "Failed to launch Creator DAO. Please try again.", { duration: 8000 });
+          toast.error(`Launch failed: ${err?.message || err}`, { duration: 10000 });
         }
         setLaunching(false);
       }
