@@ -3,6 +3,7 @@
 * [Getting Started](README.md)
 * [Governance](02-governance.md)
 * [Treasury](03-treasury.md)
+* [Creator Economy & DAOs](03c-creator-economy.md)
 * [Treasury Agent](04-ai-agents.md)
 * [Agent SDK](04b-sdk.md)
 * [DAO Registry](05-dao-registry.md)
