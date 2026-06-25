@@ -179,37 +179,46 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
         }
       } catch (err) {}
 
-      simulatedCampaigns.forEach((sc) => {
-        const deadlineDate = new Date(sc.deadline);
-        const diffTime = deadlineDate.getTime() - Date.now();
-        const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-        let category = sc.category.toLowerCase().replace(" ", "-");
-        if (category === "ai-agent-fund" || category === "ai-infrastructure") {
-          category = "ai-agent";
-        }
-        const slug = sc.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      const mappedSimulatedCreators = await Promise.all(
+        simulatedCampaigns.map(async (sc) => {
+          // Hydrate real on-chain parameters if escrow address exists
+          const onChain = await fetchOnChainCampaignMetrics(sc.escrowAddress);
+          const raised = onChain ? onChain.raised : sc.raised;
+          const supporters = onChain ? onChain.contributors : sc.contributors;
 
-        const mappedSimulated: Creator = {
-          id: sc.id,
-          name: sc.title,
-          category,
-          description: sc.description,
-          goal: sc.goal,
-          raised: sc.raised,
-          supporters: sc.contributors,
-          daysLeft,
-          twitter: sc.twitter || null,
-          wallet: sc.recipient,
-          slug,
-          isAgent: sc.isAgent,
-          image: sc.image || undefined
-        };
+          const deadlineDate = new Date(sc.deadline);
+          const diffTime = deadlineDate.getTime() - Date.now();
+          const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+          let category = sc.category.toLowerCase().replace(" ", "-");
+          if (category === "ai-agent-fund" || category === "ai-infrastructure") {
+            category = "ai-agent";
+          }
+          const slug = sc.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-        const idx = mappedCreators.findIndex((c) => c.id === sc.id || c.slug === slug);
+          return {
+            id: sc.id,
+            name: sc.title,
+            category,
+            description: sc.description,
+            goal: sc.goal,
+            raised,
+            supporters,
+            daysLeft,
+            twitter: sc.twitter || null,
+            wallet: sc.recipient,
+            slug,
+            isAgent: sc.isAgent,
+            image: sc.image || undefined
+          };
+        })
+      );
+
+      mappedSimulatedCreators.forEach((msc) => {
+        const idx = mappedCreators.findIndex((c) => c.id === msc.id || c.slug === msc.slug);
         if (idx !== -1) {
-          mappedCreators[idx] = mappedSimulated;
+          mappedCreators[idx] = msc;
         } else {
-          mappedCreators.push(mappedSimulated);
+          mappedCreators.push(msc);
         }
       });
 

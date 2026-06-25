@@ -138,9 +138,47 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
             console.error("Failed to parse simulated campaigns from localStorage", err);
           }
 
+          // Hydrate real on-chain parameters for simulated campaigns that have real escrow addresses
+          const hydratedSimulated = await Promise.all(
+            simulatedCampaigns.map(async (c) => {
+              const onChain = await fetchOnChainCampaignMetrics(c.escrowAddress);
+              if (onChain) {
+                // If goal is fully raised, advance lifecycle phase
+                let state = c.state;
+                if (onChain.raised >= c.goal && c.state === 'Active') {
+                  state = 'Voting';
+                }
+                
+                // If all milestones completed, mark Completed
+                const allMilestonesClaimed = onChain.milestones.every(m => m.status === 'completed');
+                if (allMilestonesClaimed && onChain.milestones.length > 0) {
+                  state = 'Completed';
+                } else if (onChain.milestones.some(m => m.status === 'active' && m.title.includes("approved"))) {
+                  state = 'Voting';
+                }
+
+                return {
+                  ...c,
+                  raised: onChain.raised,
+                  contributors: onChain.contributors,
+                  milestones: onChain.milestones,
+                  state
+                };
+              }
+              return c;
+            })
+          );
+
+          // Update simulated campaigns in local storage with hydrated on-chain metrics
+          try {
+            localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(hydratedSimulated));
+          } catch (e) {
+            console.warn("Failed to update hydrated campaigns in localStorage", e);
+          }
+
           // Merge them. If any simulated campaign has the same ID, overwrite it.
           const mergedCampaigns = [...hydratedCampaigns];
-          simulatedCampaigns.forEach((sc) => {
+          hydratedSimulated.forEach((sc) => {
             const idx = mergedCampaigns.findIndex((c) => c.id === sc.id);
             if (idx !== -1) {
               mergedCampaigns[idx] = sc;
@@ -219,13 +257,20 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
           const list = JSON.parse(stored);
           const found = list.find((c: any) => c.id === campaignId);
           if (found) {
-            isSimulated = true;
-            found.raised += amount;
-            found.contributors += 1;
-            if (found.raised >= found.goal && found.state === "Active") {
-              found.state = "Voting";
+            const hasRealEscrow = found.escrowAddress && 
+              found.escrowAddress.startsWith("0x") && 
+              found.escrowAddress.length === 42 &&
+              !found.escrowAddress.toLowerCase().includes("escrow");
+            
+            if (!hasRealEscrow) {
+              isSimulated = true;
+              found.raised += amount;
+              found.contributors += 1;
+              if (found.raised >= found.goal && found.state === "Active") {
+                found.state = "Voting";
+              }
+              localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(list));
             }
-            localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(list));
           }
         }
       } catch (e) {
@@ -265,7 +310,17 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
           const list = JSON.parse(stored);
           const found = list.find((c: any) => c.id === campaignId);
           if (found) {
-            isSimulated = true;
+            const hasRealEscrow = found.escrowAddress && 
+              found.escrowAddress.startsWith("0x") && 
+              found.escrowAddress.length === 42 &&
+              !found.escrowAddress.toLowerCase().includes("escrow");
+            
+            if (!hasRealEscrow) {
+              isSimulated = true;
+            }
+
+            // Always update votes in localStorage regardless of live mode,
+            // because voting is client-side/simulated for all creator DAOs.
             if (!found.votes) {
               found.votes = { for: 0, against: 0, abstain: 0 };
             }
@@ -324,30 +379,44 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
 
     const onChain = await fetchOnChainCampaignMetrics(target.escrowAddress);
     if (onChain) {
-      set((state) => {
-        const campaigns = state.campaigns.map((c) => {
-          if (c.id === campaignId) {
-            let newState = c.state;
-            if (onChain.raised >= c.goal && c.state === 'Active') {
-              newState = 'Voting';
-            }
-            const allClaimed = onChain.milestones.every(m => m.status === 'completed');
-            if (allClaimed && onChain.milestones.length > 0) {
-              newState = 'Completed';
-            }
+      let newState = target.state;
+      if (onChain.raised >= target.goal && target.state === 'Active') {
+        newState = 'Voting';
+      }
+      const allClaimed = onChain.milestones.every(m => m.status === 'completed');
+      if (allClaimed && onChain.milestones.length > 0) {
+        newState = 'Completed';
+      }
 
-            return {
-              ...c,
-              raised: onChain.raised,
-              contributors: onChain.contributors,
-              milestones: onChain.milestones,
-              state: newState
-            };
-          }
-          return c;
-        });
+      const updatedCampaign = {
+        ...target,
+        raised: onChain.raised,
+        contributors: onChain.contributors,
+        milestones: onChain.milestones,
+        state: newState
+      };
+
+      set((state) => {
+        const campaigns = state.campaigns.map((c) => c.id === campaignId ? updatedCampaign : c);
         return { campaigns };
       });
+
+      // Write updated campaign metrics back to localStorage to keep offline fallback sync'd
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("synarc_simulated_campaigns");
+          if (stored) {
+            const list = JSON.parse(stored);
+            const idx = list.findIndex((c: any) => c.id === campaignId);
+            if (idx !== -1) {
+              list[idx] = { ...list[idx], ...updatedCampaign };
+              localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(list));
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to sync on-chain campaign to local storage:", e);
+        }
+      }
     }
   }
 }));
