@@ -502,7 +502,7 @@ export default function BridgePage() {
               USDC Bridge
             </h1>
             <p className="text-muted mt-1 text-sm">
-              Send USDC from Arc to Ethereum and vice versa. Zero wrapping risk, fast and secure.
+              Move your project funds securely between networks. Zero intermediary risk, fast settlement, and fully transparent.
             </p>
           </div>
 

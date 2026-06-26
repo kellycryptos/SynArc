@@ -275,8 +275,8 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
               <span className="text-lg">🌉</span>
             </div>
             <div>
-              <h3 className="font-bold text-lg text-white">Bridge USDC to Arc</h3>
-              <p className="text-[11px] text-text-tertiary">Powered by Circle CCTP V2 Infrastructure</p>
+              <h3 className="font-bold text-lg text-white">Bridge Funds to Arc</h3>
+              <p className="text-[11px] text-text-tertiary">Move funds securely with direct on-chain verification</p>
             </div>
           </div>
           <button 
@@ -441,7 +441,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   </div>
                   <div>
                     <span className="text-white font-bold block">Estimated Speed</span>
-                    <span className="text-[10px] text-text-tertiary">Circle CCTP Native Route</span>
+                    <span className="text-[10px] text-text-tertiary">Direct secure transfer route</span>
                   </div>
                 </div>
                 <div className="text-right">
@@ -497,7 +497,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   <div>
                     <h3 className="text-xl font-bold text-white">Bridge complete ✓</h3>
                     <p className="text-xs text-text-tertiary mt-1.5 max-w-sm mx-auto leading-relaxed">
-                      Circle CCTP successfully completed the native bridge transfer. The USDC has safely arrived in your Arc Testnet wallet balance.
+                      Your transfer has successfully completed. The funds are now available in your workspace on Arc.
                     </p>
                   </div>
 

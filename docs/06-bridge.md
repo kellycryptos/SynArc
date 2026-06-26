@@ -2,21 +2,21 @@
 icon: link
 ---
 
-# Bridge & CCTP Integration
+# Secure Transfer Bridge
 
-Cross-chain stablecoin mobility is at the core of SynArc's treasury orchestration. SynArc integrates **Circle's Cross-Chain Transfer Protocol (CCTP)** natively to support fully bidirectional, 1:1, slippage-free transfers of native USDC between Arc Testnet and EVM/non-EVM blockchains.
+Cross-network fund mobility is essential for active workspaces. SynArc integrates secure, direct bridge protocols to support bidirectional, 1:1 transfers of stable digital dollars (USDC) between Arc Testnet and other major networks, without the risks of intermediary wrapping contracts.
 
 ***
 
 ## Bidirectional Transfer Flows
 
 SynArc supports bridging in both directions:
-1. **Deposit (IN)**: Bridge USDC from Ethereum Sepolia, Base Sepolia, Avalanche Fuji, or Solana Devnet onto Arc Testnet to fund a Creator DAO, deposit into the Treasury, or back active campaigns.
+1. **Deposit (IN)**: Bridge USDC from Ethereum Sepolia, Base Sepolia, Avalanche Fuji, or Solana Devnet onto Arc Testnet to fund a project workspace, deposit into the Treasury, or back active campaigns.
 2. **Withdraw (OUT)**: Bridge USDC from Arc Testnet back to Ethereum Sepolia, Base Sepolia, Avalanche Fuji, or Solana Devnet to distribute assets to external participant vaults.
 
-### How CCTP Works Under the Hood
+### How Direct Transfers Work Under the Hood
 
-Unlike traditional lock-and-mint bridges that issue synthetic, wrapped representations (which introduce custodian risks and fragmentation), CCTP uses a native burn-and-mint mechanism:
+Unlike traditional lock-and-mint bridges that issue synthetic, wrapped tokens (which introduce custodian risks and pool fragmentation), our direct transfer route uses a native burn-and-mint mechanism for absolute security:
 
 ```mermaid
 sequenceDiagram

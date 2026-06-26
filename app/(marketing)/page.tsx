@@ -177,16 +177,16 @@ export default function LandingPage() {
           {/* Live agent badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-elevated border border-primary/30 text-sm font-medium mb-8">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            ⚡ Live CCTP Agent on Arc Testnet
+            ⚡ Automated Treasury Rules
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold font-heading tracking-tight mb-6 leading-tight text-text-primary">
-            Autonomous Treasury Agent <br className="hidden md:block" />
-            <span className="gradient-text">for DAOs on Arc</span>
+            Coordinate and Protect <br className="hidden md:block" />
+            <span className="gradient-text">Your Community's Funds</span>
           </h1>
           
           <p className="text-xl md:text-2xl text-text-secondary max-w-3xl mx-auto mb-10">
-            An autonomous on-chain agent that monitors your DAO treasury, creates rebalancing proposals, and executes CCTP transfers — no human required.
+            Keep your project funds secure in milestone-based escrows, vote transparently on releases, and automatically prevent funds from sitting idle.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -200,7 +200,7 @@ export default function LandingPage() {
                 href="/agent"
                 className="w-full sm:w-auto px-12 py-5.5 rounded-xl bg-gradient-to-r from-accent-purple via-purple-600 to-accent-blue text-white font-black hover:opacity-95 transition-all shadow-[0_0_35px_rgba(124,58,237,0.35)] hover:shadow-[0_0_50px_rgba(124,58,237,0.55)] flex items-center justify-center gap-2 text-xl border border-white/10"
               >
-                <span className="text-white-keep">View Treasury Agent &rarr;</span>
+                <span className="text-white-keep">View Automated Treasury &rarr;</span>
               </Link>
             </motion.div>
             {/* Secondary CTA — Dashboard */}
@@ -234,7 +234,7 @@ export default function LandingPage() {
           </div>
           
           <p className="text-xs text-text-tertiary/60 mt-6 font-mono tracking-wider select-none">
-            ⚡ Powered by <span className="text-accent-purple font-bold">@synarc/agent-sdk</span> · CCTP · Circle Modular Wallets
+            ⚡ Secure milestone escrows · Direct cross-chain transfers · Community-governed treasuries
           </p>
         </motion.div>
       </section>
@@ -251,8 +251,8 @@ export default function LandingPage() {
             transition={{ duration: 0.4 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4 text-text-primary">Enterprise-Grade Coordination</h2>
-            <p className="text-text-secondary max-w-2xl mx-auto">Built from the ground up to support the scale and privacy requirements of modern on-chain organizations.</p>
+            <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4 text-text-primary">Complete Coordination Framework</h2>
+            <p className="text-text-secondary max-w-2xl mx-auto">Built to support the scale, transparency, and security requirements of modern digital organizations.</p>
           </motion.div>
           
           <motion.div 
@@ -272,9 +272,9 @@ export default function LandingPage() {
                   <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-6 border border-primary/30">
                     <Shield className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold mb-3 text-text-primary">Encrypted Analytics</h3>
+                  <h3 className="text-xl font-bold mb-3 text-text-primary">Frictionless Audits</h3>
                   <p className="text-text-secondary leading-relaxed">
-                    Analyze DAO participation and delegate health metrics without compromising the privacy of individual voters.
+                    Analyze participation and workspace health metrics transparently without violating individual contributor privacy.
                   </p>
                 </GlassCard>
               </motion.div>
@@ -290,9 +290,9 @@ export default function LandingPage() {
                   <div className="w-12 h-12 rounded-xl bg-arc-blue/20 flex items-center justify-center mb-6 border border-arc-blue/30">
                     <Globe className="w-6 h-6 text-arc-blue" />
                   </div>
-                  <h3 className="text-xl font-bold mb-3 text-text-primary">USDC-Native Treasury</h3>
+                  <h3 className="text-xl font-bold mb-3 text-text-primary">Transparent Treasury</h3>
                   <p className="text-text-secondary leading-relaxed">
-                    Manage your organization's wealth with stablecoin-native tools designed for the Arc ecosystem.
+                    Manage your organization's wealth with simple, stable digital assets and transparent ledger logs.
                   </p>
                 </GlassCard>
               </motion.div>
@@ -308,14 +308,14 @@ export default function LandingPage() {
                   <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center mb-6 border border-accent/30">
                     <Lock className="w-6 h-6 text-accent" />
                   </div>
-                  <h3 className="text-xl font-bold mb-3 text-text-primary">Secure Delegation</h3>
+                  <h3 className="text-xl font-bold mb-3 text-text-primary">Secure Coordination</h3>
                   <p className="text-text-secondary leading-relaxed">
-                    Delegate voting power seamlessly using confidential identity proofs that preserve member anonymity.
+                    Delegate voting weight seamlessly using identity confirmations that protect participant voice.
                   </p>
                 </GlassCard>
               </motion.div>
             </motion.div>
-
+ 
             <motion.div variants={itemVariants}>
               <motion.div
                 whileHover={{ y: -4, boxShadow: '0 20px 40px rgba(124, 58, 237, 0.15)', borderColor: 'rgba(124, 58, 237, 0.4)' }}
@@ -326,15 +326,15 @@ export default function LandingPage() {
                   <div className="w-12 h-12 rounded-xl bg-purple-glow/20 flex items-center justify-center mb-6 border border-purple-glow/30">
                     <Bot className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold mb-3 text-text-primary">AI-Powered Governance</h3>
+                  <h3 className="text-xl font-bold mb-3 text-text-primary">Automated Safeguards</h3>
                   <p className="text-text-secondary leading-relaxed">
-                    Autonomous agents analyze proposals, cast votes, and optimize treasury allocation using on-chain data. Powered by Llama 3.3 via Groq.
+                    Configure automated routines to monitor proposals, alert community members, and optimize reserve yields.
                   </p>
                 </GlassCard>
               </motion.div>
             </motion.div>
           </motion.div>
-
+ 
           {/* Creator Economy Highlights Row */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -345,28 +345,28 @@ export default function LandingPage() {
           >
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
               <span className="text-base select-none">⚡</span>
-              <span className="text-xs md:text-sm font-semibold text-text-primary">Creator Economy</span>
+              <span className="text-xs md:text-sm font-semibold text-text-primary">Workspace Funding</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
               <span className="text-base select-none">🏛</span>
-              <span className="text-xs md:text-sm font-semibold text-text-primary">One-Click DAO Launch</span>
+              <span className="text-xs md:text-sm font-semibold text-text-primary">One-Click Setup</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
               <span className="text-base select-none">💸</span>
-              <span className="text-xs md:text-sm font-semibold text-text-primary">USDC Nanopayments ($0.01 minimum)</span>
+              <span className="text-xs md:text-sm font-semibold text-text-primary">Micro-Funding Support</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
               <span className="text-base select-none">🤖</span>
-              <span className="text-xs md:text-sm font-semibold text-text-primary">AI Agent Co-Pilot</span>
+              <span className="text-xs md:text-sm font-semibold text-text-primary">Automated Treasury Rules</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
               <span className="text-base select-none">🏆</span>
-              <span className="text-xs md:text-sm font-semibold text-text-primary">Creator Leaderboard</span>
+              <span className="text-xs md:text-sm font-semibold text-text-primary">Leaderboard Recognition</span>
             </div>
           </motion.div>
         </div>
       </section>
-
+ 
       {/* Multi-DAO Infrastructure Section (New Feature!) */}
       <section id="infrastructure" className="py-24 relative overflow-hidden px-4 border-b border-border-thin bg-gradient-to-b from-transparent to-primary/[0.02]">
         <div className="absolute inset-0 pointer-events-none">
@@ -375,28 +375,28 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto relative z-10 text-center space-y-8">
           <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
             Governance Infrastructure <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">for the Arc Ecosystem</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">for Digital Teams</span>
           </h2>
           <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            Deploy your DAO on SynArc. Manage proposals, treasury, and members — all on Arc Testnet.
+            Launch your workspace on SynArc. Manage proposals, treasury allocations, and coordinator voting.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => setIsModalOpen(true)}
               className="w-full sm:w-auto px-8 py-4 rounded-xl bg-accent-purple text-white-keep font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] inline-flex items-center justify-center gap-2 text-lg cursor-pointer"
             >
-              Apply for Your DAO <ArrowRight className="w-5 h-5" />
+              Apply for Your Workspace <ArrowRight className="w-5 h-5" />
             </button>
             <Link
               href="/daos"
               className="w-full sm:w-auto px-8 py-4 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg"
             >
-              Explore DAOs &rarr;
+              Explore Workspaces &rarr;
             </Link>
           </div>
         </div>
       </section>
-
+ 
       {/* Creator DAO Section */}
       <section className="crowdfund-section py-24 relative overflow-hidden px-4 border-b border-border-thin bg-gradient-to-b from-transparent to-primary/[0.01]">
         <div className="absolute inset-0 pointer-events-none">
@@ -404,47 +404,47 @@ export default function LandingPage() {
         </div>
         <div className="max-w-7xl mx-auto relative z-10 text-center space-y-12">
           <div className="section-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold uppercase tracking-wider text-purple-300">
-            ⚡ NEW — Creator DAO
+            ⚡ Project Funding
           </div>
           
           <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
             Community Funding Platform<br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">for Creators & DAOs</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">for Projects & Creators</span>
           </h2>
           
           <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            Milestone-locked funding, templates, and governance for communities and creators on Arc.
+            Milestone-locked funding, coordination templates, and simple voting for active projects.
           </p>
-
+ 
           <div className="feature-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
             <FeatureCard
               icon="🤖"
-              title="Automated DAOs"
-              description="DAOs with automated rules, smart contracts, and rebalancing parameters."
+              title="Automated Safeguards"
+              description="Keep assets protected with automated rebalancing rules and alert parameters."
             />
             <FeatureCard
               icon="👤"
-              title="Creator DAOs"
-              description="Creators and communities launch on-chain organizations with milestone-locked treasury vaults."
+              title="Project Workspaces"
+              description="Creators and teams launch shared project workspaces with milestone-locked vaults."
             />
             <FeatureCard
               icon="🏦"
-              title="Milestone Governance"
-              description="USDC capital is locked in smart contract escrows, released dynamically via member voting."
+              title="Milestone Trust"
+              description="Backer contributions are held in secure escrows, released as project milestones are completed."
             />
             <FeatureCard
               icon="💸"
-              title="1:1 USDC Releases"
-              description="Approved milestones trigger automatic native USDC transfers directly to beneficiaries."
+              title="Frictionless Payouts"
+              description="Approved milestones trigger direct on-chain payouts to project members."
             />
           </div>
-
+ 
           <div className="cta-buttons flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/creator-daos" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-white font-semibold transition-all border border-border-thin flex items-center justify-center gap-2 text-lg">
-              Explore Creator DAOs
+              Explore Workspaces
             </Link>
             <Link href="/create-dao" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-accent-purple text-white-keep font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] flex items-center justify-center gap-2 text-lg">
-              Launch Creator DAO &rarr;
+              Launch Project Workspace &rarr;
             </Link>
           </div>
         </div>
@@ -464,11 +464,11 @@ export default function LandingPage() {
                 🛠️ FOR DEVELOPERS
               </div>
               <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
-                Empower Your AI Agents <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">With On-Chain Governance</span>
+                Build Custom Treasury Rules <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">With Programmatic Workspaces</span>
               </h2>
               <p className="text-lg text-text-secondary leading-relaxed">
-                Integrate autonomous AI agents and organizations directly with Arc governance and treasury protocols. Build custom voting engines, yield sweep algorithms, and registry integrations.
+                Connect custom automation and rules to your workspace. Programmatically monitor balances, execute sweeps, or trigger alerts using our developer SDK.
               </p>
               
               <div className="space-y-4">
@@ -601,10 +601,10 @@ export default function LandingPage() {
             </div>
             <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">Ecosystem Roadmap</h2>
             <p className="text-muted max-w-2xl mx-auto text-lg">
-              Our roadmap towards establishing secure, user-friendly governance and treasury rebalancing tools for creators and communities.
+              Our roadmap towards establishing secure, user-friendly funding escrows and automated treasury tools for creators and teams.
             </p>
           </div>
-
+ 
           {/* Timeline Wrapper */}
           <div className="relative border-l-2 border-dashed border-white/[0.08] ml-4 md:ml-32 md:pl-16 space-y-12">
             
@@ -617,7 +617,7 @@ export default function LandingPage() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-emerald-500">Phase 1</span>
                 <p className="text-[10px] text-muted uppercase">Q1 2026</p>
               </div>
-
+ 
               <GlassCard className="p-8 transition-all duration-300 group-hover:border-emerald-500/30 group-hover:shadow-[0_0_25px_rgba(16,185,129,0.05)]">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                   <h3 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
@@ -637,7 +637,7 @@ export default function LandingPage() {
                 </div>
               </GlassCard>
             </div>
-
+ 
             {/* Phase 2 */}
             <div className="relative pl-8 group">
               <div className="absolute -left-[11px] top-1.5 w-5 h-5 rounded-full bg-emerald-500 border-4 border-background shadow-[0_0_12px_rgba(16,185,129,0.5)] flex items-center justify-center z-20 group-hover:scale-125 transition-transform duration-300" />
@@ -646,27 +646,27 @@ export default function LandingPage() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-emerald-500">Phase 2</span>
                 <p className="text-[10px] text-muted uppercase">Q2 2026</p>
               </div>
-
+ 
               <GlassCard className="p-8 transition-all duration-300 group-hover:border-emerald-500/30 group-hover:shadow-[0_0_25px_rgba(16,185,129,0.05)]">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                   <h3 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                    Authentication Infrastructure
+                    Frictionless Onboarding
                   </h3>
                   <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
                     Live
                   </span>
                 </div>
                 <p className="text-muted leading-relaxed mb-4 text-[15px]">
-                  Deploy seamless embedded wallet frameworks and social logins powered by Privy, establishing secure, gasless cryptographic voting parameters on Arc Testnet.
+                  Allow coordinators and backers to connect securely using email or social login, removing technical onboarding friction and enabling simple voting.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Privy SDK</span>
+                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Social Auth</span>
                   <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Wagmi / Viem</span>
                   <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Arc Testnet</span>
                 </div>
               </GlassCard>
             </div>
-
+ 
             {/* Phase 3 */}
             <div className="relative pl-8 group">
               <div className="absolute -left-[11px] top-1.5 w-5 h-5 rounded-full bg-amber-500 border-4 border-background shadow-[0_0_12px_rgba(245,158,11,0.5)] flex items-center justify-center z-20 group-hover:scale-125 transition-transform duration-300 animate-pulse" />
@@ -675,27 +675,27 @@ export default function LandingPage() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-amber-500">Phase 3</span>
                 <p className="text-[10px] text-muted uppercase">Q3 2026</p>
               </div>
-
+ 
               <GlassCard className="p-8 transition-all duration-300 group-hover:border-amber-500/30 group-hover:shadow-[0_0_25px_rgba(245,158,11,0.05)]">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                   <h3 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                    Governance Contracts
+                    Milestone Escrows
                   </h3>
                   <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400">
                     In Progress
                   </span>
                 </div>
                 <p className="text-muted leading-relaxed mb-4 text-[15px]">
-                  Write and test custom OpenZeppelin-based governance contracts on the Arc blockchain network. Configure TimelockControllers to enforce secure, delay-buffered proposal executions.
+                  Deploy secure project vaults that lock community-contributed funds, releasing them in tranches only after milestones pass backer voting rounds.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">OpenZeppelin</span>
+                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Smart Vaults</span>
                   <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Solidity</span>
                   <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Timelock</span>
                 </div>
               </GlassCard>
             </div>
-
+ 
             {/* Phase 4 */}
             <div className="relative pl-8 group">
               <div className="absolute -left-[11px] top-1.5 w-5 h-5 rounded-full bg-purple-glow border-4 border-background shadow-[0_0_12px_rgba(124,58,237,0.5)] flex items-center justify-center z-20 group-hover:scale-125 transition-transform duration-300" />
@@ -704,27 +704,27 @@ export default function LandingPage() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-purple-glow">Phase 4</span>
                 <p className="text-[10px] text-muted uppercase">Q4 2026</p>
               </div>
-
+ 
               <GlassCard className="p-8 transition-all duration-300 group-hover:border-purple-glow/30 group-hover:shadow-[0_0_25px_rgba(124,58,237,0.05)]">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                   <h3 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                    Confidential Ballots
+                    Private Coordination
                   </h3>
                   <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-purple-glow/10 border border-purple-glow/20 text-purple-300">
                     Planned
                   </span>
                 </div>
                 <p className="text-muted leading-relaxed mb-4 text-[15px]">
-                  Introduce zero-knowledge cryptographic encryption mechanics into token voting rounds, enabling delegates to sign ballots with robust structural privacy.
+                  Introduce voting safeguards that allow coordinators to vote privately, protecting participant voice and preventing strategic front-running.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">ZK-Snarks</span>
+                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Private Voting</span>
                   <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Secret Ballots</span>
                   <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">TS SDK</span>
                 </div>
               </GlassCard>
             </div>
-
+ 
             {/* Mainnet Integration */}
             <div className="relative pl-8 group">
               <div className="absolute -left-[11px] top-1.5 w-5 h-5 rounded-full bg-white/[0.2] border-4 border-background shadow-[0_0_12px_rgba(255,255,255,0.3)] flex items-center justify-center z-20 group-hover:scale-125 transition-transform duration-300" />
@@ -733,23 +733,23 @@ export default function LandingPage() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-white/[0.5]">Future</span>
                 <p className="text-[10px] text-muted uppercase">Planned</p>
               </div>
-
+ 
               <GlassCard className="p-8 transition-all duration-300 group-hover:border-white/[0.2] group-hover:shadow-[0_0_25px_rgba(255,255,255,0.05)]">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                   <h3 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                    Mainnet Integration
+                    Enterprise Scaling
                   </h3>
                   <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-white/[0.04] border border-white/[0.08] text-muted/60">
                     Planned
                   </span>
                 </div>
                 <p className="text-muted leading-relaxed mb-4 text-[15px]">
-                  Deploy SynArc governance infrastructure to ARC mainnet. Enable production-ready DAOs with real asset management and institutional participation at scale.
+                  Support production-ready project workspaces with real-world asset management and institutional compliance integrations.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Mainnet</span>
                   <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Production</span>
-                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Institutional</span>
+                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white/[0.03] border border-white/[0.06] text-muted">Scaling</span>
                 </div>
               </GlassCard>
             </div>

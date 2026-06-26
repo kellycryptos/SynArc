@@ -52,8 +52,8 @@ export default function DashboardOverview() {
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
             </div>
             <div>
-              <span className="text-sm font-bold text-text-primary">Treasury Agent Active</span>
-              <span className="ml-3 text-xs text-muted">Monitoring treasury · Groq AI · CCTP ready</span>
+              <span className="text-sm font-bold text-text-primary">Treasury Guard Active</span>
+              <span className="ml-3 text-xs text-muted">Monitoring treasury · Automated rules active</span>
             </div>
           </div>
           <div className="flex items-center gap-2 text-primary text-xs font-bold group-hover:gap-3 transition-all">
@@ -78,24 +78,24 @@ export default function DashboardOverview() {
             <div className="p-1.5 rounded-lg bg-primary/15 border border-primary/25">
               <Zap className="w-5 h-5 text-primary" />
             </div>
-            <h2 className="text-xl font-bold font-heading text-text-primary">Autonomous Treasury Management</h2>
+            <h2 className="text-xl font-bold font-heading text-text-primary">Automated Treasury Guard</h2>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-primary/20 border border-primary/30 text-primary">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping inline-block" />
-              LIVE
+              ACTIVE
             </span>
           </div>
           <Link href="/agent" className="text-xs font-bold text-primary hover:text-primary-glow flex items-center gap-1 transition-all">
-            View Agent Dashboard <ArrowRight className="w-3.5 h-3.5" />
+            View Treasury Rules <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
         <p className="text-sm text-muted relative z-10 max-w-2xl">
-          AI agent monitors your treasury 24/7, creates governance proposals autonomously, and executes CCTP cross-chain transfers when approved by community vote. Deep Circle integration: CCTP burn-and-mint, Gateway nanopayments, Modular Smart Account.
+          Protect your treasury funds automatically. Set up custom rules to prevent funds from sitting idle, route rewards to secure yield vaults, and execute transfers immediately after community approval.
         </p>
         <div className="grid grid-cols-3 gap-4 relative z-10">
           {[
-            { label: "Agent Status", value: "WATCHING", color: "text-primary" },
-            { label: "AI Model", value: "Groq Llama 3.3", color: "text-purple-400" },
-            { label: "CCTP Enabled", value: "Arc → Sepolia", color: "text-blue-400" },
+            { label: "Guard Status", value: "MONITORING", color: "text-primary" },
+            { label: "Rule Verification", value: "Verified Active", color: "text-purple-400" },
+            { label: "Cross-Network Transfers", value: "Direct Secure Route", color: "text-blue-400" },
           ].map((stat) => (
             <div key={stat.label} className="bg-surface-elevated/60 rounded-xl p-3 border border-border-thin">
               <p className="text-xs text-muted mb-1">{stat.label}</p>
@@ -146,8 +146,8 @@ export default function DashboardOverview() {
         {featuredCampaigns.length === 0 ? (
           <div className="p-8 rounded-xl border border-dashed border-border-thin bg-surface/10 text-center space-y-2">
             <Rocket className="w-8 h-8 text-muted mx-auto" />
-            <h4 className="text-sm font-bold text-text-primary">No Active DAOs</h4>
-            <p className="text-xs text-muted max-w-sm mx-auto">No DAOs have been launched yet. Be the first to launch a community Creator DAO on Arc!</p>
+            <h4 className="text-sm font-bold text-text-primary">No Active Workspaces</h4>
+            <p className="text-xs text-muted max-w-sm mx-auto">No workspaces have been launched yet. Be the first to launch a community project workspace!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

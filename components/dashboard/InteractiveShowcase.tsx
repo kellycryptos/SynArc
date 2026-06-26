@@ -81,23 +81,23 @@ export function InteractiveShowcase() {
 
   // 4. Copilot Logs State
   const [logs, setLogs] = useState<string[]>([
-    "🚀 Initializing SynArc Autonomous Copilot...",
-    "🔑 Loaded signer address: 0x8b3f...e4d2",
-    "🔍 Scanning active proposals for alignment scores...",
+    "🚀 Initializing SynArc Treasury Guard...",
+    "🔑 Loaded workspace wallet: 0x8b3f...e4d2",
+    "🔍 Scanning active proposals for community sweeps...",
     "🎯 Found proposal SAP-04. Analysis initiated."
   ]);
   const logTerminalRef = useRef<HTMLDivElement>(null);
-
+ 
   useEffect(() => {
     if (activeTab !== "copilot") return;
     
     const additionalLogs = [
-      "📝 NLP Analysis complete: Circle CCTP bridge meets risk criteria.",
-      "⚖️ Alignment score calculated: 94/100 (Strongly aligned).",
+      "📝 Proposal review complete: verified safety criteria.",
+      "⚖️ Check complete: workspace rules fully satisfied.",
       "✔️ Signing transaction payload dynamically...",
       "📡 Broadcasting on-chain signature payload...",
       "🗳️ Vote cast: FOR on proposal SAP-04 (Tx: 0xdf84...c391).",
-      "💸 Sweep trigger: 142.50 USDC reward routed to DAO treasury.",
+      "💸 Sweep trigger: routing 142.50 USDC to workspace treasury.",
       "💤 Sleeping until next block epoch..."
     ];
 
@@ -391,9 +391,9 @@ export function InteractiveShowcase() {
             {activeTab === "copilot" && (
               <div className="space-y-6">
                 <div className="space-y-1 text-left">
-                  <h4 className="text-lg font-bold text-text-primary">AI Copilot Autonomous Guard</h4>
+                  <h4 className="text-lg font-bold text-text-primary">AI Treasury Guard</h4>
                   <p className="text-xs text-text-secondary leading-relaxed">
-                    AI agents co-pilot voting workflows: reading proposals, checking risk alignments, and signing transactions securely.
+                    Automated helpers monitor workspace activities, review proposals against rules, and sweep rewards back to your treasury.
                   </p>
                 </div>
 

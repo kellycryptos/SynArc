@@ -1,0 +1,9 @@
+{
+  "network": "arcTestnet",
+  "chainId": 5042002,
+  "token": "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e",
+  "treasury": "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18",
+  "governor": "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e",
+  "agent": "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D",
+  "timestamp": "2026-06-25T08:13:00Z"
+}

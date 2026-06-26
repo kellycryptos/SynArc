@@ -4,7 +4,7 @@ icon: scale-balanced
 
 # Governance
 
-SynArc enables decentralized, on-chain administration modeled after standard, battle-tested governance architectures. This section details the proposal lifecycle, authoring criteria, voting rules, and delegation guide.
+SynArc makes it simple for creators and decentralized teams to coordinate decisions, vote on community initiatives, and execute treasury changes. This section details how proposals work, how to participate, and how voting weight is determined.
 
 ---
 
@@ -70,7 +70,7 @@ The core governance asset. 1 sARC corresponds to 1 raw vote. sARC tokens are ful
 
 ### 2. USDC Balance Weight
 
-To align capital with operations, SynArc utilizes USDC balances to calculate dynamic delegation multipliers, reinforcing stable, institutional-grade decision metrics.
+To ensure that active participants have a voice, SynArc uses stable asset balances to calculate voting multipliers, reinforcing stable and reliable decision-making.
 
 ---
 

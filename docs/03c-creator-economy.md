@@ -1,37 +1,37 @@
-# Creator Economy & Creator DAOs
-
-SynArc enables creators, developers, and AI agents to launch their own on-chain organizations (Creator DAOs) on Arc, raise capital via USDC nanopayments, and govern funds transparently through community consensus.
+# Project Funding & Workspaces
+ 
+SynArc enables creators, independent teams, and digital organizations to launch their own project workspaces, pool community funds, and govern reserves transparently through consensus.
 
 ---
 
-## What is a Creator DAO?
-
-A Creator DAO is a decentralized organization owned and managed by a creator (human or AI agent) and their community of fans, subscribers, or backers. Instead of traditional platform fees and corporate control, Creator DAOs establish direct financial relationships using blockchain escrows and voting structures.
-
+## What is a Project Workspace?
+ 
+A Project Workspace is a shared environment managed by creators or project teams and supported by their community of backers. Instead of high platform fees and intermediary control, workspaces establish direct relationships using secure escrows and community voting.
+ 
 Key advantages include:
-- **USDC-Native Capital**: Accumulate and manage funding in native USDC without currency fluctuations.
-- **Programmable Releases**: Capital is held in milestone-based smart contracts, released only when deliverables are verified.
-- **Isolated Security**: Each Creator DAO deploys its own independent escrow contract — no shared contract risk.
-- **Agentic Autonomy**: AI co-pilots and autonomous agents can deploy, govern, and participate directly in funding.
+- **Digital Reserve Capital**: Accumulate and manage funding in native stablecoins without currency fluctuations.
+- **Programmable Releases**: Capital is held in milestone-based escrow vaults, released only when deliverables are verified.
+- **Isolated Security**: Each workspace deploys its own independent escrow contract — no shared contract risk.
+- **Automated Assistance**: Automated guards and assistants can help monitor, alert, and govern treasury allocations.
 
 ---
 
-## Launching a Creator DAO
-
-Launching a Creator DAO on SynArc takes less than 2 minutes.
-
+## Launching a Project Workspace
+ 
+Launching a workspace on SynArc takes less than 2 minutes.
+ 
 ### Step 1: Choose Your Template
-Navigate to **Create DAO** in the sidebar. Select from template types:
+Navigate to **Create Workspace** in the sidebar. Select from template types:
 - 🎵 **Music Creator**: For albums, tours, or music videos.
 - 🎨 **Artist**: For commissions, digital art, or physical galleries.
-- 🤖 **AI Agent**: For deploying fully autonomous software agents with programmatic treasuries.
-- 🏗️ **Arc Builder**: For technical software development and ecosystem infrastructure.
-
+- 🤖 **Automated Project**: For starting a project with custom automated treasury rules.
+- 🏗️ **Open Source / Builder**: For software development and ecosystem infrastructure.
+ 
 ### Step 2: Configure Goals & Details
-Set your campaign name, target goal (in USDC), duration, and social tags. Crucially, specify the **milestones** that represent your deliverables. An AI co-pilot can auto-draft your campaign description from your title.
-
+Set your campaign name, target goal (in USDC), duration, and social tags. Crucially, specify the **milestones** that represent your deliverables. An AI assistant can auto-draft your campaign description from your title.
+ 
 ### Step 3: Deploy to Arc Testnet
-Authenticate with your wallet (via Privy/MetaMask/Coinbase). Click **Launch Creator DAO**. This deploys a fresh, independent `SynArcCrowdfund` escrow contract from **your wallet** directly to Arc Testnet.
+Authenticate with your wallet (via Privy/MetaMask/Coinbase). Click **Launch Project Workspace**. This deploys a fresh, independent `SynArcCrowdfund` escrow contract from **your wallet** directly to Arc Testnet.
 
 ### Step 4: Share Your DAO
 After deployment, a success screen shows:
@@ -42,8 +42,8 @@ After deployment, a success screen shows:
 ---
 
 ## Creator Profile Pages
-
-Every Creator DAO has a public profile page at `/creator/[slug]` — accessible without a wallet connection.
+ 
+Every workspace has a public profile page at `/creator/[slug]` — accessible without a wallet connection.
 
 ### Profile Features:
 - **Live On-Chain Metrics**: `totalRaised` and backer count read directly from your escrow contract via `viem`
@@ -60,9 +60,9 @@ Click the **Share** button on any creator profile to:
 
 ---
 
-## USDC Nanopayments ($0.01 and up)
-
-SynArc is optimized for the **nanopayment economy**. With transaction fees on the Arc network near-zero, fans can support creators with amounts as low as **$0.01**.
+## Micro-Funding ($0.01 and up)
+ 
+SynArc is optimized for the **micro-funding economy**. With transaction fees on the Arc network near-zero, fans can support creators with amounts as low as **$0.01**.
 
 ### Preset Donation Buttons
 Each creator profile has preset buttons:
@@ -75,7 +75,7 @@ Each creator profile has preset buttons:
 | Champion | $10.00 |
 | Custom | Any amount |
 
-### How Nanopayments Work
+### How Micro-Funding Works
 1. Connect your wallet (or Privy handles it automatically).
 2. SynArc sends a USDC `transfer()` call to the creator's escrow contract address.
 3. The transaction is confirmed on Arc in seconds.
@@ -86,8 +86,8 @@ Each creator profile has preset buttons:
 ---
 
 ## Creator Leaderboard
-
-Navigate to **/leaderboard** to see a ranked list of all active Creator DAOs.
+ 
+Navigate to **/leaderboard** to see a ranked list of all active workspaces.
 
 ### Leaderboard Filters
 - **📅 Weekly** — campaigns with the most growth in the past 7 days

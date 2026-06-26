@@ -4,15 +4,13 @@ icon: wallet
 
 # Treasury
 
-The SynArc Treasury manages all pool funding, inflow tracking, stablecoin reserves, and programmatic capital deployment. All movements require successful on-chain governance approval — no admin keys exist.
+The SynArc Treasury manages workspace funds, tracks inflows, and handles reserve allocations. Every fund movement is community-approved and fully transparent — there are no admin overrides.
 
 ---
 
-## How the Treasury Works
-
-The SynArc Treasury is a fully on-chain multi-asset vault managed strictly by smart contracts. The treasury can hold multiple stablecoin assets (USDC and EURC), allowing the DAO to operate across major regional reserve currencies.
-
-All capital inflows, allocations, and outflows are tracked inside the immutable ledger, precluding single-point-of-failure vulnerabilities like manual multi-sig overrides.
+The SynArc Treasury is a fully secure workspace vault. The treasury can hold multiple stable digital assets (USDC and EURC), allowing teams to manage reserves across different currencies.
+ 
+All capital inflows, allocations, and outflows are tracked inside a transparent ledger, ensuring full accountability.
 
 ### Treasury Architecture
 
@@ -59,7 +57,7 @@ The SynArc Treasury targets the following capital allocation strategy:
 
 | Allocation | Target % | Purpose |
 | :--- | :--- | :--- |
-| **Liquid Reserves** | 82% | Operating capital in secure, highly liquid multisig vaults |
+| **Liquid Reserves** | 82% | Operating capital in secure, highly liquid workspace vaults |
 | **Yield Generation** | 15% | Conservative yield platforms (e.g. Morpho) to counter inflation |
 | **Ecosystem Liquidity** | 3% | Automated market makers (e.g. ArcDEX) for token and LP stability |
 
@@ -78,13 +76,13 @@ SynArc has **no admin keys**. No founder, member, or developer can withdraw asse
 3. The proposal enters the **TimelockController** buffer (1–2 day delay) — giving the community time to react if something looks wrong.
 4. After the timelock expires, the `execute()` call releases the USDC directly to the target address.
 
-### Creator DAO Milestone Releases
-
-Creator DAOs use a separate but parallel mechanism:
-
-1. Each Creator DAO has its own **isolated `SynArcCrowdfund` escrow contract**.
+### Project Milestone Releases
+ 
+Project workspaces use a separate but parallel mechanism:
+ 
+1. Each workspace has its own **isolated escrow vault**.
 2. Funds are locked until each milestone is approved by the community via on-chain vote.
-3. Upon milestone approval, USDC is released 1:1 directly to the creator/beneficiary wallet.
+3. Upon milestone approval, funds are released directly to the project's wallet.
 4. If a campaign fails to meet its goal or milestone votes are rejected, contributors can **claim a refund**.
 
 ---

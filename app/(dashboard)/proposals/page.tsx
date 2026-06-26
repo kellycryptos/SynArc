@@ -116,7 +116,7 @@ export default function ProposalsPage() {
             <h1 className="text-3xl font-bold tracking-tight">Governance Proposals</h1>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <p className="text-muted text-sm">
-                Review, discuss, and vote on Arc Testnet DAO proposals.
+                Review, discuss, and vote on active proposals for your community.
               </p>
               {/* Voting power pill */}
               {isAuthenticated && totalDisplayPower > 0 && (

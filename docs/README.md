@@ -4,19 +4,19 @@ icon: rocket
 
 # Getting Started
 
-Welcome to **SynArc** — governance and funding infrastructure for the agentic economy. This documentation covers everything from wallet setup to launching your own Creator DAO and integrating autonomous AI agents.
+Welcome to **SynArc** — secure funding and coordination infrastructure for creators, independent teams, and digital organizations. This documentation covers everything from setting up your project workspace to configuring automated treasury rules and coordinating community decisions.
 
 ---
 
 ## What is SynArc?
 
-SynArc is the first multi-DAO governance and funding layer built natively on **Arc** with Circle's full stablecoin stack. It enables creators, AI agents, and decentralized organizations to:
+SynArc provides the tools you need to pool funds, vote on capital releases, and automate treasury management. It enables creators and decentralized teams to:
 
-- 🎨 **Launch Creator DAOs** — one-click on-chain organizations with isolated milestone escrows
-- 💸 **Send & receive USDC nanopayments** — from $0.01 upward, with near-zero fees
-- 🏛️ **Govern on-chain** — proposals, voting, and timelocked treasury disbursements
-- 🤖 **Deploy autonomous AI agents** — register ERC-8004 identities and vote programmatically
-- 🔗 **Integrate via SDK** — `@synarc/agent-sdk` for TypeScript/JavaScript developers
+- 🎨 **Launch Project Workspaces** — Establish a shared home for your project with built-in milestone escrows that protect backer funds.
+- 💸 **Receive Micro-Funding** — Pool contributions of any size with near-zero transaction fees.
+- 🏛️ **Decide Together** — Propose, vote on, and execute decisions collectively using simple on-chain tools.
+- 🤖 **Automate Treasury Rules** — Protect your reserves from sitting idle or losing value by setting up automated assistant routines.
+- 🔗 **Integrate via SDK** — Programmatically coordinate allocations or automate actions using our developer tools.
 
 ---
 
@@ -24,12 +24,12 @@ SynArc is the first multi-DAO governance and funding layer built natively on **A
 
 | Section | What you'll learn |
 | :--- | :--- |
-| [Creator Economy](/docs/creator-economy) | Launch a Creator DAO, nanopayments, profiles, leaderboard |
-| [Agent SDK](/docs/sdk) | Install, quickstart, API reference |
-| [Governance](/docs/governance) | Proposals, voting, delegation |
-| [Treasury](/docs/treasury) | Deposits, fund management, releases |
-| [Smart Contracts](/docs/smart-contracts) | Deployed addresses, security, verification |
-| [Treasury Agent](/docs/ai-agents) | Autonomous rebalancing & monitoring |
+| [Creator Economy](/docs/creator-economy) | Launching workspaces, micro-funding, and profiles |
+| [Agent SDK](/docs/sdk) | Integration guides and developer tools |
+| [Governance](/docs/governance) | Proposals, community voting, and decision-making |
+| [Treasury](/docs/treasury) | Escrows, fund management, and tranches |
+| [Smart Contracts](/docs/smart-contracts) | Contract parameters, security, and verification |
+| [Treasury Agent](/docs/ai-agents) | Automated treasury rules and management |
 | [FAQ](/docs/faq) | Common questions answered |
 
 ---

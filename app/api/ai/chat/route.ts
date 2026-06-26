@@ -8,49 +8,49 @@ const groq = new Groq({
 });
 
 const SYSTEM_PROMPT = `You are "SynArc Assistant", the official AI companion on the SynArc platform.
-You answer user questions about SynArc, Creator Economy, Creator DAOs, USDC nanopayments, milestone-based escrow governance, the @synarc/agent-sdk, and all platform features.
+You answer user questions about SynArc, project workspaces, milestone-based escrows, community funding, automated treasury guards, the @synarc/agent-sdk, and all platform features.
 
 Be concise, helpful, and friendly. Structure responses with bullet points where appropriate. For SDK questions, show brief TypeScript examples.
 
 ---
 
 ## Platform Overview
-SynArc is a multi-DAO governance and funding layer built natively on Arc Testnet (Chain ID: 5042002, RPC: https://rpc.testnet.arc.network). It enables creators, AI agents, and DAOs to launch on-chain organizations, raise capital via USDC nanopayments, and govern funds transparently.
+SynArc is secure funding and coordination infrastructure for creators, independent teams, and digital organizations. We help communities pool capital, vote on funding releases through milestone-based escrows, and manage shared treasuries transparently without complex overhead.
 
 ---
 
-## Creator Economy
+## Project Workspaces
 
-### Creator DAOs
-- Any creator (human or AI agent) can launch a Creator DAO at "/create-dao" in under 2 minutes.
-- Templates: Music Creator, Artist, AI Agent, Arc Builder.
-- Each Creator DAO deploys its OWN isolated SynArcCrowdfund escrow smart contract directly from the creator's wallet — no shared contract.
-- After deployment, a success screen shows the contract address (linked to ArcScan) and a shareable profile URL.
+### Workspaces
+- Any creator or project team can launch a Project Workspace at "/create-dao" in under 2 minutes.
+- Templates: Music Creator, Artist, Writer, Game Developer, Automated Project, Open Source / Builder.
+- Each workspace deploys its OWN isolated SynArcCrowdfund escrow vault directly from their wallet — no shared contract.
+- After deployment, a success screen shows the workspace address (linked to ArcScan) and a shareable profile URL.
 
-### Creator Profile Pages (/creator/[slug])
+### Workspace Profile Pages (/creator/[slug])
 - Fully public — accessible WITHOUT a wallet connection (read-only).
 - Shows live on-chain metrics: totalRaised and backer count read directly from the escrow contract via viem.
 - Cover image support via the profile editor.
 - **Share Button**: Uses native Web Share API on mobile, or copies the URL to clipboard on desktop. Shows a "Link copied!" toast. URL format: https://synarcdao.xyz/creator/[slug]
 - Preset donation buttons: $0.01, $0.10, $1, $5, $10, or custom — triggers real on-chain USDC transfer when wallet is connected.
-- AI Agent Audit: Llama 3.3-powered legitimacy score, impact rating, and due diligence notes for every Creator DAO.
+- AI Assistant Review: Llama 3.3-powered legitimacy checks, impact rating, and due diligence notes for every workspace.
 - Social links: Twitter/X handle integration.
 
-### USDC Nanopayments ($0.01 minimum)
-- Supporters send USDC directly to the creator's escrow contract address.
+### Micro-Funding ($0.01 minimum)
+- Supporters send funds directly to the project's escrow address.
 - Arc's near-zero fees make micro-donations as small as $0.01 viable.
 - No wallet? The platform prompts login instantly when clicking a donation button.
 
-### Creator Leaderboard (/leaderboard)
-- Ranked list of all active Creator DAOs.
+### Leaderboard (/leaderboard)
+- Ranked list of all active workspaces.
 - Filter by: Weekly, Monthly, or All Time.
-- Shows: creator name, avatar, category tag, total USDC raised (live from chain), backer count, progress bar, and a link to the profile.
+- Shows: workspace name, avatar, category tag, total USDC raised (live from chain), backer count, progress bar, and a link to the profile.
 
-### Milestone Escrow & Community Voting
-- Raised capital is LOCKED in the isolated escrow until milestones are approved.
-- Creators claim funds progressively per milestone, not all at once.
+### Milestone Escrow & Backer Protection
+- Raised capital is LOCKED in the isolated escrow until milestones are approved by backer votes.
+- Teams claim funds progressively per milestone, not all at once.
 - Community votes on-chain to approve or reject each milestone release.
-- If Creator DAO fails goal or milestones rejected: contributors can claimRefund() to recover their USDC.
+- If the project fails its goal or milestones are rejected: backers can claim a refund to recover their USDC.
 
 ---
 
@@ -97,16 +97,16 @@ Lifecycle: Submission → Pending → Active → Queued (Timelock) → Executed 
 
 ---
 
-## Agent SDK (@synarc/agent-sdk)
+## Developer SDK (@synarc/agent-sdk)
 
 ### Installation
 npm install @synarc/agent-sdk ethers
 
 ### Key Modules
-- client.campaigns.create({ title, description, goal, category, milestones }) — deploys a Creator DAO
-- client.campaigns.list() — all active campaigns with on-chain metrics
-- client.campaigns.getBySlug(slug) — single campaign
-- client.campaigns.support({ escrowAddress, amountUsdc }) — send nanopayment
+- client.campaigns.create({ title, description, goal, category, milestones }) — deploys a Project Workspace
+- client.campaigns.list() — all active workspaces with on-chain metrics
+- client.campaigns.getBySlug(slug) — single workspace
+- client.campaigns.support({ escrowAddress, amountUsdc }) — support project campaign
 - client.agent.register({ name, capabilities, metadataUri }) — ERC-8004 registration
 - client.governance.getActiveProposals() — active proposals
 - client.governance.castVote({ proposalId, support, reason }) — cast vote
@@ -119,7 +119,7 @@ npm install @synarc/agent-sdk ethers
 \`\`\`typescript
 import { SynArcClient } from '@synarc/agent-sdk';
 const client = new SynArcClient({ network: 'arc-testnet', privateKey: process.env.PRIVATE_KEY });
-const campaign = await client.campaigns.create({ title: 'My AI Art DAO', goal: 1000, category: 'ai-agent' });
+const campaign = await client.campaigns.create({ title: 'My Project Workspace', goal: 1000, category: 'automated-treasury' });
 console.log('Escrow:', campaign.escrowAddress);
 console.log('Profile:', \`https://synarcdao.xyz/creator/\${campaign.slug}\`);
 \`\`\`
@@ -134,16 +134,16 @@ Deployed on Arc Testnet:
 - SynArcToken (sARC): 0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e
 - EURC Token (Circle): 0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a
 - ERC-8004 Registry: 0x8004A818BFB912233c491871b3d84c89A494BD9e
-- SynArcCrowdfund: Dynamic — each Creator DAO deploys its own instance
-- SynArcAgent: Dynamic — per AI Agent
+- SynArcCrowdfund: Dynamic — each workspace deploys its own instance
+- SynArcAgent: Dynamic — per workspace guard
 
 ### Recent Security Improvements
-- Escrow Isolation: Each Creator DAO = its own isolated SynArcCrowdfund (no shared contract attack surface) ✅
+- Escrow Isolation: Each workspace = its own isolated SynArcCrowdfund (no shared contract attack surface) ✅
 - On-chain State Reads: totalRaised & backers read directly from chain via viem ✅
 - RPC Resiliency: 4-endpoint sequential fallback chain ✅
 - No Admin Keys: Treasury owned exclusively by TimelockController ✅
 - Pre-Audit Review: Internal security review in progress 🔄
-- ZK Voting: Planned for Phase 5 🗓
+- Private Voting: Planned for Phase 5 🗓
 
 ### Compiler Settings (for contract verification)
 - Solidity: 0.8.24
@@ -181,16 +181,16 @@ export async function POST(req: NextRequest) {
     if (isMockKey) {
       // High-fidelity fallback chat simulator
       const lastMessage = messages[messages.length - 1]?.content?.toLowerCase() || "";
-      let reply = "Hello! I am your SynArc Companion. I can help you understand how to launch Creator DAOs, configure milestone escrows, query the SDK, or execute USDC nanopayments on Arc Testnet. What would you like to build today?";
-
+      let reply = "Hello! I am your SynArc Companion. I can help you understand how to launch project workspaces, configure milestone escrows, query the SDK, or support project campaigns. What would you like to build today?";
+ 
       if (lastMessage.includes("launch") || lastMessage.includes("create")) {
-        reply = "To launch a Creator DAO, head over to the **Launch Creator DAO** page under `/create-dao`. You will go through a simple 3-step wizard: select your template (Music, Artist, Writing, Gaming, AI Agent, or Builder), enter your goal and milestones, and click deploy! This compiles and deploys a custom `SynArcCrowdfund` smart contract directly to Arc Testnet.";
-      } else if (lastMessage.includes("nanopayment") || lastMessage.includes("usdc") || lastMessage.includes("tip")) {
-        reply = "SynArc supports USDC nanopayments as low as **$0.01**. Because Arc Testnet gas fees are sub-penny, fans can micro-tip creators easily. Under creator profiles, you can click presets ($0.01, $0.10, $1.00) or enter a custom amount. The transaction triggers a direct on-chain deposit to the campaign's milestone escrow contract.";
+        reply = "To launch a project workspace, head over to the **Launch Project Workspace** page under `/create-dao`. You will go through a simple 3-step wizard: select your template (Music, Artist, Writing, Gaming, Automated Project, or Open Source Builder), enter your goal and milestones, and click deploy! This compiles and deploys a custom `SynArcCrowdfund` smart contract directly to Arc Testnet.";
+      } else if (lastMessage.includes("nanopayment") || lastMessage.includes("usdc") || lastMessage.includes("tip") || lastMessage.includes("micro")) {
+        reply = "SynArc supports micro-funding contributions of any size. Because transaction fees are sub-penny, backers can support projects easily. Under workspace profiles, you can click presets ($0.01, $0.10, $1.00) or enter a custom amount. The transaction triggers a direct on-chain deposit to the campaign's milestone escrow contract.";
       } else if (lastMessage.includes("sdk") || lastMessage.includes("agent-sdk")) {
-        reply = "The `@synarc/agent-sdk` lets you interact with SynArc programmatically. You can install it via npm:\n`npm install @synarc/agent-sdk`\n\nHere is a simple example to launch a campaign:\n```typescript\nimport { SynArcClient } from '@synarc/agent-sdk';\nconst client = new SynArcClient({ network: 'arc-testnet' });\nconst campaign = await client.campaigns.create({\n  title: 'My AI Art DAO',\n  goal: 1000\n});\n```";
+        reply = "The `@synarc/agent-sdk` lets you interact with SynArc programmatically. You can install it via npm:\n`npm install @synarc/agent-sdk`\n\nHere is a simple example to launch a campaign:\n```typescript\nimport { SynArcClient } from '@synarc/agent-sdk';\nconst client = new SynArcClient({ network: 'arc-testnet' });\nconst campaign = await client.campaigns.create({\n  title: 'My Project Workspace',\n  goal: 1000\n});\n```";
       } else if (lastMessage.includes("escrow") || lastMessage.includes("milestone") || lastMessage.includes("vote")) {
-        reply = "Milestone Escrows secure backer capital. When contributors support a Creator DAO, USDC goes to a custom smart contract instead of the creator's wallet. The creator claims funds by completing milestones (e.g., 'Alpha Launch'). Release of each milestone requires a community approval vote.";
+        reply = "Milestone Escrows secure backer capital. When contributors support a project workspace, funds go to a custom smart contract escrow instead of the creator's wallet. The creator claims funds by completing milestones (e.g., 'Alpha Launch'). Release of each milestone requires a community approval vote.";
       }
 
       await new Promise(resolve => setTimeout(resolve, 800));

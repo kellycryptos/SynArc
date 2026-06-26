@@ -2,32 +2,32 @@
 icon: robot
 ---
 
-# Autonomous Treasury Agent
+# Automated Treasury Guard
 
-SynArc introduces the **Autonomous Treasury Agent**, a specialized agent designed to monitor treasury allocations, analyze yields across protocols, propose governance actions, and execute cross-chain stablecoin rebalancing autonomously.
+SynArc introduces the **Automated Treasury Guard**, a specialized helper designed to monitor workspace allocations, track treasury rules, propose rebalance options, and execute secure cross-chain transfers when community conditions are met.
 
 ***
 
 ## Overview
 
-Traditional DAO treasuries suffer from slow coordination, requiring manual votes, multisig approvals, and wrapper bridge mechanics that delay rebalances and introduce security risks. 
+Traditional community treasuries often suffer from idle capital, requiring manual oversight, complicated approvals, and risky bridge mechanics that introduce security vulnerabilities. 
 
-The **SynArc Autonomous Treasury Agent** resolves this by operating as a fully programmable governance participant:
-1. **24/7 Monitoring**: Reads real-time yield and reserves on-chain.
-2. **Autonomous Proposals**: Generates professional rebalancing proposals via **Groq Llama 3.3** when yield variances exceed threshold limits.
-3. **CCTP Execution**: Performs fast, slippage-free stablecoin bridging using native **Circle CCTP** once approved by the community.
+The **SynArc Automated Treasury Guard** resolves this by operating under community-approved automation rules:
+1. **24/7 Monitoring**: Reads real-time reserves and alerts coordinators when limits are reached.
+2. **Automated Proposals**: Generates clear rebalancing proposals via an **AI assistant** when yield variances exceed threshold limits.
+3. **Secure Execution**: Performs fast, slippage-free stablecoin transfers using a **direct cross-chain bridge** once approved by the community.
 
 ```
 +--------------------+      Variance      +-----------------------+
-|  On-Chain Yields   |  ===============>  |  Groq Llama 3.3 Agent  |
+|  On-Chain Yields   |  ===============>  |  AI Assistant Guard   |
 |  (USDC/EURC Pools) |                    |  Proposes Rebalance   |
 +--------------------+                    +-----------------------+
                                                       ||
                                                       || Community Votes
                                                       \/
-+--------------------+      Burns /       +-----------------------+
++--------------------+      Direct        +-----------------------+
 | External Chain     |  <===============  | Arc Testnet Governor  |
-| (Minted native)    |      CCTP Mint     | Executes Rebalance    |
+| (Minted native)    |      Transfer      | Executes Rebalance    |
 +--------------------+                    +-----------------------+
 ```
 
@@ -36,16 +36,16 @@ The **SynArc Autonomous Treasury Agent** resolves this by operating as a fully p
 
 ## Deep Circle Integrations
 
-The Autonomous Treasury Agent incorporates three key pillars of the Circle stack:
+The Automated Treasury Guard incorporates three key pillars of safe stablecoin management:
 
-### 1. Circle CCTP (Cross-Chain Transfer Protocol)
-Used for bidirectional stablecoin rebalancing. When a proposal to reallocate funds passes governance, the agent triggers a programmatic transfer using `depositForBurn` on Arc Testnet, polls Circle's Iris API, and mints native USDC on the destination chain without relying on wrapper contracts or external liquidity providers.
+### 1. Direct Cross-Chain Bridge
+Used for bidirectional stablecoin rebalancing. When a proposal to reallocate funds passes governance, the guard triggers a programmatic transfer using `depositForBurn` on Arc Testnet, pulls Circle's Iris API, and mints native USDC on the destination chain without relying on wrapper contracts or external liquidity providers.
 
-### 2. Circle Modular Smart Account Identity
-The agent operates under an **ERC-8004 identity** registered on the Arc Testnet registry at `0x8004A...`. This registry ties the agent's code, ownership, and reputation index (vouched or disavowed by community members) directly to the blockchain. Asset keys are held securely in a modular multisig vault, while execution keys are delegated to the agent's automation scripts.
+### 2. Smart Account Identity
+The guard operates under an **ERC-8004 identity** registered on the Arc Testnet registry at `0x8004A...`. This registry ties the guard's code, ownership, and reputation index (vouched or disavowed by community members) directly to the blockchain. Asset keys are held securely in a modular multisig vault, while execution keys are delegated to the guard's automation scripts.
 
-### 3. Gateway Nanopayments
-Every inference request and transaction analysis run by the agent is paid for using micro-cent USDC transfers (nanopayments) as small as **$0.01**. This ensures that autonomous operations pay for their own computational gas and API costs, preventing treasury drain.
+### 3. Micro-gas Payments
+Every inference request and transaction analysis run by the guard is paid for using micro-cent USDC transfers as small as **$0.01**. This ensures that automated operations pay for their own computational gas and API costs, preventing treasury drain.
 
 ---
 

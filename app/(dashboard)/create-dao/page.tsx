@@ -21,8 +21,8 @@ const TEMPLATES = [
   { icon: "🎨", name: "Artist", desc: "Fund commissions, exhibitions, or collections", category: "art" },
   { icon: "✍️", name: "Writer", desc: "Fund your book, newsletter, or research", category: "writing" },
   { icon: "🎮", name: "Game Developer", desc: "Fund your indie game or mod", category: "gaming" },
-  { icon: "🤖", name: "AI Agent", desc: "Deploy an autonomous agent with treasury", category: "ai-agent" },
-  { icon: "🏗️", name: "Arc Builder", desc: "Fund your Arc ecosystem project", category: "builder" },
+  { icon: "🤖", name: "Automated Project", desc: "Start a project with custom automated treasury rules", category: "ai-agent" },
+  { icon: "🛠️", name: "Open Source / Builder", desc: "Fund your software tools or ecosystem project", category: "builder" },
 ];
 
 const isValidEVMAddress = (addr: string) => {
@@ -382,7 +382,7 @@ export default function CreateDaoPage() {
         await addCampaign({
           title: formData.name,
           description: formData.description,
-          category: selectedTemplate === "ai-agent" ? "AI Agent Fund" : "Creator DAO",
+          category: selectedTemplate === "ai-agent" ? "Automated Treasury" : "Workspace Campaign",
           badge: isAgent ? "AUTONOMOUS_AGENT_FUND" : "HUMAN_CAMPAIGN",
           goal: creatorGoal,
           isAgent,
@@ -436,10 +436,10 @@ export default function CreateDaoPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-subtle pb-6">
         <div>
           <h1 className="text-3xl font-extrabold font-heading text-white tracking-tight flex items-center gap-2">
-            🚀 Launch Creator DAO
+            🚀 Launch Project Workspace
           </h1>
           <p className="text-xs text-text-secondary mt-1">
-            Deploy your creator template and start receiving USDC nanopayments on Arc.
+            Set up your project workspace and enable community funding with near-zero transaction fees.
           </p>
         </div>
         
@@ -779,7 +779,7 @@ export default function CreateDaoPage() {
                 <span className="text-base select-none">🔒</span>
                 <div>
                   <span className="font-bold text-white block mb-0.5">Escrow Security Policy:</span>
-                  Funds raised are locked securely within decentralized milestone escrow smart contracts on Arc. Release triggers are bound cryptographically to community votes.
+                  Funds raised are locked securely in milestone escrows and only released when the community votes to approve your progress.
                 </div>
               </div>
 
@@ -794,7 +794,7 @@ export default function CreateDaoPage() {
                 {launching ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin text-white" />
-                    <span>Deploying smart contract to Arc...</span>
+                    <span>Deploying secure project escrow...</span>
                   </>
                 ) : (
                   <>
@@ -833,15 +833,15 @@ export default function CreateDaoPage() {
               </div>
               
               <div className="space-y-2">
-                <h2 className="text-2xl font-extrabold text-white font-heading">Your Creator DAO has been deployed!</h2>
+                <h2 className="text-2xl font-extrabold text-white font-heading">Your Workspace is Deployed!</h2>
                 <p className="text-sm text-text-secondary">
-                  Your smart contract is live and ready to receive USDC nanopayments on the Arc Testnet.
+                  Your project workspace is live and ready to receive community funding.
                 </p>
               </div>
 
               {/* Deployed Contract Address Info */}
               <div className="p-4 rounded-xl border border-border-thin bg-surface/30 space-y-2 text-left">
-                <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Smart Contract Address (ArcScan)</span>
+                <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">On-Chain Address (ArcScan)</span>
                 <div className="flex items-center justify-between gap-3">
                   <a
                     href={`https://testnet.arcscan.app/address/${newDeployedAddress}`}
@@ -909,7 +909,7 @@ export default function CreateDaoPage() {
       {/* SDK Sponsorship Footer */}
       <div className="pt-6 border-t border-border-thin flex justify-center items-center">
         <p className="text-[10px] text-text-tertiary/60 font-mono tracking-wider">
-          ⚙️ Framework Core Powered by <span className="text-primary font-bold">@synarc/agent-sdk</span>
+          ⚙️ Powered by secure on-chain smart accounts.
         </p>
       </div>
     </div>

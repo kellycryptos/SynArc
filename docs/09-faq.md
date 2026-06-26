@@ -4,7 +4,7 @@ icon: circle-question
 
 # FAQ
 
-This section answers frequently asked questions about the SynArc ecosystem, token metrics, stablecoin integration, Creator DAOs, and security.
+This section answers frequently asked questions about the SynArc ecosystem, token metrics, reserve management, project workspaces, and security.
 
 ---
 
@@ -32,25 +32,25 @@ Visit our Discord server for technical support, or browse our internal documenta
 
 ---
 
-## Creator DAOs & Nanopayments
-
-### 6. What is a Creator DAO?
-
-A Creator DAO is a fully on-chain decentralized organization launched by a creator or AI agent on SynArc. Each Creator DAO deploys its own isolated `SynArcCrowdfund` escrow smart contract, holding backer funds securely until milestones are approved by the community.
-
-### 7. How do I launch a Creator DAO?
-
-Go to **Create DAO** in the sidebar, choose a template (Music, Artist, AI Agent, or Builder), fill in your campaign details and milestones, then click **Launch Creator DAO**. Your wallet will deploy a fresh escrow contract to Arc Testnet. The whole process takes under 2 minutes.
-
+## Workspaces & Micro-Funding
+ 
+### 6. What is a Project Workspace?
+ 
+A Project Workspace is a shared coordination space launched by creators or project teams on SynArc. Each workspace deploys its own isolated escrow vault, holding backer funds securely until milestones are approved by community votes.
+ 
+### 7. How do I launch a Project Workspace?
+ 
+Go to **Create Workspace** in the sidebar, choose a template (Music, Artist, Automated Project, or Builder), fill in your campaign details and milestones, then click **Launch Project Workspace**. Your wallet will deploy a fresh escrow contract to Arc Testnet. The whole process takes under 2 minutes.
+ 
 See the [Creator Economy guide](/docs/creator-economy) for step-by-step instructions.
-
-### 8. How do nanopayments work?
-
-Nanopayments are direct USDC transfers from a supporter's wallet to a creator's escrow contract. Arc's ultra-low fees make payments as small as **$0.01** economically viable. Simply visit a creator's profile, click a preset amount ($1, $5, $10) or enter a custom amount, and confirm the transaction in your wallet.
-
-### 9. Can I browse creator profiles without a wallet?
-
-Yes! Creator profiles, the leaderboard, and all read-only views are fully accessible without connecting a wallet. A wallet is only required to send nanopayments, create a DAO, or vote on milestones.
+ 
+### 8. How does micro-funding work?
+ 
+Micro-funding contributions are direct stablecoin transfers from a supporter's wallet to a project's escrow contract. Arc's ultra-low fees make payments as small as **$0.01** economically viable. Simply visit a project profile, click a preset amount ($1, $5, $10) or enter a custom amount, and confirm the transaction in your wallet.
+ 
+### 9. Can I browse workspaces without a wallet?
+ 
+Yes! Workspace profiles, the leaderboard, and all read-only views are fully accessible without connecting a wallet. A wallet is only required to send micro-funding, create a workspace, or vote on milestones.
 
 ### 10. What happens if a campaign doesn't reach its goal?
 
@@ -63,8 +63,8 @@ Milestone releases require:
 2. A community governance vote — majority FOR votes required.
 3. An on-chain transaction calling `withdrawMilestone(index)` which releases USDC 1:1 to the creator's beneficiary wallet.
 
-### 12. How do I share my Creator DAO profile?
-
+### 12. How do I share my workspace profile?
+ 
 Every creator profile has a canonical URL: `https://synarcdao.xyz/creator/[your-slug]`. Click the **Share** button on your profile to use the native Web Share API (mobile) or copy the link to clipboard (desktop).
 
 ---
@@ -79,9 +79,9 @@ npm install @synarc/agent-sdk ethers
 
 See the full [SDK guide](/docs/sdk) for initialization and quickstart examples.
 
-### 14. Can AI agents launch Creator DAOs programmatically?
-
-Yes! Using `client.campaigns.create()` in the SDK, autonomous agents can deploy Creator DAOs, contribute nanopayments, and read live campaign metrics entirely programmatically.
+### 14. Can developers launch project workspaces programmatically?
+ 
+Yes! Using `client.campaigns.create()` in the SDK, developers can deploy project workspaces, contribute micro-funding, and read live campaign metrics entirely programmatically.
 
 ### 15. What is ERC-8004?
 
@@ -95,9 +95,9 @@ ERC-8004 is the on-chain AI Agent identity standard used by SynArc. Agents regis
 
 No individual controls the treasury. It is owned exclusively by the `TimelockController` smart contract. All disbursements require a successful governance proposal, quorum approval, and a 1–2 day timelock delay before execution.
 
-### 17. Are Creator DAO escrows shared?
-
-No. Every Creator DAO deploys its own completely independent `SynArcCrowdfund` contract from the creator's wallet. There is no shared contract holding multiple creators' funds — eliminating shared-contract attack surfaces.
+### 17. Are project escrows shared?
+ 
+No. Every workspace deploys its own completely independent escrow vault. There is no shared contract holding multiple projects' funds — eliminating shared-contract attack surfaces.
 
 ### 18. How can I verify a Creator DAO escrow contract?
 

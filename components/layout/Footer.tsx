@@ -207,22 +207,20 @@ export function Footer() {
                   SynArc
                 </span>
               </div>
-
+ 
               <p className="text-[15px] leading-[1.7] text-muted/80 max-w-sm">
-                Leveraging Arc&apos;s high-performance infrastructure to power
-                secure governance, delegation, DAO analytics, and treasury
-                coordination.
+                Simplifying funding, governance, and treasury management for creators, independent teams, and digital organizations.
               </p>
-
+ 
               {/* Tagline */}
               <div className="mt-6 inline-flex items-center gap-2 bg-background-primary border border-border text-text-secondary px-3 py-1 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-glow animate-pulse" />
                 <span className="text-[11px] font-medium tracking-wide uppercase">
-                  Built for Creator DAOs on Arc.
+                  Empowering modern creators and decentralized teams.
                 </span>
               </div>
             </motion.div>
-
+ 
             {/* ── Right: Navigation Columns ── */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-10 sm:gap-12 lg:gap-16 lg:flex-shrink-0">
               <FooterColumn title="Product" links={productLinks} />
@@ -231,7 +229,7 @@ export function Footer() {
             </div>
           </div>
         </div>
-
+ 
         {/* ── Bottom Bar ── */}
         <motion.div
           variants={itemVariants}
@@ -248,7 +246,7 @@ export function Footer() {
                 className="inline-flex items-center gap-2 bg-background-primary border border-border text-text-secondary px-3 py-1 rounded-full hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-300 text-xs font-medium"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-cyan-glow animate-pulse" />
-                <span>Built on Arc • Powered by Canteen</span>
+                <span>Built on Arc • Direct Transfer Route</span>
               </a>
 
               {/* ArcLens Badge */}

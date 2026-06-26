@@ -2,9 +2,9 @@
 
 <img src="./public/logo.png" alt="SynArc Logo" width="100" height="100" />
 
-# SynArc DAO
+# SynArc
 
-**SynArc is governance and funding infrastructure for the agentic economy, enabling creators, AI agents, and decentralized organizations to launch on-chain Creator DAOs, raise capital via USDC nanopayments ($0.01 minimum), and coordinate treasuries with milestone-based escrows on Arc.**
+**SynArc is secure funding and coordination infrastructure for creators, independent teams, and digital organizations. We help communities pool capital, vote on funding releases through milestone-based escrows, and manage shared treasuries transparently without complex overhead.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)](https://typescriptlang.org)
@@ -22,19 +22,14 @@
 
 ## 1. Introduction
 
-SynArc is governance and funding infrastructure for the agentic economy, enabling creators, AI agents, and decentralized organizations to launch on-chain Creator DAOs, raise capital via USDC nanopayments ($0.01 minimum), and coordinate treasuries with milestone-based escrows on Arc. The first multi-DAO governance and funding layer built natively on Arc with Circle's full stablecoin stack.
+For modern creators, independent developers, and digital organizations, managing shared funds and coordinating community decisions is often complex, fragmented, and lacks trust. Backers want to ensure their capital is spent responsibly, while creators need frictionless tools to collect support and coordinate with their team.
 
-Designed for decentralized organizations, SynArc provides the full governance and funding lifecycle stack: from template-based Creator DAO launches and off-chain gasless voting to timelocked milestones and on-chain USDC execution.
-
-SynArc is built for the **agentic economy**: a world where DAOs, autonomous agents, and programmable organizations coordinate and fund at scale without compromising operational security or member privacy.
-
-Key features include:
-*   **Creator Economy & Creator DAOs**: One-click template-based DAO launches for artists, developers, writers, and autonomous AI agents.
-*   **USDC Nanopayments ($0.01+)**: Direct micro-tipping and creator support enabled by Arc's low-fee transactions.
-*   **Confidential Governance**: Secure voting mechanisms that protect participant intent and delegate integrity.
-*   **USDC-Native Treasury Coordination**: Real-time management and deployment of stablecoin reserves.
-*   **Milestone Escrow & Backer Protection**: Funds are locked in smart contracts and released progressively upon community vote approval.
-*   **Agentic Economy Alignment**: Native integration pathways for AI agents, multi-sig controls, and autonomous protocols to act as governance participants.
+SynArc solves this by providing a unified platform for community funding and treasury management:
+*   **Milestone-Based Escrow & Backer Protection**: Lock community contributions in secure smart contract vaults that only release funds progressively as milestones are approved by backer votes.
+*   **Frictionless Micro-Funding**: Receive support payments and micro-donations with near-zero transaction fees, making small-scale contributions viable.
+*   **Simple On-Chain Governance**: Propose, vote on, and execute community decisions collectively without needing complex technical setups.
+*   **Automating Treasury Safeguards**: Configure automated rules to protect your treasury from inflation or idle funds, ensuring capital is automatically routed to where it is needed most.
+*   **Open SDK Integration**: Build custom automated rules or connect external applications to govern your shared workspace.
 
 ```
 Proposal Creation ──> Off-Chain Signing ──> On-Chain Queue ──> Treasury Settlement
@@ -44,26 +39,21 @@ Proposal Creation ──> Off-Chain Signing ──> On-Chain Queue ──> Treas
 
 ## 2. Vision
 
-The next generation of decentralized organizations will require more than simple token-weighted voting. They demand:
-
-*   **Confidential governance** — Vote without exposing your position to frontend frontrunning until consensus is reached, preserving market independence.
-*   **USDC-native treasury coordination** — Eliminate currency risk for operational spending by coordinating entirely in stable, programmable capital.
-*   **Programmable organizations** — Automate operational procedures and system parameters using Timelock and modular architecture.
-*   **Agentic economy alignment** — Provide secure APIs, cryptographic delegation, and gasless voting pathways optimized for AI agents and autonomous protocols.
-*   **Arc-native design** — Leverage Arc's high-performance, low-latency execution environment to power responsive, high-fidelity coordination tools.
-
-SynArc is the infrastructure layer that makes this future possible today.
+Modern online teams and creators deserve coordination tools that are secure, transparent, and simple to use. SynArc is designed to solve the primary challenges of decentralized collaboration:
+*   **Capital Protection**: Building backer trust by linking payouts directly to project progress and verified milestones.
+*   **Stablecoin-Native Reserves**: Minimizing price volatility risks by holding and managing treasuries in stable digital assets.
+*   **Rule-Based Automation**: Automating routine treasury sweeps and yield-generating balances based on community-approved rules.
+*   **Frictionless Setup**: Allowing anyone to connect a social account, secure a workspace wallet, and start raising or coordinating funds instantly.
 
 ---
 
 ## 2a. How it Works
 
-SynArc coordinates funding and governance through a simple, four-step lifecycle:
-
-1. **Launch a Creator DAO**: A creator (human or AI agent) deploys a custom, isolated `SynArcCrowdfund` milestone escrow contract directly from their wallet.
-2. **Contribute Nanopayments**: Backers fund the DAO with stable, near-gasless USDC nanopayments ($0.01 minimum) on Arc Testnet.
-3. **Milestone-Based Governance**: Raised funds are locked in the escrow contract and only released as the creator completes milestones and sARC token holders vote to approve them.
-4. **Autonomous Rebalancing**: The Autonomous Treasury Agent monitors reserves, proposes optimal yield allocations, and executes cross-chain stablecoin movements via Circle CCTP.
+SynArc simplifies the funding and governance lifecycle:
+1. **Launch a Project Workspace**: A creator or team launches a workspace and configures milestone-locked funding goals.
+2. **Collect Community Support**: Backers fund the project using low-fee digital dollars, directly supporting the project's milestones.
+3. **Release Funds on Progress**: Raised funds are held in escrow. As milestones are completed, community members vote to approve and release the next tranche of capital.
+4. **Automate Treasury Rules**: The workspace treasury automatically monitors allocations, moving idle reserves to yield accounts or other project addresses based on community-approved thresholds.
 
 ---
 

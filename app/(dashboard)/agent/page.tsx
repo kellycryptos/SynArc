@@ -574,7 +574,7 @@ export default function AgentPage() {
           <div>
             <h3 className="text-sm font-bold text-red-500">Emergency Stop Active</h3>
             <p className="text-xs text-muted mt-1">
-              The Treasury Agent is currently paused on-chain. All autonomous proposal creations, voting, and rebalance activities have been suspended. Only the owner can unpause the agent.
+              The Treasury Guard is currently paused on-chain. All automated sweeps, checks, and transfer activities have been suspended. Only the owner can unpause the guard.
             </p>
           </div>
         </div>
@@ -599,7 +599,7 @@ export default function AgentPage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold font-heading text-text-primary">Treasury Agent</h1>
+              <h1 className="text-2xl font-bold font-heading text-text-primary">Treasury Guard</h1>
               {onChainPaused ? (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-500/20 border border-red-500/30 text-red-500">
                   PAUSED
@@ -607,11 +607,11 @@ export default function AgentPage() {
               ) : (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-primary/20 border border-primary/30 text-primary">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping inline-block" />
-                  LIVE
+                  ACTIVE
                 </span>
               )}
             </div>
-            <p className="text-sm text-muted">Helps monitor and rebalance your treasury capital between Arc and Ethereum.</p>
+            <p className="text-sm text-muted">Helps monitor your treasury capital and automated transfer rules.</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -642,7 +642,7 @@ export default function AgentPage() {
             ) : onChainPaused ? (
               <>
                 <Play className="w-4 h-4" />
-                Resume Agent
+                Resume Guard
               </>
             ) : (
               <>
@@ -651,7 +651,7 @@ export default function AgentPage() {
               </>
             )}
           </motion.button>
-
+ 
           <motion.button
             onClick={runAgent}
             disabled={running || onChainPaused}
@@ -662,7 +662,7 @@ export default function AgentPage() {
             {running ? (
               <><span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />Running...</>
             ) : (
-              <><Play className="w-4 h-4" />Run Agent Now</>
+              <><Play className="w-4 h-4" />Verify Rules Now</>
             )}
           </motion.button>
         </div>
@@ -706,28 +706,28 @@ export default function AgentPage() {
           <GlassCard className="p-5 space-y-4" hover={false}>
             <div className="flex items-center gap-2">
               <BrainCircuit className="w-5 h-5 text-primary" />
-              <h2 className="text-sm font-bold text-text-primary">AI Decision Engine</h2>
-              <span className="ml-auto text-xs text-muted">Groq Llama 3.3 70B</span>
+              <h2 className="text-sm font-bold text-text-primary">Treasury Decision Engine</h2>
+              <span className="ml-auto text-xs text-muted">Rules Active</span>
             </div>
             <div className="space-y-2">
-              <RuleCard condition="USDC > 100" action="Propose CCTP bridge to Ethereum Sepolia" met={usdcAbove100} />
+              <RuleCard condition="USDC > 100" action="Propose secure transfer to Ethereum Sepolia" met={usdcAbove100} />
               <RuleCard condition="USDC < 10" action="Propose emergency funding request" met={usdcBelow10} />
               <RuleCard condition="EURC > 50" action="Propose EURC rebalancing" met={eurcAbove50} />
-              <RuleCard condition="Proposal passes vote" action="Execute CCTP transfer autonomously" met={false} />
+              <RuleCard condition="Proposal passes vote" action="Execute transfer autonomously" met={false} />
             </div>
           </GlassCard>
-
+ 
           {/* Agent Identity */}
           <GlassCard className="p-5 space-y-4" hover={false}>
             <div className="flex items-center gap-2">
               <Wallet className="w-5 h-5 text-primary" />
-              <h2 className="text-sm font-bold text-text-primary">Agent Identity</h2>
+              <h2 className="text-sm font-bold text-text-primary">Workspace Identity</h2>
             </div>
             <div className="space-y-2.5">
               {[
-                { label: "Smart Account", value: "SynArcAgent (Deployed)" },
+                { label: "Smart Account", value: "SynArc Guard (Deployed)" },
                 { label: "Signer / Executor", value: "Server Hot-Wallet EOA" },
-                { label: "AI Model", value: "Groq Llama 3.3 70B" },
+                { label: "AI Assistant", value: "Active" },
                 { label: "Network", value: "Arc Testnet (5042002)" },
                 { label: "Registry", value: "ERC-8004 Registry" },
               ].map((row) => (
@@ -980,12 +980,12 @@ export default function AgentPage() {
           <GlassCard className="p-5 space-y-5 border-primary/30 bg-primary/[0.02] shadow-[0_0_30px_rgba(124,58,237,0.08)]" hover={false}>
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              <h2 className="text-sm font-bold text-text-primary">Live Rebalancer Monitor</h2>
+              <h2 className="text-sm font-bold text-text-primary">Live Treasury Monitor</h2>
               <span className="ml-auto text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30 uppercase tracking-widest animate-pulse">
-                Autonomous
+                Rule-Based
               </span>
             </div>
-
+ 
             {(() => {
               const activeCctp = actions.find(a => a.action === 'bridge_to_ethereum' || a.action === 'vote_for_proposal')
               
@@ -993,11 +993,11 @@ export default function AgentPage() {
                 return (
                   <div className="space-y-4">
                     <p className="text-xs text-muted leading-relaxed">
-                      The Treasury Rebalancer Agent is actively running on the server. It monitors the treasury and executes proposals autonomously on-chain.
+                      The Treasury Guard is actively running on the server. It monitors the treasury and executes rules on-chain when thresholds are met.
                     </p>
                     <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                      <span className="text-xs text-text-secondary font-medium">Status: Idle & Monitoring Treasury</span>
+                      <span className="text-xs text-text-secondary font-medium">Status: Idle & Monitoring Rules</span>
                     </div>
                   </div>
                 )

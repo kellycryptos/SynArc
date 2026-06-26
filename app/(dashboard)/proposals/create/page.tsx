@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React from "react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -403,7 +403,7 @@ export default function CreateProposalPage() {
                     className="space-y-4 pt-4"
                   >
                     <p className="text-xs text-text-tertiary leading-relaxed leading-normal">
-                      Rough idea? Write it down in plain English (e.g. &quot;Grant 10,000 USDC to organize a hackathon next month&quot;), and our AI agent will fully draft the titles, categories, voting parameters, and descriptions!
+                      Rough idea? Write it down in plain English (e.g. &quot;Allocate 2,500 USDC for community marketing materials next month&quot;), and our AI assistant will draft the titles, categories, voting parameters, and descriptions!
                     </p>
 
                     {aiGenError && (

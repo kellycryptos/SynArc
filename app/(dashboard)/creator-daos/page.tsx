@@ -215,10 +215,10 @@ export default function CampaignsPage() {
               <span className="p-2 rounded-xl bg-primary/10 border border-primary/20 text-primary">
                 <Rocket className="w-8 h-8" />
               </span>
-              SynArc Creator DAOs
+              SynArc Workspaces
             </h1>
             <p className="text-muted mt-2 text-sm sm:text-base leading-relaxed">
-              Milestone-locked funding, templates, and governance for humans, developers, and AI agents on Arc.
+              Secure, milestone-based funding and transparent governance templates for creators, independent teams, and digital organizations.
             </p>
           </div>
           <button
@@ -335,9 +335,9 @@ export default function CampaignsPage() {
             <div className="flex gap-2">
               {[
                 { key: "All", label: "All Types" },
-                { key: "Agent", label: "🤖 Autonomous Agent Fund" },
-                { key: "Human", label: "👤 Human Creator DAO" },
-                { key: "EcosystemDAO", label: "🏛 Ecosystem Partner DAO" }
+                { key: "Agent", label: "🤖 Automated Treasuries" },
+                { key: "Human", label: "👤 Creator Workspaces" },
+                { key: "EcosystemDAO", label: "🏛 Community Workspaces" }
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -656,12 +656,12 @@ export default function CampaignsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left relative z-10 pt-4 max-w-4xl mx-auto">
               {[
-                { icon: "💼", title: "Campaign Treasury Wallet", desc: "Independent secure multisigs holding locked collateral", status: "Coming Soon" },
-                { icon: "🏛", title: "Campaign Governance", desc: "Local consensus layers voting on operational changes", status: "Coming Soon" },
-                { icon: "🤖", title: "AI-Managed Allocations", desc: "Yield optimization filters executed dynamically", status: "Coming Soon" },
-                { icon: "🔄", title: "Recurring Milestone Voting", desc: "Continuous streams disbursed based on cycle approvals", status: "Coming Soon" },
-                { icon: "🔗", title: "SubDAO Formation", desc: "Modular framework spawning child organizations on Arc", status: "Planned" },
-                { icon: "🌐", title: "Cross-chain Campaign Funding", desc: "Interoperable stablecoin deposits via Circle CCTP", status: "Planned" }
+                { icon: "💼", title: "Campaign Treasury Wallet", desc: "Independent secure wallets that hold community-backed funds in escrow", status: "Coming Soon" },
+                { icon: "🏛", title: "Campaign Governance", desc: "Simple on-chain voting for community members to decide on fund releases", status: "Coming Soon" },
+                { icon: "🤖", title: "AI-Managed Allocations", desc: "Optional automated treasury management to put idle funds to work", status: "Coming Soon" },
+                { icon: "🔄", title: "Recurring Milestone Voting", desc: "Milestone-based fund releases to protect backer capital", status: "Coming Soon" },
+                { icon: "🔗", title: "SubDAO Formation", desc: "Spawning smaller project groups or sub-teams with local coordination tools", status: "Planned" },
+                { icon: "🌐", title: "Cross-chain Campaign Funding", desc: "Accepting community funding seamlessly from other networks", status: "Planned" }
               ].map((item, idx) => (
                 <div key={idx} className="p-4 rounded-xl border border-border-thin bg-surface/30 space-y-2 flex flex-col justify-between">
                   <div className="space-y-1">
@@ -683,7 +683,7 @@ export default function CampaignsPage() {
             </div>
 
             <p className="text-xs font-bold italic text-purple-300 tracking-wider relative z-10 pt-4">
-              SynArc is community funding infrastructure for digital creators. Built on Arc. Powered by USDC.
+              SynArc provides secure, transparent funding infrastructure for creators and decentralized organizations to build together with their communities.
             </p>
           </GlassCard>
         </div>
