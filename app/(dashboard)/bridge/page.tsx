@@ -47,7 +47,8 @@ const SOURCE_CHAINS = [
     color: "bg-blue-500/10 border-blue-500/20 text-blue-400",
     chainId: 11155111,
     bgClass: "from-blue-500/20 to-transparent",
-    borderClass: "border-blue-500/30"
+    borderClass: "border-blue-500/30",
+    blockExplorerUrl: "https://sepolia.etherscan.io"
   },
   { 
     id: "BASE_SEPOLIA", 
@@ -58,7 +59,8 @@ const SOURCE_CHAINS = [
     color: "bg-blue-600/10 border-blue-600/20 text-blue-500",
     chainId: 84532,
     bgClass: "from-blue-600/20 to-transparent",
-    borderClass: "border-blue-600/30"
+    borderClass: "border-blue-600/30",
+    blockExplorerUrl: "https://sepolia.basescan.org"
   },
   { 
     id: "AVAX_FUJI", 
@@ -69,7 +71,8 @@ const SOURCE_CHAINS = [
     color: "bg-red-500/10 border-red-500/20 text-red-500",
     chainId: 43113,
     bgClass: "from-red-500/20 to-transparent",
-    borderClass: "border-red-500/30"
+    borderClass: "border-red-500/30",
+    blockExplorerUrl: "https://testnet.snowtrace.io"
   },
   { 
     id: "SOL_DEVNET", 
@@ -80,7 +83,8 @@ const SOURCE_CHAINS = [
     color: "bg-purple-500/10 border-purple-500/20 text-purple-400",
     chainId: 103,
     bgClass: "from-purple-500/20 to-transparent",
-    borderClass: "border-purple-500/30"
+    borderClass: "border-purple-500/30",
+    blockExplorerUrl: "https://explorer.solana.com/?cluster=devnet"
   },
 ];
 
@@ -91,7 +95,8 @@ const ARC_CHAIN = {
   color: "bg-amber-500/10 border-amber-500/20 text-amber-500",
   chainId: 5042002,
   bgClass: "from-amber-500/20 to-transparent",
-  borderClass: "border-amber-500/30"
+  borderClass: "border-amber-500/30",
+  blockExplorerUrl: "https://testnet.arcscan.app"
 };
 
 interface BridgeTx {
@@ -104,6 +109,7 @@ interface BridgeTx {
   txHash: string;
   timestamp: string;
   status: "success" | "pending";
+  explorerUrl?: string;
 }
 
 type BridgeProgress = "idle" | "initiating" | "burning" | "minting" | "success" | "error";
@@ -264,7 +270,10 @@ export default function BridgePage() {
             amount: isNaN(amountFinal) ? 0 : amountFinal,
             txHash: primaryTxHash,
             timestamp: new Date().toISOString(),
-            status: "success"
+            status: "success",
+            explorerUrl: direction === "in"
+              ? `${selectedChain.blockExplorerUrl}/tx/${primaryTxHash}`
+              : `https://testnet.arcscan.app/tx/${primaryTxHash}`
           };
           const updated = [newTx, ...prev];
           if (walletAddress) {
@@ -863,7 +872,7 @@ export default function BridgePage() {
                                 Burn Transaction (Origin)
                               </span>
                               <a
-                                href={direction === "in" ? `https://sepolia.etherscan.io/tx/${bridgeState.burnTxHash}` : `https://testnet.arcscan.app/tx/${bridgeState.burnTxHash}`}
+                                href={direction === "in" ? `${selectedChain.blockExplorerUrl}/tx/${bridgeState.burnTxHash}` : `https://testnet.arcscan.app/tx/${bridgeState.burnTxHash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-primary hover:underline font-mono font-bold flex items-center gap-1"
@@ -881,7 +890,7 @@ export default function BridgePage() {
                                 Mint Transaction (Dest)
                               </span>
                               <a
-                                href={direction === "in" ? `https://testnet.arcscan.app/tx/${activeTxHash}` : `https://sepolia.etherscan.io/tx/${activeTxHash}`}
+                                href={direction === "in" ? `https://testnet.arcscan.app/tx/${activeTxHash}` : `${selectedChain.blockExplorerUrl}/tx/${activeTxHash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-primary hover:underline font-mono font-bold flex items-center gap-1"
@@ -1113,7 +1122,7 @@ export default function BridgePage() {
                         </td>
                         <td className="py-3.5 text-right pr-2">
                           <a 
-                            href={tx.sourceChain === "Arc Testnet" ? `https://testnet.arcscan.app/tx/${tx.txHash}` : `https://sepolia.etherscan.io/tx/${tx.txHash}`}
+                            href={tx.explorerUrl || (tx.sourceChain === "Arc Testnet" ? `https://testnet.arcscan.app/tx/${tx.txHash}` : `https://sepolia.etherscan.io/tx/${tx.txHash}`)}
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="text-primary hover:underline font-mono text-[11px] inline-flex items-center gap-1"

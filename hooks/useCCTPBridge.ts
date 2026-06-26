@@ -31,9 +31,9 @@ export const SOURCE_CHAINS = {
     name: "Ethereum Sepolia",
     domain: 0,
     usdcAddress: "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238",
-    tokenMessenger: "0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa",
-    messageTransmitter: "0xe737e5cebeeba77efe34d4aa090756590b1ce275",
-    rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
+    tokenMessenger: "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5",
+    messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
+    rpcUrl: "https://rpc.ankr.com/eth_sepolia",
     icon: "🪙"
   },
   BASE_SEPOLIA: {
@@ -41,8 +41,8 @@ export const SOURCE_CHAINS = {
     name: "Base Sepolia",
     domain: 6,
     usdcAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-    tokenMessenger: "0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa",
-    messageTransmitter: "0xe737e5cebeeba77efe34d4aa090756590b1ce275",
+    tokenMessenger: "0x7865fAfC2db2093669d92c0F33AeEF291086BEFD",
+    messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
     rpcUrl: "https://sepolia.base.org",
     icon: "🔵"
   },
@@ -51,8 +51,8 @@ export const SOURCE_CHAINS = {
     name: "Avalanche Fuji",
     domain: 1,
     usdcAddress: "0x5425890298aed601595a70AB815c96711a31Bc65",
-    tokenMessenger: "0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa",
-    messageTransmitter: "0xe737e5cebeeba77efe34d4aa090756590b1ce275",
+    tokenMessenger: "0xeb08f243E5d3FCFF26A9E38Ae5520A669f4019d0",
+    messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
     rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc",
     icon: "🔺"
   },
@@ -71,7 +71,7 @@ export const SOURCE_CHAINS = {
 const DESTINATION_CHAIN = {
   id: 5042002, // ALWAYS use actual Arc chain ID!
   name: "Arc Testnet",
-  domain: 7,
+  domain: 26,
   tokenMessenger: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
   messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
   rpcUrl: ARC_RPC_URL,
@@ -113,6 +113,68 @@ export interface BridgeState {
   txHash: string;
   burnTxHash?: string;
 }
+
+const CHAIN_RPCS: Record<number, string[]> = {
+  11155111: [
+    "https://rpc.ankr.com/eth_sepolia",
+    "https://ethereum-sepolia-rpc.publicnode.com",
+    "https://eth-sepolia.public.blastapi.io"
+  ],
+  84532: [
+    "https://sepolia.base.org",
+    "https://base-sepolia-rpc.publicnode.com"
+  ],
+  43113: [
+    "https://api.avax-test.network/ext/bc/C/rpc",
+    "https://avalanche-fuji-c-chain-rpc.publicnode.com"
+  ],
+  5042002: ARC_RPC_URLS
+};
+
+const waitForTransactionReceiptResiliently = async (
+  txHash: `0x${string}`,
+  chainObj: any,
+  rpcUrls: string[]
+) => {
+  let lastError: any = null;
+  
+  // We will do up to 3 outer retries
+  for (let attempt = 0; attempt < 3; attempt++) {
+    for (const url of rpcUrls) {
+      try {
+        const client = createPublicClient({
+          chain: chainObj,
+          transport: http(url, {
+            timeout: 15000,
+            retryCount: 2,
+          })
+        });
+
+        // Try direct get first
+        try {
+          const receipt = await client.getTransactionReceipt({ hash: txHash });
+          if (receipt) return receipt;
+        } catch (e) {
+          // not found yet
+        }
+
+        const receipt = await client.waitForTransactionReceipt({
+          hash: txHash,
+          timeout: 25000,
+        });
+        if (receipt) return receipt;
+      } catch (err) {
+        console.warn(`waitForTransactionReceiptResiliently: attempt ${attempt} failed on RPC ${url} for tx ${txHash}:`, err);
+        lastError = err;
+      }
+    }
+    
+    // Wait before next retry
+    await new Promise(resolve => setTimeout(resolve, 3000));
+  }
+
+  throw lastError || new Error(`Failed to wait for transaction receipt for ${txHash}.`);
+};
 
 export function useCCTPBridge() {
   const { walletAddress } = useAuth();
@@ -196,7 +258,7 @@ export function useCCTPBridge() {
     const sourceChainConfig = direction === "in" ? chainConfig : {
       id: 5042002,
       name: "Arc Testnet",
-      domain: 7,
+      domain: 26,
       usdcAddress: "0x3600000000000000000000000000000000000000",
       tokenMessenger: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
       messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
@@ -207,7 +269,7 @@ export function useCCTPBridge() {
     const destChainConfig = direction === "in" ? {
       id: 5042002,
       name: "Arc Testnet",
-      domain: 7,
+      domain: 26,
       usdcAddress: "0x3600000000000000000000000000000000000000",
       tokenMessenger: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
       messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
@@ -303,17 +365,12 @@ export function useCCTPBridge() {
         throw new Error(`USDC Approval rejected by user: ${err?.message || err}`);
       }
 
-      const sourcePublicClient = createPublicClient({
-        chain: targetChainObj,
-        transport: http(sourceChainConfig.rpcUrl, {
-          timeout: 15000,
-          retryCount: 3,
-        })
-      });
-
-      const approveReceipt = await sourcePublicClient.waitForTransactionReceipt({
-        hash: approveTxHash as `0x${string}`
-      });
+      const sourceRpcs = CHAIN_RPCS[sourceChainConfig.id] || [sourceChainConfig.rpcUrl];
+      const approveReceipt = await waitForTransactionReceiptResiliently(
+        approveTxHash as `0x${string}`,
+        targetChainObj,
+        sourceRpcs
+      );
 
       if (approveReceipt.status === "reverted") {
         throw new Error("USDC approval transaction reverted on-chain. Please verify gas fees and balances.");
@@ -376,9 +433,11 @@ export function useCCTPBridge() {
       }
 
       // Wait for burn confirmation to parse events
-      const burnReceipt = await sourcePublicClient.waitForTransactionReceipt({
-        hash: burnTxHash as `0x${string}`
-      });
+      const burnReceipt = await waitForTransactionReceiptResiliently(
+        burnTxHash as `0x${string}`,
+        targetChainObj,
+        sourceRpcs
+      );
 
       if (burnReceipt.status === "reverted") {
         throw new Error("Burn transaction reverted on-chain. Please check your USDC balance and try again.");
@@ -450,24 +509,42 @@ export function useCCTPBridge() {
       let attestation: string | null = null;
       let apiMessageBytes: string | null = null;
 
-      // Poll every 5 seconds until attestation signature is ready (limit to 60 polls = 5 mins)
+      // Poll every 5-10 seconds until attestation signature is ready (limit to 120 polls = ~10-15 mins)
       let pollCount = 0;
-      while (!attestation && pollCount < 60) {
+      let delayMs = 5000;
+      while (!attestation && pollCount < 120) {
         try {
-          await new Promise(resolve => setTimeout(resolve, 5000));
+          await new Promise(resolve => setTimeout(resolve, delayMs));
           pollCount++;
           const response = await fetch(attestationUrl);
           
+          if (response.status === 429) {
+            console.warn("Circle attestation API rate limited (429). Backing off...");
+            delayMs = Math.min(delayMs * 1.5, 30000); // Backoff up to 30 seconds
+            continue;
+          }
+          
+          // Reset delay on successful check
+          delayMs = 5000;
+
           if (response.ok) {
             const data = await response.json();
             if (data.status === "complete") {
               attestation = data.attestation;
               apiMessageBytes = data.messageBytes;
               break;
+            } else if (data.status === "failed_to_sign") {
+              console.error("Circle attestation failed to sign message:", data);
+              throw new Error("Circle attestation service failed to sign the message. Please contact Circle support.");
             }
+          } else {
+            console.warn(`Circle attestation API returned status: ${response.status}`);
           }
-        } catch (pollErr) {
+        } catch (pollErr: any) {
           console.error("Circle attestation polling error:", pollErr);
+          if (pollErr.message && pollErr.message.includes("failed to sign")) {
+            throw pollErr;
+          }
         }
       }
 
@@ -478,7 +555,7 @@ export function useCCTPBridge() {
       }
 
       if (!attestation) {
-        throw new Error("Circle attestation polling timed out (5 minutes elapsed). The transfer is still processing; you can claim it later using the attestation.");
+        throw new Error("Circle attestation polling timed out (10 minutes elapsed). The transfer is still processing; you can claim it later using the attestation.");
       }
 
       const finalMessageBytes = (apiMessageBytes || messageBytes) as `0x${string}`;
@@ -502,7 +579,7 @@ export function useCCTPBridge() {
                 {
                   chainId: "0x4cef52", // 5042002 hex
                   chainName: destChainConfig.name,
-                  rpcUrls: [destChainConfig.rpcUrl],
+                  rpcUrls: ARC_RPC_URLS,
                   nativeCurrency: {
                     name: "USD Coin",
                     symbol: "USDC",
@@ -549,17 +626,12 @@ export function useCCTPBridge() {
       }
 
       // Wait for mint transaction confirmation
-      const destPublicClient = createPublicClient({
-        chain: EVM_BRIDGE_CHAINS[destChainConfig.id],
-        transport: http(destChainConfig.rpcUrl, {
-          timeout: 15000,
-          retryCount: 3,
-        })
-      });
-
-      const mintReceipt = await destPublicClient.waitForTransactionReceipt({
-        hash: mintTxHash as `0x${string}`
-      });
+      const destRpcs = CHAIN_RPCS[destChainConfig.id] || [destChainConfig.rpcUrl];
+      const mintReceipt = await waitForTransactionReceiptResiliently(
+        mintTxHash as `0x${string}`,
+        EVM_BRIDGE_CHAINS[destChainConfig.id],
+        destRpcs
+      );
 
       if (mintReceipt.status === "reverted") {
         throw new Error("Minting transaction reverted on-chain. Please verify gas fees and try again.");
