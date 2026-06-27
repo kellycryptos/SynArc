@@ -7,7 +7,9 @@ import {
   Bot, Zap, Activity, Play, RotateCw, ExternalLink,
   BrainCircuit, Coins, ArrowRight, CheckCircle, XCircle,
   Clock, AlertTriangle, Shield, Cpu, Wallet, ChevronRight,
-  TrendingUp, ArrowLeftRight, CreditCard, Plus, Users, X, Check
+  TrendingUp, ArrowLeftRight, CreditCard, Plus, Users, X, Check,
+  Calendar, DollarSign, Percent, Globe, BarChart2, BellRing,
+  Lock, Layers, TrendingDown, Repeat, Eye, ChevronDown
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -102,6 +104,16 @@ export default function AgentPage() {
   const [withdrawalRecipient, setWithdrawalRecipient] = useState<string>("");
   const [withdrawalAmount, setWithdrawalAmount] = useState<string>("");
   const [isQueueingWithdrawal, setIsQueueingWithdrawal] = useState<boolean>(false);
+
+  // ── Auto Payments State ──────────────────────────────────────────────────
+  const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
+  const [paymentForm, setPaymentForm] = useState({ recipient: "", label: "", amount: "", frequency: "monthly", asset: "USDC" });
+  const [scheduledPayments, setScheduledPayments] = useState([
+    { id: 1, label: "Creator Payouts",    recipient: "0x4A2b...3f9E", amount: 25,   asset: "USDC", frequency: "weekly",   status: "scheduled", nextRun: "Jul 4, 2026" },
+    { id: 2, label: "Team Payroll",       recipient: "0x9C1d...7a2B", amount: 150,  asset: "USDC", frequency: "monthly",  status: "scheduled", nextRun: "Jul 1, 2026" },
+    { id: 3, label: "Protocol Fee Rebate",recipient: "0xF3e8...0c4D", amount: 5,    asset: "EURC", frequency: "weekly",   status: "paused",    nextRun: "—" },
+  ]);
+  const [isSavingPayment, setIsSavingPayment] = useState(false);
 
   const fetchOnChainState = useCallback(async () => {
     setOnChainLoading(true);
@@ -563,6 +575,46 @@ export default function AgentPage() {
   const usdcAbove100 = (treasury?.usdc || 0) > 100;
   const usdcBelow10 = (treasury?.usdc || 0) < 10;
   const eurcAbove50 = (treasury?.eurc || 0) > 50;
+
+  // ── Risk Score computation ────────────────────────────────────────────────
+  const riskSignals = useMemo(() => {
+    const usdc = demoUSDCBalance !== null ? demoUSDCBalance : (treasury?.usdc || 0);
+    const signals: { label: string; severity: "low" | "medium" | "high"; active: boolean; icon: any }[] = [
+      {
+        label: "Low Liquidity (USDC < 10)",
+        severity: "high",
+        active: usdc < 10,
+        icon: TrendingDown,
+      },
+      {
+        label: "Agent Emergency Stop Active",
+        severity: "high",
+        active: onChainPaused,
+        icon: XCircle,
+      },
+      {
+        label: "Large Outflow Detected (>80% of balance)",
+        severity: "medium",
+        active: actions.some(a => a.usdcAmount && usdc > 0 && (a.usdcAmount / (usdc + (a.usdcAmount || 0))) > 0.8),
+        icon: AlertTriangle,
+      },
+      {
+        label: "Agent Inactivity (>6 hours)",
+        severity: "low",
+        active: actions.length > 0
+          ? (Date.now() - new Date(actions[0].timestamp).getTime()) > 6 * 3600 * 1000
+          : false,
+        icon: Clock,
+      },
+    ];
+    return signals;
+  }, [treasury, demoUSDCBalance, onChainPaused, actions]);
+
+  const riskScore = useMemo(() => {
+    const weights = { high: 40, medium: 20, low: 10 };
+    const score = riskSignals.reduce((acc, s) => s.active ? acc + weights[s.severity] : acc, 0);
+    return Math.min(score, 100);
+  }, [riskSignals]);
 
   return (
     <div className="space-y-8 animate-fade-in-up">
@@ -1119,6 +1171,285 @@ export default function AgentPage() {
             </div>
           </GlassCard>
 
+          {/* ════ AUTO PAYMENTS ════════════════════════════════════════════ */}
+          <GlassCard className="p-5 space-y-5" hover={false}>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-emerald-400" />
+              <h2 className="text-sm font-bold text-text-primary">Auto Payments</h2>
+              <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/25 text-emerald-400">LIVE</span>
+            </div>
+
+            {/* Summary stats */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Scheduled / Mo", value: `${scheduledPayments.filter(p => p.status === "scheduled").reduce((s, p) => s + p.amount, 0)} USDC` },
+                { label: "Next Payout",   value: "Jul 1, 2026" },
+                { label: "Recipients",    value: scheduledPayments.length.toString() },
+              ].map(stat => (
+                <div key={stat.label} className="text-center p-2.5 rounded-xl bg-surface-elevated/40 border border-border-thin">
+                  <p className="text-[10px] text-muted">{stat.label}</p>
+                  <p className="text-sm font-bold text-emerald-400 mt-0.5">{stat.value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Payment schedule table */}
+            <div className="overflow-x-auto rounded-xl border border-border-thin">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border-thin text-text-tertiary text-[10px] uppercase tracking-wider bg-surface-elevated/30">
+                    <th className="py-2.5 pl-3 font-bold">Label</th>
+                    <th className="py-2.5 font-bold">Recipient</th>
+                    <th className="py-2.5 font-bold">Amount</th>
+                    <th className="py-2.5 font-bold">Frequency</th>
+                    <th className="py-2.5 font-bold">Next Run</th>
+                    <th className="py-2.5 pr-3 font-bold text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="text-xs text-text-secondary">
+                  {scheduledPayments.map(p => (
+                    <tr key={p.id} className="border-b border-border-thin/50 hover:bg-surface-elevated/30 transition-colors">
+                      <td className="py-3 pl-3 font-medium text-text-primary">{p.label}</td>
+                      <td className="py-3 font-mono text-[10px] text-muted">{p.recipient}</td>
+                      <td className="py-3 font-bold text-white">{p.amount} <span className="text-muted font-normal">{p.asset}</span></td>
+                      <td className="py-3 capitalize text-muted">{p.frequency}</td>
+                      <td className="py-3 text-muted">{p.nextRun}</td>
+                      <td className="py-3 pr-3 text-right">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${
+                          p.status === "scheduled" ? "bg-emerald-500/15 border-emerald-500/25 text-emerald-400" :
+                          p.status === "paused"    ? "bg-amber-500/15 border-amber-500/25 text-amber-400" :
+                                                     "bg-blue-500/15 border-blue-500/25 text-blue-400"
+                        }`}>
+                          {p.status.toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <button
+              onClick={() => { setPaymentForm({ recipient: "", label: "", amount: "", frequency: "monthly", asset: "USDC" }); setShowPaymentModal(true); }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold hover:bg-emerald-600/30 transition-all cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Schedule New Payment
+            </button>
+          </GlassCard>
+
+          {/* ════ AUTO YIELD FARMING ══════════════════════════════════════════ */}
+          <GlassCard className="p-5 space-y-5 opacity-90" hover={false}>
+            <div className="flex items-center gap-2">
+              <Percent className="w-5 h-5 text-violet-400" />
+              <h2 className="text-sm font-bold text-text-primary">Auto Yield Farming</h2>
+              <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-violet-500/15 border border-violet-500/25 text-violet-400 animate-pulse">COMING SOON</span>
+            </div>
+
+            <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl flex items-start gap-3">
+              <div className="p-2 bg-violet-500/15 rounded-lg border border-violet-500/20 shrink-0">
+                <Layers className="w-4 h-4 text-violet-400" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-text-primary">Idle Capital</p>
+                <p className="text-xs text-muted mt-0.5">
+                  {((demoUSDCBalance ?? treasury?.usdc ?? 0)).toFixed(2)} USDC sitting idle — potential annual yield at 3–4% APY
+                </p>
+              </div>
+              <div className="ml-auto text-right shrink-0">
+                <p className="text-sm font-bold text-violet-400">
+                  ~{((demoUSDCBalance ?? treasury?.usdc ?? 0) * 0.035).toFixed(2)}
+                </p>
+                <p className="text-[10px] text-muted">est. / year</p>
+              </div>
+            </div>
+
+            {/* Strategy cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                { name: "Aave USDC",    apy: 3.2, color: "text-blue-400",   bg: "bg-blue-500/10",   border: "border-blue-500/20",   logo: "A" },
+                { name: "Compound",     apy: 2.9, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", logo: "C" },
+                { name: "Morpho Blue",  apy: 4.1, color: "text-violet-400",  bg: "bg-violet-500/10",  border: "border-violet-500/20",  logo: "M" },
+              ].map(s => (
+                <div key={s.name} className={`relative p-3.5 rounded-xl border ${s.border} ${s.bg} flex flex-col gap-2`}>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-7 h-7 rounded-lg ${s.bg} border ${s.border} flex items-center justify-center text-xs font-black ${s.color}`}>{s.logo}</div>
+                    <div>
+                      <p className="text-xs font-bold text-text-primary">{s.name}</p>
+                      <p className={`text-lg font-black ${s.color}`}>{s.apy}%</p>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-muted">APY (current estimate)</p>
+                  <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[9px] font-bold bg-surface-elevated border border-border-thin text-muted">
+                    SOON
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="relative">
+              <button disabled className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600/10 border border-violet-500/20 text-violet-400/50 text-xs font-bold cursor-not-allowed">
+                <Lock className="w-3.5 h-3.5" />
+                Enable Auto-Yield — Coming Soon
+              </button>
+            </div>
+          </GlassCard>
+
+          {/* ════ RISK MONITORING ═════════════════════════════════════════════ */}
+          <GlassCard className={`p-5 space-y-5 ${ riskScore >= 40 ? "border-red-500/30 bg-red-500/[0.02]" : riskScore >= 20 ? "border-amber-500/30 bg-amber-500/[0.02]" : "border-emerald-500/20" }`} hover={false}>
+            <div className="flex items-center gap-2">
+              <BellRing className={`w-5 h-5 ${ riskScore >= 40 ? "text-red-400" : riskScore >= 20 ? "text-amber-400" : "text-emerald-400" }`} />
+              <h2 className="text-sm font-bold text-text-primary">Risk Monitoring &amp; Alerts</h2>
+              <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+                riskScore >= 40 ? "bg-red-500/15 border-red-500/25 text-red-400 animate-pulse" :
+                riskScore >= 20 ? "bg-amber-500/15 border-amber-500/25 text-amber-400" :
+                                  "bg-emerald-500/15 border-emerald-500/25 text-emerald-400"
+              }`}>
+                {riskScore >= 40 ? "HIGH RISK" : riskScore >= 20 ? "MEDIUM" : "ALL CLEAR"}
+              </span>
+            </div>
+
+            {/* Risk Score Gauge */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted font-medium">Risk Score</span>
+                <span className={`font-black text-lg ${ riskScore >= 40 ? "text-red-400" : riskScore >= 20 ? "text-amber-400" : "text-emerald-400" }`}>
+                  {riskScore}<span className="text-xs font-normal text-muted">/100</span>
+                </span>
+              </div>
+              <div className="h-2.5 w-full rounded-full bg-surface-elevated border border-border-thin overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${riskScore}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className={`h-full rounded-full ${
+                    riskScore >= 40 ? "bg-gradient-to-r from-red-600 to-red-400" :
+                    riskScore >= 20 ? "bg-gradient-to-r from-amber-600 to-amber-400" :
+                                      "bg-gradient-to-r from-emerald-600 to-emerald-400"
+                  }`}
+                />
+              </div>
+            </div>
+
+            {/* Signal rows */}
+            <div className="space-y-2">
+              {riskSignals.map((signal, i) => {
+                const Icon = signal.icon;
+                return (
+                  <div key={i} className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all ${
+                    signal.active
+                      ? signal.severity === "high"   ? "border-red-500/30 bg-red-500/10"
+                      : signal.severity === "medium" ? "border-amber-500/30 bg-amber-500/10"
+                      :                                "border-yellow-500/30 bg-yellow-500/10"
+                      : "border-border-thin bg-surface-elevated/30"
+                  }`}>
+                    <div className={`p-1.5 rounded-lg shrink-0 ${
+                      signal.active
+                        ? signal.severity === "high"   ? "bg-red-500/20"
+                        : signal.severity === "medium" ? "bg-amber-500/20"
+                        :                                "bg-yellow-500/20"
+                        : "bg-surface-elevated"
+                    }`}>
+                      <Icon className={`w-3.5 h-3.5 ${
+                        signal.active
+                          ? signal.severity === "high"   ? "text-red-400"
+                          : signal.severity === "medium" ? "text-amber-400"
+                          :                                "text-yellow-400"
+                          : "text-muted"
+                      }`} />
+                    </div>
+                    <p className={`text-xs flex-1 ${ signal.active ? "text-text-primary font-semibold" : "text-muted" }`}>
+                      {signal.label}
+                    </p>
+                    <span className={`text-[10px] font-black px-1.5 py-0.5 rounded border ${
+                      signal.active
+                        ? signal.severity === "high"   ? "bg-red-500/20 border-red-500/30 text-red-400"
+                        : signal.severity === "medium" ? "bg-amber-500/20 border-amber-500/30 text-amber-400"
+                        :                                "bg-yellow-500/20 border-yellow-500/30 text-yellow-400"
+                        : "bg-surface-elevated border-border-thin text-muted"
+                    }`}>
+                      {signal.active ? "ALERT" : "OK"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-3 pt-1 border-t border-border-thin">
+              <div className="relative flex-1">
+                <button disabled className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border-thin bg-surface-elevated/40 text-xs font-bold text-muted cursor-not-allowed">
+                  <BellRing className="w-3.5 h-3.5" />
+                  Alert Settings
+                  <span className="ml-auto text-[9px] px-1 py-0.5 rounded bg-surface-elevated border border-border-thin">SOON</span>
+                </button>
+              </div>
+              <button
+                onClick={() => { fetchAgentState(); fetchOnChainState(); }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border-thin bg-surface-elevated/40 text-xs font-bold text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-all cursor-pointer"
+              >
+                <RotateCw className="w-3.5 h-3.5" />
+                Refresh
+              </button>
+            </div>
+          </GlassCard>
+
+          {/* ════ MULTI-CHAIN AUTO SWEEP ══════════════════════════════════════ */}
+          <GlassCard className="p-5 space-y-5 opacity-90" hover={false}>
+            <div className="flex items-center gap-2">
+              <Globe className="w-5 h-5 text-blue-400" />
+              <h2 className="text-sm font-bold text-text-primary">Multi-Chain Auto Sweep</h2>
+              <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500/15 border border-blue-500/25 text-blue-400 animate-pulse">COMING SOON</span>
+            </div>
+
+            <p className="text-xs text-muted leading-relaxed">
+              Automatically detects and sweeps incoming USDC from bridge contracts into the DAO treasury. Eliminates manual token collection across chains.
+            </p>
+
+            {/* Visual chain map */}
+            <div className="flex items-center justify-between gap-2 p-4 bg-surface-elevated/40 border border-border-thin rounded-2xl">
+              {[
+                { label: "Ethereum Sepolia", emoji: "🪙", color: "border-blue-500/30 bg-blue-500/10" },
+                { label: "Arc Testnet",      emoji: "⚡", color: "border-primary/30 bg-primary/10" },
+                { label: "DAO Treasury",     emoji: "🏛️",  color: "border-emerald-500/30 bg-emerald-500/10" },
+              ].map((chain, i) => (
+                <div key={chain.label} className="flex flex-col items-center gap-1.5">
+                  <div className={`w-12 h-12 rounded-xl border ${chain.color} flex items-center justify-center text-xl`}>
+                    {chain.emoji}
+                  </div>
+                  <span className="text-[10px] text-muted text-center font-medium">{chain.label}</span>
+                  {i < 2 && (
+                    <ArrowRight className="w-4 h-4 text-muted absolute" style={{ left: "100%", top: "30%" }} />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Supported chains */}
+            <div className="space-y-2">
+              <p className="text-[10px] text-muted font-bold uppercase tracking-wider">Planned Chains</p>
+              {[
+                { name: "Ethereum Mainnet",  status: "planned" },
+                { name: "Base",              status: "planned" },
+                { name: "Arbitrum One",      status: "planned" },
+                { name: "Arc Testnet",       status: "live" },
+              ].map(c => (
+                <div key={c.name} className="flex items-center justify-between text-xs py-1.5 border-b border-border-thin/50 last:border-0">
+                  <span className="text-text-secondary font-medium">{c.name}</span>
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+                    c.status === "live" ? "bg-emerald-500/15 border-emerald-500/25 text-emerald-400" : "bg-surface-elevated border-border-thin text-muted"
+                  }`}>
+                    {c.status === "live" ? "LIVE" : "PLANNED"}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <button disabled className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-400/50 text-xs font-bold cursor-not-allowed">
+              <Lock className="w-3.5 h-3.5" />
+              Enable Auto-Sweep — Coming Soon
+            </button>
+          </GlassCard>
+
           {/* Agent Queued Withdrawals Section */}
           {pendingAgentWithdrawals.length > 0 && (
             <GlassCard className="p-5 border border-warning/20 bg-warning/[0.01]">
@@ -1349,6 +1680,135 @@ export default function AgentPage() {
                     className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-black hover:bg-primary-glow text-sm font-bold transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {isQueueingWithdrawal ? "Queueing..." : "Queue Withdrawal"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Auto Payments Modal ───────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showPaymentModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
+            >
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="absolute top-4 right-4 text-muted hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-emerald-400" />
+                Schedule Auto Payment
+              </h3>
+              <p className="text-xs text-muted mb-5">Create a recurring USDC or EURC payment. Payments execute automatically when conditions are met.</p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted mb-1.5">Payment Label</label>
+                  <input
+                    type="text"
+                    value={paymentForm.label}
+                    onChange={e => setPaymentForm(f => ({ ...f, label: e.target.value }))}
+                    placeholder="e.g. Creator Milestone #3"
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted mb-1.5">Recipient Address</label>
+                  <input
+                    type="text"
+                    value={paymentForm.recipient}
+                    onChange={e => setPaymentForm(f => ({ ...f, recipient: e.target.value }))}
+                    placeholder="0x..."
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500/50 font-mono"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-muted mb-1.5">Amount</label>
+                    <input
+                      type="number"
+                      value={paymentForm.amount}
+                      onChange={e => setPaymentForm(f => ({ ...f, amount: e.target.value }))}
+                      placeholder="0.00"
+                      className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500/50 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-muted mb-1.5">Asset</label>
+                    <select
+                      value={paymentForm.asset}
+                      onChange={e => setPaymentForm(f => ({ ...f, asset: e.target.value }))}
+                      className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500/50"
+                    >
+                      <option value="USDC">USDC</option>
+                      <option value="EURC">EURC</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted mb-1.5">Frequency</label>
+                  <select
+                    value={paymentForm.frequency}
+                    onChange={e => setPaymentForm(f => ({ ...f, frequency: e.target.value }))}
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500/50"
+                  >
+                    <option value="one-time">One-time</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                  </select>
+                </div>
+
+                <div className="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-xl flex items-start gap-2.5">
+                  <Calendar className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <p className="text-[10px] text-muted leading-relaxed">
+                    Payments are queued on-chain and subject to the 24h timelock for security. The agent will execute automatically when the timelock expires.
+                  </p>
+                </div>
+
+                <div className="flex gap-3 pt-1">
+                  <button
+                    onClick={() => setShowPaymentModal(false)}
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-white transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    disabled={isSavingPayment || !paymentForm.recipient || !paymentForm.amount || !paymentForm.label}
+                    onClick={() => {
+                      if (!paymentForm.recipient || !paymentForm.amount || !paymentForm.label) return;
+                      setIsSavingPayment(true);
+                      setTimeout(() => {
+                        const nextRunMap: Record<string, string> = { "weekly": "Jul 4, 2026", "monthly": "Jul 1, 2026", "quarterly": "Oct 1, 2026", "one-time": "Pending" };
+                        setScheduledPayments(prev => [...prev, {
+                          id: prev.length + 1,
+                          label: paymentForm.label,
+                          recipient: `${paymentForm.recipient.slice(0,6)}...${paymentForm.recipient.slice(-4)}`,
+                          amount: parseFloat(paymentForm.amount),
+                          asset: paymentForm.asset,
+                          frequency: paymentForm.frequency,
+                          status: "scheduled",
+                          nextRun: nextRunMap[paymentForm.frequency] ?? "Pending",
+                        }]);
+                        setIsSavingPayment(false);
+                        setShowPaymentModal(false);
+                      }, 1000);
+                    }}
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 text-sm font-bold transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                  >
+                    {isSavingPayment ? "Scheduling..." : "Schedule Payment"}
                   </button>
                 </div>
               </div>
