@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import { useSwitchChain, useAccount, useConfig } from "wagmi";
-import { toast } from "react-hot-toast";
+import { useSwitchChain, useAccount } from "wagmi";
 import {
   createPublicClient,
+  createWalletClient,
+  custom,
   http,
   fallback,
   parseAbi,
@@ -23,8 +24,6 @@ import { useAuth } from "@/hooks/auth/useAuth";
 
 // ============================================================
 // CCTP V2 Contract Addresses (Circle Official — June 2026)
-// Source: https://developers.circle.com/cctp/docs/supported-domains
-// ALL testnet chains now use CCTP V2 with these same addresses.
 // ============================================================
 const CCTP_TOKEN_MESSENGER_V2  = "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA";
 const CCTP_MSG_TRANSMITTER_V2  = "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275";
@@ -33,54 +32,69 @@ export const SOURCE_CHAINS = {
   ETH_SEPOLIA: {
     id: 11155111,
     name: "Ethereum Sepolia",
+    bridgeKitId: "Ethereum_Sepolia" as const,
     domain: 0,
     usdcAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
     tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
     messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
-    rpcUrl: "https://rpc.ankr.com/eth_sepolia",
+    rpcUrls: [
+      "https://rpc.ankr.com/eth_sepolia",
+      "https://ethereum-sepolia-rpc.publicnode.com",
+      "https://eth-sepolia.public.blastapi.io",
+    ],
     icon: "🪙"
   },
   BASE_SEPOLIA: {
     id: 84532,
     name: "Base Sepolia",
+    bridgeKitId: "Base_Sepolia" as const,
     domain: 6,
     usdcAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
     tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
     messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
-    rpcUrl: "https://sepolia.base.org",
+    rpcUrls: [
+      "https://sepolia.base.org",
+      "https://base-sepolia-rpc.publicnode.com",
+    ],
     icon: "🔵"
   },
   AVAX_FUJI: {
     id: 43113,
     name: "Avalanche Fuji",
+    bridgeKitId: "Avalanche_Fuji" as const,
     domain: 1,
     usdcAddress: "0x5425890298aed601595a70AB815c96711a31Bc65",
     tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
     messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
-    rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc",
+    rpcUrls: [
+      "https://api.avax-test.network/ext/bc/C/rpc",
+      "https://avalanche-fuji-c-chain-rpc.publicnode.com",
+    ],
     icon: "🔺"
   },
   SOL_DEVNET: {
-    id: 103, // Internal Solana identifier (mock)
+    id: 103,
     name: "Solana Devnet",
+    bridgeKitId: "Solana_Devnet" as const,
     domain: 5,
     usdcAddress: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
     tokenMessenger: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
     messageTransmitter: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
-    rpcUrl: "https://api.devnet.solana.com",
+    rpcUrls: ["https://api.devnet.solana.com"],
     icon: "☀️"
   }
 } as const;
 
-// Arc Testnet uses CCTP V2 — domain 26
 const ARC_CHAIN_CONFIG = {
   id: 5042002,
   name: "Arc Testnet",
+  bridgeKitId: "Arc_Testnet" as const,
   domain: 26,
   usdcAddress: "0x3600000000000000000000000000000000000000" as `0x${string}`,
   tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
   messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
   rpcUrl: ARC_RPC_URL,
+  rpcUrls: ARC_RPC_URLS,
   icon: "⚡"
 };
 
@@ -92,7 +106,6 @@ const erc20Abi = parseAbi([
   "function balanceOf(address owner) view returns (uint256)"
 ] as const);
 
-// CCTP V2 depositForBurn — 7 parameters
 const tokenMessengerV2Abi = parseAbi([
   "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken, bytes32 destinationCaller, uint256 maxFee, uint32 minFinalityThreshold) returns (uint64)"
 ] as const);
@@ -102,8 +115,8 @@ const messageTransmitterAbi = parseAbi([
   "function receiveMessage(bytes message, bytes attestation) returns (bool)"
 ] as const);
 
-// keccak256 topic for MessageSent event
 const MESSAGE_SENT_TOPIC = "0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036";
+const IRIS_SANDBOX_URL = "https://iris-api-sandbox.circle.com/v1/attestations";
 
 // ============================================================
 // Types
@@ -123,31 +136,24 @@ export interface BridgeState {
   errorMessage: string;
   txHash: string;
   burnTxHash?: string;
+  /** Percentage progress 0-100 for smooth progress bar */
+  progress: number;
+  /** Human-readable detail message for current step */
+  stepDetail: string;
 }
 
-// ============================================================
-// RPC fallback lists per chain
-// ============================================================
-const CHAIN_RPCS: Record<number, string[]> = {
-  11155111: [
-    "https://rpc.ankr.com/eth_sepolia",
-    "https://ethereum-sepolia-rpc.publicnode.com",
-    "https://eth-sepolia.public.blastapi.io",
-    "https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
-  ],
-  84532: [
-    "https://sepolia.base.org",
-    "https://base-sepolia-rpc.publicnode.com"
-  ],
-  43113: [
-    "https://api.avax-test.network/ext/bc/C/rpc",
-    "https://avalanche-fuji-c-chain-rpc.publicnode.com"
-  ],
-  5042002: ARC_RPC_URLS
+const INITIAL_STATE: BridgeState = {
+  status: "idle",
+  elapsedSeconds: 0,
+  errorMessage: "",
+  txHash: "",
+  burnTxHash: "",
+  progress: 0,
+  stepDetail: ""
 };
 
 // ============================================================
-// Resilient receipt polling
+// Resilient RPC-based receipt polling
 // ============================================================
 const waitForTransactionReceiptResiliently = async (
   txHash: `0x${string}`,
@@ -161,30 +167,28 @@ const waitForTransactionReceiptResiliently = async (
       try {
         const client = createPublicClient({
           chain: chainObj,
-          transport: http(url, { timeout: 20000, retryCount: 2 })
+          transport: http(url, { timeout: 25000, retryCount: 2 })
         });
 
-        // Try a quick direct get first
         try {
           const receipt = await client.getTransactionReceipt({ hash: txHash });
           if (receipt) return receipt;
         } catch (_) {
-          // not confirmed yet, fall through to waitFor
+          // Not confirmed yet
         }
 
         const receipt = await client.waitForTransactionReceipt({
           hash: txHash,
-          timeout: 60000, // 60 s max per RPC
-          pollingInterval: 3000
+          timeout: 90000,
+          pollingInterval: 2500
         });
         if (receipt) return receipt;
       } catch (err) {
-        console.warn(`Receipt poll attempt ${attempt} failed on ${url}:`, err);
+        console.warn(`[CCTP] Receipt poll attempt ${attempt + 1} failed on ${url}:`, err);
         lastError = err;
       }
     }
-    // Brief pause between outer retries
-    await new Promise(r => setTimeout(r, 4000));
+    await new Promise(r => setTimeout(r, 3000));
   }
 
   throw lastError || new Error(`Could not confirm transaction ${txHash} after retries.`);
@@ -200,26 +204,23 @@ function extractMessageBytes(logs: any[]): `0x${string}` | null {
       log.topics[0] &&
       log.topics[0].toLowerCase() === MESSAGE_SENT_TOPIC.toLowerCase()
     ) {
-      // Primary decode via decodeEventLog
       try {
         const decoded = decodeEventLog({
           abi: messageTransmitterAbi,
           data: log.data,
           topics: log.topics
-        });
-        if (decoded.eventName === "MessageSent" && decoded.args.message) {
+        }) as any;
+        if (decoded.eventName === "MessageSent" && decoded.args?.message) {
           return decoded.args.message as `0x${string}`;
         }
-      } catch (_) {
-        // fallback
-      }
+      } catch (_) {}
 
-      // Fallback: manual ABI param decode
+
       try {
         const [msgBytes] = decodeAbiParameters([{ type: "bytes" }], log.data);
         if (msgBytes) return msgBytes as `0x${string}`;
       } catch (e) {
-        console.error("Manual MessageSent decode also failed:", e);
+        console.error("[CCTP] MessageSent decode failed:", e);
       }
     }
   }
@@ -227,18 +228,16 @@ function extractMessageBytes(logs: any[]): `0x${string}` | null {
 }
 
 // ============================================================
-// Poll Circle Iris attestation API (testnet sandbox)
+// Poll Circle Iris attestation API — aggressive & smart
 // ============================================================
-const IRIS_SANDBOX_URL = "https://iris-api-sandbox.circle.com/v1/attestations";
-
 async function pollAttestation(
   messageHash: string,
   onElapsed: (s: number) => void
 ): Promise<{ attestation: string; messageBytes: string | null }> {
   const url = `${IRIS_SANDBOX_URL}/${messageHash}`;
   let elapsed = 0;
-  let delayMs = 5000;
-  const MAX_WAIT_MS = 15 * 60 * 1000; // 15 minutes
+  let delayMs = 3000; // Start polling faster (3s vs old 5s)
+  const MAX_WAIT_MS = 20 * 60 * 1000; // 20 minutes max
 
   while (elapsed < MAX_WAIT_MS) {
     await new Promise(r => setTimeout(r, delayMs));
@@ -252,21 +251,21 @@ async function pollAttestation(
       });
 
       if (res.status === 429) {
-        // Rate limited — exponential back-off
+        // Rate limited — back off exponentially
         delayMs = Math.min(delayMs * 2, 30000);
-        console.warn("[CCTP] Iris API rate limited. Backing off to", delayMs, "ms");
+        console.warn("[CCTP] Iris rate limited. Back-off to", delayMs, "ms");
         continue;
       }
 
       if (res.status === 404) {
-        // Not yet indexed — keep polling at normal pace
-        delayMs = 5000;
+        // Not indexed yet — keep polling at fast pace
+        delayMs = 3000;
         continue;
       }
 
       if (!res.ok) {
-        console.warn("[CCTP] Iris API returned", res.status, "— retrying");
-        delayMs = 8000;
+        console.warn("[CCTP] Iris returned", res.status, "— retrying");
+        delayMs = 6000;
         continue;
       }
 
@@ -278,20 +277,21 @@ async function pollAttestation(
       }
 
       if (data.status === "failed_to_sign") {
-        throw new Error("Circle Iris attestation failed to sign the message. Please contact Circle support.");
+        throw new Error("Circle Iris attestation failed to sign. Please try again or contact support.");
       }
 
-      // pending_confirmation / pending — reset delay and keep going
-      delayMs = 5000;
+      // pending_confirmation / pending — keep polling
+      delayMs = 3000;
     } catch (err: any) {
       if (err.message?.includes("failed to sign")) throw err;
       console.error("[CCTP] Attestation poll error:", err);
-      delayMs = 8000;
+      delayMs = 6000;
     }
   }
 
   throw new Error(
-    "Circle attestation timed out after 15 minutes. The burn transaction was confirmed — you can claim your USDC later by re-submitting the attestation."
+    "Circle attestation timed out after 20 minutes. Your burn transaction was confirmed — " +
+    "you can claim your USDC later by re-submitting the attestation manually."
   );
 }
 
@@ -304,17 +304,8 @@ export function useCCTPBridge() {
   const wallets = privyWallets ?? [];
   const switchChainResult = useSwitchChain();
   const switchChainAsync = switchChainResult?.switchChainAsync;
-  const { chain } = useAccount();
-  const wagmiConfig = useConfig();
 
-  const [state, setState] = useState<BridgeState>({
-    status: "idle",
-    elapsedSeconds: 0,
-    errorMessage: "",
-    txHash: "",
-    burnTxHash: ""
-  });
-
+  const [state, setState] = useState<BridgeState>(INITIAL_STATE);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -323,24 +314,17 @@ export function useCCTPBridge() {
     };
   }, []);
 
-  const resetState = () => {
-    setState({
-      status: "idle",
-      elapsedSeconds: 0,
-      errorMessage: "",
-      txHash: "",
-      burnTxHash: ""
-    });
+  const resetState = useCallback(() => {
+    setState(INITIAL_STATE);
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-  };
+  }, []);
 
   // -------------------------------------------------------
-  // Main bridge function
-  // direction "in"  = sourceChain -> Arc Testnet
-  // direction "out" = Arc Testnet -> sourceChain
+  // Try to use Circle Bridge Kit for fast/reliable bridging
+  // Falls back to manual CCTP if Kit is unavailable
   // -------------------------------------------------------
   const bridgeUSDC = async (
     sourceKey: keyof typeof SOURCE_CHAINS,
@@ -349,16 +333,13 @@ export function useCCTPBridge() {
   ) => {
     const chainConfig = SOURCE_CHAINS[sourceKey];
 
-    // Circle-connected accounts use the mock Solana bridge simulation
+    // Solana / Circle-wallet mock bridge simulation
     const isCircleConnected =
       typeof window !== "undefined" &&
       localStorage.getItem("synarc_circle_connected") === "true";
 
     if (isCircleConnected || chainConfig.id === 103) {
-      await executeSolanaMockBridge(
-        direction === "in" ? chainConfig.name : "Arc Testnet",
-        amountString
-      );
+      await executeSolanaMockBridge(chainConfig.name, amountString);
       return;
     }
 
@@ -382,33 +363,204 @@ export function useCCTPBridge() {
       return;
     }
 
-    // USDC has 6 decimals
+    // Try Circle Bridge Kit first (fast path)
+    try {
+      await bridgeWithKit(
+        activeWallet,
+        chainConfig,
+        amountString,
+        direction
+      );
+      return;
+    } catch (kitErr: any) {
+      console.warn("[CCTP] Bridge Kit failed, falling back to manual flow:", kitErr?.message);
+      // Don't surface Kit errors to user if we can retry manually
+      if (
+        kitErr?.message?.includes("unsupported") ||
+        kitErr?.message?.includes("adapter") ||
+        kitErr?.message?.includes("not installed")
+      ) {
+        console.info("[CCTP] Adapter unavailable — using manual CCTP flow");
+      }
+    }
+
+    // Manual CCTP fallback
+    await bridgeManual(activeWallet, chainConfig, amountString, direction);
+  };
+
+  // -------------------------------------------------------
+  // Fast Path: Circle Bridge Kit (adapter-viem-v2)
+  // -------------------------------------------------------
+  const bridgeWithKit = async (
+    activeWallet: any,
+    chainConfig: (typeof SOURCE_CHAINS)[keyof typeof SOURCE_CHAINS],
+    amountString: string,
+    direction: "in" | "out"
+  ) => {
+    // Dynamic import to avoid SSR issues and gracefully handle missing package
+    let BridgeKit: any, createViemAdapterFromProvider: any;
+    try {
+      const kitModule = await import("@circle-fin/bridge-kit");
+      BridgeKit = kitModule.BridgeKit;
+    } catch (e) {
+      throw new Error("Bridge Kit not installed");
+    }
+    try {
+      const adapterModule = await import("@circle-fin/adapter-viem-v2");
+      createViemAdapterFromProvider = adapterModule.createViemAdapterFromProvider;
+    } catch (e) {
+      throw new Error("adapter-viem-v2 not installed");
+    }
+
+    const provider = await (
+      activeWallet.getEthereumProvider?.() ||
+      (activeWallet as any).getProvider?.() ||
+      (activeWallet as any).getEip1193Provider?.()
+    );
+
+    if (!provider) throw new Error("Could not get EIP-1193 provider from wallet");
+
+    // Build adapter from the connected browser wallet
+    const adapter = await createViemAdapterFromProvider({
+      provider,
+      capabilities: { addressContext: "user-controlled" }
+    });
+
+    const kit = new BridgeKit();
+
+    const fromChainId = direction === "in" ? chainConfig.bridgeKitId : "Arc_Testnet";
+    const toChainId   = direction === "in" ? "Arc_Testnet" : chainConfig.bridgeKitId;
+
+    // Wire up Kit events → bridge state
+    setState({ ...INITIAL_STATE, status: "approving", progress: 5, stepDetail: "Requesting USDC approval…" });
+
+    kit.on("approve", (event: any) => {
+      console.log("[Kit] approve event:", event);
+      setState(prev => ({
+        ...prev,
+        status: "approving",
+        progress: 20,
+        stepDetail: `Approval confirmed: ${(event.values?.txHash || "").slice(0, 10)}…`
+      }));
+    });
+
+    kit.on("burn", (event: any) => {
+      console.log("[Kit] burn event:", event);
+      setState(prev => ({
+        ...prev,
+        status: "burning",
+        progress: 40,
+        burnTxHash: event.values?.txHash || prev.burnTxHash,
+        stepDetail: `Burn confirmed on ${chainConfig.name}`
+      }));
+    });
+
+    kit.on("fetchAttestation", (event: any) => {
+      console.log("[Kit] fetchAttestation event:", event);
+      setState(prev => ({
+        ...prev,
+        status: "waiting-attestation",
+        progress: 65,
+        stepDetail: "Circle attestation received — switching to Arc…"
+      }));
+      // Stop elapsed timer since we have the attestation
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    });
+
+    kit.on("mint", (event: any) => {
+      console.log("[Kit] mint event:", event);
+      setState(prev => ({
+        ...prev,
+        status: "minting",
+        progress: 85,
+        stepDetail: `Minting USDC on Arc Testnet…`
+      }));
+    });
+
+    // Start elapsed timer during attestation phase
+    setState(prev => ({ ...prev, status: "burning", progress: 25, stepDetail: "Broadcasting burn transaction…" }));
+
+    // Switch to correct source chain before Kit executes
+    await switchToChain(activeWallet, direction === "in" ? chainConfig : ARC_CHAIN_CONFIG, switchChainAsync);
+
+    // Start attestation elapsed timer
+    timerRef.current = setInterval(() => {
+      setState(prev => {
+        if (prev.status === "waiting-attestation") {
+          return { ...prev, elapsedSeconds: prev.elapsedSeconds + 1 };
+        }
+        return prev;
+      });
+    }, 1000);
+
+    // Execute bridge via Kit
+    const result = await kit.bridge({
+      from: { adapter, chain: fromChainId },
+      to:   { adapter, chain: toChainId },
+      amount: amountString,
+      config: { transferSpeed: "FAST" }
+    });
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    const mintStep = result?.steps?.find((s: any) => s.name === "mint");
+    const burnStep = result?.steps?.find((s: any) => s.name === "depositForBurn");
+
+    setState(prev => ({
+      ...prev,
+      status: "success",
+      progress: 100,
+      txHash: mintStep?.txHash || "",
+      burnTxHash: burnStep?.txHash || prev.burnTxHash,
+      stepDetail: "Bridge complete! Funds arrived on Arc Testnet."
+    }));
+
+    console.log("[Kit] Bridge complete:", result);
+  };
+
+  // -------------------------------------------------------
+  // Manual CCTP Fallback (proven, battle-tested)
+  // -------------------------------------------------------
+  const bridgeManual = async (
+    activeWallet: any,
+    chainConfig: (typeof SOURCE_CHAINS)[keyof typeof SOURCE_CHAINS],
+    amountString: string,
+    direction: "in" | "out"
+  ) => {
+    const amount = parseFloat(amountString);
     const numericAmount = BigInt(Math.round(amount * 1_000_000));
 
-    // Determine source and destination based on direction
-    const sourceChainConfig =
-      direction === "in" ? chainConfig : ARC_CHAIN_CONFIG;
-    const destChainConfig =
-      direction === "in" ? ARC_CHAIN_CONFIG : chainConfig;
+    const sourceChainConfig = direction === "in" ? chainConfig : ARC_CHAIN_CONFIG;
+    const destChainConfig   = direction === "in" ? ARC_CHAIN_CONFIG : chainConfig;
 
-    console.log("[CCTP] Bridge start —", {
+    console.log("[CCTP Manual] Bridge start:", {
       direction,
       source: sourceChainConfig.name,
       dest: destChainConfig.name,
       amount,
-      wallet: activeWallet.address
     });
 
     try {
       // ====================================================
       // STEP 1 — Approve USDC on source chain
       // ====================================================
-      setState(prev => ({ ...prev, status: "approving", errorMessage: "" }));
+      setState(prev => ({
+        ...prev,
+        status: "approving",
+        progress: 5,
+        stepDetail: `Approving USDC on ${sourceChainConfig.name}…`,
+        errorMessage: ""
+      }));
 
-      // Switch to source chain
       await switchToChain(activeWallet, sourceChainConfig, switchChainAsync);
 
-      const sourceChainObj = EVM_BRIDGE_CHAINS[sourceChainConfig.id];
+      const sourceChainObj = EVM_BRIDGE_CHAINS[(sourceChainConfig as any).id];
       const { walletClient, address } = await getSigner(
         wallets,
         sourceChainObj,
@@ -419,19 +571,18 @@ export function useCCTPBridge() {
         abi: erc20Abi,
         functionName: "approve",
         args: [
-          sourceChainConfig.tokenMessenger as `0x${string}`,
+          (sourceChainConfig as any).tokenMessenger as `0x${string}`,
           numericAmount
         ]
       });
 
       const approveParams: any = {
-        to: sourceChainConfig.usdcAddress as `0x${string}`,
+        to: (sourceChainConfig as any).usdcAddress as `0x${string}`,
         data: approveData,
         account: address,
         chain: sourceChainObj
       };
-      // Arc requires explicit gas params (USDC gas token)
-      if (sourceChainConfig.id === 5042002) {
+      if ((sourceChainConfig as any).id === 5042002) {
         approveParams.gas = 200000n;
         approveParams.gasPrice = 10000000n;
       }
@@ -443,7 +594,9 @@ export function useCCTPBridge() {
         throw new Error(`USDC approval rejected: ${err?.message || err}`);
       }
 
-      const sourceRpcs = CHAIN_RPCS[sourceChainConfig.id] || [sourceChainConfig.rpcUrl];
+      setState(prev => ({ ...prev, progress: 15, stepDetail: "Waiting for approval confirmation…" }));
+
+      const sourceRpcs = (sourceChainConfig as any).rpcUrls || [(sourceChainConfig as any).rpcUrl];
       const approveReceipt = await waitForTransactionReceiptResiliently(
         approveTxHash as `0x${string}`,
         sourceChainObj,
@@ -457,37 +610,39 @@ export function useCCTPBridge() {
       // ====================================================
       // STEP 2 — Burn (depositForBurn) on source chain
       // ====================================================
-      setState(prev => ({ ...prev, status: "burning" }));
+      setState(prev => ({
+        ...prev,
+        status: "burning",
+        progress: 25,
+        stepDetail: `Burning ${amountString} USDC on ${sourceChainConfig.name}…`
+      }));
 
-      // mintRecipient must be left-padded to 32 bytes
       const mintRecipientBytes32 =
         `0x${activeWallet.address.replace(/^0x/, "").padStart(64, "0")}` as `0x${string}`;
-
       const zeroBytes32 =
         "0x0000000000000000000000000000000000000000000000000000000000000000" as `0x${string}`;
 
-      // CCTP V2 — 7-parameter depositForBurn
       const burnData = encodeFunctionData({
         abi: tokenMessengerV2Abi,
         functionName: "depositForBurn",
         args: [
           numericAmount,
-          destChainConfig.domain as unknown as number,
+          (destChainConfig as any).domain as unknown as number,
           mintRecipientBytes32,
-          sourceChainConfig.usdcAddress as `0x${string}`,
-          zeroBytes32,    // destinationCaller: zero = any relayer
-          0n,             // maxFee: 0 for standard transfer
-          0               // minFinalityThreshold: 0 = auto
+          (sourceChainConfig as any).usdcAddress as `0x${string}`,
+          zeroBytes32,
+          0n,
+          0
         ]
       });
 
       const burnParams: any = {
-        to: sourceChainConfig.tokenMessenger as `0x${string}`,
+        to: (sourceChainConfig as any).tokenMessenger as `0x${string}`,
         data: burnData,
         account: address,
         chain: sourceChainObj
       };
-      if (sourceChainConfig.id === 5042002) {
+      if ((sourceChainConfig as any).id === 5042002) {
         burnParams.gas = 400000n;
         burnParams.gasPrice = 10000000n;
       }
@@ -500,6 +655,12 @@ export function useCCTPBridge() {
       }
 
       console.log("[CCTP] Burn tx submitted:", burnTxHash);
+      setState(prev => ({
+        ...prev,
+        burnTxHash,
+        progress: 35,
+        stepDetail: "Waiting for burn confirmation…"
+      }));
 
       const burnReceipt = await waitForTransactionReceiptResiliently(
         burnTxHash as `0x${string}`,
@@ -509,11 +670,15 @@ export function useCCTPBridge() {
 
       if (burnReceipt.status === "reverted") {
         throw new Error(
-          "Burn transaction reverted. Check your USDC balance and that the TokenMessenger contract is correct."
+          "Burn transaction reverted. Check USDC balance and that the TokenMessenger address is correct."
         );
       }
 
-      setState(prev => ({ ...prev, burnTxHash }));
+      setState(prev => ({
+        ...prev,
+        progress: 45,
+        stepDetail: "Burn confirmed. Extracting message…"
+      }));
 
       // ====================================================
       // Extract MessageSent bytes from burn receipt logs
@@ -521,10 +686,10 @@ export function useCCTPBridge() {
       const messageBytes = extractMessageBytes(burnReceipt.logs as any[]);
 
       if (!messageBytes) {
-        console.error("[CCTP] No MessageSent event found in logs:", burnReceipt.logs);
+        console.error("[CCTP] No MessageSent event in logs:", burnReceipt.logs);
         throw new Error(
           "Could not find MessageSent event in burn transaction logs. " +
-          "The burn may have succeeded — check the tx on-chain and contact support with the burn hash: " +
+          "The burn may have succeeded — contact support with burn hash: " +
           burnTxHash
         );
       }
@@ -538,7 +703,9 @@ export function useCCTPBridge() {
       setState(prev => ({
         ...prev,
         status: "waiting-attestation",
-        elapsedSeconds: 0
+        progress: 50,
+        elapsedSeconds: 0,
+        stepDetail: "Waiting for Circle attestation…"
       }));
 
       // Start elapsed timer
@@ -546,7 +713,13 @@ export function useCCTPBridge() {
       timerRef.current = setInterval(() => {
         setState(prev => {
           if (prev.status === "waiting-attestation") {
-            return { ...prev, elapsedSeconds: prev.elapsedSeconds + 1 };
+            // Animate progress from 50 → 75 during attestation
+            const newProgress = Math.min(75, 50 + Math.floor(prev.elapsedSeconds / 4));
+            return {
+              ...prev,
+              elapsedSeconds: prev.elapsedSeconds + 1,
+              progress: newProgress
+            };
           }
           return prev;
         });
@@ -556,7 +729,13 @@ export function useCCTPBridge() {
       let apiMessageBytes: string | null;
 
       try {
-        const result = await pollAttestation(messageHash, () => {});
+        const result = await pollAttestation(
+          messageHash,
+          (secs) => setState(prev => ({
+            ...prev,
+            stepDetail: `Circle signing attestation… (${secs}s)`
+          }))
+        );
         attestation = result.attestation;
         apiMessageBytes = result.messageBytes;
       } finally {
@@ -574,11 +753,16 @@ export function useCCTPBridge() {
       // ====================================================
       // STEP 4 — Mint (receiveMessage) on destination chain
       // ====================================================
-      setState(prev => ({ ...prev, status: "minting" }));
+      setState(prev => ({
+        ...prev,
+        status: "minting",
+        progress: 80,
+        stepDetail: `Switching to ${destChainConfig.name} to mint…`
+      }));
 
       await switchToChain(activeWallet, destChainConfig, switchChainAsync);
 
-      const destChainObj = EVM_BRIDGE_CHAINS[destChainConfig.id];
+      const destChainObj = EVM_BRIDGE_CHAINS[(destChainConfig as any).id];
       const { walletClient: destWalletClient, address: destAddress } =
         await getSigner(wallets, destChainObj, walletAddress || undefined);
 
@@ -589,15 +773,21 @@ export function useCCTPBridge() {
       });
 
       const mintParams: any = {
-        to: destChainConfig.messageTransmitter as `0x${string}`,
+        to: (destChainConfig as any).messageTransmitter as `0x${string}`,
         data: mintData,
         account: destAddress,
         chain: destChainObj
       };
-      if (destChainConfig.id === 5042002) {
+      if ((destChainConfig as any).id === 5042002) {
         mintParams.gas = 400000n;
         mintParams.gasPrice = 10000000n;
       }
+
+      setState(prev => ({
+        ...prev,
+        progress: 88,
+        stepDetail: `Broadcasting mint transaction on Arc…`
+      }));
 
       let mintTxHash: string;
       try {
@@ -607,8 +797,13 @@ export function useCCTPBridge() {
       }
 
       console.log("[CCTP] Mint tx submitted:", mintTxHash);
+      setState(prev => ({
+        ...prev,
+        progress: 92,
+        stepDetail: "Confirming mint transaction…"
+      }));
 
-      const destRpcs = CHAIN_RPCS[destChainConfig.id] || [destChainConfig.rpcUrl];
+      const destRpcs = (destChainConfig as any).rpcUrls || [(destChainConfig as any).rpcUrl];
       const mintReceipt = await waitForTransactionReceiptResiliently(
         mintTxHash as `0x${string}`,
         destChainObj,
@@ -622,7 +817,9 @@ export function useCCTPBridge() {
       setState(prev => ({
         ...prev,
         status: "success",
-        txHash: mintTxHash
+        progress: 100,
+        txHash: mintTxHash,
+        stepDetail: "Bridge complete! USDC has arrived on Arc Testnet."
       }));
 
       console.log("[CCTP] Bridge complete! Mint tx:", mintTxHash);
@@ -636,6 +833,7 @@ export function useCCTPBridge() {
       setState(prev => ({
         ...prev,
         status: "error",
+        progress: 0,
         errorMessage: err?.message || "Bridge encountered an unexpected error."
       }));
     }
@@ -646,35 +844,47 @@ export function useCCTPBridge() {
   // -------------------------------------------------------
   const executeSolanaMockBridge = async (chainName: string, amountString: string) => {
     try {
-      setState(prev => ({ ...prev, status: "approving", errorMessage: "" }));
-      await new Promise(r => setTimeout(r, 2000));
+      setState({ ...INITIAL_STATE, status: "approving", progress: 5, stepDetail: "Connecting to Circle bridge…" });
+      await new Promise(r => setTimeout(r, 1800));
 
-      setState(prev => ({ ...prev, status: "burning" }));
-      await new Promise(r => setTimeout(r, 2500));
+      setState(prev => ({ ...prev, status: "burning", progress: 30, stepDetail: `Burning USDC on ${chainName}…` }));
+      await new Promise(r => setTimeout(r, 2200));
 
-      setState(prev => ({ ...prev, status: "waiting-attestation", elapsedSeconds: 0 }));
+      setState(prev => ({
+        ...prev,
+        status: "waiting-attestation",
+        progress: 55,
+        elapsedSeconds: 0,
+        stepDetail: "Waiting for Circle attestation…"
+      }));
+
       if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = setInterval(() => {
-        setState(prev => ({ ...prev, elapsedSeconds: prev.elapsedSeconds + 1 }));
+        setState(prev => ({
+          ...prev,
+          elapsedSeconds: prev.elapsedSeconds + 1,
+          progress: Math.min(75, 55 + prev.elapsedSeconds * 2)
+        }));
       }, 1000);
 
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise(r => setTimeout(r, 4000));
 
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
 
-      setState(prev => ({ ...prev, status: "minting" }));
-      await new Promise(r => setTimeout(r, 2500));
+      setState(prev => ({ ...prev, status: "minting", progress: 85, stepDetail: "Minting USDC on Arc Testnet…" }));
+      await new Promise(r => setTimeout(r, 2000));
 
-      const chars = "0123456789abcdef";
-      let mockHash = "0x";
-      for (let i = 0; i < 64; i++) {
-        mockHash += chars[Math.floor(Math.random() * chars.length)];
-      }
-
-      setState(prev => ({ ...prev, status: "success", txHash: mockHash }));
+      const mockHash = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
+      setState(prev => ({
+        ...prev,
+        status: "success",
+        progress: 100,
+        txHash: mockHash,
+        stepDetail: "Bridge simulation complete!"
+      }));
     } catch (err: any) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -683,6 +893,7 @@ export function useCCTPBridge() {
       setState(prev => ({
         ...prev,
         status: "error",
+        progress: 0,
         errorMessage: "Bridge simulation encountered an error."
       }));
     }
@@ -696,25 +907,24 @@ export function useCCTPBridge() {
 // ============================================================
 async function switchToChain(
   activeWallet: any,
-  chainConfig: { id: number; name: string; rpcUrl: string },
+  chainConfig: { id: number; name: string; rpcUrl?: string; rpcUrls?: readonly string[] | string[] },
   switchChainAsync: any
 ) {
   try {
     const currentChainId = parseInt(
-      activeWallet.chainId.replace("eip155:", "")
+      (activeWallet.chainId || "eip155:0").replace("eip155:", "")
     );
     if (currentChainId === chainConfig.id) return;
 
     await switchChainAsync({ chainId: chainConfig.id });
   } catch (err: any) {
-    // Arc Testnet may need to be added first
     if (chainConfig.id === 5042002) {
       const provider = await activeWallet.getEthereumProvider();
       await provider.request({
         method: "wallet_addEthereumChain",
         params: [
           {
-            chainId: "0x4cef52", // 5042002
+            chainId: "0x4cef52",
             chainName: "Arc Testnet",
             rpcUrls: ARC_RPC_URLS,
             nativeCurrency: {

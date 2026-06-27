@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@circle-fin/adapter-viem-v2": "^1.12.1",
     "@circle-fin/bridge-kit": "^1.10.1",
     "@circle-fin/provider-cctp-v2": "^1.8.2",
     "@circle-fin/user-controlled-wallets": "^10.6.0",
