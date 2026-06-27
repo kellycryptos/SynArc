@@ -318,44 +318,44 @@ synarc-dao/
 
 ## 9. Roadmap
 
-### Current (Phase 1 & Phase 2) — Active Testing & UI
-*   **Phase 1 — Governance Frontend**:
-    *   [x] Establish clean, modern landing pages and Arc-native aesthetics.
-    *   [x] Build real-time analytics dashboard with deep data visualization.
-    *   [x] Deploy responsive, mobile-optimized glassmorphic UI layout.
-    *   [x] Build proposal submission and detail view pages.
-*   **Phase 2 — Authentication Infrastructure**:
-    *   [x] Integrate Privy authentication with custom app identifiers.
-    *   [x] Enable secure embedded wallets with background keys.
-    *   [x] Enable zero-gas cryptographic signature verification.
-    *   [x] Integrate live balance polling from Arc Testnet nodes.
-    *   [x] Creator DAO prototype (milestone escrow, AI governance, human + agent campaigns)
-    *   [x] SynArcCrowdfund escrow contract deployment and dynamic wallet compiler
-    *   [x] Live USDC milestone escrow approvals and releases on-chain
+### ✅ Phase 1 — Governance Frontend
+*   ✅ Clean, modern landing pages with Arc-native glassmorphic aesthetics
+*   ✅ Real-time analytics dashboard with deep data visualization
+*   ✅ Responsive, mobile-optimized UI layout
+*   ✅ Proposal submission and detail view pages
 
-### Upcoming (Phase 3 & Phase 4) — On-Chain Integration
-*   **Phase 3 — Governance Contracts**:
-    *   [x] Deploy custom OpenZeppelin Governor and ERC20Votes contracts on Arc Testnet.
-    *   [x] Set up TimelockController logic with custom execution buffers.
-    *   [x] Integrate actual EVM smart contract reads/writes into the UI (USDC, governor, and escrows).
-    *   [x] Connect proposal submission directly to on-chain transactions.
-*   **Phase 4 — Arc Ecosystem Integration**:
-    *   [x] Coordinate real USDC-denominated treasury disbursements.
-    *   [x] Connect autonomous AI agents to vote natively on active proposals and register identity.
-    *   [x] Deploy on-chain delegate registries for frictionless delegation (ERC-8004 Trustless Agents integrated).
+### ✅ Phase 2 — Authentication & Onboarding
+*   ✅ Privy authentication with embedded wallets (email, social, MetaMask)
+*   ✅ Zero-gas cryptographic signature verification
+*   ✅ Live balance polling from Arc Testnet nodes
+*   ✅ Creator DAO template system (milestone escrow, AI + human campaigns)
+*   ✅ `SynArcCrowdfund` escrow contract — deployed, verified on ArcScan
+*   ✅ Live USDC milestone approvals and on-chain releases
 
-### Future (Phase 5) — Advanced Architecture
-*   **Phase 5 — Confidential Governance**:
-    *   [ ] Implement encrypted voting via Zero-Knowledge (ZK) proofs.
-    *   [ ] Enable private coordinator sets to shield voting positions during voting periods.
-    *   [x] Released `@synarc/agent-sdk` TypeScript SDK for seamless integration into other Arc ecosystem apps.
-    *   [ ] Creator DAO mainnet graduation — move verified escrows to Arc Mainnet.
-    *   [ ] Cross-DAO nanopayment routing — pay a creator on any DAO from any other.
+### ✅ Phase 3 — On-Chain Governance
+*   ✅ `SynArcGovernor` (OpenZeppelin Governor) deployed and verified on Arc Testnet
+*   ✅ `TimelockController` with configurable execution buffers
+*   ✅ Full EVM smart contract reads/writes in the UI (USDC, Governor, escrows)
+*   ✅ Proposal submission, voting, queueing, and execution on-chain
 
-### Planned Features
-*   **Analytics**: Advanced governance analytics and reporting
-*   **Settings**: DAO configuration and parameter management
-*   **Mainnet Integration**: Production deployment on Arc Mainnet for real-asset management
+### ✅ Phase 4 — Arc Ecosystem Integration
+*   ✅ Real USDC-denominated treasury disbursements via governance
+*   ✅ Autonomous AI agent identity registered on ERC-8004 registry on-chain
+*   ✅ Delegate registries for frictionless voting weight delegation
+*   ✅ Bidirectional Circle CCTP Bridge (Arc ↔ Ethereum Sepolia, Base, Fuji, Solana)
+*   ✅ Treasury Agent live: Auto Payments, Risk Monitoring & Emergency Pause, Auto Rebalancing
+*   ✅ `@synarc/agent-sdk` TypeScript SDK published on npm
+
+### 🚧 Phase 5 — Advanced Features (In Progress)
+*   🔜 Auto Yield Farming — deploy idle stablecoins to Aave / Compound / Morpho
+*   🔜 Multi-Chain Auto Sweep — pull bridge deposits automatically into treasury
+*   🔜 Creator DAO mainnet graduation — move verified escrows to Arc Mainnet
+*   🔜 Cross-DAO nanopayment routing — pay creators across DAOs from any chain
+
+### 🗓 Phase 6 — Future Architecture
+*   [ ] Encrypted voting via Zero-Knowledge (ZK) proofs
+*   [ ] Private coordinator sets for shielded voting positions
+*   [ ] DAO configuration dashboard and parameter management UI
 
 
 ## 10. Deployment

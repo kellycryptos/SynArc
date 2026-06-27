@@ -9,11 +9,11 @@ const sora = { variable: "--font-sora" };
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.synarcdao.xyz"),
-  title: "SynArc",
-  description: "SynArc is the governance platform for Creator DAOs — enabling creators and communities to coordinate, vote, and manage USDC treasuries on Arc. Send support, rebalance treasuries, and coordinate seamlessly.",
+  title: "SynArc — Autonomous Treasury Management on Arc",
+  description: "SynArc automates treasury management for Creator DAOs. Schedule payouts, earn yield on idle USDC, rebalance across chains via CCTP, and monitor risk — all governed on-chain.",
   openGraph: {
-    title: "SynArc — Creator DAO Governance",
-    description: "SynArc is the governance platform for Creator DAOs — enabling creators and communities to coordinate, vote, and manage USDC treasuries on Arc. Send support, rebalance treasuries, and coordinate seamlessly.",
+    title: "SynArc — Autonomous Treasury Management on Arc",
+    description: "SynArc automates treasury management for Creator DAOs. Schedule payouts, earn yield on idle USDC, rebalance across chains via CCTP, and monitor risk — all governed on-chain.",
     url: "https://www.synarcdao.xyz",
     siteName: "SynArc",
     images: [
@@ -21,12 +21,14 @@ export const metadata: Metadata = {
         url: "https://www.synarcdao.xyz/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "SynArc Governance",
+        alt: "SynArc — Autonomous Treasury Management on Arc",
       }
     ],
   },
   twitter: {
     card: "summary_large_image",
+    title: "SynArc — Autonomous Treasury Management on Arc",
+    description: "SynArc automates treasury management for Creator DAOs. Schedule payouts, earn yield on idle USDC, rebalance across chains, and monitor risk — all on-chain.",
     images: ["https://www.synarcdao.xyz/og-image.jpg"],
   },
   icons: {

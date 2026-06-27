@@ -47,3 +47,10 @@ tmp/
 # The folder is tracked via public/uploads/.gitkeep
 public/uploads/*
 !public/uploads/.gitkeep
+
+# Export / scratch clutter
+scratch/
+gitbook-export/
+export/
+*.export/
+tsconfig.tsbuildinfo
