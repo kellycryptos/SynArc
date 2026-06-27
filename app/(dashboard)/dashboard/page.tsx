@@ -89,13 +89,13 @@ export default function DashboardOverview() {
           </Link>
         </div>
         <p className="text-sm text-muted relative z-10 max-w-2xl">
-          Protect your treasury funds automatically. Set up custom rules to prevent funds from sitting idle, route rewards to secure yield vaults, and execute transfers immediately after community approval.
+          Automate asset protection and yield optimization. Set up community-approved rules for CCTP rebalancing, scheduled payroll or milestone payouts, yield farming, multi-chain sweeps, and emergency auto-pause guardrails.
         </p>
-        <div className="grid grid-cols-3 gap-4 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
           {[
-            { label: "Guard Status", value: "MONITORING", color: "text-primary" },
-            { label: "Rule Verification", value: "Verified Active", color: "text-purple-400" },
-            { label: "Cross-Network Transfers", value: "Direct Secure Route", color: "text-blue-400" },
+            { label: "Auto Payments & Sweep", value: "Milestones / Multi-Chain", color: "text-primary" },
+            { label: "Auto Yield Farming", value: "DeFi Pools (Aave/Morpho)", color: "text-purple-400" },
+            { label: "Risk Pause Guardrails", value: "Active Live Monitoring", color: "text-blue-400" },
           ].map((stat) => (
             <div key={stat.label} className="bg-surface-elevated/60 rounded-xl p-3 border border-border-thin">
               <p className="text-xs text-muted mb-1">{stat.label}</p>

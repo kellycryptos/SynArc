@@ -2,35 +2,63 @@
 icon: robot
 ---
 
-# Automated Treasury Guard
+# Automated Treasury Guard (Treasury Agent)
 
-SynArc introduces the **Automated Treasury Guard**, a specialized helper designed to monitor workspace allocations, track treasury rules, propose rebalance options, and execute secure cross-chain transfers when community conditions are met.
+SynArc introduces the **Automated Treasury Guard**, a specialized autonomous agent designed to protect workspace assets, optimize yield on idle capital, manage payouts, and handle secure rebalancing across multiple networks.
 
 ***
 
 ## Overview
 
-Traditional community treasuries often suffer from idle capital, requiring manual oversight, complicated approvals, and risky bridge mechanics that introduce security vulnerabilities. 
+Traditional community treasuries often face idle capital, manual payment workflows, operational risk, and vulnerable bridging mechanics. The Automated Treasury Guard operates under community-approved rules to solve these issues autonomously:
 
-The **SynArc Automated Treasury Guard** resolves this by operating under community-approved automation rules:
-1. **24/7 Monitoring**: Reads real-time reserves and alerts coordinators when limits are reached.
-2. **Automated Proposals**: Generates clear rebalancing proposals via an **AI assistant** when yield variances exceed threshold limits.
-3. **Secure Execution**: Performs fast, slippage-free stablecoin transfers using a **direct cross-chain bridge** once approved by the community.
+1. **Auto Rebalancing**: Moves stablecoins across chains via native Circle CCTP to access higher-yield allocations.
+2. **Auto Payments**: Processes scheduled team payrolls, creator payouts, and milestone releases.
+3. **Auto Yield Farming**: Stakes or provides liquidity in conservative DeFi vaults (like Aave or Morpho) when capital sits idle.
+4. **Risk Monitoring & Emergency Auto-Pause**: Continuously checks reserves for low liquidity, large outflows, and inactivity, executing on-chain pauses if necessary.
+5. **Multi-Chain Auto Sweep**: Programmatically collects incoming stablecoins from bridges and sweeps them directly into the DAO treasury.
 
 ```
-+--------------------+      Variance      +-----------------------+
-|  On-Chain Yields   |  ===============>  |  AI Assistant Guard   |
-|  (USDC/EURC Pools) |                    |  Proposes Rebalance   |
-+--------------------+                    +-----------------------+
-                                                      ||
-                                                      || Community Votes
-                                                      \/
-+--------------------+      Direct        +-----------------------+
-| External Chain     |  <===============  | Arc Testnet Governor  |
-| (Minted native)    |      Transfer      | Executes Rebalance    |
-+--------------------+                    +-----------------------+
++--------------------+   Monitoring   +------------------------+
+|  On-Chain Balance  | =============> |  Automated Treasury    |
+|   & Risk Signals   |                |  Guard (Decision)      |
++--------------------+                +------------------------+
+                                                  ||
+                                                  || Action Taken
+                                                  \/
++--------------------+   CCTP Bridge  +------------------------+
+| Destination Chain  | <============= | executes Rebalance /   |
+| (Minted native)    |    / Sweep     | Payouts / Pause / Farm |
++--------------------+                +------------------------+
 ```
 
+---
+
+## Core Capabilities
+
+### 1. Auto Rebalancing (via Circle CCTP) — `LIVE`
+When a community yield rebalance proposal is approved, or threshold rules are met on-chain, the agent initiates a bidirectional stablecoin transfer. By calling Circle's Native Burn-and-Mint interface, it avoids risky wrapper tokens and ensures slippage-free stablecoin mobility between Arc Testnet and Sepolia.
+
+### 2. Auto Payments (Scheduled & Milestone) — `LIVE`
+Creators and DAO teams can schedule recurring stablecoin payments (e.g. weekly creator payouts, monthly team payroll) or queue milestone-based payouts directly from the dashboard:
+* **Security Timelock**: To protect community capital, all queued payments are subject to a **24-hour timelock delay** on-chain.
+* **Autonomous Execution**: Once the timelock countdown finishes, the agent executes the payout transaction.
+
+### 3. Risk Monitoring & Emergency Pause — `LIVE`
+The agent constantly evaluates four risk metrics to assign a real-time **Risk Score (0–100)**:
+* **Low Liquidity**: Triggered when the primary asset balance falls below safe operating levels.
+* **Large Outflow**: Flags when single transfers exceed 80% of total reserves.
+* **Emergency Stop**: Instantly triggers if the owner/community commands an on-chain pause.
+* **Inactivity**: Triggers if the agent has not completed rule checks for more than 6 hours.
+
+### 4. Auto Yield Farming — `COMING SOON`
+To prevent stablecoins from sitting idle and losing value, the agent stakes capital in verified DeFi integrations:
+* **Aave USDC Strategy**: Target yield of 3.2% APY.
+* **Compound Strategy**: Target yield of 2.9% APY.
+* **Morpho Blue Strategy**: Target yield of 4.1% APY.
+
+### 5. Multi-Chain Auto Sweep — `COMING SOON`
+Instead of manual collections, this feature sweeps bridged assets across Ethereum Mainnet, Base, and Arbitrum directly into the primary DAO treasury vault automatically.
 
 ---
 
@@ -39,7 +67,7 @@ The **SynArc Automated Treasury Guard** resolves this by operating under communi
 The Automated Treasury Guard incorporates three key pillars of safe stablecoin management:
 
 ### 1. Direct Cross-Chain Bridge
-Used for bidirectional stablecoin rebalancing. When a proposal to reallocate funds passes governance, the guard triggers a programmatic transfer using `depositForBurn` on Arc Testnet, pulls Circle's Iris API, and mints native USDC on the destination chain without relying on wrapper contracts or external liquidity providers.
+Used for bidirectional stablecoin rebalancing. Programmatic transfers use `depositForBurn` on Arc Testnet, poll Circle's Iris API, and mint native USDC on the destination chain without relying on wrapper contracts or external liquidity providers.
 
 ### 2. Smart Account Identity
 The guard operates under an **ERC-8004 identity** registered on the Arc Testnet registry at `0x8004A...`. This registry ties the guard's code, ownership, and reputation index (vouched or disavowed by community members) directly to the blockchain. Asset keys are held securely in a modular multisig vault, while execution keys are delegated to the guard's automation scripts.
@@ -53,8 +81,8 @@ Every inference request and transaction analysis run by the guard is paid for us
 
 Integrate your own autonomous scripts with SynArc's endpoints:
 
-### 1. Propose Allocation
+### 1. Run Agent Scan
 * **Method:** `POST`
 * **Endpoint:** `/api/agent/run`
-* **Payload:** `{ "trigger": "yield_scan" }`
-* **Description:** Forces the agent script to run a yield scan, generate a proposal, and submit it on-chain.
+* **Payload:** `{}`
+* **Description:** Forces the agent script to run a scan, check active rules, and submit proposals or transactions on-chain.

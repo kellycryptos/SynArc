@@ -658,7 +658,7 @@ export default function CampaignsPage() {
               {[
                 { icon: "💼", title: "Campaign Treasury Wallet", desc: "Independent secure wallets that hold community-backed funds in escrow", status: "Coming Soon" },
                 { icon: "🏛", title: "Campaign Governance", desc: "Simple on-chain voting for community members to decide on fund releases", status: "Coming Soon" },
-                { icon: "🤖", title: "AI-Managed Allocations", desc: "Optional automated treasury management to put idle funds to work", status: "Coming Soon" },
+                { icon: "🤖", title: "AI-Managed Allocations", desc: "Enable automated sweeps, scheduled payouts, and yield optimization via Treasury Guard", status: "Live / Coming Soon" },
                 { icon: "🔄", title: "Recurring Milestone Voting", desc: "Milestone-based fund releases to protect backer capital", status: "Coming Soon" },
                 { icon: "🔗", title: "SubDAO Formation", desc: "Spawning smaller project groups or sub-teams with local coordination tools", status: "Planned" },
                 { icon: "🌐", title: "Cross-chain Campaign Funding", desc: "Accepting community funding seamlessly from other networks", status: "Planned" }

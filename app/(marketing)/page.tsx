@@ -326,9 +326,9 @@ export default function LandingPage() {
                   <div className="w-12 h-12 rounded-xl bg-purple-glow/20 flex items-center justify-center mb-6 border border-purple-glow/30">
                     <Bot className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold mb-3 text-text-primary">Automated Safeguards</h3>
+                  <h3 className="text-xl font-bold mb-3 text-text-primary">Treasury Agent Guards</h3>
                   <p className="text-text-secondary leading-relaxed">
-                    Configure automated routines to monitor proposals, alert community members, and optimize reserve yields.
+                    Protect and optimize reserves automatically. Enable autonomous CCTP rebalancing, scheduled payouts, yield farming, risk monitoring, and multi-chain sweeps.
                   </p>
                 </GlassCard>
               </motion.div>
@@ -419,8 +419,8 @@ export default function LandingPage() {
           <div className="feature-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
             <FeatureCard
               icon="🤖"
-              title="Automated Safeguards"
-              description="Keep assets protected with automated rebalancing rules and alert parameters."
+              title="Treasury Agent Guards"
+              description="Automate asset protection with CCTP rebalancing, scheduled payouts, yield farming, multi-chain sweeps, and live risk alerts."
             />
             <FeatureCard
               icon="👤"

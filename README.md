@@ -92,12 +92,14 @@ Creator DAOs are decentralized funding and governance structures that allow buil
 
 ## 3b. Autonomous Treasury Agent
 
-SynArc features a fully autonomous treasury agent deployed and verified on Arc Testnet at `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D`.
+SynArc features a fully autonomous Treasury Agent deployed and verified on Arc Testnet at `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D`.
 
-- **Real-Time Monitoring**: Automatically scans pool yields and active balances on-chain.
-- **AI-Driven Proposals**: Generates professional rebalancing proposals autonomously using **Groq Llama 3.3** when yield variances exceed parameters.
-- **Autonomous Execution**: Coordinates with Circle CCTP to execute stablecoin burns and mints to maximize DAO treasury health.
-- **ERC-8004 Agent Standard**: Verified registry of agent capabilities, owners, and reputation tracking directly on-chain.
+- **Auto Rebalancing (via CCTP)**: Programmatically shifts stablecoin reserves across chains without wrapper tokens to maximize DAO treasury health. (Live)
+- **Auto Payments & Payouts**: Manages scheduled or milestone-based USDC/EURC distributions directly to creators, team members, or contributors. (Live)
+- **Risk Monitoring & Emergency Pause**: Monitors treasury reserves in real-time, alert on unusual outflow rates or low liquidity, and executes on-chain pauses if anomalies are found. (Live)
+- **Auto Yield Farming**: Programmatically allocates idle stablecoins to approved conservative DeFi yield pools (Aave, Compound, Morpho). (Coming Soon)
+- **Multi-Chain Auto Sweep**: Automatically detects and sweeps incoming funds from bridges directly into the primary treasury wallet. (Coming Soon)
+- **ERC-8004 Agent Standard**: Verified identity registry representing capabilities, execution keys, and reputation scores transparently on-chain.
 
 ---
 

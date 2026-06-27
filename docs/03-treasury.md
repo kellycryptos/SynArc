@@ -65,6 +65,19 @@ The SynArc Treasury targets the following capital allocation strategy:
 
 ---
 
+## Automated Treasury Guard & Rules
+
+The SynArc Treasury is integrated with the **Automated Treasury Guard** (Treasury Agent). While the treasury itself enforces core vault safety and timelocks, the Automated Treasury Guard acts as an automated executor following strict community-approved rules:
+- **Auto Rebalancing**: Relocates stablecoins to higher-yield chains when thresholds are reached via native Circle CCTP. (Live)
+- **Auto Payments**: Processes recurring payroll or scheduled payouts autonomously. (Live)
+- **Risk Alerts & Pause**: Pauses operations automatically if low liquidity or abnormal outflows are detected. (Live)
+- **Auto Yield Farming**: Staker/LP placement to generate yield on idle stablecoins. (Coming Soon)
+- **Multi-Chain Sweep**: Automatically pulls incoming deposits from bridges back into the treasury. (Coming Soon)
+
+For more details, see the [Automated Treasury Guard guide](04-ai-agents.md).
+
+---
+
 ## How Funds are Released via Governance
 
 SynArc has **no admin keys**. No founder, member, or developer can withdraw assets manually. Release of funds is fully automated through the governance lifecycle:

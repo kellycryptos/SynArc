@@ -37,5 +37,5 @@ This section outlines SynArc's multi-phase roadmap towards providing secure fund
 
 ### Phase 6: Automated Treasury Guard API
 
-* **Status:** _Planned_
-* **Description:** Deploy developer SDK modules to easily create, connect, and customize automated rebalancing rules and guards for workspace treasuries.
+* **Status:** _In Progress / Active_
+* **Description:** Deploy and integrate core Treasury Agent capabilities (Auto Rebalancing, Auto Payments, and Risk Monitoring) with active DeFi yield farming and multi-chain sweeps. Developers can customize automated rebalancing rules and guards via `@synarc/agent-sdk`.
