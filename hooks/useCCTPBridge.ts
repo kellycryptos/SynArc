@@ -24,9 +24,40 @@ import { useAuth } from "@/hooks/auth/useAuth";
 
 // ============================================================
 // CCTP V2 Contract Addresses (Circle Official — June 2026)
+// Same deterministic CREATE2 address across all supported chains
+// Source: https://developers.circle.com/stablecoins/docs/evm-smart-contracts
 // ============================================================
 const CCTP_TOKEN_MESSENGER_V2  = "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA";
 const CCTP_MSG_TRANSMITTER_V2  = "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275";
+
+// CCTP V2 finality thresholds
+// 1000 = Fast Transfer (fees apply — use fetchMinFee to get the required maxFee)
+// 2000 = Standard Transfer (free, ~20 min on mainnet, ~1–3 min on testnet)
+const FINALITY_STANDARD = 2000; // always free, reliable on testnet
+
+// Iris fee API — get minimum fee for a route before fast-transfer attempt
+const IRIS_FEE_URL = "https://iris-api-sandbox.circle.com/v2/burn/USDC/fees";
+
+async function fetchMinFeeForRoute(
+  sourceDomain: number,
+  destDomain: number
+): Promise<bigint> {
+  try {
+    const res = await fetch(`${IRIS_FEE_URL}/${sourceDomain}/${destDomain}`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store"
+    });
+    if (!res.ok) return 0n;
+    const data: Array<{ finalityThreshold: number; minimumFee: number }> = await res.json();
+    const fast = data.find(d => d.finalityThreshold === 1000);
+    if (!fast || fast.minimumFee <= 0) return 0n;
+    // Convert human-readable USDC to 6-decimal BigInt, add 20% buffer
+    const feeWithBuffer = fast.minimumFee * 1.20;
+    return BigInt(Math.ceil(feeWithBuffer * 1_000_000));
+  } catch {
+    return 0n;
+  }
+}
 
 export const SOURCE_CHAINS = {
   ETH_SEPOLIA: {
@@ -536,6 +567,14 @@ export function useCCTPBridge() {
     const amount = parseFloat(amountString);
     const numericAmount = BigInt(Math.round(amount * 1_000_000));
 
+    // Look up per-route fee so we can correctly set maxFee for fast transfers.
+    // On testnet we use STANDARD (free) to avoid "Insufficient max fee" reverts.
+    // Fast transfers require: maxFee >= minimumFee from Iris fee API.
+    const sourceDomain = (direction === "in" ? chainConfig : ARC_CHAIN_CONFIG).domain;
+    const destDomain   = (direction === "in" ? ARC_CHAIN_CONFIG : chainConfig).domain;
+    const fastMinFee = await fetchMinFeeForRoute(sourceDomain, destDomain);
+    console.log(`[CCTP] Route ${sourceDomain}→${destDomain} fast min fee:`, fastMinFee.toString(), "(USDC micro)");
+
     const sourceChainConfig = direction === "in" ? chainConfig : ARC_CHAIN_CONFIG;
     const destChainConfig   = direction === "in" ? ARC_CHAIN_CONFIG : chainConfig;
 
@@ -547,6 +586,33 @@ export function useCCTPBridge() {
     });
 
     try {
+      // ====================================================
+      // STEP 0 — Pre-flight USDC balance check
+      // ====================================================
+      try {
+        const checkClient = createPublicClient({
+          chain: EVM_BRIDGE_CHAINS[(sourceChainConfig as any).id],
+          transport: http((sourceChainConfig as any).rpcUrls?.[0] || (sourceChainConfig as any).rpcUrl, { timeout: 8000 })
+        });
+        const rawBal = await checkClient.readContract({
+          address: (sourceChainConfig as any).usdcAddress as `0x${string}`,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [activeWallet.address as `0x${string}`]
+        });
+        if ((rawBal as bigint) < numericAmount) {
+          throw new Error(
+            `Insufficient USDC balance on ${sourceChainConfig.name}. ` +
+            `You need ${amountString} USDC but your wallet only has ` +
+            `${(Number(rawBal) / 1_000_000).toFixed(6)} USDC.`
+          );
+        }
+        console.log(`[CCTP] Balance OK: ${(Number(rawBal) / 1_000_000).toFixed(6)} USDC available`);
+      } catch (balErr: any) {
+        if (balErr.message?.includes("Insufficient USDC")) throw balErr;
+        console.warn("[CCTP] Balance pre-check failed (non-fatal):", balErr.message);
+      }
+
       // ====================================================
       // STEP 1 — Approve USDC on source chain
       // ====================================================
@@ -622,6 +688,9 @@ export function useCCTPBridge() {
       const zeroBytes32 =
         "0x0000000000000000000000000000000000000000000000000000000000000000" as `0x${string}`;
 
+      // CCTP V2 depositForBurn parameters:
+      //   minFinalityThreshold: 2000 = Standard (free) — avoids "Insufficient max fee" reverts.
+      //   maxFee: 0n for Standard (not charged). If upgrading to Fast: maxFee >= fetchMinFeeForRoute().
       const burnData = encodeFunctionData({
         abi: tokenMessengerV2Abi,
         functionName: "depositForBurn",
@@ -631,8 +700,8 @@ export function useCCTPBridge() {
           mintRecipientBytes32,
           (sourceChainConfig as any).usdcAddress as `0x${string}`,
           zeroBytes32,
-          0n,
-          0
+          0n,              // maxFee: 0 for Standard transfers (free)
+          FINALITY_STANDARD // minFinalityThreshold: 2000 = Standard (no fee)
         ]
       });
 
@@ -669,8 +738,14 @@ export function useCCTPBridge() {
       );
 
       if (burnReceipt.status === "reverted") {
+        // Diagnose the likely cause based on what we know
+        const srcName = sourceChainConfig.name;
         throw new Error(
-          "Burn transaction reverted. Check USDC balance and that the TokenMessenger address is correct."
+          `Burn reverted on ${srcName}. Possible causes:\n` +
+          `• Insufficient USDC balance (need ${amountString} USDC + gas)\n` +
+          `• USDC not approved for TokenMessenger\n` +
+          `• CCTP route from ${srcName} → Arc not yet supported\n` +
+          `Burn tx: ${burnTxHash}`
         );
       }
 
