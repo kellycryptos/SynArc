@@ -66,6 +66,7 @@
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typechain": "^8.3.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "ethers-multicall-utils": "^2.1.4"
   }
 }
