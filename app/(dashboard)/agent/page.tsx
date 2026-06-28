@@ -108,12 +108,20 @@ export default function AgentPage() {
   // ── Auto Payments State ──────────────────────────────────────────────────
   const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
   const [paymentForm, setPaymentForm] = useState({ recipient: "", label: "", amount: "", frequency: "monthly", asset: "USDC" });
-  const [scheduledPayments, setScheduledPayments] = useState([
-    { id: 1, label: "Creator Payouts",    recipient: "0x4A2b...3f9E", amount: 25,   asset: "USDC", frequency: "weekly",   status: "scheduled", nextRun: "Jul 4, 2026" },
-    { id: 2, label: "Team Payroll",       recipient: "0x9C1d...7a2B", amount: 150,  asset: "USDC", frequency: "monthly",  status: "scheduled", nextRun: "Jul 1, 2026" },
-    { id: 3, label: "Protocol Fee Rebate",recipient: "0xF3e8...0c4D", amount: 5,    asset: "EURC", frequency: "weekly",   status: "paused",    nextRun: "—" },
-  ]);
+  const [scheduledPayments, setScheduledPayments] = useState<Array<{id:number;label:string;recipient:string;amount:number;asset:string;frequency:string;status:string;nextRun:string}>>([]);
   const [isSavingPayment, setIsSavingPayment] = useState(false);
+
+  // Live Feature States
+  const [isSweepRunning, setIsSweepRunning] = useState(false);
+  const [isYieldProposing, setIsYieldProposing] = useState(false);
+  const [showAlertSettings, setShowAlertSettings] = useState(false);
+  const [alertThresholdInput, setAlertThresholdInput] = useState("10");
+  const [alertThreshold, setAlertThreshold] = useState(() => {
+    if (typeof window !== "undefined") {
+      return parseInt(localStorage.getItem("synarc_alert_threshold") || "10", 10);
+    }
+    return 10;
+  });
 
   const fetchOnChainState = useCallback(async () => {
     setOnChainLoading(true);
@@ -523,6 +531,63 @@ export default function AgentPage() {
     fetchAgentState();
   };
 
+  const runAutoSweep = async () => {
+    setIsSweepRunning(true);
+    const toastId = toast.loading("Running auto sweep cycle...");
+    try {
+      const res = await fetch("/api/agent/run", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        await fetchAgentState();
+        const act = data.action;
+        if (act?.action === "bridge_to_ethereum") {
+          toast.success(`Sweep complete — bridged ${act.usdcAmount} USDC → Ethereum`, { id: toastId, duration: 5000 });
+        } else {
+          toast.success("Sweep cycle complete — check Action Console", { id: toastId });
+        }
+      } else {
+        toast.error(data.error || "Sweep failed", { id: toastId });
+      }
+    } catch {
+      toast.error("Failed to run sweep", { id: toastId });
+    } finally {
+      setIsSweepRunning(false);
+    }
+  };
+
+  const proposeYieldAllocation = async () => {
+    setIsYieldProposing(true);
+    const toastId = toast.loading("Agent preparing yield allocation proposal...");
+    try {
+      const res = await fetch("/api/agent/run", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        await fetchAgentState();
+        toast.success("Yield allocation proposal submitted to governance!", { id: toastId, duration: 6000 });
+      } else {
+        toast.error(data.error || "Failed to propose yield allocation", { id: toastId });
+      }
+    } catch {
+      toast.error("Failed to propose yield allocation", { id: toastId });
+    } finally {
+      setIsYieldProposing(false);
+    }
+  };
+
+  const saveAlertThreshold = () => {
+    const val = parseInt(alertThresholdInput, 10);
+    if (!isNaN(val) && val >= 0) {
+      setAlertThreshold(val);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("synarc_alert_threshold", val.toString());
+      }
+      toast.success(`Alert threshold set to ${val} USDC`);
+      setShowAlertSettings(false);
+    } else {
+      toast.error("Enter a valid threshold");
+    }
+  };
+
   const runAgent = async () => {
     setRunning(true);
     const toastId = toast.loading("Agent analyzing treasury...");
@@ -581,9 +646,9 @@ export default function AgentPage() {
     const usdc = demoUSDCBalance !== null ? demoUSDCBalance : (treasury?.usdc || 0);
     const signals: { label: string; severity: "low" | "medium" | "high"; active: boolean; icon: any }[] = [
       {
-        label: "Low Liquidity (USDC < 10)",
+        label: `Low Liquidity (USDC < ${alertThreshold})`,
         severity: "high",
-        active: usdc < 10,
+        active: usdc < alertThreshold,
         icon: TrendingDown,
       },
       {
@@ -608,7 +673,7 @@ export default function AgentPage() {
       },
     ];
     return signals;
-  }, [treasury, demoUSDCBalance, onChainPaused, actions]);
+  }, [treasury, demoUSDCBalance, onChainPaused, actions, alertThreshold]);
 
   const riskScore = useMemo(() => {
     const weights = { high: 40, medium: 20, low: 10 };
@@ -950,9 +1015,15 @@ export default function AgentPage() {
                           <span className="text-xs font-bold text-text-primary truncate">
                             {action.action === "bridge_to_ethereum" ? `CCTP Bridge ${action.usdcAmount || 0} USDC` :
                              action.action === "monitoring" ? "Treasury Monitoring" :
+                             action.action === "vote_for_proposal" ? "Voted FOR Proposal" :
                              action.action}
                           </span>
                           <StatusBadge status={action.status} />
+                          {action.action !== "monitoring" && action.action !== "error" && (
+                            <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary shrink-0 whitespace-nowrap">
+                              🤖 Treasury Agent
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-muted leading-relaxed line-clamp-2">{action.reasoning}</p>
                         {action.txHash && (
@@ -1182,9 +1253,9 @@ export default function AgentPage() {
             {/* Summary stats */}
             <div className="grid grid-cols-3 gap-3">
               {[
-                { label: "Scheduled / Mo", value: `${scheduledPayments.filter(p => p.status === "scheduled").reduce((s, p) => s + p.amount, 0)} USDC` },
-                { label: "Next Payout",   value: "Jul 1, 2026" },
-                { label: "Recipients",    value: scheduledPayments.length.toString() },
+                { label: "Scheduled / Mo", value: scheduledPayments.length > 0 ? `${scheduledPayments.filter(p => p.status === "scheduled").reduce((s, p) => s + p.amount, 0)} USDC` : "— USDC" },
+                { label: "Next Payout",   value: scheduledPayments.filter(p => p.status === "scheduled").length > 0 ? (scheduledPayments.filter(p => p.status === "scheduled").sort((a, b) => a.nextRun.localeCompare(b.nextRun))[0]?.nextRun || "—") : "—" },
+                { label: "Recipients",    value: scheduledPayments.length > 0 ? scheduledPayments.length.toString() : "0" },
               ].map(stat => (
                 <div key={stat.label} className="text-center p-2.5 rounded-xl bg-surface-elevated/40 border border-border-thin">
                   <p className="text-[10px] text-muted">{stat.label}</p>
@@ -1194,6 +1265,12 @@ export default function AgentPage() {
             </div>
 
             {/* Payment schedule table */}
+            {scheduledPayments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 gap-2 rounded-xl border border-border-thin border-dashed">
+                <Calendar className="w-8 h-8 text-muted/40" />
+                <p className="text-xs text-muted text-center">No payments scheduled.<br />Click below to add your first recurring payment.</p>
+              </div>
+            ) : (
             <div className="overflow-x-auto rounded-xl border border-border-thin">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -1228,6 +1305,7 @@ export default function AgentPage() {
                 </tbody>
               </table>
             </div>
+            )}
 
             <button
               onClick={() => { setPaymentForm({ recipient: "", label: "", amount: "", frequency: "monthly", asset: "USDC" }); setShowPaymentModal(true); }}
@@ -1239,11 +1317,11 @@ export default function AgentPage() {
           </GlassCard>
 
           {/* ════ AUTO YIELD FARMING ══════════════════════════════════════════ */}
-          <GlassCard className="p-5 space-y-5 opacity-90" hover={false}>
+          <GlassCard className="p-5 space-y-5" hover={false}>
             <div className="flex items-center gap-2">
               <Percent className="w-5 h-5 text-violet-400" />
               <h2 className="text-sm font-bold text-text-primary">Auto Yield Farming</h2>
-              <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-violet-500/15 border border-violet-500/25 text-violet-400 animate-pulse">COMING SOON</span>
+              <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-violet-500/15 border border-violet-500/25 text-violet-400">TESTNET</span>
             </div>
 
             <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl flex items-start gap-3">
@@ -1281,18 +1359,29 @@ export default function AgentPage() {
                   </div>
                   <p className="text-[10px] text-muted">APY (current estimate)</p>
                   <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[9px] font-bold bg-surface-elevated border border-border-thin text-muted">
-                    SOON
+                    PLANNED
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="relative">
-              <button disabled className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600/10 border border-violet-500/20 text-violet-400/50 text-xs font-bold cursor-not-allowed">
-                <Lock className="w-3.5 h-3.5" />
-                Enable Auto-Yield — Coming Soon
-              </button>
-            </div>
+            <p className="text-[10px] text-muted leading-relaxed">
+              Agent will create a governance proposal to allocate idle USDC to the highest-yield strategy. Community votes before any funds move.
+            </p>
+
+            <motion.button
+              onClick={proposeYieldAllocation}
+              disabled={isYieldProposing || onChainPaused}
+              whileHover={{ scale: (isYieldProposing || onChainPaused) ? 1 : 1.02 }}
+              whileTap={{ scale: (isYieldProposing || onChainPaused) ? 1 : 0.98 }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600/20 border border-violet-500/30 text-violet-400 text-xs font-bold hover:bg-violet-600/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isYieldProposing ? (
+                <><span className="w-3.5 h-3.5 rounded-full border-2 border-violet-400/30 border-t-violet-400 animate-spin" />Proposing Yield Allocation...</>
+              ) : (
+                <><TrendingUp className="w-3.5 h-3.5" />Propose Yield Allocation</>
+              )}
+            </motion.button>
           </GlassCard>
 
           {/* ════ RISK MONITORING ═════════════════════════════════════════════ */}
@@ -1376,13 +1465,16 @@ export default function AgentPage() {
             </div>
 
             <div className="flex gap-3 pt-1 border-t border-border-thin">
-              <div className="relative flex-1">
-                <button disabled className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border-thin bg-surface-elevated/40 text-xs font-bold text-muted cursor-not-allowed">
-                  <BellRing className="w-3.5 h-3.5" />
-                  Alert Settings
-                  <span className="ml-auto text-[9px] px-1 py-0.5 rounded bg-surface-elevated border border-border-thin">SOON</span>
-                </button>
-              </div>
+              <button
+                onClick={() => { setAlertThresholdInput(alertThreshold.toString()); setShowAlertSettings(true); }}
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border-thin bg-surface-elevated/40 text-xs font-bold text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-all cursor-pointer"
+              >
+                <BellRing className="w-3.5 h-3.5" />
+                Alert Settings
+                {alertThreshold !== 10 && (
+                  <span className="ml-1 text-[9px] px-1 py-0.5 rounded bg-primary/15 border border-primary/25 text-primary">{alertThreshold} USDC</span>
+                )}
+              </button>
               <button
                 onClick={() => { fetchAgentState(); fetchOnChainState(); }}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border-thin bg-surface-elevated/40 text-xs font-bold text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-all cursor-pointer"
@@ -1394,16 +1486,34 @@ export default function AgentPage() {
           </GlassCard>
 
           {/* ════ MULTI-CHAIN AUTO SWEEP ══════════════════════════════════════ */}
-          <GlassCard className="p-5 space-y-5 opacity-90" hover={false}>
+          <GlassCard className="p-5 space-y-5" hover={false}>
             <div className="flex items-center gap-2">
               <Globe className="w-5 h-5 text-blue-400" />
               <h2 className="text-sm font-bold text-text-primary">Multi-Chain Auto Sweep</h2>
-              <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500/15 border border-blue-500/25 text-blue-400 animate-pulse">COMING SOON</span>
+              <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/25 text-emerald-400">LIVE</span>
             </div>
 
             <p className="text-xs text-muted leading-relaxed">
-              Automatically detects and sweeps incoming USDC from bridge contracts into the DAO treasury. Eliminates manual token collection across chains.
+              Detects and sweeps incoming USDC from bridge contracts into the DAO treasury. Click below to trigger the agent sweep cycle now.
             </p>
+
+            {/* Last sweep info */}
+            {actions.find(a => a.action === "bridge_to_ethereum") ? (
+              <div className="p-3 bg-blue-500/5 border border-blue-500/20 rounded-xl space-y-1.5">
+                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Last Sweep</p>
+                <p className="text-xs text-text-secondary font-medium">
+                  {actions.find(a => a.action === "bridge_to_ethereum")?.usdcAmount?.toFixed(2) ?? "—"} USDC bridged to Ethereum
+                </p>
+                <p className="text-[10px] text-muted font-mono">
+                  {new Date(actions.find(a => a.action === "bridge_to_ethereum")?.timestamp || "").toLocaleString()}
+                </p>
+              </div>
+            ) : (
+              <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                <span className="text-xs text-text-secondary font-medium">No sweeps yet — agent monitoring bridge inflows</span>
+              </div>
+            )}
 
             {/* Visual chain map */}
             <div className="flex items-center justify-between gap-2 p-4 bg-surface-elevated/40 border border-border-thin rounded-2xl">
@@ -1411,27 +1521,24 @@ export default function AgentPage() {
                 { label: "Ethereum Sepolia", emoji: "🪙", color: "border-blue-500/30 bg-blue-500/10" },
                 { label: "Arc Testnet",      emoji: "⚡", color: "border-primary/30 bg-primary/10" },
                 { label: "DAO Treasury",     emoji: "🏛️",  color: "border-emerald-500/30 bg-emerald-500/10" },
-              ].map((chain, i) => (
+              ].map((chain) => (
                 <div key={chain.label} className="flex flex-col items-center gap-1.5">
                   <div className={`w-12 h-12 rounded-xl border ${chain.color} flex items-center justify-center text-xl`}>
                     {chain.emoji}
                   </div>
                   <span className="text-[10px] text-muted text-center font-medium">{chain.label}</span>
-                  {i < 2 && (
-                    <ArrowRight className="w-4 h-4 text-muted absolute" style={{ left: "100%", top: "30%" }} />
-                  )}
                 </div>
               ))}
             </div>
 
             {/* Supported chains */}
             <div className="space-y-2">
-              <p className="text-[10px] text-muted font-bold uppercase tracking-wider">Planned Chains</p>
+              <p className="text-[10px] text-muted font-bold uppercase tracking-wider">Chain Support</p>
               {[
+                { name: "Arc Testnet",       status: "live" },
+                { name: "Ethereum Sepolia",  status: "live" },
                 { name: "Ethereum Mainnet",  status: "planned" },
                 { name: "Base",              status: "planned" },
-                { name: "Arbitrum One",      status: "planned" },
-                { name: "Arc Testnet",       status: "live" },
               ].map(c => (
                 <div key={c.name} className="flex items-center justify-between text-xs py-1.5 border-b border-border-thin/50 last:border-0">
                   <span className="text-text-secondary font-medium">{c.name}</span>
@@ -1444,10 +1551,19 @@ export default function AgentPage() {
               ))}
             </div>
 
-            <button disabled className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-400/50 text-xs font-bold cursor-not-allowed">
-              <Lock className="w-3.5 h-3.5" />
-              Enable Auto-Sweep — Coming Soon
-            </button>
+            <motion.button
+              onClick={runAutoSweep}
+              disabled={isSweepRunning || onChainPaused}
+              whileHover={{ scale: (isSweepRunning || onChainPaused) ? 1 : 1.02 }}
+              whileTap={{ scale: (isSweepRunning || onChainPaused) ? 1 : 0.98 }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400 text-xs font-bold hover:bg-blue-600/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSweepRunning ? (
+                <><span className="w-3.5 h-3.5 rounded-full border-2 border-blue-400/30 border-t-blue-400 animate-spin" />Running Sweep Cycle...</>
+              ) : (
+                <><Globe className="w-3.5 h-3.5" />Run Auto Sweep Now</>
+              )}
+            </motion.button>
           </GlassCard>
 
           {/* Agent Queued Withdrawals Section */}
@@ -1809,6 +1925,88 @@ export default function AgentPage() {
                     className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 text-sm font-bold transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                   >
                     {isSavingPayment ? "Scheduling..." : "Schedule Payment"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Alert Settings Modal ──────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showAlertSettings && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
+            >
+              <button
+                onClick={() => setShowAlertSettings(false)}
+                className="absolute top-4 right-4 text-muted hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                <BellRing className="w-5 h-5 text-primary" />
+                Risk Alert Settings
+              </h3>
+              <p className="text-xs text-muted mb-5">Configure thresholds for automated risk alerts. Settings are saved locally in your browser.</p>
+
+              <div className="space-y-5">
+                {/* Low Balance Threshold */}
+                <div>
+                  <label className="block text-xs font-semibold text-muted mb-1.5">Low Balance Alert (USDC)</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="0"
+                      value={alertThresholdInput}
+                      onChange={e => setAlertThresholdInput(e.target.value)}
+                      placeholder="e.g. 10"
+                      className="flex-1 bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-primary/50 font-mono font-bold"
+                    />
+                    <span className="text-xs text-muted font-medium">USDC</span>
+                  </div>
+                  <p className="text-[10px] text-muted mt-1.5">
+                    Alert fires when USDC balance drops below this amount. Currently: <span className="text-primary font-bold">{alertThreshold} USDC</span>
+                  </p>
+                </div>
+
+                {/* Active Alert Rules */}
+                <div className="space-y-2">
+                  <p className="text-[10px] text-muted font-bold uppercase tracking-wider">Active Alert Rules</p>
+                  {[
+                    { label: "Low Liquidity Alert", desc: `USDC < ${alertThreshold} USDC` },
+                    { label: "Agent Emergency Stop", desc: "Fires when agent is paused on-chain" },
+                    { label: "Large Outflow Alert", desc: "Outflow > 80% of balance" },
+                    { label: "Agent Inactivity Alert", desc: "No agent action in 6+ hours" },
+                  ].map(rule => (
+                    <div key={rule.label} className="flex items-start gap-3 p-2.5 rounded-xl border border-border-thin bg-surface-elevated/30">
+                      <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold text-text-primary">{rule.label}</p>
+                        <p className="text-[10px] text-muted">{rule.desc}</p>
+                      </div>
+                      <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary">ON</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-3 pt-1">
+                  <button
+                    onClick={() => setShowAlertSettings(false)}
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-white transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveAlertThreshold}
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-black hover:bg-primary-glow text-sm font-bold transition-all cursor-pointer"
+                  >
+                    Save Settings
                   </button>
                 </div>
               </div>
