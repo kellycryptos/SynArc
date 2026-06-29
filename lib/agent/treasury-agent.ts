@@ -118,6 +118,12 @@ export class TreasuryAgent {
       if (treasury.usdc > 100) {
         return { shouldAct: true, action: 'bridge_to_ethereum', reasoning: `Treasury holds ${treasury.usdc} USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.`, proposedAmount: Math.floor(treasury.usdc * 0.3) }
       }
+      if (treasury.usdc < 10) {
+        return { shouldAct: true, action: 'emergency_funding', reasoning: `Treasury holds ${treasury.usdc} USDC — below 10 threshold. Proposing emergency funding request.`, proposedAmount: 50 }
+      }
+      if (treasury.eurc > 50) {
+        return { shouldAct: true, action: 'rebalance_eurc', reasoning: `Treasury holds ${treasury.eurc} EURC — above 50 threshold. Proposing EURC rebalancing.`, proposedAmount: Math.floor(treasury.eurc * 0.4) }
+      }
       return { shouldAct: false, action: 'monitoring', reasoning: `Treasury healthy (USDC: ${treasury.usdc}, EURC: ${treasury.eurc}). Continuing to monitor.` }
     }
   }

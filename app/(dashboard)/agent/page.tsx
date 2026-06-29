@@ -714,13 +714,13 @@ export default function AgentPage() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={() => {
               fetchAgentState();
               fetchOnChainState();
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border-thin bg-surface-elevated hover:bg-surface text-sm font-medium text-text-secondary hover:text-text-primary transition-all cursor-pointer"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-border-thin bg-surface-elevated hover:bg-surface text-sm font-medium text-text-secondary hover:text-text-primary transition-all cursor-pointer"
           >
             <RotateCw className="w-3.5 h-3.5" />
             Refresh
@@ -731,7 +731,7 @@ export default function AgentPage() {
             disabled={isPausing}
             whileHover={{ scale: isPausing ? 1 : 1.02 }}
             whileTap={{ scale: isPausing ? 1 : 0.98 }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all shadow-md cursor-pointer disabled:cursor-not-allowed ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all shadow-md cursor-pointer disabled:cursor-not-allowed ${
               onChainPaused
                 ? "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20"
                 : "bg-red-600 hover:bg-red-500 shadow-red-600/20"
@@ -757,7 +757,7 @@ export default function AgentPage() {
             disabled={running || onChainPaused}
             whileHover={{ scale: (running || onChainPaused) ? 1 : 1.02 }}
             whileTap={{ scale: (running || onChainPaused) ? 1 : 0.98 }}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-blue text-white text-sm font-bold hover:opacity-90 disabled:opacity-60 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer disabled:cursor-not-allowed"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-blue text-white text-sm font-bold hover:opacity-90 disabled:opacity-60 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer disabled:cursor-not-allowed"
           >
             {running ? (
               <><span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />Running...</>
@@ -874,11 +874,8 @@ export default function AgentPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* Left: Decision Engine + Agent Identity */}
-        <div className="space-y-6">
-
-          {/* Decision Engine */}
-          <GlassCard className="p-5 space-y-4" hover={false}>
+        {/* Decision Engine */}
+        <GlassCard className="p-5 space-y-4 col-span-1 lg:col-span-1 order-3 lg:order-none" hover={false}>
             <div className="flex items-center gap-2">
               <BrainCircuit className="w-5 h-5 text-primary" />
               <h2 className="text-sm font-bold text-text-primary">Treasury Decision Engine</h2>
@@ -893,7 +890,7 @@ export default function AgentPage() {
           </GlassCard>
  
           {/* Agent Identity */}
-          <GlassCard className="p-5 space-y-4" hover={false}>
+          <GlassCard className="p-5 space-y-4 col-span-1 lg:col-span-1 order-4 lg:order-none" hover={false}>
             <div className="flex items-center gap-2">
               <Wallet className="w-5 h-5 text-primary" />
               <h2 className="text-sm font-bold text-text-primary">Workspace Identity</h2>
@@ -988,7 +985,7 @@ export default function AgentPage() {
           </GlassCard>
 
           {/* CCTP Bridge Status */}
-          <GlassCard className="p-5 space-y-4" hover={false}>
+          <GlassCard className="p-5 space-y-4 col-span-1 lg:col-span-1 order-5 lg:order-none" hover={false}>
             <div className="flex items-center gap-2">
               <ArrowLeftRight className="w-5 h-5 text-blue-400" />
               <h2 className="text-sm font-bold text-text-primary">CCTP Bridge</h2>
@@ -1016,13 +1013,9 @@ export default function AgentPage() {
               The agent bridges USDC once a community vote passes. Transfers are fully secure and direct.
             </p>
           </GlassCard>
-        </div>
-
-        {/* Right: Agent Actions Console + Inference Payments */}
-        <div className="lg:col-span-2 space-y-6">
 
           {/* Agent Controls */}
-          <GlassCard className="p-5" hover={false}>
+          <GlassCard className="p-5 col-span-1 lg:col-span-2 order-1 lg:order-none" hover={false}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Cpu className="w-5 h-5 text-primary" />
@@ -1053,7 +1046,7 @@ export default function AgentPage() {
                       <Bot className="w-7 h-7 text-primary/60" />
                     </div>
                     <p className="text-sm text-muted text-center">
-                      No actions yet.<br />Click <strong className="text-text-primary">Run Agent Now</strong> to start the autonomous loop.
+                      No actions yet.<br />Click <strong className="text-text-primary">Verify Rules Now</strong> to run the rules check.
                     </p>
                   </motion.div>
                 ) : (
@@ -1072,6 +1065,8 @@ export default function AgentPage() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-bold text-text-primary truncate">
                             {action.action === "bridge_to_ethereum" ? `CCTP Bridge ${action.usdcAmount || 0} USDC` :
+                             action.action === "rebalance_eurc" ? `Rebalance ${action.usdcAmount || 0} EURC` :
+                             action.action === "emergency_funding" ? "Emergency Funding Request" :
                              action.action === "monitoring" ? "Treasury Monitoring" :
                              action.action === "vote_for_proposal" ? "Voted FOR Proposal" :
                              action.action}
@@ -1107,7 +1102,7 @@ export default function AgentPage() {
           </GlassCard>
 
           {/* Circle Integrations */}
-          <GlassCard className="p-5 space-y-4" hover={false}>
+          <GlassCard className="p-5 space-y-4 col-span-1 lg:col-span-2 order-10 lg:order-none" hover={false}>
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" />
               <h2 className="text-sm font-bold text-text-primary">Circle Integrations</h2>
@@ -1127,7 +1122,7 @@ export default function AgentPage() {
 
           {/* Gateway Inference Payments */}
           {payments && payments.callCount > 0 && (
-            <GlassCard className="p-5 space-y-4" hover={false}>
+            <GlassCard className="p-5 space-y-4 col-span-1 lg:col-span-1 order-11 lg:order-none" hover={false}>
               <div className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-emerald-400" />
                 <h2 className="text-sm font-bold text-text-primary">Agent Inference Payments</h2>
@@ -1158,7 +1153,7 @@ export default function AgentPage() {
           )}
 
           {/* Live On-Chain Rebalance Monitor */}
-          <GlassCard className="p-5 space-y-5 border-primary/30 bg-primary/[0.02] shadow-[0_0_30px_rgba(124,58,237,0.08)]" hover={false}>
+          <GlassCard className="p-5 space-y-5 border-border-thin bg-surface-elevated/30 col-span-1 lg:col-span-2 order-2 lg:order-none" hover={false}>
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
               <h2 className="text-sm font-bold text-text-primary">Live Treasury Monitor</h2>
@@ -1301,7 +1296,7 @@ export default function AgentPage() {
           </GlassCard>
 
           {/* ════ AUTO PAYMENTS ════════════════════════════════════════════ */}
-          <GlassCard className="p-5 space-y-5" hover={false}>
+          <GlassCard className="p-5 space-y-5 col-span-1 lg:col-span-2 order-6 lg:order-none" hover={false}>
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-emerald-400" />
               <h2 className="text-sm font-bold text-text-primary">Auto Payments</h2>
@@ -1375,7 +1370,7 @@ export default function AgentPage() {
           </GlassCard>
 
           {/* ════ AUTO YIELD FARMING ══════════════════════════════════════════ */}
-          <GlassCard className="p-5 space-y-5" hover={false}>
+          <GlassCard className="p-5 space-y-5 col-span-1 lg:col-span-1 order-9 lg:order-none" hover={false}>
             <div className="flex items-center gap-2">
               <Percent className="w-5 h-5 text-violet-400" />
               <h2 className="text-sm font-bold text-text-primary">Auto Yield Farming</h2>
@@ -1443,7 +1438,7 @@ export default function AgentPage() {
           </GlassCard>
 
           {/* ════ RISK MONITORING ═════════════════════════════════════════════ */}
-          <GlassCard className={`p-5 space-y-5 ${ riskScore >= 40 ? "border-red-500/30 bg-red-500/[0.02]" : riskScore >= 20 ? "border-amber-500/30 bg-amber-500/[0.02]" : "border-emerald-500/20" }`} hover={false}>
+          <GlassCard className={`p-5 space-y-5 col-span-1 lg:col-span-1 order-7 lg:order-none ${ riskScore >= 40 ? "border-red-500/30 bg-red-500/[0.01]" : riskScore >= 20 ? "border-amber-500/30 bg-amber-500/[0.01]" : "border-border-thin" }`} hover={false}>
             <div className="flex items-center gap-2">
               <BellRing className={`w-5 h-5 ${ riskScore >= 40 ? "text-red-400" : riskScore >= 20 ? "text-amber-400" : "text-emerald-400" }`} />
               <h2 className="text-sm font-bold text-text-primary">Risk Monitoring &amp; Alerts</h2>
@@ -1544,7 +1539,7 @@ export default function AgentPage() {
           </GlassCard>
 
           {/* ════ MULTI-CHAIN AUTO SWEEP ══════════════════════════════════════ */}
-          <GlassCard className="p-5 space-y-5" hover={false}>
+          <GlassCard className="p-5 space-y-5 col-span-1 lg:col-span-1 order-8 lg:order-none" hover={false}>
             <div className="flex items-center gap-2">
               <Globe className="w-5 h-5 text-blue-400" />
               <h2 className="text-sm font-bold text-text-primary">Multi-Chain Auto Sweep</h2>
@@ -1626,7 +1621,7 @@ export default function AgentPage() {
 
           {/* Agent Queued Withdrawals Section */}
           {pendingAgentWithdrawals.length > 0 && (
-            <GlassCard className="p-5 border border-warning/20 bg-warning/[0.01]">
+            <GlassCard className="p-5 border border-amber-500/20 bg-amber-500/[0.005] col-span-1 lg:col-span-3 order-12 lg:order-none">
               <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-warning" />
                 Agent Pending Withdrawals (24h Timelocked)
@@ -1706,7 +1701,6 @@ export default function AgentPage() {
             </GlassCard>
           )}
 
-        </div>
       </div>
 
       {/* Edit Limit Modal */}
