@@ -1,10 +1,145 @@
 import { createWalletClient, createPublicClient, http, custom, fallback, getAddress } from 'viem'
 import { ARC_CHAIN, ARC_RPC_URLS, ARC_GAS } from './arc-config'
 import { BrowserProvider, Contract, ZeroAddress } from 'ethers'
+import { getCircleClient } from './circle/client'
 
+const isCircleAddress = (address?: string) => {
+  if (typeof window === 'undefined') return false;
+  const savedAddress = localStorage.getItem('synarc_circle_address');
+  const savedConnected = localStorage.getItem('synarc_circle_connected') === 'true';
+  return savedConnected && !!savedAddress && (address ? address.toLowerCase() === savedAddress.toLowerCase() : true);
+};
+
+class CircleEthereumProvider {
+  private address: string;
+  private chainId: number;
+
+  constructor(address: string, chainId: number = 5042002) {
+    this.address = address;
+    this.chainId = chainId;
+  }
+
+  async request(args: { method: string; params?: any[] }): Promise<any> {
+    const { method, params } = args;
+
+    if (method === 'eth_accounts' || method === 'eth_requestAccounts') {
+      return [this.address];
+    }
+    if (method === 'eth_chainId') {
+      return `0x${this.chainId.toString(16)}`;
+    }
+    if (method === 'eth_sendTransaction') {
+      const tx = params?.[0];
+      if (!tx) throw new Error("Transaction parameters missing");
+      return await this.executeTransaction(tx);
+    }
+
+    // Pass-through other RPC requests
+    const rpcUrl = ARC_RPC_URLS[0] || 'https://rpc.testnet.arc.network';
+    const res = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method,
+        params
+      })
+    });
+    const data = await res.json();
+    if (data.error) {
+      throw new Error(data.error.message);
+    }
+    return data.result;
+  }
+
+  private async executeTransaction(tx: any): Promise<string> {
+    const userToken = localStorage.getItem('synarc_circle_user_token');
+    if (!userToken) throw new Error("Circle user token session missing. Please reconnect.");
+
+    // Call backend to create the contract execution challenge
+    const response = await fetch('/api/circle/wallet/execute', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-token': userToken
+      },
+      body: JSON.stringify({
+        contractAddress: tx.to,
+        callData: tx.data || '0x',
+        value: tx.value || '0x0'
+      })
+    });
+
+    const resData = await response.json();
+    if (!response.ok || !resData.success) {
+      throw new Error(resData.error || "Failed to create transaction challenge");
+    }
+
+    const { challengeId, txId } = resData;
+
+    // Trigger Circle Web SDK on frontend to execute the challenge
+    const circleClient = await getCircleClient();
+    if (!circleClient) throw new Error("Circle SDK client failed to load");
+
+    // Execute the challenge
+    await new Promise<void>((resolve, reject) => {
+      circleClient.execute(challengeId, (error: any, result: any) => {
+        if (error) {
+          console.error("[Circle Provider] SDK execution error:", error);
+          reject(new Error(error.message || `Challenge execution failed (code: ${error.code})`));
+        } else {
+          console.log("[Circle Provider] SDK execution success:", result);
+          resolve();
+        }
+      });
+    });
+
+    // Poll for the transaction completion and fetch the txHash
+    let attempts = 0;
+    const maxAttempts = 60; // 60 seconds timeout
+    while (attempts < maxAttempts) {
+      await new Promise(r => setTimeout(r, 1000));
+      const statusRes = await fetch(`/api/circle/wallet/transaction?id=${txId}`, {
+        headers: { 'x-user-token': userToken }
+      });
+      const statusData = await statusRes.json();
+      if (statusRes.ok && statusData.success) {
+        const txState = statusData.transaction?.state;
+        const txHash = statusData.transaction?.txHash;
+
+        if (txHash) {
+          console.log(`[Circle Provider] Transaction succeeded with hash: ${txHash}`);
+          return txHash;
+        }
+
+        if (txState === 'FAILED' || txState === 'DENIED') {
+          throw new Error(statusData.transaction?.errorReason || `Transaction failed with state: ${txState}`);
+        }
+      }
+      attempts++;
+    }
+
+    throw new Error("Transaction execution timed out waiting for blockchain broadcast.");
+  }
+}
 
 // Enforce target chain ID before executing transaction with dynamic checks to prevent Privy crashes
 export function selectActiveWallet(wallets?: any[], activeAddress?: string | null): any {
+  if (isCircleAddress(activeAddress || undefined)) {
+    const address = localStorage.getItem('synarc_circle_address')!;
+    const provider = new CircleEthereumProvider(address);
+    return {
+      address,
+      walletClientType: 'circle',
+      chainId: 'eip155:5042002',
+      getEthereumProvider: async () => provider,
+      getEip1193Provider: async () => provider,
+      getProvider: async () => provider,
+      switchChain: async () => {} // no-op
+    };
+  }
+
   if (!wallets || wallets.length === 0) return null;
   
   if (activeAddress) {
@@ -199,7 +334,8 @@ export const getSigner = async (wallets?: any[], targetChain?: any, activeAddres
 
   // Try Privy wallet first and perform chain switching if necessary
   let knownAddress: `0x${string}` | undefined;
-  if (wallets && wallets.length > 0) {
+  const circleActive = isCircleAddress(activeAddress);
+  if ((wallets && wallets.length > 0) || circleActive) {
     const activeWallet = selectActiveWallet(wallets, activeAddress);
     if (activeWallet) {
       try {
@@ -366,10 +502,11 @@ export const getAuthenticatedClient = async (
   let provider: any;
   let address: `0x${string}` | undefined;
 
-  // 1. If we have a Privy wallet array, use the active wallet
-  if (wallets && wallets.length > 0) {
+  const circleActive = isCircleAddress(activeAddress);
+  // 1. If we have a Privy wallet array or Circle wallet is active, use the active wallet
+  if ((wallets && wallets.length > 0) || circleActive) {
     const activeWallet = selectActiveWallet(wallets, activeAddress);
-    console.log(`[getAuthenticatedClient] Connected Privy wallet address: ${activeWallet.address}`);
+    console.log(`[getAuthenticatedClient] Connected wallet address: ${activeWallet.address}`);
     
     // Switch/enforce chain reliably using enforceChain (which handles adding the network if missing)
     try {

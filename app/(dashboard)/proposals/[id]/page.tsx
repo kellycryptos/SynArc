@@ -244,7 +244,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       if (!walletAddress || !proposal) return;
 
       const isSimulated = proposal.id.includes("-") && isNaN(Number(proposal.id.replace("SIP-", "")));
-      if (isCircle || isSimulated) {
+      if (isSimulated) {
         if (typeof window !== "undefined") {
           const stored = localStorage.getItem("synarc_simulated_votes");
           const votes = stored ? JSON.parse(stored) : {};
@@ -356,7 +356,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     toast.success('Vote submitted optimistically! Syncing with Arc...');
 
     const isSimulated = proposal.id.includes("-") && isNaN(Number(proposal.id.replace("SIP-", "")));
-    if (isCircle || isSimulated) {
+    if (isSimulated) {
       try {
         setVoting(true);
         setVotingError(null);
@@ -555,7 +555,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     }
 
     const isSimulated = proposal.id.includes("-") && isNaN(Number(proposal.id.replace("SIP-", "")));
-    if (isCircle || isSimulated) {
+    if (isSimulated) {
       try {
         toast.success("Initiating proposal execution simulation...");
         await new Promise(resolve => setTimeout(resolve, 2000));

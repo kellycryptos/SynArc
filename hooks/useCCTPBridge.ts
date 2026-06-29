@@ -327,6 +327,76 @@ async function pollAttestation(
 }
 
 // ============================================================
+// Helper: Send transaction directly via EIP-1193 provider to bypass EIP-5792 failures on Privy
+// ============================================================
+async function sendBridgeTx(
+  activeWallet: any,
+  walletClient: any,
+  txParams: {
+    to: `0x${string}`;
+    data: `0x${string}`;
+    account: `0x${string}`;
+    gas?: bigint;
+    gasPrice?: bigint;
+    value?: bigint;
+  }
+): Promise<string> {
+  if (activeWallet) {
+    try {
+      const provider = await (
+        activeWallet.getEthereumProvider?.() ||
+        activeWallet.getEip1193Provider?.() ||
+        (activeWallet as any).getProvider?.()
+      );
+
+      if (provider && provider.request) {
+        console.log("[CCTP Bridge] Direct EIP-1193 provider execution initiated...");
+        const toHex = (val: bigint | number | undefined) => {
+          if (val === undefined || val === null) return undefined;
+          return `0x${BigInt(val).toString(16)}`;
+        };
+
+        const rawParams: any = {
+          from: txParams.account,
+          to: txParams.to,
+          data: txParams.data,
+        };
+        if (txParams.gas !== undefined) rawParams.gas = toHex(txParams.gas);
+        if (txParams.gasPrice !== undefined) rawParams.gasPrice = toHex(txParams.gasPrice);
+        if (txParams.value !== undefined) rawParams.value = toHex(txParams.value);
+
+        const txHash = await provider.request({
+          method: "eth_sendTransaction",
+          params: [rawParams]
+        });
+        if (txHash) {
+          console.log("[CCTP Bridge] Direct EIP-1193 execution successful. Tx:", txHash);
+          return txHash;
+        }
+      }
+    } catch (err: any) {
+      console.warn("[CCTP Bridge] Direct execution failed, using fallback client.sendTransaction:", err);
+      
+      // Stop execution immediately if user explicitly cancelled / rejected the signature prompt
+      const errMsg = (err?.message || "").toLowerCase();
+      if (
+        errMsg.includes("user rejected") ||
+        errMsg.includes("user denied") ||
+        errMsg.includes("user_rejected") ||
+        errMsg.includes("cancelled") ||
+        errMsg.includes("rejected the request") ||
+        err?.code === 4001
+      ) {
+        throw err;
+      }
+    }
+  }
+
+  // Fallback to standard client-side viem wrapper
+  return await walletClient.sendTransaction(txParams);
+}
+
+// ============================================================
 // Hook
 // ============================================================
 export function useCCTPBridge() {
@@ -655,7 +725,7 @@ export function useCCTPBridge() {
 
       let approveTxHash: string;
       try {
-        approveTxHash = await walletClient.sendTransaction(approveParams);
+        approveTxHash = await sendBridgeTx(activeWallet, walletClient, approveParams);
       } catch (err: any) {
         throw new Error(`USDC approval rejected: ${err?.message || err}`);
       }
@@ -718,7 +788,7 @@ export function useCCTPBridge() {
 
       let burnTxHash: string;
       try {
-        burnTxHash = await walletClient.sendTransaction(burnParams);
+        burnTxHash = await sendBridgeTx(activeWallet, walletClient, burnParams);
       } catch (err: any) {
         throw new Error(`Burn transaction rejected: ${err?.message || err}`);
       }
@@ -866,7 +936,7 @@ export function useCCTPBridge() {
 
       let mintTxHash: string;
       try {
-        mintTxHash = await destWalletClient.sendTransaction(mintParams);
+        mintTxHash = await sendBridgeTx(activeWallet, destWalletClient, mintParams);
       } catch (err: any) {
         throw new Error(`Mint transaction rejected: ${err?.message || err}`);
       }
@@ -991,31 +1061,106 @@ async function switchToChain(
     );
     if (currentChainId === chainConfig.id) return;
 
-    await switchChainAsync({ chainId: chainConfig.id });
-  } catch (err: any) {
-    if (chainConfig.id === 5042002) {
-      const provider = await activeWallet.getEthereumProvider();
-      await provider.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: "0x4cef52",
-            chainName: "Arc Testnet",
-            rpcUrls: ARC_RPC_URLS,
-            nativeCurrency: {
-              name: "USD Coin",
-              symbol: "USDC",
-              decimals: 6
-            },
-            blockExplorerUrls: ["https://testnet.arcscan.app"]
-          }
-        ]
-      });
-      await switchChainAsync({ chainId: 5042002 });
-    } else {
-      throw new Error(
-        `Failed to switch to ${chainConfig.name}: ${err?.message || err}`
-      );
+    // 1. Try Privy / direct provider switch first (most reliable for embedded wallets)
+    const provider = await (
+      activeWallet.getEthereumProvider?.() ||
+      (activeWallet as any).getEip1193Provider?.() ||
+      (activeWallet as any).getProvider?.()
+    );
+
+    if (provider && provider.request) {
+      const chainIdHex = `0x${chainConfig.id.toString(16)}`;
+      console.log(`[CCTP Bridge] Direct switching to chain ${chainIdHex} on provider...`);
+
+      // Try adding if it might not be registered
+      if (chainConfig.id === 5042002) {
+        try {
+          await provider.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: "0x4cef52",
+                chainName: "Arc Testnet",
+                rpcUrls: ARC_RPC_URLS,
+                nativeCurrency: {
+                  name: "USD Coin",
+                  symbol: "USDC",
+                  decimals: 6
+                },
+                blockExplorerUrls: ["https://testnet.arcscan.app"]
+              }
+            ]
+          });
+        } catch (_) {}
+      } else if (chainConfig.id === 11155111) {
+        try {
+          await provider.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: "0xaa36a7",
+                chainName: "Ethereum Sepolia",
+                rpcUrls: ["https://rpc.ankr.com/eth_sepolia"],
+                nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
+                blockExplorerUrls: ["https://sepolia.etherscan.io"]
+              }
+            ]
+          });
+        } catch (_) {}
+      } else if (chainConfig.id === 84532) {
+        try {
+          await provider.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: "0x14a34",
+                chainName: "Base Sepolia",
+                rpcUrls: ["https://sepolia.base.org"],
+                nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+                blockExplorerUrls: ["https://sepolia.basescan.org"]
+              }
+            ]
+          });
+        } catch (_) {}
+      } else if (chainConfig.id === 43113) {
+        try {
+          await provider.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: "0xa869",
+                chainName: "Avalanche Fuji",
+                rpcUrls: ["https://api.avax-test.network/ext/bc/C/rpc"],
+                nativeCurrency: { name: "Avalanche", symbol: "AVAX", decimals: 18 },
+                blockExplorerUrls: ["https://testnet.snowtrace.io"]
+              }
+            ]
+          });
+        } catch (_) {}
+      }
+
+      try {
+        await provider.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: chainIdHex }]
+        });
+        console.log(`[CCTP Bridge] Direct switch complete for chain ${chainConfig.id}`);
+        await new Promise(resolve => setTimeout(resolve, 800));
+        return;
+      } catch (switchErr: any) {
+        console.warn("[CCTP Bridge] Direct provider switch failed, falling back to wagmi:", switchErr);
+      }
     }
+
+    // 2. Fallback to wagmi hook/privy switch
+    if (switchChainAsync) {
+      await switchChainAsync({ chainId: chainConfig.id });
+    } else if (activeWallet.switchChain) {
+      await activeWallet.switchChain(chainConfig.id);
+    }
+  } catch (err: any) {
+    throw new Error(
+      `Failed to switch to ${chainConfig.name}: ${err?.message || err}`
+    );
   }
 }

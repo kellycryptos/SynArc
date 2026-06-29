@@ -108,13 +108,7 @@ function TreasuryPageContent() {
     const toastId = toast.loading("Initiating withdrawal execution...");
     
     try {
-      if (isCircle) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        toast.success("Withdrawal executed successfully (Circle Simulation)!", { id: toastId });
-        refetchTreasury();
-        setExecutingId(null);
-        return;
-      }
+
       
       const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
       const gasParams = await getAggressiveGasParams(publicClient);
@@ -151,13 +145,7 @@ function TreasuryPageContent() {
     const toastId = toast.loading("Initiating withdrawal cancellation...");
     
     try {
-      if (isCircle) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        toast.success("Withdrawal canceled successfully (Circle Simulation)!", { id: toastId });
-        refetchTreasury();
-        setCancelingId(null);
-        return;
-      }
+
       
       const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
       const gasParams = await getAggressiveGasParams(publicClient);
@@ -331,32 +319,7 @@ function TreasuryPageContent() {
     setErrorMessage("");
 
     try {
-      if (isCircle) {
-        setDepositStatus(`Approving ${token}...`);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setDepositStatus(`Depositing ${token}...`);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        const mockHash = "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
-        setTxHash(mockHash);
-        setDepositStatus('✅ Deposit successful!');
-        toast.success(`${amount} ${token} deposited to treasury (Circle Simulation)`);
-        
-        addTransaction({
-          description: `${token} Deposit`,
-          amount: amount,
-          token: token,
-          date: new Date().toLocaleDateString('en-GB'),
-          txHash: mockHash,
-          status: 'confirmed',
-        });
-        
-        setDepositAmount("");
-        refetchTreasury();
-        refetchWalletUSDC?.();
-        refetchWalletEURC?.();
-        return;
-      }
+
 
       const activeWallet = selectActiveWallet(wallets, walletAddress);
       const isEmbedded = activeWallet?.walletClientType === 'privy';

@@ -188,13 +188,7 @@ export default function AgentPage() {
     const toastId = toast.loading(onChainPaused ? "Initiating agent unpause..." : "Initiating agent pause (emergency stop)...");
     
     try {
-      if (isCircle) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        toast.success(onChainPaused ? "Agent unpaused (Circle Simulation)!" : "Agent paused (Circle Simulation)!", { id: toastId });
-        setOnChainPaused(!onChainPaused);
-        setIsPausing(false);
-        return;
-      }
+
       
       const agentAddr = (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
                         process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
@@ -235,14 +229,7 @@ export default function AgentPage() {
     const toastId = toast.loading("Updating rebalance limit...");
     
     try {
-      if (isCircle) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        toast.success(`Limit updated to ${newLimit} USDC (Circle Simulation)!`, { id: toastId });
-        setMaxRebalanceAmount(newLimit);
-        setIsSettingLimit(false);
-        setShowLimitModal(false);
-        return;
-      }
+
       
       const agentAddr = (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
                         process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
@@ -286,12 +273,7 @@ export default function AgentPage() {
     const toastId = toast.loading("Executing agent withdrawal...");
     
     try {
-      if (isCircle) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        toast.success("Agent withdrawal executed (Circle Simulation)!", { id: toastId });
-        fetchOnChainState();
-        return;
-      }
+
       
       const agentAddr = (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
                         process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
@@ -332,12 +314,7 @@ export default function AgentPage() {
     const toastId = toast.loading("Canceling agent withdrawal...");
     
     try {
-      if (isCircle) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        toast.success("Agent withdrawal canceled (Circle Simulation)!", { id: toastId });
-        fetchOnChainState();
-        return;
-      }
+
       
       const agentAddr = (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
                         process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
@@ -382,25 +359,7 @@ export default function AgentPage() {
     const toastId = toast.loading("Queueing agent withdrawal...");
     
     try {
-      if (isCircle) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        toast.success("Withdrawal queued successfully (Circle Simulation)!", { id: toastId });
-        setShowWithdrawalModal(false);
-        setIsQueueingWithdrawal(false);
-        setQueuedWithdrawals([
-          ...queuedWithdrawals,
-          {
-            id: (queuedWithdrawals.length + 1).toString(),
-            token: withdrawalToken,
-            recipient: withdrawalRecipient,
-            amount: parseFloat(withdrawalAmount),
-            executionTime: Math.floor(Date.now() / 1000) + 86400,
-            executed: false,
-            canceled: false,
-          }
-        ]);
-        return;
-      }
+
       
       const agentAddr = (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
                         process.env.NEXT_PUBLIC_AGENT_ADDRESS || 

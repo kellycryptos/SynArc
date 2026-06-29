@@ -28,7 +28,7 @@ import { useTheme } from "@/providers/ThemeProvider";
 import { ethers, Contract, formatUnits } from "ethers";
 import { getResilientProvider } from "@/lib/rpc/config";
 import { ARC_RPC_URL } from "@/lib/arc/config";
-import { enforceChain } from "@/lib/tx-helper";
+import { enforceChain, getAuthenticatedClient } from "@/lib/tx-helper";
 
 export default function SettingsPage() {
   const { walletAddress, isAuthenticated, isCircle } = useAuth();
@@ -129,40 +129,12 @@ export default function SettingsPage() {
   };
 
   const handleTestApprove = async () => {
-    if (isCircle) {
-      setDiagLoading(prev => ({ ...prev, approve: true }));
-      logDiag("Initiating lightweight contract write (USDC.approve)...");
-      try {
-        const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
-        logDiag(`Sending approve(spender=${treasuryAddress}, amount=0)...`);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        const mockHash = "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
-        logDiag(`Transaction submitted! Hash: ${mockHash} (Circle Simulation)`);
-        logDiag("Waiting for transaction receipt...");
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        logDiag(`Success! Approved 0 USDC. Gas used: 45000. Block: 1234567`);
-      } catch (err: any) {
-        logDiag(`Transaction failed: ${err.message}`);
-      } finally {
-        setDiagLoading(prev => ({ ...prev, approve: false }));
-      }
-      return;
-    }
-
-    if (!wallets || wallets.length === 0) {
-      logDiag("Error: Wallet not connected.");
-      return;
-    }
     setDiagLoading(prev => ({ ...prev, approve: true }));
     logDiag("Initiating lightweight contract write (USDC.approve)...");
     try {
-      const privy = wallets.find(w => w.walletClientType === "privy") || wallets[0];
-      const privyProvider = await enforceChain(privy, 5042002);
-      const provider = new ethers.BrowserProvider(privyProvider, {
-        chainId: 5042002,
-        name: "Arc Testnet"
-      });
-      const signer = await provider.getSigner(privy.address);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const provider = new ethers.BrowserProvider(walletClient.transport as any);
+      const signer = await provider.getSigner(address);
 
       const usdcAddress = "0x3600000000000000000000000000000000000000";
       const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
@@ -188,37 +160,12 @@ export default function SettingsPage() {
   };
 
   const handleTestMockVote = async () => {
-    if (isCircle) {
-      setDiagLoading(prev => ({ ...prev, vote: true }));
-      logDiag("Initiating mock vote write on Governor (castVote)...");
-      try {
-        logDiag("Submitting vote for proposal ID 9999 (support = 1)...");
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        const mockHash = "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
-        logDiag(`Transaction submitted! Hash: ${mockHash} (Circle Simulation)`);
-        logDiag("Diagnostics Pass: Contract reverted correctly. Intrinsic gas checks passed! Error: execution reverted: Proposal not active");
-      } catch (err: any) {
-        logDiag(`Transaction failed: ${err.message}`);
-      } finally {
-        setDiagLoading(prev => ({ ...prev, vote: false }));
-      }
-      return;
-    }
-
-    if (!wallets || wallets.length === 0) {
-      logDiag("Error: Wallet not connected.");
-      return;
-    }
     setDiagLoading(prev => ({ ...prev, vote: true }));
     logDiag("Initiating mock vote write on Governor (castVote)...");
     try {
-      const privy = wallets.find(w => w.walletClientType === "privy") || wallets[0];
-      const privyProvider = await enforceChain(privy, 5042002);
-      const provider = new ethers.BrowserProvider(privyProvider, {
-        chainId: 5042002,
-        name: "Arc Testnet"
-      });
-      const signer = await provider.getSigner(privy.address);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const provider = new ethers.BrowserProvider(walletClient.transport as any);
+      const signer = await provider.getSigner(address);
 
       const governorAddress = GOVERNANCE_CONTRACTS.governor;
       const governorContract = new Contract(governorAddress, [
