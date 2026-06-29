@@ -656,10 +656,10 @@ export default function CampaignsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left relative z-10 pt-4 max-w-4xl mx-auto">
               {[
-                { icon: "💼", title: "Campaign Treasury Wallet", desc: "Independent secure wallets that hold community-backed funds in escrow", status: "Coming Soon" },
-                { icon: "🏛", title: "Campaign Governance", desc: "Simple on-chain voting for community members to decide on fund releases", status: "Coming Soon" },
-                { icon: "🤖", title: "AI-Managed Allocations", desc: "Enable automated sweeps, scheduled payouts, and yield optimization via Treasury Guard", status: "Live / Coming Soon" },
-                { icon: "🔄", title: "Recurring Milestone Voting", desc: "Milestone-based fund releases to protect backer capital", status: "Coming Soon" },
+                { icon: "💼", title: "Campaign Treasury Wallet", desc: "Independent secure wallets that hold community-backed funds in escrow", status: "Live on Testnet" },
+                { icon: "🏛", title: "Campaign Governance", desc: "Simple on-chain voting for community members to decide on fund releases", status: "Live on Testnet" },
+                { icon: "🤖", title: "AI-Managed Allocations", desc: "Enable automated sweeps, scheduled payouts, and yield optimization via Treasury Guard", status: "Beta" },
+                { icon: "🔄", title: "Recurring Milestone Voting", desc: "Milestone-based fund releases to protect backer capital", status: "Beta" },
                 { icon: "🔗", title: "SubDAO Formation", desc: "Spawning smaller project groups or sub-teams with local coordination tools", status: "Planned" },
                 { icon: "🌐", title: "Cross-chain Campaign Funding", desc: "Accepting community funding seamlessly from other networks", status: "Planned" }
               ].map((item, idx) => (
@@ -667,10 +667,12 @@ export default function CampaignsPage() {
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-xl select-none">{item.icon}</span>
-                      <span className={`text-[8.5px] px-2 py-0.2 rounded font-extrabold uppercase tracking-widest ${
-                        item.status === 'Coming Soon' 
-                          ? 'bg-primary/10 border border-primary/20 text-purple-300' 
-                          : 'bg-white/[0.04] border border-white/[0.08] text-muted'
+                      <span className={`text-[8.5px] px-2 py-0.5 rounded font-extrabold uppercase tracking-widest border ${
+                        item.status === 'Live on Testnet'
+                          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                          : item.status === 'Beta'
+                          ? 'bg-primary/10 border-primary/20 text-purple-300'
+                          : 'bg-white/[0.04] border-white/[0.08] text-muted'
                       }`}>
                         {item.status}
                       </span>

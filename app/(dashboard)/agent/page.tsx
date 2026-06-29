@@ -37,6 +37,7 @@ interface AgentState {
   recentActions: AgentAction[];
   isRunning: boolean;
   lastCheck: string;
+  treasurySource?: 'live' | 'fallback';
   payments?: {
     history: any[];
     totalSpent: number;
@@ -79,6 +80,10 @@ export default function AgentPage() {
   const [running, setRunning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [autoRunning, setAutoRunning] = useState(false);
+  const [lastChecked, setLastChecked] = useState<Date | null>(null);
+  const [treasurySource, setTreasurySource] = useState<'live' | 'fallback' | null>(null);
+  const [verifyResult, setVerifyResult] = useState<AgentAction | null>(null);
+  const [showVerifyResult, setShowVerifyResult] = useState(false);
 
   // On-Chain State Hooks & Variables
   const { wallets: privyWallets } = usePrivyWallets();
@@ -445,7 +450,11 @@ export default function AgentPage() {
     try {
       const res = await fetch("/api/agent/run");
       const data = await res.json();
-      if (data.success !== false) setAgentState(data);
+      if (data.success !== false) {
+        setAgentState(data);
+        setLastChecked(new Date());
+        if (data.treasurySource) setTreasurySource(data.treasurySource);
+      }
     } catch (err) {
       console.error("[AgentPage] fetch error:", err);
     } finally {
@@ -590,6 +599,8 @@ export default function AgentPage() {
 
   const runAgent = async () => {
     setRunning(true);
+    setShowVerifyResult(false);
+    setVerifyResult(null);
     const toastId = toast.loading("Agent analyzing treasury...");
     try {
       const res = await fetch("/api/agent/run", { method: "POST" });
@@ -597,10 +608,16 @@ export default function AgentPage() {
       if (data.success) {
         await fetchAgentState();
         const action = data.action;
+        // Surface the result in the UI panel
+        if (action) {
+          setVerifyResult(action);
+          setShowVerifyResult(true);
+        }
+        if (data.treasurySource) setTreasurySource(data.treasurySource);
         if (action?.action === "bridge_to_ethereum") {
           toast.success(`Agent proposed CCTP bridge: ${action.usdcAmount} USDC → Ethereum`, { id: toastId, duration: 5000 });
         } else if (action?.action === "monitoring") {
-          toast.success("Agent checked treasury — no action needed", { id: toastId });
+          toast.success("Agent verified rules — treasury healthy", { id: toastId });
         } else {
           toast.success(`Agent executed: ${action?.action}`, { id: toastId });
         }
@@ -728,7 +745,14 @@ export default function AgentPage() {
                 </span>
               )}
             </div>
-            <p className="text-sm text-muted">Helps monitor your treasury capital and automated transfer rules.</p>
+            <div>
+              <p className="text-sm text-muted">Helps monitor your treasury capital and automated transfer rules.</p>
+              {lastChecked && (
+                <p className="text-[10px] text-muted/60 mt-0.5">
+                  Last checked: {lastChecked.toLocaleTimeString()}
+                </p>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -788,10 +812,10 @@ export default function AgentPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "USDC Balance", value: loading ? "..." : demoUSDCBalance !== null ? `${demoUSDCBalance.toFixed(2)}` : `${(treasury?.usdc || 0).toFixed(2)}`, unit: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
-          { label: "EURC Balance", value: loading ? "..." : `${(treasury?.eurc || 0).toFixed(2)}`, unit: "EURC", icon: Coins, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
-          { label: "Actions Today", value: actions.length.toString(), unit: "actions", icon: Zap, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-          { label: "Inference Paid", value: (payments?.totalSpent || 0).toFixed(4), unit: "USDC", icon: CreditCard, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
+          { label: "USDC Balance", value: loading ? "..." : demoUSDCBalance !== null ? `${demoUSDCBalance.toFixed(2)}` : `${(treasury?.usdc || 0).toFixed(2)}`, unit: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", isBalance: true },
+          { label: "EURC Balance", value: loading ? "..." : `${(treasury?.eurc || 0).toFixed(2)}`, unit: "EURC", icon: Coins, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", isBalance: true },
+          { label: "Actions Today", value: actions.length.toString(), unit: "actions", icon: Zap, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", isBalance: false },
+          { label: "Inference Paid", value: (payments?.totalSpent || 0).toFixed(4), unit: "USDC", icon: CreditCard, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", isBalance: false },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
@@ -801,6 +825,17 @@ export default function AgentPage() {
                   <div className={`p-2 rounded-lg ${stat.bg} border ${stat.border}`}>
                     <Icon className={`w-4 h-4 ${stat.color}`} />
                   </div>
+                  {stat.isBalance && !loading && (
+                    <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded border ${
+                      treasurySource === 'live'
+                        ? 'bg-emerald-500/15 border-emerald-500/25 text-emerald-400'
+                        : treasurySource === 'fallback'
+                        ? 'bg-amber-500/15 border-amber-500/25 text-amber-400'
+                        : 'bg-surface-elevated border-border-thin text-muted'
+                    }`}>
+                      {treasurySource === 'live' ? '⬤ LIVE' : treasurySource === 'fallback' ? '⚠ RPC DOWN' : '...'}
+                    </span>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-muted font-medium">{stat.label}</p>
@@ -813,6 +848,70 @@ export default function AgentPage() {
           );
         })}
       </div>
+
+      {/* Verify Rules Result Panel */}
+      <AnimatePresence>
+        {showVerifyResult && verifyResult && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25 }}
+            className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-start gap-4 ${
+              verifyResult.status === 'executed'
+                ? 'bg-emerald-500/5 border-emerald-500/25'
+                : verifyResult.status === 'failed'
+                ? 'bg-red-500/5 border-red-500/25'
+                : 'bg-primary/5 border-primary/25'
+            }`}
+          >
+            <div className={`p-2 rounded-xl shrink-0 self-start ${
+              verifyResult.status === 'executed' ? 'bg-emerald-500/15' :
+              verifyResult.status === 'failed'   ? 'bg-red-500/15' : 'bg-primary/15'
+            }`}>
+              {verifyResult.status === 'executed' ? (
+                <CheckCircle className="w-5 h-5 text-emerald-400" />
+              ) : verifyResult.status === 'failed' ? (
+                <XCircle className="w-5 h-5 text-red-400" />
+              ) : (
+                <Activity className="w-5 h-5 text-primary" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className={`text-sm font-bold ${
+                  verifyResult.status === 'executed' ? 'text-emerald-400' :
+                  verifyResult.status === 'failed'   ? 'text-red-400' : 'text-primary'
+                }`}>
+                  {verifyResult.action === 'monitoring' ? 'Rules Verified — Treasury Healthy' :
+                   verifyResult.action === 'bridge_to_ethereum' ? `Rule Triggered: Bridge ${verifyResult.usdcAmount} USDC → Ethereum` :
+                   verifyResult.action === 'emergency_funding' ? 'Rule Triggered: Emergency Funding Required' :
+                   verifyResult.action}
+                </p>
+                <StatusBadge status={verifyResult.status} />
+              </div>
+              <p className="text-xs text-muted mt-1 leading-relaxed">{verifyResult.reasoning}</p>
+              {verifyResult.txHash && (
+                <a
+                  href={`https://testnet.arcscan.app/tx/${verifyResult.txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1.5 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  View on ArcScan
+                </a>
+              )}
+            </div>
+            <button
+              onClick={() => setShowVerifyResult(false)}
+              className="text-muted hover:text-text-primary transition-colors self-start cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

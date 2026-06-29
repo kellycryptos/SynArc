@@ -101,8 +101,11 @@
   --purple-deep: var(--accent-purple);
   --arc-blue: var(--accent-blue);
 
-  --glow-purple: rgba(79, 70, 229, 0.01);
+  --glow-purple: rgba(79, 70, 229, 0.015);
   --glow-blue: rgba(29, 78, 216, 0.01);
+
+  /* Light mode muted text needs more contrast than dark mode */
+  --text-muted: #475569;
 }
 
 @theme {
@@ -199,10 +202,10 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 
 .glass-card:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(124, 58, 237, 0.3);
+  border-color: rgba(99, 102, 241, 0.25);
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(124, 58, 237, 0.1),
+    0 0 0 1px rgba(99, 102, 241, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -496,16 +499,16 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   background: #FFFFFF !important;
   border: 1px solid #E2E8F0 !important;
   box-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.01),
-    0 4px 12px rgba(15, 23, 42, 0.02),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 16px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 1) !important;
 }
 
 .light .glass-card:hover {
-  background: #FFFFFF !important;
+  background: #FAFBFF !important;
   border-color: var(--accent-purple) !important;
   box-shadow: 
-    0 10px 20px rgba(15, 23, 42, 0.04),
+    0 10px 24px rgba(15, 23, 42, 0.06),
     0 0 0 1px var(--accent-purple),
     inset 0 1px 0 rgba(255, 255, 255, 1) !important;
 }
@@ -586,11 +589,100 @@ a:focus-visible, button:focus-visible {
 
 /* Reduce and tone down neon purple glowing shadows site-wide */
 [class*="shadow-"][class*="rgba(124"] {
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1) !important;
 }
 
 [class*="shadow-"][class*="rgba(124"]:hover {
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15) !important;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.18) !important;
 }
 
+/* ── Light Mode: Form input and surface fixes ── */
+.light input[type="text"],
+.light input[type="email"],
+.light input[type="number"],
+.light input[type="password"],
+.light textarea,
+.light select {
+  background: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
 
+.light input[type="text"]:focus,
+.light input[type="email"]:focus,
+.light input[type="number"]:focus,
+.light input[type="password"]:focus,
+.light textarea:focus,
+.light select:focus {
+  background: #FFFFFF !important;
+  border-color: var(--accent-purple) !important;
+  box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1) !important;
+}
+
+.light input::placeholder,
+.light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Fix surface-elevated backgrounds in light mode */
+.light .bg-surface-elevated\/30,
+.light .bg-surface-elevated\/40,
+.light .bg-surface-elevated\/50,
+.light .bg-surface-elevated\/60 {
+  background-color: rgba(248, 250, 252, 0.8) !important;
+}
+
+/* Fix muted text contrast in light mode — ensure it's readable on white */
+.light .text-muted {
+  color: #475569 !important;
+}
+
+.light .text-muted\/60,
+.light .text-muted\/40 {
+  color: rgba(71, 85, 105, 0.6) !important;
+}
+
+/* Fix text-text-secondary in light mode */
+.light .text-text-secondary {
+  color: #334155 !important;
+}
+
+/* Sidebar, panels, and nav surfaces in light mode */
+.light .bg-surface\/50,
+.light .bg-surface\/40 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Fix status badge backgrounds in light mode */
+.light .bg-primary\/10 {
+  background-color: rgba(67, 56, 202, 0.08) !important;
+}
+
+.light .bg-primary\/20 {
+  background-color: rgba(67, 56, 202, 0.12) !important;
+}
+
+/* Ensure animate-pulse LIVE/RPC indicators are visible in light mode */
+.light .animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Code and mono text in light mode */
+.light code,
+.light .font-mono {
+  color: #1E40AF !important;
+}
+
+/* Table row hover in light mode */
+.light tr:hover {
+  background-color: rgba(67, 56, 202, 0.02) !important;
+}
+
+/* Scrollbar in light mode */
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.35);
+}

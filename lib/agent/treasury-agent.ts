@@ -83,15 +83,16 @@ export class TreasuryAgent {
     this.actions = this.loadActions()
   }
 
-  async checkTreasury(): Promise<{ usdc: number; eurc: number }> {
+  async checkTreasury(): Promise<{ usdc: number; eurc: number; usedFallback: boolean }> {
     try {
       const [usdc, eurc] = await Promise.all([
         this.publicClient.readContract({ address: CONTRACTS.treasury, abi: TREASURY_ABI, functionName: 'usdcBalance' }),
         this.publicClient.readContract({ address: CONTRACTS.treasury, abi: TREASURY_ABI, functionName: 'eurcBalance' }),
       ])
-      return { usdc: Number(usdc) / 1_000_000, eurc: Number(eurc) / 1_000_000 }
+      return { usdc: Number(usdc) / 1_000_000, eurc: Number(eurc) / 1_000_000, usedFallback: false }
     } catch {
-      return { usdc: 142.50, eurc: 67.30 }
+      // Contract read failed — return last known fallback values clearly flagged
+      return { usdc: 0, eurc: 0, usedFallback: true }
     }
   }
 

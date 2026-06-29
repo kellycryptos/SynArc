@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { treasuryAgent } from '@/lib/agent/treasury-agent'
 import { gatewayPayments } from '@/lib/agent/gateway-payments'
 
@@ -11,7 +11,11 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       agentAddress: treasuryAgent.getAgentAddress(),
-      treasury,
+      treasury: {
+        usdc: treasury.usdc,
+        eurc: treasury.eurc,
+      },
+      treasurySource: treasury.usedFallback ? 'fallback' : 'live',
       recentActions,
       isRunning: true,
       lastCheck: new Date().toISOString(),
@@ -38,7 +42,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       action,
-      treasury,
+      treasury: {
+        usdc: treasury.usdc,
+        eurc: treasury.eurc,
+      },
+      treasurySource: treasury.usedFallback ? 'fallback' : 'live',
       recentActions: treasuryAgent.getRecentActions(),
     })
   } catch (error: any) {
@@ -48,3 +56,4 @@ export async function POST(req: NextRequest) {
     )
   }
 }
+

@@ -233,12 +233,23 @@ export default function CreateDaoPage() {
       const launchToastId = `launch-${Date.now()}`;
       toast.loading("Preparing transaction & pre-warming wallet...", { id: launchToastId });
 
+      // Slow-confirm reassurance timer (Arc testnet can take 20-40s)
+      let slowConfirmTimer: ReturnType<typeof setTimeout> | null = null;
+
       try {
         let deployedContractAddress = "";
         let transactionHash = "";
 
         // 1. Fetch signer and wallet details
-        const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+        // Guard: walletAddress could be null if user connected via an embedded wallet
+        const resolvedAddress = walletAddress || wallets[0]?.address || null;
+        if (!resolvedAddress) {
+          toast.dismiss(launchToastId);
+          toast.error("No wallet connected. Please connect your wallet and try again.");
+          setLaunching(false);
+          return;
+        }
+        const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, resolvedAddress);
         const cleanAddress = getAddress(address) as `0x${string}`;
 
         // USDC precompiled contract address on Arc Testnet
@@ -322,7 +333,7 @@ export default function CreateDaoPage() {
           gasLimit = 1800000n;
         }
 
-        toast.loading("Deploying Creator DAO smart contract to Arc...", { id: launchToastId });
+        toast.loading(`Deploying Creator DAO smart contract to Arc...`, { id: launchToastId });
 
         // 3. Deploy SynArcCrowdfund contract directly from user wallet
         // Explicitly set chain to ARC_CHAIN and use the dynamic gas limit
@@ -352,8 +363,14 @@ export default function CreateDaoPage() {
         setTxHash(deployHash);
         toast.loading(`Confirming transaction ${deployHash.slice(0, 10)}...`, { id: launchToastId });
 
+        // Show a reassurance message if the confirmation takes longer than 20s (Arc testnet latency)
+        slowConfirmTimer = setTimeout(() => {
+          toast.loading(`Still confirming on Arc Testnet — this can take up to 45s. Please wait...`, { id: launchToastId });
+        }, 20000);
+
         // 4. Wait for transaction confirmation
         const receipt = await waitForTransaction(publicClient, deployHash);
+        if (slowConfirmTimer) clearTimeout(slowConfirmTimer);
         deployedContractAddress = receipt.contractAddress;
         transactionHash = deployHash;
 
@@ -411,9 +428,12 @@ export default function CreateDaoPage() {
         console.error("handleLaunch inner error:", err);
         // Dismiss loading toast and show a fresh error so it always appears
         toast.dismiss(launchToastId);
+        if (slowConfirmTimer) clearTimeout(slowConfirmTimer);
         
         const errMsg = (err?.message || "").toLowerCase();
-        if (errMsg.includes("insufficient") || errMsg.includes("funds") || errMsg.includes("gas") || errMsg.includes("balance")) {
+        if (errMsg.includes("user rejected") || errMsg.includes("user denied") || errMsg.includes("rejected the request")) {
+          toast.error("Transaction cancelled — you rejected the wallet popup.", { duration: 6000 });
+        } else if (errMsg.includes("insufficient") || errMsg.includes("funds") || errMsg.includes("gas") || errMsg.includes("balance")) {
           toast.error(
             `Failed to deploy contract. Ensure you have native USDC gas in your wallet. Details: ${err?.message || err}`,
             { duration: 12000 }
