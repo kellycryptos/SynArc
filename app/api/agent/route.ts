@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
       // Real Groq API completion call
       const response = await groq.chat.completions.create({
-        model: "gpt-oss-120b",
+        model: "qwen/qwen3.6-27b",
         messages: [
           {
             role: "system",
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
 
       // Real Groq API proposal generation call
       const response = await groq.chat.completions.create({
-        model: "gpt-oss-120b",
+        model: "qwen/qwen3.6-27b",
         messages: [
           {
             role: "system",
@@ -247,7 +247,7 @@ export async function POST(req: NextRequest) {
 
       // Real Groq API Completion call for Campaign Analysis (Upgraded Risk Engine!)
       const response = await groq.chat.completions.create({
-        model: "gpt-oss-120b",
+        model: "qwen/qwen3.6-27b",
         messages: [
           {
             role: "system",
@@ -331,7 +331,7 @@ export async function POST(req: NextRequest) {
 
       // Real Groq API Completion call for Campaign Generation
       const response = await groq.chat.completions.create({
-        model: "gpt-oss-120b",
+        model: "qwen/qwen3.6-27b",
         messages: [
           {
             role: "system",

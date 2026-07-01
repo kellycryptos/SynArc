@@ -199,7 +199,7 @@ export async function POST(req: NextRequest) {
 
     // Call Groq API
     const response = await groq.chat.completions.create({
-      model: "gpt-oss-120b",
+      model: "qwen/qwen3.6-27b",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         ...messages.map((m: any) => ({

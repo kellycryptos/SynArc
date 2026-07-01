@@ -1,357 +1,376 @@
 [
   {
-    "timestamp": "2026-07-01T16:03:05.861Z",
+    "timestamp": "2026-07-01T16:57:06.266Z",
     "action": "rebalance_eurc",
     "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0x20cc4d4e2a4014dbb9b7b096656bdafdfb345c236eb33abbe7d8f779b356f349",
+    "txHash": "0xfdc987b96361369d1c6c0adf3a17c96a188eac6c3210803ceaac025b7faac683",
     "status": "executed",
     "usdcAmount": 167
   },
   {
-    "timestamp": "2026-07-01T16:02:05.861Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0x9ff563582a366614e3f3390b6e104c70d1927230dc9bb634392bc203812972ec",
-    "status": "executed",
-    "usdcAmount": 167
-  },
-  {
-    "timestamp": "2026-07-01T16:03:25.127Z",
+    "timestamp": "2026-07-01T16:59:30.364Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #129 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0x707285ee50364b143453e13beec61e46c63d84a3a033ef4b3b328788c829d455",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #184 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x1378cbcab8372251136072f09ac76e633926e372e1f7effd4ba3971383a15435",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-01T16:01:05.852Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0xeb1aab7341fd71bc75ddf8e276be25136c52e07c6e07d1343e299c93f5700a83",
-    "status": "executed",
-    "usdcAmount": 167
-  },
-  {
-    "timestamp": "2026-07-01T16:02:31.248Z",
+    "timestamp": "2026-07-01T16:59:27.383Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #128 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0xd2fa257d34c747d08bd193edc60ab033d2b626e42c442f16a5d538fe56f153fe",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #183 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xbdeb70db2276ba866613f844dfc7fab0fbd8577ed497088c445c5ea5d4cc514f",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-01T16:00:05.846Z",
+    "timestamp": "2026-07-01T16:56:06.255Z",
     "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0x3ae6ad498a801d413b3ac7035565199f7c484db6bd8ec497f5c9de4450e65356",
-    "status": "executed",
-    "usdcAmount": 167
-  },
-  {
-    "timestamp": "2026-07-01T16:01:08.293Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #127 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0xd7674dc5369d72b10da5c11ba5b770c084b5c90dfe6ca038cd31fc4008626d68",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-01T15:59:05.835Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0x739797e9508e85589a7ea40452d3f38eb8732304e1ecd6038a8e0e0cbd641840",
-    "status": "executed",
-    "usdcAmount": 167
-  },
-  {
-    "timestamp": "2026-07-01T16:00:15.096Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #126 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0xac1ceedab8e3eb17997d3131557a89b6968fbc8d30b53a05cbdbeb88fd8b85d1",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-01T15:58:05.827Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0x0b22a80b8fe9ef5ffaee975d4126377f3785cbb7985831380682b5ee953cbc5a",
-    "status": "executed",
-    "usdcAmount": 167
-  },
-  {
-    "timestamp": "2026-07-01T15:59:20.264Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #125 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0xdd36675c00ad649e89d0cba092cdd7be6683daab16c7361df96bc65ef5139fa2",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-01T15:57:05.819Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0xda6b5884c0d9a48e3f131b28f4cf0f950a132c872a6950d506f64b69d51cd5e3",
-    "status": "executed",
-    "usdcAmount": 167
-  },
-  {
-    "timestamp": "2026-07-01T15:58:13.367Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #124 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0x5f88df6307aa7a84ac9cfc61d4fb49c0df67d4ba29ab2f09f3aeffa295c8e0d3",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-01T15:58:10.572Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #123 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0x61996275bd3e7604af32e461d9eecaca02bdfc5bcc66a37d245a7d399be87ae3",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-01T15:56:05.813Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0xdd60d9d9ddec1e1409125651d7063a51eafc33f0db8178e715f838041a30085d",
-    "status": "executed",
-    "usdcAmount": 167
-  },
-  {
-    "timestamp": "2026-07-01T15:55:05.809Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0x8a411b7a0f6ef434165203a4ac2db1e82ef6c2cc4baf19fc8baeae41177c73a0",
-    "status": "executed",
-    "usdcAmount": 167
-  },
-  {
-    "timestamp": "2026-07-01T15:56:24.835Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #122 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0x4a637c81e037c4d17d2ebef4d834077b2d7843505688507e95ce682965bbffd3",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-01T15:53:57.949Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0x53665b0dfcda46f091a45b5a7275ae31182dc8730be412711af8c5b946c63df6",
-    "status": "executed",
-    "usdcAmount": 167
-  },
-  {
-    "timestamp": "2026-06-29T15:09:12.915Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0xc343b94e3d6f082f9775a17af141670b0f7c6284318b1f70e8db38ea554477ee",
-    "status": "executed",
-    "usdcAmount": 127
-  },
-  {
-    "timestamp": "2026-06-29T15:09:12.912Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T15:10:07.866Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #110 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0x39b23d0eb043e19b6ff9478c771832eedddf27ddc4913c0048b83879574fbe82",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T15:08:12.914Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0x0f16940e910a1eda8d969c3825b2489465855b0b3ff28aeee15679678b0c41d5",
-    "status": "executed",
-    "usdcAmount": 127
-  },
-  {
-    "timestamp": "2026-06-29T15:08:12.899Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T15:09:08.797Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #109 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0x2940209eb31eadb1e3ce4fe80958e8a63707fe035e8c30f329e9d56cfd70eeed",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T15:07:12.912Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0xc9153513d8b68ff85936fe2bc346bc65540ceb34bfd4dc1fc5fdce6d5f698947",
-    "status": "executed",
-    "usdcAmount": 127
-  },
-  {
-    "timestamp": "2026-06-29T15:07:12.897Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T15:08:23.821Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #108 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0xe02c93c0cd2b77ee8c0ff25438ac6a53e83da3fd1b3ce52263b60c86e50905fb",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T15:06:12.901Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0xdb6e47abb54162ff769f0bbf96c6a9962c10da40907bed296b6e6a9502d60e28",
-    "status": "executed",
-    "usdcAmount": 127
-  },
-  {
-    "timestamp": "2026-06-29T15:06:12.894Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T15:07:12.925Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #107 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0x8b966936f039e44ef1a9bddeab35ebc730ec8fab5023a317b361e86f2af3dd1d",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T15:05:12.897Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0x2c2c3c8e7a50abfb00ea4022d705a74a10966f55868a3108b6812ca91320e8d5",
-    "status": "executed",
-    "usdcAmount": 127
-  },
-  {
-    "timestamp": "2026-06-29T15:05:12.884Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T15:04:12.890Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32395431353a30343a32312e3431365a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-29T15:04:21.416Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing. [Failed to create proposal on-chain: Nonce provided for the transaction is lower than the current nonce of the account.\nTry increasing the nonce or find the latest nonce with `getTransactionCount`.\n\nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000009f437c000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003a50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20726562616c616e63655f65757263000000000000000000000000000000000000000000000000000000000000000000000000015450726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20726562616c616e63655f657572630a416d6f756e743a2031363720555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30372d30315431363a35373a33392e3833355a0a0a414920526561736f6e696e673a0a547265617375727920686f6c647320343138204555524320e280942061626f7665203530207468726573686f6c642e2050726f706f73696e67204555524320726562616c616e63696e672e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: rebalance_eurc, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: rebalance_eurc\nAmount: 167 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-07-01T16:57:39.835Z\n\nAI Reasoning:\nTreasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 167000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: nonce too low: next nonce 425, tx nonce 424\nVersion: viem@2.49.3]",
     "status": "failed",
-    "usdcAmount": 50
+    "usdcAmount": 167
   },
   {
-    "timestamp": "2026-06-29T15:04:12.876Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 0, EURC: 0). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T10:00:44.880Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32395431303a30303a35342e3630335a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-29T10:00:54.603Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-06-29T10:00:44.878Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 0, EURC: 0). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T08:23:43.911Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32395431303a30303a35332e3136345a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-29T10:00:53.164Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-06-29T08:23:43.859Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 0, EURC: 0). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T08:22:43.899Z",
+    "timestamp": "2026-07-01T16:56:01.469Z",
     "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0x3a2aacb5be7fde23d81a18056af26cb8fd01fa631ad71ff8cee4a1abc5b39424",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x49fcae39d3246e7829174db1b1ab8c787f237a8a4c65c1a729c646e7fe8ca52b",
     "status": "executed",
-    "usdcAmount": 127
+    "usdcAmount": 167
   },
   {
-    "timestamp": "2026-06-29T08:22:43.851Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T08:23:31.270Z",
+    "timestamp": "2026-07-01T16:57:36.649Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #94 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0x1eae493b99302bc8419e54ca49e5ae50abc653fe8c94bc3424dcbe4e7596daa1",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #182 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x40e91ad801a1d5b64f7bf9f618f2d9aef4642b5f83405e3484be7cc9e3ded5d9",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-29T08:21:43.854Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0xcc1dd2ec8cb1186812f2daa07c76344aa6b3e877eecd01458751c1b68c715c34",
-    "status": "executed",
-    "usdcAmount": 127
-  },
-  {
-    "timestamp": "2026-06-29T08:21:43.843Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T08:22:33.237Z",
+    "timestamp": "2026-07-01T16:57:32.346Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #93 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0xd8c74b1c12a6c1a03e85d05b8090fa2b82811523ee5c32e1f04bd6e78a2f4efc",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #181 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xd4df4de9ae549d20855c2599fa6e18bde15a190bfe9c178b07a9e34154800b23",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-29T08:20:43.847Z",
+    "timestamp": "2026-07-01T16:55:01.460Z",
     "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0xdc7ae75f329663ee115aaf2a57c28ce6361f4a263e96236a357c1423afe6dc14",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x94e52a08314f32f8aa04355d661f4925e8c1c66801a032607573283fd45c5aba",
     "status": "executed",
-    "usdcAmount": 127
+    "usdcAmount": 167
   },
   {
-    "timestamp": "2026-06-29T08:20:43.840Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
+    "timestamp": "2026-07-01T16:55:06.254Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xf4eaeedb338acc085fe41adfe21b4914ab30b55eca6ef35f1d00870eb8a9642a",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:56:34.565Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #180 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xdaa3701ba96954caaa06421c1d796880ff4c96311b218364af83f4fbeceea19d",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-29T08:19:43.831Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32395430383a32303a30342e3633315a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-29T08:20:04.631Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
+    "timestamp": "2026-07-01T16:53:56.347Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x140c0bd85a6968d6f1a2b61c59da1da1b48876c021c0e89e74bb0d0f061a3dd1",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:54:06.247Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x115b690ef27ccf928e448f7e8c9f631884aaf07c0c18f311bcdea5d3fa7b25f2",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:55:38.699Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #179 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x526078868ab12bbdb8e1865c00078eae3219aea365a3d2755f9c8063ff2470da",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:53:06.235Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x126814392cf6eb4342f4586e4c75f3d92fdc943f7ed3b9cef2d6fc93a1101792",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:55:01.778Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #178 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x4c0a03bc954e601766dd513eb568c13c3b690a58346418dc8869c29936cba9c9",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:52:06.227Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xc6c1b2c18dc0122bcea2ff2fdca13407f83182175536259a5c0194ed8611981e",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:53:58.085Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #177 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x976b04fad785c2d933742d10cc96ef606007105cad537488ae7c22d205e4ff12",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:51:06.221Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xb4ea9bdae763a12b3d1f961ace53a1b0a8d6cca4aa8a26b50cccfb47337222df",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:52:38.467Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #176 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x963eb984814585365b6d74188da0b984a88a0de375d3fee564c52cf6bc0c3fbe",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:50:06.213Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x272fcf5fcc0b910591c692e283eb14c443b4f58857d4c8ad2c18e29cf5f61c03",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:52:03.270Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #175 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x3422bb0a843e7014fe2fe0a9d9c1a0517c9e3661c9b70ca82310be0b9d50d340",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:51:58.852Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #174 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x20fd63c87631ab5fea9ca30c71edcda80d80499ba58f6069a42bc89780edc6ea",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:51:54.001Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #173 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xbb12cbc39f2286198fec18cd33a4c813987f307c6fec4f26bafc47863be19535",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:49:06.198Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x440621e6c708a53f0efa6bc5cb31c5581a133d5255bbc20e9336db64bd1ecec5",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:50:36.570Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #172 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xf01ee827599b75892747d77f56f1f11c74deea2885a6a6c22895048ee274bbe3",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:48:06.193Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x571d69ee3993e600f2b40f741e2d0de3d479adffd301640c6cbe7d7e81f711fc",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:49:51.852Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #171 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xa125932a6ffc71bebc0ae144a21275fd72cb07004c3abd3348e9c5f7638be882",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:47:06.184Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x3aab2013f09429b4d577dc5cc650e5211d2fe523e932232ba41f7d5a80a84aeb",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:49:46.455Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #170 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x04c27c864ee485a80f59eca6b535761d84262ee905b67920c41c9b5f71d10b08",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:46:06.177Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xe3b5c8b5fef33e64502a77113d1059d7208d2c88ff2c2701ed54cce4d26b043d",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:49:27.541Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #169 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x07d09a2c3f194ad2ad235c56371d54978582bf2e65c182f8cbc7a59eaf45ad67",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:45:06.170Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xf3e789ae1de19b15f9d517d3f29d742b5dd09d49fb6675e8fbf630ed668f31e4",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:44:06.155Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xc702105df390dd5d088a087bd02692e0979138e156aaac02b0bac3a5266af244",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:48:40.408Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #168 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x72e7af85dba37bc40a7f559cc44ec43f7c7f02bb9f071cdf8656c5dbebb496de",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:43:06.142Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xa44339bf4e40cce6fd69bceec3e684e7bce5e3590b5712f1dab46f8a3abbb3e8",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:48:02.614Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #167 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x71782f69ba18100dd14e51435910c048f85ea882e6f1b55e1e45228316a1e116",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:42:06.136Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xa80d9a47bd6c050efc80b9931ad2f0a2c28144afda22a5d73f78b9675599839c",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:41:06.131Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xfb46e34a5b8f5df4d203a59fe8f525b91efb2e21e1a06aadb3dd4c1336f49208",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:44:38.783Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #166 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x9a5d8c022d80ed735ec41ca94c1ded0f53ff6b372700ae58e35f4b03a9f914c6",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:39:06.114Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing. [Failed to create proposal on-chain: Nonce provided for the transaction is lower than the current nonce of the account.\nTry increasing the nonce or find the latest nonce with `getTransactionCount`.\n\nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000009f437c000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003a50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20726562616c616e63655f65757263000000000000000000000000000000000000000000000000000000000000000000000000015450726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20726562616c616e63655f657572630a416d6f756e743a2031363720555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30372d30315431363a34333a33392e3839315a0a0a414920526561736f6e696e673a0a547265617375727920686f6c647320343138204555524320e280942061626f7665203530207468726573686f6c642e2050726f706f73696e67204555524320726562616c616e63696e672e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: rebalance_eurc, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: rebalance_eurc\nAmount: 167 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-07-01T16:43:39.891Z\n\nAI Reasoning:\nTreasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 167000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: nonce too low: next nonce 390, tx nonce 389\nVersion: viem@2.49.3]",
     "status": "failed",
-    "usdcAmount": 50
+    "usdcAmount": 167
   },
   {
-    "timestamp": "2026-06-29T08:19:43.829Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 0, EURC: 0). Continuing to monitor.",
+    "timestamp": "2026-07-01T16:40:06.127Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x5d205c962e650790df0dd4c8d6f8d17c20cbd8af7f091957d332e65f6ab8ca96",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:43:38.200Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #165 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x7214605dfe9364f277cc213018371057e12407393380503666b2064c34c971cc",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-29T08:02:24.911Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 0, EURC: 0). Continuing to monitor.",
+    "timestamp": "2026-07-01T16:38:06.106Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xbd7d92b7ac2ef600bc863921e8915e52cdfc8aed46562eee132184ae578c72f3",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:41:27.682Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #164 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x7bb7a27a05be6165f74dda99f3d97e31c5325e1333704487acb421523266617c",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-29T08:02:36.401Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32395430383a31393a35392e3535305a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-29T08:19:59.550Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 50
+    "timestamp": "2026-07-01T16:37:06.097Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x2e355077b04a89131e47b9d5ca6a1e24df919bbde1d6876242674a455fde8981",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:38:48.399Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #163 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x8052bd6ba7d8db5961c04c425a6fc282bd2524fd4de931904359bf8cfd8327e6",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:36:06.091Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xd4dd4044d8c7bbca37b5145552e5de260579dd6f5d6fa0e8c382e879a21fc9fe",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:37:41.838Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #162 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xe1ad4b1723217dbd92ee8205f0d5d8692823cbee8ba3633818f415d74f4ea194",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:35:06.079Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xd5be854e8d497ae1322c9f859356716dd03d8b1d5ecea909f6134630877ce5a4",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:36:51.773Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #161 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x7d99b0cab605d003cb032383a3eee4d7f6e21364af240ae6e245bdc1715d5ba2",
+    "status": "executed"
   }
 ]

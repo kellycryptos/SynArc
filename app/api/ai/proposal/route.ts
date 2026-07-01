@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
       // Real Groq campaign generation completion
       const response = await groq.chat.completions.create({
-        model: "gpt-oss-120b",
+        model: "qwen/qwen3.6-27b",
         messages: [
           {
             role: "system",
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
 
       // Real Groq proposal generation completion
       const response = await groq.chat.completions.create({
-        model: "gpt-oss-120b",
+        model: "qwen/qwen3.6-27b",
         messages: [
           {
             role: "system",
