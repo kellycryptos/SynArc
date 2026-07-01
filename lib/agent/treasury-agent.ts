@@ -101,7 +101,7 @@ export class TreasuryAgent {
   }> {
     try {
       const response = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
+        model: 'gpt-oss-120b',
         messages: [
           { role: 'system', content: 'You are SynArc Treasury Agent. Respond ONLY in valid JSON with no markdown.' },
           {

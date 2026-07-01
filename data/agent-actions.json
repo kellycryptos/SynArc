@@ -1,329 +1,357 @@
 [
   {
-    "timestamp": "2026-06-29T07:58:36.369Z",
+    "timestamp": "2026-07-01T16:03:05.861Z",
     "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 315 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0xf4affd3b8bc2be29dba89d089916a46d333618310bbec5c9db22d078020dd963",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x20cc4d4e2a4014dbb9b7b096656bdafdfb345c236eb33abbe7d8f779b356f349",
     "status": "executed",
-    "usdcAmount": 126
+    "usdcAmount": 167
   },
   {
-    "timestamp": "2026-06-29T07:58:24.864Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 24, EURC: 315). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T07:59:17.703Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #88 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0x7533449872cb5190c069696ed0139a4da341a533040eaf2a29188a90f7259e34",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T07:57:26.425Z",
+    "timestamp": "2026-07-01T16:02:05.861Z",
     "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 315 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0xc9f47b16ce6f782ab54d93b400b2de45a7a5ce59388304fde34069f0816141e4",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x9ff563582a366614e3f3390b6e104c70d1927230dc9bb634392bc203812972ec",
     "status": "executed",
-    "usdcAmount": 126
+    "usdcAmount": 167
   },
   {
-    "timestamp": "2026-06-29T07:57:24.858Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 24, EURC: 315). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T07:56:24.854Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 24, EURC: 315). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T07:55:24.851Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 24, EURC: 315). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T07:54:24.850Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 24, EURC: 315). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-29T07:55:32.364Z",
+    "timestamp": "2026-07-01T16:03:25.127Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #87 (\"Proposed by Treasury Agent — Bridge 24 USDC\").",
-    "txHash": "0x2489594db3458fd747c016796f2469de10a2180a836902ce5f816698ec1f8177",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #129 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x707285ee50364b143453e13beec61e46c63d84a3a033ef4b3b328788c829d455",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:57:14.415Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a35373a31372e3130355a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:57:17.105Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
+    "timestamp": "2026-07-01T16:01:05.852Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xeb1aab7341fd71bc75ddf8e276be25136c52e07c6e07d1343e299c93f5700a83",
+    "status": "executed",
+    "usdcAmount": 167
   },
   {
-    "timestamp": "2026-06-26T07:56:14.510Z",
+    "timestamp": "2026-07-01T16:02:31.248Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #128 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xd2fa257d34c747d08bd193edc60ab033d2b626e42c442f16a5d538fe56f153fe",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T16:00:05.846Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x3ae6ad498a801d413b3ac7035565199f7c484db6bd8ec497f5c9de4450e65356",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:01:08.293Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #127 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xd7674dc5369d72b10da5c11ba5b770c084b5c90dfe6ca038cd31fc4008626d68",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T15:59:05.835Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x739797e9508e85589a7ea40452d3f38eb8732304e1ecd6038a8e0e0cbd641840",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T16:00:15.096Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #126 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xac1ceedab8e3eb17997d3131557a89b6968fbc8d30b53a05cbdbeb88fd8b85d1",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T15:58:05.827Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x0b22a80b8fe9ef5ffaee975d4126377f3785cbb7985831380682b5ee953cbc5a",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T15:59:20.264Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #125 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xdd36675c00ad649e89d0cba092cdd7be6683daab16c7361df96bc65ef5139fa2",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T15:57:05.819Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xda6b5884c0d9a48e3f131b28f4cf0f950a132c872a6950d506f64b69d51cd5e3",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T15:58:13.367Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #124 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x5f88df6307aa7a84ac9cfc61d4fb49c0df67d4ba29ab2f09f3aeffa295c8e0d3",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T15:58:10.572Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #123 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x61996275bd3e7604af32e461d9eecaca02bdfc5bcc66a37d245a7d399be87ae3",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T15:56:05.813Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xdd60d9d9ddec1e1409125651d7063a51eafc33f0db8178e715f838041a30085d",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T15:55:05.809Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x8a411b7a0f6ef434165203a4ac2db1e82ef6c2cc4baf19fc8baeae41177c73a0",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-07-01T15:56:24.835Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #122 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x4a637c81e037c4d17d2ebef4d834077b2d7843505688507e95ce682965bbffd3",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-01T15:53:57.949Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x53665b0dfcda46f091a45b5a7275ae31182dc8730be412711af8c5b946c63df6",
+    "status": "executed",
+    "usdcAmount": 167
+  },
+  {
+    "timestamp": "2026-06-29T15:09:12.915Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xc343b94e3d6f082f9775a17af141670b0f7c6284318b1f70e8db38ea554477ee",
+    "status": "executed",
+    "usdcAmount": 127
+  },
+  {
+    "timestamp": "2026-06-29T15:09:12.912Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:56:14.419Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a35363a31372e3132335a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:56:17.123Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
+    "timestamp": "2026-06-29T15:10:07.866Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #110 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x39b23d0eb043e19b6ff9478c771832eedddf27ddc4913c0048b83879574fbe82",
+    "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:55:14.506Z",
+    "timestamp": "2026-06-29T15:08:12.914Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x0f16940e910a1eda8d969c3825b2489465855b0b3ff28aeee15679678b0c41d5",
+    "status": "executed",
+    "usdcAmount": 127
+  },
+  {
+    "timestamp": "2026-06-29T15:08:12.899Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:55:14.412Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a35353a31362e3836365a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:55:16.866Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
+    "timestamp": "2026-06-29T15:09:08.797Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #109 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x2940209eb31eadb1e3ce4fe80958e8a63707fe035e8c30f329e9d56cfd70eeed",
+    "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:54:14.469Z",
+    "timestamp": "2026-06-29T15:07:12.912Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xc9153513d8b68ff85936fe2bc346bc65540ceb34bfd4dc1fc5fdce6d5f698947",
+    "status": "executed",
+    "usdcAmount": 127
+  },
+  {
+    "timestamp": "2026-06-29T15:07:12.897Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:54:14.394Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a35343a31372e3031395a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:54:17.019Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
+    "timestamp": "2026-06-29T15:08:23.821Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #108 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xe02c93c0cd2b77ee8c0ff25438ac6a53e83da3fd1b3ce52263b60c86e50905fb",
+    "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:53:14.464Z",
+    "timestamp": "2026-06-29T15:06:12.901Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xdb6e47abb54162ff769f0bbf96c6a9962c10da40907bed296b6e6a9502d60e28",
+    "status": "executed",
+    "usdcAmount": 127
+  },
+  {
+    "timestamp": "2026-06-29T15:06:12.894Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:53:14.393Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a35333a31372e3139385a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:53:17.198Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
+    "timestamp": "2026-06-29T15:07:12.925Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #107 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x8b966936f039e44ef1a9bddeab35ebc730ec8fab5023a317b361e86f2af3dd1d",
+    "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:52:14.453Z",
+    "timestamp": "2026-06-29T15:05:12.897Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x2c2c3c8e7a50abfb00ea4022d705a74a10966f55868a3108b6812ca91320e8d5",
+    "status": "executed",
+    "usdcAmount": 127
+  },
+  {
+    "timestamp": "2026-06-29T15:05:12.884Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:52:14.386Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a35323a31362e3833395a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:52:16.839Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
+    "timestamp": "2026-06-29T15:04:12.890Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32395431353a30343a32312e3431365a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-29T15:04:21.416Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
     "status": "failed",
-    "usdcAmount": 42
+    "usdcAmount": 50
   },
   {
-    "timestamp": "2026-06-26T07:51:14.453Z",
+    "timestamp": "2026-06-29T15:04:12.876Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 0, EURC: 0). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:51:14.374Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a35313a31362e3834395a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:51:16.849Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
+    "timestamp": "2026-06-29T10:00:44.880Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32395431303a30303a35342e3630335a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-29T10:00:54.603Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
     "status": "failed",
-    "usdcAmount": 42
+    "usdcAmount": 50
   },
   {
-    "timestamp": "2026-06-26T07:50:14.450Z",
+    "timestamp": "2026-06-29T10:00:44.878Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 0, EURC: 0). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:50:14.369Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a35303a31372e3637335a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:50:17.673Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
+    "timestamp": "2026-06-29T08:23:43.911Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32395431303a30303a35332e3136345a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-29T10:00:53.164Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
     "status": "failed",
-    "usdcAmount": 42
+    "usdcAmount": 50
   },
   {
-    "timestamp": "2026-06-26T07:49:14.439Z",
+    "timestamp": "2026-06-29T08:23:43.859Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 0, EURC: 0). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:49:14.361Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a34393a31372e3036395a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:49:17.069Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
+    "timestamp": "2026-06-29T08:22:43.899Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x3a2aacb5be7fde23d81a18056af26cb8fd01fa631ad71ff8cee4a1abc5b39424",
+    "status": "executed",
+    "usdcAmount": 127
   },
   {
-    "timestamp": "2026-06-26T07:48:14.433Z",
+    "timestamp": "2026-06-29T08:22:43.851Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:48:14.359Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a34383a32322e3630385a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:48:22.608Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
+    "timestamp": "2026-06-29T08:23:31.270Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #94 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x1eae493b99302bc8419e54ca49e5ae50abc653fe8c94bc3424dcbe4e7596daa1",
+    "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:47:14.435Z",
+    "timestamp": "2026-06-29T08:21:43.854Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xcc1dd2ec8cb1186812f2daa07c76344aa6b3e877eecd01458751c1b68c715c34",
+    "status": "executed",
+    "usdcAmount": 127
+  },
+  {
+    "timestamp": "2026-06-29T08:21:43.843Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:47:14.358Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a34373a31362e3936325a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:47:16.962Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
+    "timestamp": "2026-06-29T08:22:33.237Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #93 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xd8c74b1c12a6c1a03e85d05b8090fa2b82811523ee5c32e1f04bd6e78a2f4efc",
+    "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:46:14.437Z",
+    "timestamp": "2026-06-29T08:20:43.847Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 318 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0xdc7ae75f329663ee115aaf2a57c28ce6361f4a263e96236a357c1423afe6dc14",
+    "status": "executed",
+    "usdcAmount": 127
+  },
+  {
+    "timestamp": "2026-06-29T08:20:43.840Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 27, EURC: 318). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:46:14.358Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a34363a31372e3834315a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:46:17.841Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
+    "timestamp": "2026-06-29T08:19:43.831Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32395430383a32303a30342e3633315a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-29T08:20:04.631Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
     "status": "failed",
-    "usdcAmount": 42
+    "usdcAmount": 50
   },
   {
-    "timestamp": "2026-06-26T07:45:14.441Z",
+    "timestamp": "2026-06-29T08:19:43.829Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 0, EURC: 0). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:45:14.350Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a34353a31372e3039355a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:45:17.095Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
-  },
-  {
-    "timestamp": "2026-06-26T07:44:14.444Z",
+    "timestamp": "2026-06-29T08:02:24.911Z",
     "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
+    "reasoning": "Treasury healthy (USDC: 0, EURC: 0). Continuing to monitor.",
     "status": "executed"
   },
   {
-    "timestamp": "2026-06-26T07:44:14.345Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a34343a31372e3139365a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:44:17.196Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
+    "timestamp": "2026-06-29T08:02:36.401Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32395430383a31393a35392e3535305a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-29T08:19:59.550Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
     "status": "failed",
-    "usdcAmount": 42
-  },
-  {
-    "timestamp": "2026-06-26T07:43:14.447Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-26T07:43:14.346Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a34333a31372e3137315a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:43:17.171Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
-  },
-  {
-    "timestamp": "2026-06-26T07:42:14.444Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-26T07:42:14.337Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a34323a31362e3733395a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:42:16.739Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
-  },
-  {
-    "timestamp": "2026-06-26T07:41:14.441Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-26T07:41:14.340Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a34313a31362e3932315a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:41:16.921Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
-  },
-  {
-    "timestamp": "2026-06-26T07:40:14.446Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-26T07:40:14.336Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a34303a31372e3232325a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:40:17.222Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
-  },
-  {
-    "timestamp": "2026-06-26T07:39:14.438Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-26T07:39:14.336Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a33393a31372e3139385a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:39:17.198Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
-  },
-  {
-    "timestamp": "2026-06-26T07:38:14.436Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-26T07:38:14.336Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a33383a31372e3132385a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:38:17.128Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
-  },
-  {
-    "timestamp": "2026-06-26T07:37:14.428Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 19, EURC: 223). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-06-26T07:37:14.328Z",
-    "action": "bridge_to_ethereum",
-    "reasoning": "Treasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia. [Failed to create proposal on-chain: Execution reverted with reason: gas required exceeds allowance (0).\n\nRequest Arguments:\n  from:  0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c000000000000000000000000000000000000000000000000000000000280de8000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000002b5b4147454e545d20427269646765203432205553444320746f20457468657265756d207669612043435450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014d4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a206272696467655f746f5f657468657265756d0a416d6f756e743a20343220555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30362d32365430373a33373a31362e3937365a0a0a414920526561736f6e696e673a0a547265617375727920686f6c6473203134322e35205553444320e280942061626f766520313030207468726573686f6c642e2050726f706f73696e6720434354502062726964676520746f20457468657265756d205365706f6c69612e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             ([AGENT] Bridge 42 USDC to Ethereum via CCTP, AUTONOMOUS AGENT PROPOSAL\nAction: bridge_to_ethereum\nAmount: 42 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-06-26T07:37:16.976Z\n\nAI Reasoning:\nTreasury holds 142.5 USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 42000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 42
+    "usdcAmount": 50
   }
 ]
