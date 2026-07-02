@@ -55,11 +55,11 @@ export function MarketingNavbar() {
         <div className="flex items-center gap-4">
           <Link 
             href="/dashboard"
-            className="group relative px-6 py-2.5 rounded-xl bg-accent-purple text-white font-medium hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] overflow-hidden flex items-center gap-2"
+            className="group relative px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl bg-accent-purple text-white-keep text-xs sm:text-sm font-medium hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] overflow-hidden flex items-center gap-2"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-accent-purple via-accent-blue to-accent-purple opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[length:200%_auto] animate-gradient" />
             <span className="relative text-white-keep">Launch Dashboard</span>
-            <ArrowRight className="w-4 h-4 relative group-hover:translate-x-1 transition-transform text-white-keep" />
+            <ArrowRight className="w-3.5 h-3.5 relative group-hover:translate-x-1 transition-transform text-white-keep" />
           </Link>
         </div>
       </div>

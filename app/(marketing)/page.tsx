@@ -180,12 +180,12 @@ export default function LandingPage() {
             ⚡ Automated Treasury Rules
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold font-heading tracking-tight mb-6 leading-tight text-text-primary">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold font-heading tracking-tight mb-6 leading-tight text-text-primary">
             Coordinate and Protect <br className="hidden md:block" />
             <span className="gradient-text">Your Community's Funds</span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-text-secondary max-w-3xl mx-auto mb-10">
+          <p className="text-sm sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto mb-8 sm:mb-10">
             Keep your project funds secure in milestone-based escrows, vote transparently on releases, and automatically prevent funds from sitting idle.
           </p>
           
@@ -198,7 +198,7 @@ export default function LandingPage() {
             >
               <Link 
                 href="/agent"
-                className="w-full sm:w-auto px-12 py-5.5 rounded-xl bg-gradient-to-r from-accent-purple via-purple-600 to-accent-blue text-white font-black hover:opacity-95 transition-all shadow-[0_0_35px_rgba(124,58,237,0.35)] hover:shadow-[0_0_50px_rgba(124,58,237,0.55)] flex items-center justify-center gap-2 text-xl border border-white/10"
+                className="w-full sm:w-auto px-6 py-3.5 sm:px-10 sm:py-4.5 rounded-xl bg-gradient-to-r from-accent-purple via-purple-600 to-accent-blue text-white font-black hover:opacity-95 transition-all shadow-[0_0_35px_rgba(124,58,237,0.35)] hover:shadow-[0_0_50px_rgba(124,58,237,0.55)] flex items-center justify-center gap-2 text-base sm:text-lg border border-white/10"
               >
                 <span className="text-white-keep">View Automated Treasury &rarr;</span>
               </Link>
@@ -211,7 +211,7 @@ export default function LandingPage() {
             >
               <Link 
                 href="/dashboard"
-                className="w-full sm:w-auto px-8 py-4.5 rounded-xl border border-border hover:border-accent-purple/30 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg bg-surface"
+                className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-3.5 rounded-xl border border-border hover:border-accent-purple/30 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-sm sm:text-base bg-surface"
               >
                 Launch Dashboard
               </Link>
@@ -226,7 +226,7 @@ export default function LandingPage() {
                 href="https://docs.synarcdao.xyz"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-8 py-4.5 rounded-xl border border-border hover:border-accent-purple/30 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg bg-surface"
+                className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-3.5 rounded-xl border border-border hover:border-accent-purple/30 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-sm sm:text-base bg-surface"
               >
                 View Docs &rarr;
               </Link>
@@ -373,7 +373,7 @@ export default function LandingPage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] opacity-15 bg-primary rounded-full blur-[120px]" />
         </div>
         <div className="max-w-4xl mx-auto relative z-10 text-center space-y-8">
-          <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
             Governance Infrastructure <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">for Digital Teams</span>
           </h2>
@@ -383,13 +383,13 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-accent-purple text-white-keep font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] inline-flex items-center justify-center gap-2 text-lg cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-xl bg-accent-purple text-white-keep font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] inline-flex items-center justify-center gap-2 text-base sm:text-lg cursor-pointer"
             >
               Apply for Your Workspace <ArrowRight className="w-5 h-5" />
             </button>
             <Link
               href="/daos"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-lg"
+              className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-xl border border-border hover:border-primary/20 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-base sm:text-lg"
             >
               Explore Workspaces &rarr;
             </Link>
@@ -407,7 +407,7 @@ export default function LandingPage() {
             ⚡ Project Funding
           </div>
           
-          <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
             Community Funding Platform<br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">for Projects & Creators</span>
           </h2>
@@ -463,7 +463,7 @@ export default function LandingPage() {
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold uppercase tracking-wider text-purple-300">
                 🛠️ FOR DEVELOPERS
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold font-heading tracking-tight text-text-primary leading-tight">
                 Build Custom Treasury Rules <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-arc-blue to-accent">With Programmatic Workspaces</span>
               </h2>
@@ -599,7 +599,7 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-elevated border border-border-thin text-xs font-semibold uppercase tracking-wider text-primary mb-4">
               Protocol Path
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">Ecosystem Roadmap</h2>
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold font-heading mb-4">Ecosystem Roadmap</h2>
             <p className="text-muted max-w-2xl mx-auto text-lg">
               Our roadmap towards establishing secure, user-friendly funding escrows and automated treasury tools for creators and teams.
             </p>
