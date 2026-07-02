@@ -78,7 +78,7 @@ export default function DashboardOverview() {
             <div className="p-1.5 rounded-lg bg-primary/15 border border-primary/25">
               <Zap className="w-5 h-5 text-primary" />
             </div>
-            <h2 className="text-xl font-bold font-heading text-text-primary">Automated Treasury Guard</h2>
+            <h2 className="text-lg sm:text-xl font-bold font-heading text-text-primary">Automated Treasury Guard</h2>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-primary/20 border border-primary/30 text-primary">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping inline-block" />
               ACTIVE
@@ -119,7 +119,7 @@ export default function DashboardOverview() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Rocket className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold font-heading text-text-primary">⚡ Creator DAOs</h2>
+            <h2 className="text-lg sm:text-xl font-bold font-heading text-text-primary">⚡ Creator DAOs</h2>
           </div>
           <Link href="/creator-daos" className="text-xs font-bold text-primary hover:text-primary-glow flex items-center gap-1 transition-all">
             View All Creator DAOs <ArrowRight className="w-3.5 h-3.5" />
@@ -208,7 +208,7 @@ export default function DashboardOverview() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 space-y-4">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-xl font-bold font-heading">Recent Proposals</h2>
+            <h2 className="text-lg sm:text-xl font-bold font-heading">Recent Proposals</h2>
             <Link href="/proposals" className="text-sm text-primary hover:text-primary/80 flex items-center gap-1 font-medium transition-colors">
               View All <ArrowRight className="w-4 h-4" />
             </Link>
@@ -217,7 +217,7 @@ export default function DashboardOverview() {
         </div>
         <div className="space-y-4">
           <div className="mb-2">
-            <h2 className="text-xl font-bold font-heading">Analytics</h2>
+            <h2 className="text-lg sm:text-xl font-bold font-heading">Analytics</h2>
           </div>
           <GovernanceAnalytics />
 

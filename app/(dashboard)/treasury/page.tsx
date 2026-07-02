@@ -537,21 +537,20 @@ function TreasuryPageContent() {
   };
 
   return (
-    <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">DAO Treasury</h1>
-            <p className="text-muted mt-1">Multi-asset capital reserves and smart treasury contracts on Arc Testnet.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">DAO Treasury</h1>
+            <p className="text-muted text-xs sm:text-sm mt-1">Multi-asset capital reserves and smart treasury contracts on Arc Testnet.</p>
           </div>
           
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 w-full lg:w-auto">
             {!isAuthenticated ? (
               <button 
                 onClick={login}
-                className="px-5 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer shrink-0 w-full lg:w-auto"
+                className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer shrink-0 w-full lg:w-auto"
               >
                 <Wallet className="w-4.5 h-4.5" />
                 Connect Wallet to Deposit
@@ -560,14 +559,14 @@ function TreasuryPageContent() {
               <>
                 <button 
                   onClick={() => setShowBridge(true)}
-                  className="px-5 py-2.5 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-text-primary font-semibold text-sm transition-all border border-border-thin flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] shrink-0 w-full lg:w-auto"
+                  className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-text-primary font-semibold text-sm transition-all border border-border-thin flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] shrink-0 w-full lg:w-auto"
                 >
                   🌉 Bridge USDC to Arc
                 </button>
 
                 <button 
                   onClick={() => setModalOpen(true)}
-                  className="px-5 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer shrink-0 w-full lg:w-auto"
+                  className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer shrink-0 w-full lg:w-auto"
                 >
                   <PlusCircle className="w-4.5 h-4.5" />
                   Deposit Assets
@@ -575,13 +574,13 @@ function TreasuryPageContent() {
               </>
             )}
             
-            <div className="bg-surface-elevated border border-border-thin px-4 py-2 rounded-xl flex items-center gap-3 shadow-md shrink-0 w-full lg:w-auto justify-between lg:justify-start">
+            <div className="bg-surface-elevated border border-border-thin px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl flex items-center gap-3 shadow-md shrink-0 w-full lg:w-auto justify-between lg:justify-start">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <Wallet className="w-4 h-4 text-primary" />
               </div>
               <div className="text-right lg:text-left flex-1 lg:flex-none">
                 <div className="text-[10px] text-text-tertiary font-bold uppercase tracking-wider">Combined Total</div>
-                <div className="text-lg font-bold font-mono text-text-primary flex items-center justify-end lg:justify-start h-[28px]">
+                <div className="text-base sm:text-lg font-bold font-mono text-text-primary flex items-center justify-end lg:justify-start h-[28px]">
                   {treasuryLoading ? (
                     <span className="inline-block w-20 h-5 bg-white/5 animate-pulse rounded mt-0.5" />
                   ) : (
@@ -604,7 +603,7 @@ function TreasuryPageContent() {
               <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted">Stable</span>
             </div>
             <p className="text-xs font-semibold text-muted uppercase tracking-wider">USDC Balance</p>
-            <h3 className="text-2xl font-extrabold text-text-primary mt-2 font-mono flex items-center h-[32px]">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-text-primary mt-2 font-mono flex items-center h-[32px]">
               {treasuryLoading ? (
                 <span className="inline-block w-28 h-7 bg-white/5 animate-pulse rounded" />
               ) : (
@@ -623,7 +622,7 @@ function TreasuryPageContent() {
               <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted">Stable</span>
             </div>
             <p className="text-xs font-semibold text-muted uppercase tracking-wider">EURC Balance</p>
-            <h3 className="text-2xl font-extrabold text-text-primary mt-2 font-mono flex items-center h-[32px]">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-text-primary mt-2 font-mono flex items-center h-[32px]">
               {treasuryLoading ? (
                 <span className="inline-block w-28 h-7 bg-white/5 animate-pulse rounded" />
               ) : (
@@ -863,7 +862,7 @@ function TreasuryPageContent() {
           </div>
         </GlassCard>
 
-      </div>
+
 
       {/* Deposit Modal */}
       {modalOpen && (

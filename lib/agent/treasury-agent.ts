@@ -112,8 +112,16 @@ export class TreasuryAgent {
         max_tokens: 300,
         temperature: 0.2,
       })
-      const text = (response.choices[0].message.content || '{}').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim()
-      return JSON.parse(text)
+      const rawContent = response.choices[0].message.content || '{}';
+      // Clean <think>...</think> blocks, markdown syntax, and extract JSON object
+      let cleaned = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+      cleaned = cleaned.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+      const start = cleaned.indexOf("{");
+      const end = cleaned.lastIndexOf("}");
+      if (start !== -1 && end !== -1 && end > start) {
+        cleaned = cleaned.substring(start, end + 1);
+      }
+      return JSON.parse(cleaned);
     } catch {
       if (treasury.usdc > 100) {
         return { shouldAct: true, action: 'bridge_to_ethereum', reasoning: `Treasury holds ${treasury.usdc} USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.`, proposedAmount: Math.floor(treasury.usdc * 0.3) }

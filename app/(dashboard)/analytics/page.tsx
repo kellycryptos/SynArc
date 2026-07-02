@@ -253,21 +253,19 @@ export default function AnalyticsPage() {
 
   if (treasuryError) {
     return (
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="rounded-lg border border-danger/20 bg-danger/5 p-6 flex items-start gap-4">
-            <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-foreground">Failed to load analytics</h3>
-              <p className="text-sm text-muted mt-1">{treasuryError.message}</p>
-              <button 
-                onClick={handleRefresh}
-                className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-md bg-danger/10 hover:bg-danger/15 text-danger text-sm font-medium transition-colors"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Retry
-              </button>
-            </div>
+      <div className="max-w-7xl mx-auto">
+        <div className="rounded-lg border border-danger/20 bg-danger/5 p-6 flex items-start gap-4">
+          <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-foreground">Failed to load analytics</h3>
+            <p className="text-sm text-muted mt-1">{treasuryError.message}</p>
+            <button 
+              onClick={handleRefresh}
+              className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-md bg-danger/10 hover:bg-danger/15 text-danger text-sm font-medium transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </button>
           </div>
         </div>
       </div>
@@ -275,14 +273,13 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         
         {/* Header and Filter */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">DAO Analytics</h1>
-            <p className="text-muted mt-1 text-sm">Real-time charts and metrics retrieved directly from Arc Testnet contracts.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">DAO Analytics</h1>
+            <p className="text-muted text-xs sm:text-sm mt-1">Real-time charts and metrics retrieved directly from Arc Testnet contracts.</p>
           </div>
           
           <div className="flex items-center gap-2 bg-surface border border-border-thin rounded-2xl p-1.5 self-start">
@@ -512,6 +509,5 @@ export default function AnalyticsPage() {
         </div>
 
       </div>
-    </div>
-  );
+    );
 }

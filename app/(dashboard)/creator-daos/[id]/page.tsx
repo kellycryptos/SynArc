@@ -499,7 +499,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
   };
 
   return (
-    <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-8 animate-fade-in">
+    <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8 animate-fade-in-up">
       
       {/* Return Link */}
       <Link href="/creator-daos" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-foreground font-semibold transition-colors">
@@ -545,7 +545,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
       </GlassCard>
 
       {/* Main Layout Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         
         {/* Left Column: Stats, Description, Timeline (2/3 width) */}
         <div className="lg:col-span-2 space-y-6">
@@ -566,7 +566,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
               {getAIBadge(campaign.aiAnalysis?.recommendation)}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-text-primary leading-tight">
+            <h1 className="text-xl sm:text-2xl font-extrabold font-heading text-text-primary leading-tight">
               {campaign.title}
             </h1>
 

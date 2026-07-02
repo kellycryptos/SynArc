@@ -485,17 +485,17 @@ export default function BridgePage() {
   };
 
   return (
-    <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-8 relative min-h-screen">
+    <div className="relative">
       {/* Background Radial Glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none z-0" />
       <div className="absolute bottom-1/4 left-1/3 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[90px] pointer-events-none z-0" />
 
-      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up relative z-10">
+      <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 animate-fade-in-up relative z-10">
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-border-thin pb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
                 <ArrowLeftRight className="w-5 h-5 text-primary" />
               </div>
@@ -619,7 +619,7 @@ export default function BridgePage() {
                             if (progressState === "error") setProgressState("idle");
                           }}
                           placeholder="0.00"
-                          className="text-3xl font-semibold font-mono text-white placeholder-text-muted bg-transparent border-none focus:outline-none w-full p-0 py-1"
+                          className="text-2xl sm:text-3xl font-semibold font-mono text-text-primary placeholder-text-muted bg-transparent border-none focus:outline-none w-full p-0 py-1"
                         />
                         <div className="flex items-center gap-1 bg-[#1e133d]/70 px-3 py-1.5 rounded-xl border border-border-thin shrink-0 select-none">
                           <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary">💵</span>
@@ -713,7 +713,7 @@ export default function BridgePage() {
 
                       {/* Preview Amount Output */}
                       <div className="flex justify-between items-center gap-4">
-                        <div className="text-3xl font-semibold font-mono text-white/50 select-none w-full py-1">
+                        <div className="text-2xl sm:text-3xl font-semibold font-mono text-text-primary/50 select-none w-full py-1">
                           {amount || "0.00"}
                         </div>
                         <div className="flex items-center gap-1 bg-[#1e133d]/70 px-3 py-1.5 rounded-xl border border-border-thin shrink-0 select-none">

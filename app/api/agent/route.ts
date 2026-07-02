@@ -8,6 +8,17 @@ const groq = new Groq({
   apiKey: isMockKey ? "mock_key" : process.env.GROQ_API_KEY
 });
 
+function cleanJson(str: string): string {
+  let cleaned = str.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  cleaned = cleaned.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start !== -1 && end !== -1 && end > start) {
+    cleaned = cleaned.substring(start, end + 1);
+  }
+  return cleaned;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -83,9 +94,9 @@ export async function POST(req: NextRequest) {
       });
 
       try {
-        let text = response.choices[0].message.content || "{}";
-        text = text.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
-        const decision = JSON.parse(text);
+        const text = response.choices[0].message.content || "{}";
+        const cleanedText = cleanJson(text);
+        const decision = JSON.parse(cleanedText);
         return NextResponse.json({ success: true, decision });
       } catch {
         return NextResponse.json({
@@ -143,9 +154,9 @@ export async function POST(req: NextRequest) {
       });
 
       try {
-        let text = response.choices[0].message.content || "{}";
-        text = text.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
-        const proposal = JSON.parse(text);
+        const text = response.choices[0].message.content || "{}";
+        const cleanedText = cleanJson(text);
+        const proposal = JSON.parse(cleanedText);
         return NextResponse.json({ success: true, proposal });
       } catch {
         return NextResponse.json({
@@ -290,9 +301,9 @@ export async function POST(req: NextRequest) {
       });
 
       try {
-        let text = response.choices[0].message.content || "{}";
-        text = text.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
-        const decision = JSON.parse(text);
+        const text = response.choices[0].message.content || "{}";
+        const cleanedText = cleanJson(text);
+        const decision = JSON.parse(cleanedText);
         return NextResponse.json({ success: true, decision });
       } catch {
         return NextResponse.json({ success: false, error: "Failed to parse AI analysis response" }, { status: 500 });
@@ -369,7 +380,8 @@ export async function POST(req: NextRequest) {
 
       try {
         const text = response.choices[0].message.content || "{}";
-        const generated = JSON.parse(text);
+        const cleanedText = cleanJson(text);
+        const generated = JSON.parse(cleanedText);
         return NextResponse.json({ success: true, campaign: generated });
       } catch {
         return NextResponse.json({ success: false, error: "Failed to parse AI generated campaign response" }, { status: 500 });

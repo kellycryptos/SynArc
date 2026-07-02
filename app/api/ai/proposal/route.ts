@@ -8,6 +8,17 @@ const groq = new Groq({
   apiKey: isMockKey ? "mock_key" : process.env.GROQ_API_KEY
 });
 
+function cleanJson(str: string): string {
+  let cleaned = str.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  cleaned = cleaned.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start !== -1 && end !== -1 && end > start) {
+    cleaned = cleaned.substring(start, end + 1);
+  }
+  return cleaned;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -79,10 +90,9 @@ export async function POST(req: NextRequest) {
       });
 
       try {
-        let text = response.choices[0].message.content || "{}";
-        // Strip markdown code block wrappers if any
-        text = text.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
-        const data = JSON.parse(text);
+        const text = response.choices[0].message.content || "{}";
+        const cleanedText = cleanJson(text);
+        const data = JSON.parse(cleanedText);
         return NextResponse.json({ success: true, campaign: data });
       } catch (err) {
         console.error("Failed to parse campaign JSON:", err);
@@ -134,10 +144,9 @@ export async function POST(req: NextRequest) {
       });
 
       try {
-        let text = response.choices[0].message.content || "{}";
-        // Strip markdown code block wrappers if any
-        text = text.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
-        const data = JSON.parse(text);
+        const text = response.choices[0].message.content || "{}";
+        const cleanedText = cleanJson(text);
+        const data = JSON.parse(cleanedText);
         return NextResponse.json({ success: true, proposal: data });
       } catch (err) {
         console.error("Failed to parse proposal JSON:", err);

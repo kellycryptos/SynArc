@@ -202,8 +202,7 @@ export default function CampaignsPage() {
   };
 
   return (
-    <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         
         {/* Auth prompt banner */}
         <AuthPromptBanner action="launch or contribute to Creator DAOs" />
@@ -211,7 +210,7 @@ export default function CampaignsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-3">
               <span className="p-2 rounded-xl bg-primary/10 border border-primary/20 text-primary">
                 <Rocket className="w-8 h-8" />
               </span>
@@ -690,7 +689,7 @@ export default function CampaignsPage() {
           </GlassCard>
         </div>
 
-      </div>
+
     </div>
   );
 }

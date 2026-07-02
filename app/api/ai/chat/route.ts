@@ -211,7 +211,8 @@ export async function POST(req: NextRequest) {
       temperature: 0.6
     });
 
-    const reply = response.choices[0].message.content || "Sorry, I couldn't formulate a response.";
+    let reply = response.choices[0].message.content || "Sorry, I couldn't formulate a response.";
+    reply = reply.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
     return NextResponse.json({ success: true, reply });
   } catch (err: any) {
     console.error("AI Chat API failed:", err);

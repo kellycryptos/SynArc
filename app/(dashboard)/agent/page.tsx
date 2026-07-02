@@ -692,7 +692,7 @@ export default function AgentPage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold font-heading text-text-primary">Treasury Guard</h1>
+              <h1 className="text-xl sm:text-2xl font-bold font-heading text-text-primary">Treasury Guard</h1>
               {onChainPaused ? (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-500/20 border border-red-500/30 text-red-500">
                   PAUSED

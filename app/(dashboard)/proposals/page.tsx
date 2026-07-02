@@ -101,8 +101,7 @@ export default function ProposalsPage() {
   const isLoading = !initialized;
 
   return (
-    <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         
         {/* Non-blocking auth prompt */}
         <AuthPromptBanner action="vote or create proposals" />
@@ -113,7 +112,7 @@ export default function ProposalsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Governance Proposals</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">Governance Proposals</h1>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <p className="text-muted text-sm">
                 Review, discuss, and vote on active proposals for your community.
@@ -317,7 +316,7 @@ export default function ProposalsPage() {
               );
             })
           )}
-        </div>
+
       </div>
     </div>
   );
