@@ -284,7 +284,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
               <span className="text-lg">🌉</span>
             </div>
             <div>
-              <h3 className="font-bold text-lg text-white">Bridge Funds to Arc</h3>
+              <h3 className="font-bold text-lg text-text-primary">Bridge Funds to Arc</h3>
               <p className="text-[11px] text-text-tertiary flex items-center gap-1">
                 <Zap className="w-3 h-3 text-yellow-400" />
                 Powered by Circle CCTP V2 — Fast transfers
@@ -294,7 +294,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
           <button
             onClick={handleModalClose}
             disabled={!isFormView && bridgeState.status !== "success"}
-            className="p-1.5 text-muted hover:text-white hover:bg-surface-elevated rounded-full transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1.5 text-muted hover:text-text-primary hover:bg-surface-elevated rounded-full transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <X className="w-5 h-5" />
           </button>
@@ -364,17 +364,17 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                 <button
                   type="button"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-surface border border-border-thin rounded-xl text-white text-sm font-semibold hover:border-primary/50 transition-all cursor-pointer"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-surface border border-border-thin rounded-xl text-text-primary text-sm font-semibold hover:border-primary/50 transition-all cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
                     <span className="text-base select-none">{selectedChain.icon}</span>
                     <span>{selectedChain.name}</span>
                   </div>
-                  <ChevronDown className={`w-4 h-4 text-muted transition-transform duration-300 ${dropdownOpen ? "rotate-180 text-white" : ""}`} />
+                  <ChevronDown className={`w-4 h-4 text-muted transition-transform duration-300 ${dropdownOpen ? "rotate-180 text-text-primary" : ""}`} />
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute left-0 right-0 mt-2 z-20 bg-[#160B2E]/95 border border-border-thin backdrop-blur-xl rounded-xl shadow-xl overflow-hidden py-1">
+                  <div className="absolute left-0 right-0 mt-2 z-20 bg-surface-elevated/95 border border-border-thin backdrop-blur-xl rounded-xl shadow-xl overflow-hidden py-1">
                     {SOURCE_CHAINS.map((chain) => (
                       <button
                         key={chain.id}
@@ -386,7 +386,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                           resetState();
                         }}
                         className={`w-full flex items-center gap-2.5 px-4 py-3 text-sm text-left hover:bg-primary/20 transition-all cursor-pointer ${
-                          selectedChain.id === chain.id ? "bg-primary/10 text-white font-bold" : "text-muted hover:text-white"
+                          selectedChain.id === chain.id ? "bg-primary/10 text-text-primary font-bold" : "text-muted hover:text-text-primary"
                         }`}
                       >
                         <span className="text-base select-none">{chain.icon}</span>
@@ -403,7 +403,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                 <div className="px-3 py-1 rounded-full bg-surface-elevated border border-border-thin flex items-center gap-1.5 text-[10px] font-bold text-primary shadow-sm uppercase tracking-wider">
                   <span>Transfer Route</span>
                   <ArrowRight className="w-3 h-3" />
-                  <span className="text-white">Arc Testnet</span>
+                  <span className="text-text-primary">Arc Testnet</span>
                 </div>
                 <div className="h-px bg-border-thin flex-1" />
               </div>
@@ -417,7 +417,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     {balanceLoading ? (
                       <Loader2 className="w-3 h-3 animate-spin text-primary" />
                     ) : (
-                      <span className="font-bold font-mono text-white select-all">{sourceBalance} USDC</span>
+                      <span className="font-bold font-mono text-text-primary select-all">{sourceBalance} USDC</span>
                     )}
                   </div>
                 </div>
@@ -432,7 +432,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                       if (bridgeState.status === "error") resetState();
                     }}
                     placeholder="0.00"
-                    className="w-full pl-16 pr-20 py-3.5 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-white font-mono text-sm"
+                    className="w-full pl-16 pr-20 py-3.5 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-text-primary font-mono text-sm"
                   />
                   <button
                     type="button"
@@ -451,7 +451,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     <Zap className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <span className="text-white font-bold block">Circle CCTP V2 — Fast Transfer</span>
+                    <span className="text-text-primary font-bold block">Circle CCTP V2 — Fast Transfer</span>
                     <span className="text-[10px] text-text-tertiary">Direct burn-and-mint with Circle attestation</span>
                   </div>
                 </div>
@@ -466,7 +466,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                 <button
                   type="button"
                   onClick={handleModalClose}
-                  className="flex-1 py-3 border border-border-thin text-muted hover:text-white font-bold text-sm rounded-xl hover:bg-surface-elevated transition-colors cursor-pointer"
+                  className="flex-1 py-3 border border-border-thin text-muted hover:text-text-primary font-bold text-sm rounded-xl hover:bg-surface-elevated transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -476,7 +476,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     type="button"
                     onClick={handleBridgeConfirm}
                     disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(sourceBalance)}
-                    className="flex-1 py-3 bg-accent-purple text-white font-bold text-sm rounded-xl hover:bg-accent-purple/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-white-keep"
+                    className="flex-1 py-3 bg-accent-purple text-white-keep font-bold text-sm rounded-xl hover:bg-accent-purple/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="text-white-keep">Bridge USDC</span>
                   </button>
@@ -484,7 +484,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   <button
                     type="button"
                     onClick={login}
-                    className="flex-1 py-3 bg-accent-purple text-white font-bold text-sm rounded-xl hover:bg-accent-purple/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer text-white-keep"
+                    className="flex-1 py-3 bg-accent-purple text-white-keep font-bold text-sm rounded-xl hover:bg-accent-purple/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <span className="text-white-keep">Connect Wallet</span>
                   </button>
@@ -506,7 +506,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     <Check className="w-8 h-8" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-white">Bridge complete ✓</h3>
+                    <h3 className="text-xl font-bold text-text-primary">Bridge complete ✓</h3>
                     <p className="text-xs text-text-tertiary mt-1.5 max-w-sm mx-auto leading-relaxed">
                       Your USDC has successfully arrived on Arc Testnet and is ready to use.
                     </p>
@@ -515,7 +515,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   <div className="p-4 bg-surface rounded-xl border border-border-thin max-w-xs mx-auto space-y-2.5">
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-muted">Bridged Amount</span>
-                      <span className="font-bold text-white font-mono">{amount} USDC</span>
+                      <span className="font-bold text-text-primary font-mono">{amount} USDC</span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-muted">Destination</span>
@@ -554,7 +554,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   <button
                     type="button"
                     onClick={handleModalClose}
-                    className="px-6 py-2.5 bg-accent-purple text-white font-bold text-sm rounded-xl hover:bg-accent-purple/95 transition-all shadow-[0_0_12px_rgba(124,58,237,0.2)] cursor-pointer text-white-keep"
+                    className="px-6 py-2.5 bg-accent-purple text-white-keep font-bold text-sm rounded-xl hover:bg-accent-purple/95 transition-all shadow-[0_0_12px_rgba(124,58,237,0.2)] cursor-pointer"
                   >
                     <span className="text-white-keep">Done</span>
                   </button>
@@ -573,7 +573,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
 
                   {/* Status Text */}
                   <div className="space-y-1.5">
-                    <h3 className="text-base font-bold text-white uppercase tracking-widest text-xs">
+                    <h3 className="text-base font-bold text-text-primary uppercase tracking-widest text-xs">
                       {bridgeState.status === "approving"           && "Approving USDC…"}
                       {bridgeState.status === "burning"             && `Burning on ${selectedChain.name}…`}
                       {bridgeState.status === "waiting-attestation" && "Waiting for Attestation…"}
@@ -634,7 +634,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                           <div className="flex-1 min-w-0">
                             <span
                               className={`text-xs truncate block transition-colors duration-300 ${
-                                isActive ? "text-white font-bold" : isDone ? "text-muted" : "text-text-tertiary"
+                                isActive ? "text-text-primary font-bold" : isDone ? "text-muted" : "text-text-tertiary"
                               }`}
                             >
                               {idx + 1}. {step.label}

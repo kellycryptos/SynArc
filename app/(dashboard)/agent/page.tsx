@@ -731,7 +731,7 @@ export default function AgentPage() {
             disabled={isPausing}
             whileHover={{ scale: isPausing ? 1 : 1.02 }}
             whileTap={{ scale: isPausing ? 1 : 0.98 }}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all shadow-md cursor-pointer disabled:cursor-not-allowed ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white-keep transition-all shadow-md cursor-pointer disabled:cursor-not-allowed ${
               onChainPaused
                 ? "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20"
                 : "bg-red-600 hover:bg-red-500 shadow-red-600/20"
@@ -757,7 +757,7 @@ export default function AgentPage() {
             disabled={running || onChainPaused}
             whileHover={{ scale: (running || onChainPaused) ? 1 : 1.02 }}
             whileTap={{ scale: (running || onChainPaused) ? 1 : 0.98 }}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-blue text-white text-sm font-bold hover:opacity-90 disabled:opacity-60 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer disabled:cursor-not-allowed"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-blue text-white-keep text-sm font-bold hover:opacity-90 disabled:opacity-60 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer disabled:cursor-not-allowed"
           >
             {running ? (
               <><span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />Running...</>
@@ -1101,24 +1101,6 @@ export default function AgentPage() {
             </div>
           </GlassCard>
 
-          {/* Circle Integrations */}
-          <GlassCard className="p-5 space-y-4 col-span-1 lg:col-span-2 order-10 lg:order-none" hover={false}>
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
-              <h2 className="text-sm font-bold text-text-primary">Circle Integrations</h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {AGENT_INTEGRATIONS.map((integration) => (
-                <div key={integration.name} className="flex items-start gap-3 p-3 rounded-xl border border-border-thin bg-surface-elevated/30">
-                  <CheckCircle className="w-4 h-4 text-success mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-xs font-bold text-text-primary">{integration.name}</p>
-                    <p className="text-xs text-muted mt-0.5">{integration.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </GlassCard>
 
           {/* Gateway Inference Payments */}
           {payments && payments.callCount > 0 && (
@@ -1243,7 +1225,7 @@ export default function AgentPage() {
                         {/* Node 1: Burn */}
                         <div className="flex flex-col items-center gap-1 z-10">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-500 ${
-                            stage !== "idle" ? "bg-primary border-primary text-white shadow-[0_0_12px_rgba(124,58,237,0.5)]" : "bg-surface border-border text-muted"
+                            stage !== "idle" ? "bg-primary border-primary text-white-keep shadow-[0_0_12px_rgba(124,58,237,0.5)]" : "bg-surface border-border text-muted"
                           }`}>
                             <Coins className="w-3.5 h-3.5" />
                           </div>
@@ -1253,7 +1235,7 @@ export default function AgentPage() {
                         {/* Node 2: Attestation */}
                         <div className="flex flex-col items-center gap-1 z-10">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-500 ${
-                            stage === "attestation" || stage === "mint" || stage === "done" ? "bg-purple-600 border-purple-500 text-white shadow-[0_0_12px_rgba(147,51,234,0.5)]" : "bg-surface border-border text-muted"
+                            stage === "attestation" || stage === "mint" || stage === "done" ? "bg-purple-600 border-purple-500 text-white-keep shadow-[0_0_12px_rgba(147,51,234,0.5)]" : "bg-surface border-border text-muted"
                           }`}>
                             <BrainCircuit className="w-3.5 h-3.5" />
                           </div>
@@ -1263,7 +1245,7 @@ export default function AgentPage() {
                         {/* Node 3: Mint */}
                         <div className="flex flex-col items-center gap-1 z-10">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-500 ${
-                            stage === "mint" || stage === "done" ? "bg-blue-600 border-blue-500 text-white shadow-[0_0_12px_rgba(37,99,235,0.5)]" : "bg-surface border-border text-muted"
+                            stage === "mint" || stage === "done" ? "bg-blue-600 border-blue-500 text-white-keep shadow-[0_0_12px_rgba(37,99,235,0.5)]" : "bg-surface border-border text-muted"
                           }`}>
                             <CheckCircle className="w-3.5 h-3.5" />
                           </div>
@@ -1295,6 +1277,78 @@ export default function AgentPage() {
             </div>
           </GlassCard>
 
+          {/* ════ AUTO YIELD FARMING ══════════════════════════════════════════ */}
+          <GlassCard className="p-5 space-y-5 col-span-1 lg:col-span-1 order-9 lg:order-none" hover={false}>
+            <div className="flex items-center gap-2">
+              <Percent className="w-5 h-5 text-violet-400" />
+              <h2 className="text-sm font-bold text-text-primary">Auto Yield Farming</h2>
+              <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-violet-500/15 border border-violet-500/25 text-violet-400">TESTNET</span>
+            </div>
+
+            <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl flex items-start gap-3">
+              <div className="p-2 bg-violet-500/15 rounded-lg border border-violet-500/20 shrink-0">
+                <Layers className="w-4 h-4 text-violet-400" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-text-primary">Idle Capital</p>
+                <p className="text-xs text-muted mt-0.5">
+                  {((demoUSDCBalance ?? treasury?.usdc ?? 0)).toFixed(2)} USDC sitting idle — potential annual yield at 3–4% APY
+                </p>
+              </div>
+              <div className="ml-auto text-right shrink-0">
+                <p className="text-sm font-bold text-violet-400">
+                  ~{((demoUSDCBalance ?? treasury?.usdc ?? 0) * 0.035).toFixed(2)}
+                </p>
+                <p className="text-[10px] text-muted">est. / year</p>
+              </div>
+            </div>
+
+            {/* Strategy cards */}
+            <div className="space-y-3">
+              {[
+                { name: "Aave USDC",    apy: 3.2, color: "text-blue-400",   bg: "bg-blue-500/10",   border: "border-blue-500/20",   logo: "A" },
+                { name: "Compound",     apy: 2.9, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", logo: "C" },
+                { name: "Morpho Blue",  apy: 4.1, color: "text-violet-400",  bg: "bg-violet-500/10",  border: "border-violet-500/20",  logo: "M" },
+              ].map(s => (
+                <div key={s.name} className={`p-3.5 rounded-xl border ${s.border} ${s.bg} flex items-center justify-between gap-4`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg ${s.bg} border ${s.border} flex items-center justify-center text-xs font-black shrink-0 ${s.color}`}>{s.logo}</div>
+                    <div>
+                      <p className="text-xs font-bold text-text-primary">{s.name}</p>
+                      <p className="text-[10px] text-muted">APY (current estimate)</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 text-right">
+                    <div>
+                      <p className={`text-sm font-black ${s.color}`}>{s.apy}%</p>
+                      <span className="text-[9px] font-semibold text-muted bg-surface-elevated px-1.5 py-0.5 rounded border border-border-thin">
+                        PLANNED
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-[10px] text-muted leading-relaxed">
+              Agent will create a governance proposal to allocate idle USDC to the highest-yield strategy. Community votes before any funds move.
+            </p>
+
+            <motion.button
+              onClick={proposeYieldAllocation}
+              disabled={isYieldProposing || onChainPaused}
+              whileHover={{ scale: (isYieldProposing || onChainPaused) ? 1 : 1.02 }}
+              whileTap={{ scale: (isYieldProposing || onChainPaused) ? 1 : 0.98 }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600/20 border border-violet-500/30 text-violet-400 text-xs font-bold hover:bg-violet-600/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isYieldProposing ? (
+                <><span className="w-3.5 h-3.5 rounded-full border-2 border-violet-400/30 border-t-violet-400 animate-spin" />Proposing Yield Allocation...</>
+              ) : (
+                <><TrendingUp className="w-3.5 h-3.5" />Propose Yield Allocation</>
+              )}
+            </motion.button>
+          </GlassCard>
+
           {/* ════ AUTO PAYMENTS ════════════════════════════════════════════ */}
           <GlassCard className="p-5 space-y-5 col-span-1 lg:col-span-2 order-6 lg:order-none" hover={false}>
             <div className="flex items-center gap-2">
@@ -1304,7 +1358,7 @@ export default function AgentPage() {
             </div>
 
             {/* Summary stats */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
                 { label: "Scheduled / Mo", value: scheduledPayments.length > 0 ? `${scheduledPayments.filter(p => p.status === "scheduled").reduce((s, p) => s + p.amount, 0)} USDC` : "— USDC" },
                 { label: "Next Payout",   value: scheduledPayments.filter(p => p.status === "scheduled").length > 0 ? (scheduledPayments.filter(p => p.status === "scheduled").sort((a, b) => a.nextRun.localeCompare(b.nextRun))[0]?.nextRun || "—") : "—" },
@@ -1341,7 +1395,7 @@ export default function AgentPage() {
                     <tr key={p.id} className="border-b border-border-thin/50 hover:bg-surface-elevated/30 transition-colors">
                       <td className="py-3 pl-3 font-medium text-text-primary">{p.label}</td>
                       <td className="py-3 font-mono text-[10px] text-muted">{p.recipient}</td>
-                      <td className="py-3 font-bold text-white">{p.amount} <span className="text-muted font-normal">{p.asset}</span></td>
+                      <td className="py-3 font-bold text-text-primary">{p.amount} <span className="text-muted font-normal">{p.asset}</span></td>
                       <td className="py-3 capitalize text-muted">{p.frequency}</td>
                       <td className="py-3 text-muted">{p.nextRun}</td>
                       <td className="py-3 pr-3 text-right">
@@ -1367,74 +1421,6 @@ export default function AgentPage() {
               <Plus className="w-3.5 h-3.5" />
               Schedule New Payment
             </button>
-          </GlassCard>
-
-          {/* ════ AUTO YIELD FARMING ══════════════════════════════════════════ */}
-          <GlassCard className="p-5 space-y-5 col-span-1 lg:col-span-1 order-9 lg:order-none" hover={false}>
-            <div className="flex items-center gap-2">
-              <Percent className="w-5 h-5 text-violet-400" />
-              <h2 className="text-sm font-bold text-text-primary">Auto Yield Farming</h2>
-              <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-violet-500/15 border border-violet-500/25 text-violet-400">TESTNET</span>
-            </div>
-
-            <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl flex items-start gap-3">
-              <div className="p-2 bg-violet-500/15 rounded-lg border border-violet-500/20 shrink-0">
-                <Layers className="w-4 h-4 text-violet-400" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-text-primary">Idle Capital</p>
-                <p className="text-xs text-muted mt-0.5">
-                  {((demoUSDCBalance ?? treasury?.usdc ?? 0)).toFixed(2)} USDC sitting idle — potential annual yield at 3–4% APY
-                </p>
-              </div>
-              <div className="ml-auto text-right shrink-0">
-                <p className="text-sm font-bold text-violet-400">
-                  ~{((demoUSDCBalance ?? treasury?.usdc ?? 0) * 0.035).toFixed(2)}
-                </p>
-                <p className="text-[10px] text-muted">est. / year</p>
-              </div>
-            </div>
-
-            {/* Strategy cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {[
-                { name: "Aave USDC",    apy: 3.2, color: "text-blue-400",   bg: "bg-blue-500/10",   border: "border-blue-500/20",   logo: "A" },
-                { name: "Compound",     apy: 2.9, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", logo: "C" },
-                { name: "Morpho Blue",  apy: 4.1, color: "text-violet-400",  bg: "bg-violet-500/10",  border: "border-violet-500/20",  logo: "M" },
-              ].map(s => (
-                <div key={s.name} className={`relative p-3.5 rounded-xl border ${s.border} ${s.bg} flex flex-col gap-2`}>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-7 h-7 rounded-lg ${s.bg} border ${s.border} flex items-center justify-center text-xs font-black ${s.color}`}>{s.logo}</div>
-                    <div>
-                      <p className="text-xs font-bold text-text-primary">{s.name}</p>
-                      <p className={`text-lg font-black ${s.color}`}>{s.apy}%</p>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-muted">APY (current estimate)</p>
-                  <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[9px] font-bold bg-surface-elevated border border-border-thin text-muted">
-                    PLANNED
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-[10px] text-muted leading-relaxed">
-              Agent will create a governance proposal to allocate idle USDC to the highest-yield strategy. Community votes before any funds move.
-            </p>
-
-            <motion.button
-              onClick={proposeYieldAllocation}
-              disabled={isYieldProposing || onChainPaused}
-              whileHover={{ scale: (isYieldProposing || onChainPaused) ? 1 : 1.02 }}
-              whileTap={{ scale: (isYieldProposing || onChainPaused) ? 1 : 0.98 }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600/20 border border-violet-500/30 text-violet-400 text-xs font-bold hover:bg-violet-600/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isYieldProposing ? (
-                <><span className="w-3.5 h-3.5 rounded-full border-2 border-violet-400/30 border-t-violet-400 animate-spin" />Proposing Yield Allocation...</>
-              ) : (
-                <><TrendingUp className="w-3.5 h-3.5" />Propose Yield Allocation</>
-              )}
-            </motion.button>
           </GlassCard>
 
           {/* ════ RISK MONITORING ═════════════════════════════════════════════ */}
@@ -1538,6 +1524,25 @@ export default function AgentPage() {
             </div>
           </GlassCard>
 
+          {/* Circle Integrations */}
+          <GlassCard className="p-5 space-y-4 col-span-1 lg:col-span-2 order-10 lg:order-none" hover={false}>
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              <h2 className="text-sm font-bold text-text-primary">Circle Integrations</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {AGENT_INTEGRATIONS.map((integration) => (
+                <div key={integration.name} className="flex items-start gap-3 p-3 rounded-xl border border-border-thin bg-surface-elevated/30">
+                  <CheckCircle className="w-4 h-4 text-success mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-text-primary">{integration.name}</p>
+                    <p className="text-xs text-muted mt-0.5">{integration.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+
           {/* ════ MULTI-CHAIN AUTO SWEEP ══════════════════════════════════════ */}
           <GlassCard className="p-5 space-y-5 col-span-1 lg:col-span-1 order-8 lg:order-none" hover={false}>
             <div className="flex items-center gap-2">
@@ -1622,7 +1627,7 @@ export default function AgentPage() {
           {/* Agent Queued Withdrawals Section */}
           {pendingAgentWithdrawals.length > 0 && (
             <GlassCard className="p-5 border border-amber-500/20 bg-amber-500/[0.005] col-span-1 lg:col-span-3 order-12 lg:order-none">
-              <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-text-primary mb-4 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-warning" />
                 Agent Pending Withdrawals (24h Timelocked)
               </h3>
@@ -1652,13 +1657,13 @@ export default function AgentPage() {
 
                       return (
                         <tr key={q.id} className="border-b border-border-thin/50 hover:bg-surface-elevated/30 transition-colors">
-                          <td className="py-3 pl-2 font-mono font-bold text-white">#W-{q.id}</td>
+                          <td className="py-3 pl-2 font-mono font-bold text-text-primary">#W-{q.id}</td>
                           <td className="py-3">
                             <span className="font-mono text-[10px] text-text-secondary bg-surface-elevated px-1.5 py-0.5 rounded border border-border-subtle" title={q.recipient}>
                               {q.recipient.slice(0, 6)}...{q.recipient.slice(-4)}
                             </span>
                           </td>
-                          <td className="py-3 font-mono font-bold text-white">
+                          <td className="py-3 font-mono font-bold text-text-primary">
                             {q.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                           </td>
                           <td className="py-3 font-medium text-text-secondary">{tokenSymbol}</td>
@@ -1715,11 +1720,11 @@ export default function AgentPage() {
             >
               <button 
                 onClick={() => setShowLimitModal(false)}
-                className="absolute top-4 right-4 text-muted hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
+                className="absolute top-4 right-4 text-muted hover:text-text-primary transition-colors cursor-pointer bg-transparent border-0 p-0"
               >
                 <X className="w-5 h-5" />
               </button>
-              <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-text-primary mb-2 flex items-center gap-2">
                 <Shield className="w-5 h-5 text-primary" />
                 Update Max Rebalance Limit
               </h3>
@@ -1735,7 +1740,7 @@ export default function AgentPage() {
                     value={newLimitInput}
                     onChange={(e) => setNewLimitInput(e.target.value)}
                     placeholder="e.g. 50"
-                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-primary/50 font-mono font-bold"
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-primary/50 font-mono font-bold"
                   />
                   {parseFloat(newLimitInput) > 50 && (
                     <div className="mt-2 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-start gap-2">
@@ -1750,7 +1755,7 @@ export default function AgentPage() {
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => setShowLimitModal(false)}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-white transition-colors cursor-pointer"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1780,11 +1785,11 @@ export default function AgentPage() {
             >
               <button 
                 onClick={() => setShowWithdrawalModal(false)}
-                className="absolute top-4 right-4 text-muted hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
+                className="absolute top-4 right-4 text-muted hover:text-text-primary transition-colors cursor-pointer bg-transparent border-0 p-0"
               >
                 <X className="w-5 h-5" />
               </button>
-              <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-text-primary mb-2 flex items-center gap-2">
                 <Plus className="w-5 h-5 text-primary" />
                 Queue Agent Withdrawal (Admin)
               </h3>
@@ -1798,7 +1803,7 @@ export default function AgentPage() {
                   <select
                     value={withdrawalToken}
                     onChange={(e) => setWithdrawalToken(e.target.value)}
-                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-primary/50"
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-primary/50"
                   >
                     <option value="0x3600000000000000000000000000000000000000">USDC (Stable)</option>
                     <option value="0x89b50855aa3be2f677cd6303cec089b5f319d72a">EURC (Stable)</option>
@@ -1813,7 +1818,7 @@ export default function AgentPage() {
                     value={withdrawalRecipient}
                     onChange={(e) => setWithdrawalRecipient(e.target.value)}
                     placeholder="0x..."
-                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-primary/50 font-mono"
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-primary/50 font-mono"
                   />
                 </div>
 
@@ -1824,7 +1829,7 @@ export default function AgentPage() {
                     value={withdrawalAmount}
                     onChange={(e) => setWithdrawalAmount(e.target.value)}
                     placeholder="0.00"
-                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-primary/50 font-mono"
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-primary/50 font-mono"
                   />
                 </div>
 
@@ -1838,7 +1843,7 @@ export default function AgentPage() {
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => setShowWithdrawalModal(false)}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-white transition-colors cursor-pointer"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1868,11 +1873,11 @@ export default function AgentPage() {
             >
               <button
                 onClick={() => setShowPaymentModal(false)}
-                className="absolute top-4 right-4 text-muted hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
+                className="absolute top-4 right-4 text-muted hover:text-text-primary transition-colors cursor-pointer bg-transparent border-0 p-0"
               >
                 <X className="w-5 h-5" />
               </button>
-              <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-text-primary mb-1 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-emerald-400" />
                 Schedule Auto Payment
               </h3>
@@ -1886,7 +1891,7 @@ export default function AgentPage() {
                     value={paymentForm.label}
                     onChange={e => setPaymentForm(f => ({ ...f, label: e.target.value }))}
                     placeholder="e.g. Creator Milestone #3"
-                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-emerald-500/50"
                   />
                 </div>
 
@@ -1897,7 +1902,7 @@ export default function AgentPage() {
                     value={paymentForm.recipient}
                     onChange={e => setPaymentForm(f => ({ ...f, recipient: e.target.value }))}
                     placeholder="0x..."
-                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500/50 font-mono"
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-emerald-500/50 font-mono"
                   />
                 </div>
 
@@ -1909,7 +1914,7 @@ export default function AgentPage() {
                       value={paymentForm.amount}
                       onChange={e => setPaymentForm(f => ({ ...f, amount: e.target.value }))}
                       placeholder="0.00"
-                      className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500/50 font-mono"
+                      className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-emerald-500/50 font-mono"
                     />
                   </div>
                   <div>
@@ -1917,7 +1922,7 @@ export default function AgentPage() {
                     <select
                       value={paymentForm.asset}
                       onChange={e => setPaymentForm(f => ({ ...f, asset: e.target.value }))}
-                      className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500/50"
+                      className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-emerald-500/50"
                     >
                       <option value="USDC">USDC</option>
                       <option value="EURC">EURC</option>
@@ -1930,7 +1935,7 @@ export default function AgentPage() {
                   <select
                     value={paymentForm.frequency}
                     onChange={e => setPaymentForm(f => ({ ...f, frequency: e.target.value }))}
-                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-emerald-500/50"
                   >
                     <option value="one-time">One-time</option>
                     <option value="weekly">Weekly</option>
@@ -1949,7 +1954,7 @@ export default function AgentPage() {
                 <div className="flex gap-3 pt-1">
                   <button
                     onClick={() => setShowPaymentModal(false)}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-white transition-colors cursor-pointer"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1974,7 +1979,7 @@ export default function AgentPage() {
                         setShowPaymentModal(false);
                       }, 1000);
                     }}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 text-sm font-bold transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 text-white-keep hover:bg-emerald-500 text-sm font-bold transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                   >
                     {isSavingPayment ? "Scheduling..." : "Schedule Payment"}
                   </button>
@@ -1997,11 +2002,11 @@ export default function AgentPage() {
             >
               <button
                 onClick={() => setShowAlertSettings(false)}
-                className="absolute top-4 right-4 text-muted hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
+                className="absolute top-4 right-4 text-muted hover:text-text-primary transition-colors cursor-pointer bg-transparent border-0 p-0"
               >
                 <X className="w-5 h-5" />
               </button>
-              <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-text-primary mb-1 flex items-center gap-2">
                 <BellRing className="w-5 h-5 text-primary" />
                 Risk Alert Settings
               </h3>
@@ -2018,7 +2023,7 @@ export default function AgentPage() {
                       value={alertThresholdInput}
                       onChange={e => setAlertThresholdInput(e.target.value)}
                       placeholder="e.g. 10"
-                      className="flex-1 bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-primary/50 font-mono font-bold"
+                      className="flex-1 bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-primary/50 font-mono font-bold"
                     />
                     <span className="text-xs text-muted font-medium">USDC</span>
                   </div>
@@ -2050,7 +2055,7 @@ export default function AgentPage() {
                 <div className="flex gap-3 pt-1">
                   <button
                     onClick={() => setShowAlertSettings(false)}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-white transition-colors cursor-pointer"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>

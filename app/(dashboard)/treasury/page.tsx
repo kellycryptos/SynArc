@@ -547,11 +547,11 @@ function TreasuryPageContent() {
             <p className="text-muted mt-1">Multi-asset capital reserves and smart treasury contracts on Arc Testnet.</p>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 w-full lg:w-auto">
             {!isAuthenticated ? (
               <button 
                 onClick={login}
-                className="px-5 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer shrink-0"
+                className="px-5 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer shrink-0 w-full lg:w-auto"
               >
                 <Wallet className="w-4.5 h-4.5" />
                 Connect Wallet to Deposit
@@ -560,14 +560,14 @@ function TreasuryPageContent() {
               <>
                 <button 
                   onClick={() => setShowBridge(true)}
-                  className="px-5 py-2.5 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-white font-semibold text-sm transition-all border border-border-thin flex items-center gap-2 cursor-pointer hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] shrink-0"
+                  className="px-5 py-2.5 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-text-primary font-semibold text-sm transition-all border border-border-thin flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] shrink-0 w-full lg:w-auto"
                 >
                   🌉 Bridge USDC to Arc
                 </button>
 
                 <button 
                   onClick={() => setModalOpen(true)}
-                  className="px-5 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center gap-2 cursor-pointer shrink-0"
+                  className="px-5 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer shrink-0 w-full lg:w-auto"
                 >
                   <PlusCircle className="w-4.5 h-4.5" />
                   Deposit Assets
@@ -575,13 +575,13 @@ function TreasuryPageContent() {
               </>
             )}
             
-            <div className="bg-surface-elevated border border-border-thin px-4 py-2 rounded-xl flex items-center gap-3 shadow-md shrink-0">
+            <div className="bg-surface-elevated border border-border-thin px-4 py-2 rounded-xl flex items-center gap-3 shadow-md shrink-0 w-full lg:w-auto justify-between lg:justify-start">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <Wallet className="w-4 h-4 text-primary" />
               </div>
-              <div>
+              <div className="text-right lg:text-left flex-1 lg:flex-none">
                 <div className="text-[10px] text-text-tertiary font-bold uppercase tracking-wider">Combined Total</div>
-                <div className="text-lg font-bold font-mono text-white flex items-center h-[28px]">
+                <div className="text-lg font-bold font-mono text-text-primary flex items-center justify-end lg:justify-start h-[28px]">
                   {treasuryLoading ? (
                     <span className="inline-block w-20 h-5 bg-white/5 animate-pulse rounded mt-0.5" />
                   ) : (
@@ -604,7 +604,7 @@ function TreasuryPageContent() {
               <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted">Stable</span>
             </div>
             <p className="text-xs font-semibold text-muted uppercase tracking-wider">USDC Balance</p>
-            <h3 className="text-2xl font-extrabold text-white mt-2 font-mono flex items-center h-[32px]">
+            <h3 className="text-2xl font-extrabold text-text-primary mt-2 font-mono flex items-center h-[32px]">
               {treasuryLoading ? (
                 <span className="inline-block w-28 h-7 bg-white/5 animate-pulse rounded" />
               ) : (
@@ -623,7 +623,7 @@ function TreasuryPageContent() {
               <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted">Stable</span>
             </div>
             <p className="text-xs font-semibold text-muted uppercase tracking-wider">EURC Balance</p>
-            <h3 className="text-2xl font-extrabold text-white mt-2 font-mono flex items-center h-[32px]">
+            <h3 className="text-2xl font-extrabold text-text-primary mt-2 font-mono flex items-center h-[32px]">
               {treasuryLoading ? (
                 <span className="inline-block w-28 h-7 bg-white/5 animate-pulse rounded" />
               ) : (
@@ -642,7 +642,7 @@ function TreasuryPageContent() {
               <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-success/10 border border-success/20 text-success">Active</span>
             </div>
             <p className="text-xs font-semibold text-muted uppercase tracking-wider">Emergency Guardian</p>
-            <h3 className="text-base font-bold text-white mt-3">
+            <h3 className="text-base font-bold text-text-primary mt-3">
               Deposits Pausable
             </h3>
             <p className="text-[11px] text-text-tertiary mt-1">Multi-signature emergency pause enabled</p>
@@ -654,7 +654,7 @@ function TreasuryPageContent() {
           
           {/* Main Growth Chart */}
           <GlassCard className="lg:col-span-2 p-6 h-[400px] flex flex-col">
-            <h3 className="text-lg font-bold text-white mb-6">Treasury Valuation Trend (USD Value)</h3>
+            <h3 className="text-lg font-bold text-text-primary mb-6">Treasury Valuation Trend (USD Value)</h3>
             <div className="flex-1 w-full h-full min-h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -10, bottom: 0 }}>
@@ -679,7 +679,7 @@ function TreasuryPageContent() {
 
           {/* Allocation Composition */}
           <GlassCard className="p-6 h-[400px] flex flex-col">
-            <h3 className="text-lg font-bold text-white mb-6">Asset Composition (USD)</h3>
+            <h3 className="text-lg font-bold text-text-primary mb-6">Asset Composition (USD)</h3>
             <div className="flex-1 w-full min-h-0 relative flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <RechartsPieChart>
@@ -710,7 +710,7 @@ function TreasuryPageContent() {
         {/* Pending Withdrawals (Timelocks) */}
         {pendingWithdrawals.length > 0 && (
           <GlassCard className="p-6 border border-warning/20 bg-warning/[0.01]">
-            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
               <Clock className="w-5 h-5 text-warning" />
               Pending Withdrawals (Timelocked)
             </h3>
@@ -736,13 +736,13 @@ function TreasuryPageContent() {
 
                     return (
                       <tr key={q.id} className="border-b border-border-thin/50 hover:bg-surface-elevated/30 transition-colors">
-                        <td className="py-4 pl-2 font-mono font-bold text-white">#W-{q.id}</td>
+                        <td className="py-4 pl-2 font-mono font-bold text-text-primary">#W-{q.id}</td>
                         <td className="py-4">
                           <span className="font-mono text-xs text-text-secondary bg-surface-elevated px-2 py-1 rounded border border-border-subtle" title={q.recipient}>
                             {q.recipient.slice(0, 6)}...{q.recipient.slice(-4)}
                           </span>
                         </td>
-                        <td className="py-4 font-mono font-bold text-white">
+                        <td className="py-4 font-mono font-bold text-text-primary">
                           -{q.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {q.tokenSymbol}
                         </td>
                         <td className="py-4 text-text-secondary">{q.description}</td>
@@ -787,7 +787,7 @@ function TreasuryPageContent() {
 
         {/* Transactions Table */}
         <GlassCard className="p-6">
-          <h3 className="text-lg font-bold text-white mb-6">Recent Activities</h3>
+          <h3 className="text-lg font-bold text-text-primary mb-6">Recent Activities</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -834,7 +834,7 @@ function TreasuryPageContent() {
                         </div>
                       </td>
                       <td className="py-4 text-text-secondary">{tx.description}</td>
-                      <td className="py-4 font-mono font-bold text-white">
+                      <td className="py-4 font-mono font-bold text-text-primary">
                         {tx.type === 'Outflow' ? '-' : '+'}
                         {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {tx.token}
                       </td>
@@ -875,11 +875,11 @@ function TreasuryPageContent() {
             <div className="flex items-center justify-between border-b border-border-thin pb-4 mb-6">
               <div className="flex items-center gap-2">
                 <PlusCircle className="w-5 h-5 text-primary" />
-                <h3 className="font-bold text-lg text-white">Deposit to Treasury</h3>
+                <h3 className="font-bold text-lg text-text-primary">Deposit to Treasury</h3>
               </div>
               <button 
                 onClick={handleModalClose}
-                className="p-1.5 text-muted hover:text-white hover:bg-surface-elevated rounded-full transition-colors cursor-pointer"
+                className="p-1.5 text-muted hover:text-text-primary hover:bg-surface-elevated rounded-full transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -914,7 +914,7 @@ function TreasuryPageContent() {
               {/* Balance display */}
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted">Wallet Balance</span>
-                <span className="font-semibold text-white font-mono">{parseFloat(currentWalletBalance).toLocaleString(undefined, { minimumFractionDigits: 2 })} {selectedToken}</span>
+                <span className="font-semibold text-text-primary font-mono">{parseFloat(currentWalletBalance).toLocaleString(undefined, { minimumFractionDigits: 2 })} {selectedToken}</span>
               </div>
 
               {/* Amount input */}
@@ -927,7 +927,7 @@ function TreasuryPageContent() {
                     onChange={(e) => setDepositAmount(e.target.value)}
                     placeholder="0.00"
                     disabled={txStep === "approving" || txStep === "depositing"}
-                    className="w-full pl-4 pr-16 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-white font-mono text-sm disabled:opacity-50"
+                    className="w-full pl-4 pr-16 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-text-primary font-mono text-sm disabled:opacity-50"
                   />
                   <button
                     onClick={handleMaxClick}
@@ -977,7 +977,7 @@ function TreasuryPageContent() {
                   <Check className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-sm">Deposit Confirmed!</h4>
+                  <h4 className="font-bold text-text-primary text-sm">Deposit Confirmed!</h4>
                   <p className="text-xs text-muted mt-1">Your assets have been deposited into the SynArc Treasury on-chain.</p>
                 </div>
                 {txHash && (
