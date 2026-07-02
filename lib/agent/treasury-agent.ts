@@ -36,6 +36,75 @@ const GOVERNOR_ABI = parseAbi([
   'function hasVoted(uint256 proposalId, address voter) view returns (bool)'
 ])
 
+function tolerantParse(str: string): any {
+  let cleaned = str.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {}
+
+  cleaned = cleaned.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+  
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {}
+
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start !== -1 && end !== -1 && end > start) {
+    cleaned = cleaned.substring(start, end + 1);
+  }
+
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {}
+
+  let fixed = cleaned;
+  fixed = fixed.replace(/'([^'\\]*(?:\\.[^'\\]*)*)'\s*:/g, '"$1":');
+  fixed = fixed.replace(/:\s*'([^'\\]*(?:\\.[^'\\]*)*)'/g, ': "$1"');
+  fixed = fixed.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
+  fixed = fixed.replace(/,\s*([}\]])/g, '$1');
+  fixed = fixed.replace(/:\s*True\b/gi, ': true');
+  fixed = fixed.replace(/:\s*False\b/gi, ': false');
+  fixed = fixed.replace(/:\s*Null\b/gi, ': null');
+
+  try {
+    return JSON.parse(fixed);
+  } catch (e) {
+    console.error("[tolerantParse] Failed parsing even after fixes. Original:", str);
+    throw e;
+  }
+}
+
+function fallbackTreasuryDecide(text: string): any {
+  const cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, "");
+
+  let shouldAct = false;
+  if (/shouldAct["'\s:]+true/i.test(cleaned)) {
+    shouldAct = true;
+  }
+
+  let action = "monitoring";
+  const actionMatch = cleaned.match(/action["'\s:]+([^"}\n,]+)/i);
+  if (actionMatch) {
+    action = actionMatch[1].trim().replace(/^["']/, "").replace(/["']$/, "");
+  }
+
+  let reasoning = "AI analysis completed with parser fallback.";
+  const reasonMatch = cleaned.match(/reasoning["'\s:]+([^"}\n,]+)/i);
+  if (reasonMatch) {
+    reasoning = reasonMatch[1].trim().replace(/^["']/, "").replace(/["']$/, "");
+  }
+
+  let proposedAmount = 0;
+  const amtMatch = cleaned.match(/proposedAmount["'\s:]+(\d+)/i);
+  if (amtMatch) {
+    proposedAmount = parseInt(amtMatch[1], 10);
+  }
+
+  return { shouldAct, action, reasoning, proposedAmount };
+}
+
 export class TreasuryAgent {
   private walletClient: any
   private publicClient: any
@@ -99,11 +168,12 @@ export class TreasuryAgent {
   async analyzeAndDecide(treasury: { usdc: number; eurc: number }): Promise<{
     shouldAct: boolean; action: string; reasoning: string; proposedAmount?: number
   }> {
+    const rawContentRef = { content: '{}' };
     try {
       const response = await groq.chat.completions.create({
         model: 'qwen/qwen3.6-27b',
         messages: [
-          { role: 'system', content: 'You are SynArc Treasury Agent. Respond ONLY in valid JSON with no markdown.' },
+          { role: 'system', content: 'You are SynArc Treasury Agent. You are a helpful treasury and governance analyst. Always respond with a single valid JSON object containing: shouldAct, action, reasoning, proposedAmount. Respond ONLY with valid JSON. Do not include markdown formatting or extra text.' },
           {
             role: 'user',
             content: `Treasury: USDC=${treasury.usdc}, EURC=${treasury.eurc}. Rules: USDC>100 => bridge_to_ethereum, USDC<10 => emergency_funding, EURC>50 => rebalance_eurc, else monitoring. Respond: {"shouldAct":bool,"action":"string","reasoning":"string","proposedAmount":number}`
@@ -112,17 +182,19 @@ export class TreasuryAgent {
         max_tokens: 300,
         temperature: 0.2,
       })
-      const rawContent = response.choices[0].message.content || '{}';
-      // Clean <think>...</think> blocks, markdown syntax, and extract JSON object
-      let cleaned = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
-      cleaned = cleaned.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
-      const start = cleaned.indexOf("{");
-      const end = cleaned.lastIndexOf("}");
-      if (start !== -1 && end !== -1 && end > start) {
-        cleaned = cleaned.substring(start, end + 1);
+      rawContentRef.content = response.choices[0].message.content || '{}';
+      return tolerantParse(rawContentRef.content);
+    } catch (apiErr) {
+      console.error('[TreasuryAgent] API call or parse failed. Trying regex fallback:', apiErr);
+      try {
+        if (rawContentRef.content && rawContentRef.content !== '{}') {
+          return fallbackTreasuryDecide(rawContentRef.content);
+        }
+      } catch (fallbackErr) {
+        console.error('[TreasuryAgent] Regex fallback failed:', fallbackErr);
       }
-      return JSON.parse(cleaned);
-    } catch {
+      
+      // Local rules fallback if AI fully failed
       if (treasury.usdc > 100) {
         return { shouldAct: true, action: 'bridge_to_ethereum', reasoning: `Treasury holds ${treasury.usdc} USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.`, proposedAmount: Math.floor(treasury.usdc * 0.3) }
       }

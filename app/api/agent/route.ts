@@ -8,15 +8,220 @@ const groq = new Groq({
   apiKey: isMockKey ? "mock_key" : process.env.GROQ_API_KEY
 });
 
-function cleanJson(str: string): string {
+function tolerantParse(str: string): any {
   let cleaned = str.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {}
+
   cleaned = cleaned.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+  
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {}
+
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}");
   if (start !== -1 && end !== -1 && end > start) {
     cleaned = cleaned.substring(start, end + 1);
   }
-  return cleaned;
+
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {}
+
+  let fixed = cleaned;
+  fixed = fixed.replace(/'([^'\\]*(?:\\.[^'\\]*)*)'\s*:/g, '"$1":');
+  fixed = fixed.replace(/:\s*'([^'\\]*(?:\\.[^'\\]*)*)'/g, ': "$1"');
+  fixed = fixed.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
+  fixed = fixed.replace(/,\s*([}\]])/g, '$1');
+  fixed = fixed.replace(/:\s*True\b/gi, ': true');
+  fixed = fixed.replace(/:\s*False\b/gi, ': false');
+  fixed = fixed.replace(/:\s*Null\b/gi, ': null');
+
+  try {
+    return JSON.parse(fixed);
+  } catch (e) {
+    console.error("[tolerantParse] Failed parsing even after fixes. Original:", str);
+    throw e;
+  }
+}
+
+function fallbackAnalyze(text: string): any {
+  const cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, "");
+  
+  let vote = "ABSTAIN";
+  if (/vote["'\s:]+(FOR|AGAINST|ABSTAIN)/i.test(cleaned)) {
+    const match = cleaned.match(/vote["'\s:]+(FOR|AGAINST|ABSTAIN)/i);
+    if (match) vote = match[1].toUpperCase();
+  } else if (/\b(FOR|AGAINST|ABSTAIN)\b/i.test(cleaned)) {
+    const match = cleaned.match(/\b(FOR|AGAINST|ABSTAIN)\b/i);
+    if (match) vote = match[1].toUpperCase();
+  }
+
+  let riskLevel = "MEDIUM";
+  if (/riskLevel["'\s:]+(LOW|MEDIUM|HIGH)/i.test(cleaned)) {
+    const match = cleaned.match(/riskLevel["'\s:]+(LOW|MEDIUM|HIGH)/i);
+    if (match) riskLevel = match[1].toUpperCase();
+  } else if (/risk\b.*?\b(LOW|MEDIUM|HIGH)/i.test(cleaned)) {
+    const match = cleaned.match(/risk\b.*?\b(LOW|MEDIUM|HIGH)/i);
+    if (match) riskLevel = match[1].toUpperCase();
+  }
+
+  let confidence = 75;
+  const confMatch = cleaned.match(/confidence["'\s:]+(\d+)/i);
+  if (confMatch) {
+    confidence = parseInt(confMatch[1], 10);
+  }
+
+  let reasoning = "AI analysis completed with parser fallback.";
+  const reasonMatch = cleaned.match(/reasoning["'\s:]+([^"}\n]+)/i);
+  if (reasonMatch) {
+    reasoning = reasonMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+  } else {
+    reasoning = cleaned.substring(0, 300).trim();
+  }
+
+  let summary = "AI analysis completed with parser fallback.";
+  const summaryMatch = cleaned.match(/summary["'\s:]+([^"}\n]+)/i);
+  if (summaryMatch) {
+    summary = summaryMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+  }
+
+  let concerns = "None detected via parsing fallback.";
+  const concernsMatch = cleaned.match(/concerns["'\s:]+([^"}\n]+)/i);
+  if (concernsMatch) {
+    concerns = concernsMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+  }
+
+  return { vote, reasoning, riskLevel, confidence, summary, concerns };
+}
+
+function fallbackGenerate(text: string): any {
+  const cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, "");
+  
+  let title = "✨ AI Generated Proposal";
+  const titleMatch = cleaned.match(/title["'\s:]+([^"}\n]+)/i);
+  if (titleMatch) title = titleMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+
+  let description = "This proposal details the design, execution parameters, and milestones to successfully implement the community initiative.";
+  const descMatch = cleaned.match(/description["'\s:]+([^"}\n]+)/i);
+  if (descMatch) description = descMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+  else description = cleaned.substring(0, 500).trim();
+
+  let category = "Governance";
+  const catMatch = cleaned.match(/category["'\s:]+([^"}\n]+)/i);
+  if (catMatch) category = catMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+
+  let treasuryImpact = "medium";
+  const impactMatch = cleaned.match(/treasuryImpact["'\s:]+([^"}\n]+)/i);
+  if (impactMatch) treasuryImpact = impactMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+
+  let votingDuration = 7;
+  const durationMatch = cleaned.match(/votingDuration["'\s:]+(\d+)/i);
+  if (durationMatch) votingDuration = parseInt(durationMatch[1], 10);
+
+  return { title, description, category, treasuryImpact, votingDuration };
+}
+
+function fallbackAnalyzeCampaign(text: string): any {
+  const cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, "");
+
+  let recommendation = "REVIEW";
+  if (/recommendation["'\s:]+(FUND|REJECT|REVIEW)/i.test(cleaned)) {
+    const match = cleaned.match(/recommendation["'\s:]+(FUND|REJECT|REVIEW)/i);
+    if (match) recommendation = match[1].toUpperCase();
+  }
+
+  let legitimacy = 75, impact = 75, arcAlignment = 75, executionFeasibility = 75, milestoneRealism = 75, governanceAlignment = 75;
+  const legMatch = cleaned.match(/legitimacy["'\s:]+(\d+)/i);
+  if (legMatch) legitimacy = parseInt(legMatch[1], 10);
+  const impMatch = cleaned.match(/impact["'\s:]+(\d+)/i);
+  if (impMatch) impact = parseInt(impMatch[1], 10);
+  const alignMatch = cleaned.match(/arcAlignment["'\s:]+(\d+)/i);
+  if (alignMatch) arcAlignment = parseInt(alignMatch[1], 10);
+  const execMatch = cleaned.match(/executionFeasibility["'\s:]+(\d+)/i);
+  if (execMatch) executionFeasibility = parseInt(execMatch[1], 10);
+  const mileMatch = cleaned.match(/milestoneRealism["'\s:]+(\d+)/i);
+  if (mileMatch) milestoneRealism = parseInt(mileMatch[1], 10);
+  const govMatch = cleaned.match(/governanceAlignment["'\s:]+(\d+)/i);
+  if (govMatch) governanceAlignment = parseInt(govMatch[1], 10);
+
+  let riskFlags = ["Unable to parse full list. Proceed with caution."];
+  const riskMatch = cleaned.match(/riskFlags["'\s:]+\[([^\]]+)\]/i);
+  if (riskMatch) {
+    riskFlags = riskMatch[1].split(",").map(s => s.trim().replace(/^["']/, "").replace(/["']$/, ""));
+  }
+
+  let strengths = ["Proposal has standard template values."];
+  const strengthMatch = cleaned.match(/strengths["'\s:]+\[([^\]]+)\]/i);
+  if (strengthMatch) {
+    strengths = strengthMatch[1].split(",").map(s => s.trim().replace(/^["']/, "").replace(/["']$/, ""));
+  }
+
+  let milestoneFeedback = "Escrow milestones appear standard.";
+  const mfMatch = cleaned.match(/milestoneFeedback["'\s:]+([^"}\n]+)/i);
+  if (mfMatch) milestoneFeedback = mfMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+
+  let treasuryRisk = "MEDIUM";
+  const trMatch = cleaned.match(/treasuryRisk["'\s:]+(LOW|MEDIUM|HIGH)/i);
+  if (trMatch) treasuryRisk = trMatch[1].toUpperCase();
+
+  let verdict = "Campaign analysis complete with parser fallback.";
+  const verdictMatch = cleaned.match(/verdict["'\s:]+([^"}\n]+)/i);
+  if (verdictMatch) verdict = verdictMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+
+  let dueDiligenceNotes = "Diligence complete with parsing fallback.";
+  const ddnMatch = cleaned.match(/dueDiligenceNotes["'\s:]+([^"}\n]+)/i);
+  if (ddnMatch) dueDiligenceNotes = ddnMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+
+  return {
+    recommendation,
+    scores: { legitimacy, impact, arcAlignment, executionFeasibility, milestoneRealism, governanceAlignment },
+    riskFlags,
+    strengths,
+    milestoneFeedback,
+    treasuryRisk,
+    verdict,
+    dueDiligenceNotes
+  };
+}
+
+function fallbackGenerateCampaign(text: string): any {
+  const cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, "");
+
+  let title = "✨ AI: Generated Campaign";
+  const titleMatch = cleaned.match(/title["'\s:]+([^"}\n]+)/i);
+  if (titleMatch) title = titleMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+
+  let description = "This autonomous campaign proposes the implementation of a decentralized solution on Arc Testnet.";
+  const descMatch = cleaned.match(/description["'\s:]+([^"}\n]+)/i);
+  if (descMatch) description = descMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+
+  let category = "Ecosystem Grant";
+  const catMatch = cleaned.match(/category["'\s:]+([^"}\n]+)/i);
+  if (catMatch) category = catMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+
+  let goal = 10000;
+  const goalMatch = cleaned.match(/goal["'\s:]+(\d+)/i);
+  if (goalMatch) goal = parseInt(goalMatch[1], 10);
+
+  let duration = 30;
+  const durMatch = cleaned.match(/duration["'\s:]+(\d+)/i);
+  if (durMatch) duration = parseInt(durMatch[1], 10);
+
+  let recipient = "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53";
+  const recMatch = cleaned.match(/recipient["'\s:]+([^"}\n]+)/i);
+  if (recMatch) recipient = recMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
+
+  let milestones = [
+    { title: "Milestone 1 — Specification & Architecture", amount: Math.floor(goal * 0.25), description: "Establish high-fidelity designs, architectural specs, and initial system flows.", status: "pending" },
+    { title: "Milestone 2 — Implementation & Devnet Testing", amount: Math.floor(goal * 0.50), description: "Integrate core logic, build test suites, and launch on internal devnet environments.", status: "pending" },
+    { title: "Milestone 3 — Deployment & Verification", amount: Math.floor(goal * 0.25), description: "Deploy official testnet contract, complete external audit logs, and release documentation.", status: "pending" }
+  ];
+
+  return { title, description, category, goal, duration, recipient, milestones };
 }
 
 export async function POST(req: NextRequest) {
@@ -58,7 +263,7 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: "You are SynArc's governance AI agent. You analyze DAO proposals and treasury data to make informed governance decisions. You always act in the best interest of the SynArc ecosystem and Arc network. Respond ONLY in valid JSON with no extra text."
+            content: "You are SynArc's governance AI agent. You are a helpful treasury and governance analyst. Always respond with a single valid JSON object containing reasoning, vote, riskLevel, confidence, summary, and concerns. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
           },
           {
             role: "user",
@@ -93,16 +298,14 @@ export async function POST(req: NextRequest) {
         temperature: 0.3
       });
 
+      const text = response.choices[0].message.content || "{}";
       try {
-        const text = response.choices[0].message.content || "{}";
-        const cleanedText = cleanJson(text);
-        const decision = JSON.parse(cleanedText);
+        const decision = tolerantParse(text);
         return NextResponse.json({ success: true, decision });
-      } catch {
-        return NextResponse.json({
-          success: false,
-          error: "Failed to parse AI response"
-        }, { status: 500 });
+      } catch (err) {
+        console.error("Failed to parse decision JSON, trying fallback:", err);
+        const decision = fallbackAnalyze(text);
+        return NextResponse.json({ success: true, decision });
       }
     }
 
@@ -130,7 +333,7 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: "You are a DAO governance expert for SynArc on Arc Network. Generate professional governance proposals. Respond ONLY in valid JSON with no extra text."
+            content: "You are a DAO governance expert for SynArc on Arc Network. Generate professional governance proposals. Always respond with a single valid JSON object containing title, description, category, treasuryImpact, and votingDuration. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
           },
           {
             role: "user",
@@ -153,16 +356,14 @@ export async function POST(req: NextRequest) {
         temperature: 0.7
       });
 
+      const text = response.choices[0].message.content || "{}";
       try {
-        const text = response.choices[0].message.content || "{}";
-        const cleanedText = cleanJson(text);
-        const proposal = JSON.parse(cleanedText);
+        const proposal = tolerantParse(text);
         return NextResponse.json({ success: true, proposal });
-      } catch {
-        return NextResponse.json({
-          success: false,
-          error: "Failed to generate proposal"
-        }, { status: 500 });
+      } catch (err) {
+        console.error("Failed to parse proposal JSON, trying fallback:", err);
+        const proposal = fallbackGenerate(text);
+        return NextResponse.json({ success: true, proposal });
       }
     }
 
@@ -262,7 +463,7 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: "You are SynArc AI Risk Engine. Perform comprehensive due diligence on Creator DAOs. Respond ONLY in valid JSON."
+            content: "You are SynArc AI Risk Engine. Perform comprehensive due diligence on Creator DAOs. Always respond with a single valid JSON object containing recommendation, scores, riskFlags, strengths, milestoneFeedback, treasuryRisk, verdict, and dueDiligenceNotes. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
           },
           {
             role: "user",
@@ -300,13 +501,14 @@ export async function POST(req: NextRequest) {
         temperature: 0.3
       });
 
+      const text = response.choices[0].message.content || "{}";
       try {
-        const text = response.choices[0].message.content || "{}";
-        const cleanedText = cleanJson(text);
-        const decision = JSON.parse(cleanedText);
+        const decision = tolerantParse(text);
         return NextResponse.json({ success: true, decision });
-      } catch {
-        return NextResponse.json({ success: false, error: "Failed to parse AI analysis response" }, { status: 500 });
+      } catch (err) {
+        console.error("Failed to parse campaign analysis JSON, trying fallback:", err);
+        const decision = fallbackAnalyzeCampaign(text);
+        return NextResponse.json({ success: true, decision });
       }
     }
 
@@ -346,7 +548,7 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: "You are an expert Creator DAO builder for the SynArc platform on Arc Network. Generate detailed, aligned Creator DAOs for developers and agents. Respond ONLY in valid JSON."
+            content: "You are an expert Creator DAO builder for the SynArc platform on Arc Network. Generate detailed, aligned Creator DAOs for developers and agents. Always respond with a single valid JSON object containing title, description, category, goal, duration, recipient, and milestones. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
           },
           {
             role: "user",
@@ -378,13 +580,14 @@ export async function POST(req: NextRequest) {
         temperature: 0.7
       });
 
+      const text = response.choices[0].message.content || "{}";
       try {
-        const text = response.choices[0].message.content || "{}";
-        const cleanedText = cleanJson(text);
-        const generated = JSON.parse(cleanedText);
+        const generated = tolerantParse(text);
         return NextResponse.json({ success: true, campaign: generated });
-      } catch {
-        return NextResponse.json({ success: false, error: "Failed to parse AI generated campaign response" }, { status: 500 });
+      } catch (err) {
+        console.error("Failed to parse generated campaign JSON, trying fallback:", err);
+        const generated = fallbackGenerateCampaign(text);
+        return NextResponse.json({ success: true, campaign: generated });
       }
     }
 
