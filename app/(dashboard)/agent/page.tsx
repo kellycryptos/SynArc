@@ -33,7 +33,7 @@ interface AgentAction {
 
 interface AgentState {
   agentAddress: string;
-  treasury: { usdc: number; eurc: number };
+  treasury: { usdc: number; eurc: number; sepoliaUsdc?: number };
   recentActions: AgentAction[];
   isRunning: boolean;
   lastCheck: string;
@@ -48,6 +48,7 @@ interface AgentState {
 
 function ActionIcon({ action }: { action: string }) {
   if (action === "bridge_to_ethereum") return <ArrowLeftRight className="w-4 h-4 text-blue-400" />;
+  if (action === "return_funds") return <RotateCw className="w-4 h-4 text-blue-400" />;
   if (action === "monitoring") return <Activity className="w-4 h-4 text-primary" />;
   if (action === "error") return <AlertTriangle className="w-4 h-4 text-red-400" />;
   if (action === "emergency_funding") return <AlertTriangle className="w-4 h-4 text-amber-400" />;
@@ -109,6 +110,7 @@ export default function AgentPage() {
   const [withdrawalRecipient, setWithdrawalRecipient] = useState<string>("");
   const [withdrawalAmount, setWithdrawalAmount] = useState<string>("");
   const [isQueueingWithdrawal, setIsQueueingWithdrawal] = useState<boolean>(false);
+  const [isReturningFunds, setIsReturningFunds] = useState<boolean>(false);
 
   // ── Auto Payments State ──────────────────────────────────────────────────
   const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
@@ -392,6 +394,27 @@ export default function AgentPage() {
       toast.error(parseArcError(err), { id: toastId });
     } finally {
       setIsQueueingWithdrawal(false);
+    }
+  };
+
+  const handleReturnFunds = async () => {
+    setIsReturningFunds(true);
+    const toastId = toast.loading("Initiating return of Sepolia funds to Treasury...");
+    try {
+      const response = await fetch("/api/agent/return-funds", {
+        method: "POST",
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to trigger return process");
+      }
+      toast.success("Return funds process started successfully! ✅ Track progress in the Action Console.", { id: toastId, duration: 6000 });
+      fetchAgentState();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message || "Failed to return funds.", { id: toastId });
+    } finally {
+      setIsReturningFunds(false);
     }
   };
 
@@ -1009,6 +1032,24 @@ export default function AgentPage() {
                 <span className="text-[10px] text-muted text-center">Eth Sepolia</span>
               </div>
             </div>
+            <div className="space-y-1.5 pt-1 border-t border-border-thin/40 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-muted">Sepolia Balance</span>
+                <span className="text-text-primary font-bold font-mono">
+                  {loading ? "..." : `${(agentState?.treasury?.sepoliaUsdc ?? 0).toFixed(2)} USDC`}
+                </span>
+              </div>
+            </div>
+            {isAuthenticated && (
+              <button
+                onClick={handleReturnFunds}
+                disabled={isReturningFunds || (agentState?.treasury?.sepoliaUsdc ?? 0) <= 0}
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs font-bold text-blue-400 hover:bg-blue-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <RotateCw className={`w-3.5 h-3.5 ${isReturningFunds ? 'animate-spin' : ''}`} />
+                {isReturningFunds ? "Returning Funds..." : "Return Funds to Treasury"}
+              </button>
+            )}
             <p className="text-xs text-muted">
               The agent bridges USDC once a community vote passes. Transfers are fully secure and direct.
             </p>
@@ -1065,6 +1106,7 @@ export default function AgentPage() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-bold text-text-primary truncate">
                             {action.action === "bridge_to_ethereum" ? `CCTP Bridge ${action.usdcAmount || 0} USDC` :
+                             action.action === "return_funds" ? `CCTP Return ${action.usdcAmount || 0} USDC` :
                              action.action === "rebalance_eurc" ? `Rebalance ${action.usdcAmount || 0} EURC` :
                              action.action === "emergency_funding" ? "Emergency Funding Request" :
                              action.action === "monitoring" ? "Treasury Monitoring" :

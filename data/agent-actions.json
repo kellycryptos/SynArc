@@ -1,378 +1,377 @@
 [
   {
-    "timestamp": "2026-07-02T06:20:35.866Z",
+    "timestamp": "2026-07-02T06:53:36.086Z",
     "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0xd86d9e98baa30fb059dce1360628e466d758d180be9646936cac8051b09332bd",
+    "reasoning": "Treasury holds 7.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0xc21e4f123323a5a9ed1e8c4b51c7ab27c10194b78947af2f95f6a48f324e01f8",
     "status": "executed",
     "usdcAmount": 50
   },
   {
-    "timestamp": "2026-07-02T06:24:07.617Z",
+    "timestamp": "2026-07-02T06:52:36.079Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 7.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x030c92d40f9c16cdd8d54b3c047f5a1e96874192e463feebff2d31b4ba8be0fb",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:56:06.179Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #330 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x9cfd0763d280e669c07d04b9a972ad0673d9e88a12e0e229e0f3aabee51f4e3d",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #365 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x86464776fee5d0a8d1049fd2872d107d54466d9a44eb33969cb5e7ff4eb4f57f",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-02T06:24:04.529Z",
+    "timestamp": "2026-07-02T06:51:36.075Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 7.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x19f80d151974800f21b20d53cc921be1819d7608cc956a219bfe637a78f786fc",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:55:29.414Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #329 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xd5010eb7013d8fb007ac53b1ac5a2c2a31c8cc45d0ef92ada9fc730d1e4a8c87",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #364 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x9ca734322bc68fc1699ee826928b497023cb95a1575f72e1de89fc3464d2917b",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-02T06:19:35.864Z",
+    "timestamp": "2026-07-02T06:50:36.068Z",
     "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0xce2375f6ba70b465946d01a6ed7819a1bfe80d8bf580c5cac9bea9cf23541641",
+    "reasoning": "Treasury holds 7.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0xb298e61a7dca7d7dcb3c1b359b72f158e322f43f17b033c40d0d38eef323d39a",
     "status": "executed",
     "usdcAmount": 50
   },
   {
-    "timestamp": "2026-07-02T06:22:26.387Z",
+    "timestamp": "2026-07-02T06:54:40.041Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #328 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xbaa96de87cf65114c5bd49b2410714e643441eefc22d0b67161226559730a6ac",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #363 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x3d88009634be7fd9cd21aacb81a3e3643215adf2365a3986457d9675efbe5fed",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-02T06:19:00.236Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0xe9e925bb7175ff2ad99ecaf69779e48ebcf31cff901fcdb3f59000863eda5f0e",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:21:31.587Z",
+    "timestamp": "2026-07-02T06:54:32.185Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #327 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xfd0335d38e54cf4a9ad27dfce25b2f582202628e93694898d4455738202f333b",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #362 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x3825d072145b31fe45183866ddb47a8ed03e0d4410205c8e4d4152e43d3dd3d5",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-02T06:18:35.851Z",
+    "timestamp": "2026-07-02T06:49:36.065Z",
     "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x247c6ffceefed3115d7c3c74577a2fac76442cff546a6dbb05afb2e726285448",
+    "reasoning": "Treasury holds 7.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x12fdbfb1c90331f471c247cd47b9c9e24f32c85890a4c5e6bfbb2f84633bf7b2",
     "status": "executed",
     "usdcAmount": 50
   },
   {
-    "timestamp": "2026-07-02T06:20:57.165Z",
+    "timestamp": "2026-07-02T06:53:20.570Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #326 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xeafd91b2addf942317f00b5291d4ee0253eb9cdfbab3d0c805e555a6cf45680a",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #361 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x068db69961a6fa8b43523e66dad3d3b9f42142b00d904eaf5a369737039d1d49",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-02T06:18:00.238Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x6800961074f3ba53deeb32fa5e787269298f319bef949e97d54ee1fdc67488a3",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:20:16.789Z",
+    "timestamp": "2026-07-02T06:53:14.856Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #325 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x657edcb25675c6bfcee74ce203ee9e88f2d4685bf82eb791e7dae764f3f8413f",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #360 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x6e386d31e5f9323b95cf65bf49061cf559ec8824485426f132a827fc56670f80",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-02T06:17:35.860Z",
+    "timestamp": "2026-07-02T06:48:36.039Z",
     "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x7fce89451be8641a04232377b4858c52d59ad17379c6e04ca4328e947997f55e",
+    "reasoning": "Treasury holds 7.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x43de6b34157672faae1a41e3a42a2775f2651f2a6eb57097e62eb8279131490a",
     "status": "executed",
     "usdcAmount": 50
   },
   {
-    "timestamp": "2026-07-02T06:19:43.803Z",
+    "timestamp": "2026-07-02T06:52:02.692Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #324 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xe3e8ff30b1e9dd18b551316484f97f700b384511142bad2ebe6c8697dcf8ae4b",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #359 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xca223c98f1188cb32afc551906f13ab42c601a890abfab411b7c884e1a179831",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-02T06:17:00.237Z",
+    "timestamp": "2026-07-02T06:44:36.042Z",
     "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0xc13ee78c2aeff0a6eef51a44b3ca7ae8c10a3528f784060d348db43c8f9c76e6",
+    "reasoning": "Treasury holds 7.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0xf008867030bd0f16758290b8514c790228e99e38b4555d5fc5ac1a9c9a4ed925",
     "status": "executed",
     "usdcAmount": 50
   },
   {
-    "timestamp": "2026-07-02T06:19:11.352Z",
+    "timestamp": "2026-07-02T06:47:36.051Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 7.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x69ceebbf3356f416b60b45afcc6e8fe400c820cd18ab5b84173af28e82f526a6",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:46:36.036Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 7.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0xce2bfe7fbb7224b60dba42e1399fef3c5780dfafbee3564198e571bf1432e91c",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:43:36.042Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 7.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x38fbfa684c96734276f0eb4bb15d03407e36a88182a828464a4fcbe410b718c2",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:45:36.046Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 7.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0xd71036846204753dfcbb62e1f3d46cf30628d3337f9f371ae8a3afa14a0c6621",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:48:35.614Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #323 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x86811d6debfc19bbe42495a4a2387532d5636760bcae8154717f40228f6df839",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #358 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0x1908d902054339d38d9c924d8e31c68f98ead9fe883cb765f77124fb563117ec",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-02T06:16:35.855Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x581eeb21129764e0fc5ee7b005975e2e860232be1a2948964bbf4fb3ccd21a59",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:18:46.879Z",
+    "timestamp": "2026-07-02T06:48:27.246Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #322 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xb6d46e57942b43fab3a549fd524eb40291cc19a0c7b98c79a067524a66647b2b",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #357 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
+    "txHash": "0xb530a2e5d2189f95a7c5961bda9a63ee0f5eb624cd3fb5446d04c7e8f36bbdef",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-02T06:16:00.226Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0xb947669c07e0b3df5bec08c97e39eb65b7140214bfb2eb8f4db2436bba3a3f96",
-    "status": "executed",
-    "usdcAmount": 50
+    "timestamp": "2026-07-02T06:45:16.065Z",
+    "action": "bridge_to_ethereum",
+    "reasoning": "CCTP bridge execution failed: Circle attestation polling timed out or failed.",
+    "status": "failed",
+    "usdcAmount": 31
   },
   {
-    "timestamp": "2026-07-02T06:18:13.570Z",
+    "timestamp": "2026-07-02T06:42:36.040Z",
+    "action": "rebalance_eurc",
+    "reasoning": "Treasury holds 433 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x662dde391b71e823b65aac8432389b92dad1a4029009f378f0d663c48a4f2723",
+    "status": "executed",
+    "usdcAmount": 173
+  },
+  {
+    "timestamp": "2026-07-02T06:45:00.030Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #321 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xe97cdf42e3ffe453cea551edb626250059396e81338247e8e80d394502ea7904",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #356 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x96ff418085d40874bfc41faa99c4867dc17fc21703ee5ade87706375c5e4b6f6",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-02T06:18:10.107Z",
+    "timestamp": "2026-07-02T06:44:56.050Z",
     "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #320 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xb1f5edb8e6e959d9dc24c86c3da87f24687ce93263a8056162bbb1b671a9eab8",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #355 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x932466640709a239d40a411af7e3b045ebded85b10365036b38ae1768655ae78",
     "status": "executed"
   },
   {
-    "timestamp": "2026-07-02T06:15:35.845Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x4a36964131423463afb14c4edd390327ee9b8ba3892ccd1b3f1b0e21aaea22b2",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:17:43.659Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #319 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xbe48f93d99a720946480a2ea0d5d6eed3a7576fa5b2c1042aebe845282330470",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-02T06:15:00.214Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x7353c19912463d0fecd4e058f39d59db4ec456bc6755e93e80c4de4fc44a4345",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:17:04.135Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #318 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xd970d9d8bf683c205a59b7520ec678a821dcb229e03ddc6cce82f209aad9e1fb",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-02T06:17:00.933Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #317 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x77ed670bd44782cce9a0f6a1c2cd81b66d9fd405eb900f300e3605ffd85f3c9b",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-02T06:14:35.837Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x398378302bfc99c7d189ec483a7c6bf934c8aabd5a576ee7520b5e569cf142a4",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:14:00.205Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x3f1350b0162e4079cebbedbc9ff6e801a49a35fc65b905e8c2d6be5f4ae291f7",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:16:16.040Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #316 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x5c8c5fa664798cf4e51d476f5cbc5be870c3757415009444057f797e2874e447",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-02T06:13:35.832Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x645be9b30fc69d7809b83fd99c70c5ed27acd18c2f1925872351c8efb8e08579",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:16:09.637Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #315 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x9a5051b1582ff2401ed7eeca4cf8142a4e6f02507beb65fd0e01a39ef8b558a9",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-02T06:16:06.081Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #314 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x5038187ae3011cc39f4d041379e4e992ce7570cf2310d937fd59502bfef6fdb5",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-02T06:12:51.482Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x3f592b55d50b62e3b9d5e1d0874a3264b93e53b541f538bf1fd44e7dd03b2a8f",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:15:26.448Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #313 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xc996dd6e2e7fd606081958aec7751de9a88ece24798841346628a610d7ac7a18",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-02T06:12:35.826Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x705ce2a5106d68257b8566c6f8fc7527228ee47fdd487b25a55df788e564a1d8",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:11:35.825Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x021eb4d6f475bf359ab6fb23a91eab1b21cfa2c82846a741d5fb660a2308115d",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:14:58.590Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #312 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xb5db24e7999187180f6d44274e0c70bfe3ac815cc0f12a12d76539f996a8bad9",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-02T06:10:35.822Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x92c627676a6ac1c6f118e1ce4638ba7fedf8d04ce96362ff9cc40cf4a2515c71",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:06:35.795Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x4bff4e2e930da6f87bd9c6bee402520a09b6d3aaff078a7fa9889d1390bd5e38",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:09:35.802Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x2eb410ac9601ac9198b58857c6cf29098a1610354511cd94d88eaf3faaf25e5f",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:08:35.804Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x36edba30c5b2196a37d4302efdf282f6fce5b711f219db900ef0cd2ff095f78d",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:13:05.103Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #311 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xcb871b767347cb603a1e7d8856cb9036dc965bfbc53ffaa95d1ced8f6df6307e",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-02T06:07:35.799Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0xe4147e098cc0438b0a6f5a5ce67e9d7d609b0d3795f958435d51eead4d35c975",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:12:17.418Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #310 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x97d7dec5dbab2e45f4fc7d55b614a7e5ce9967302108060cc45e998747a944d8",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-02T06:05:35.787Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x65b10d88a327e3ba190058a7965ce4734d75d33022eb86e39139192b279ad415",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:08:28.759Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #308 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0x69395b0fe1df71e5486481ab47c4957aa9058def2fb0bc654513da0394231535",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-02T06:04:35.785Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
-    "txHash": "0x0b8912d1607429b0086815b1afed3a7bed45e502b79cb49f5713fd03b7215668",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-02T06:07:12.329Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #307 (\"Proposed by Treasury Agent — Rebalancing: rebalance_eurc\").",
-    "txHash": "0xe08ea80fb4b3c40893aab0a9eeb023a09f92089b44ca59b6c65025d02ebc0ba8",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-02T06:07:04.406Z",
+    "timestamp": "2026-07-02T06:44:05.101Z",
     "action": "bridge_to_ethereum",
     "reasoning": "CCTP bridge execution failed: Circle attestation polling timed out or failed.",
     "status": "failed",
     "usdcAmount": 33
   },
   {
-    "timestamp": "2026-07-02T06:03:35.782Z",
+    "timestamp": "2026-07-02T06:41:36.031Z",
     "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0x27c1df5a5715782228398e2947deae1cbdc5de6b1d02464ae706310b0059bb8a",
+    "reasoning": "Treasury holds 433 EURC — above 50 threshold. Proposing EURC rebalancing.",
+    "txHash": "0x8170859137c4277afdfe162aa4608e29d4bf564fd43aa8382c193a4ccee74506",
     "status": "executed",
-    "usdcAmount": 167
+    "usdcAmount": 173
   },
   {
-    "timestamp": "2026-07-02T06:02:35.780Z",
-    "action": "rebalance_eurc",
-    "reasoning": "Treasury holds 418 EURC — above 50 threshold. Proposing EURC rebalancing.",
-    "txHash": "0x6b7334ebbef922087ec6fc917eea910d11c9a460023ce060c98410a928eb37d2",
+    "timestamp": "2026-07-02T06:43:53.704Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #354 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x0a1ea84b87834701d9027bf617e22c7e183d3608d749c53b4dac15f8e16d1106",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-02T06:40:36.028Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x3ab9c6d1f03b5fcfe2fa8622059bba3c02023f558c0ef10b8a93a0b3cdc6b9dc",
     "status": "executed",
-    "usdcAmount": 167
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:39:36.015Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x8718d9191553ad8912471412903dcfe1689f5edc72d60446e6805593673d8aeb",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:38:36.014Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0xf7ad50aa792cfeb2efb42a44308ae55bb9a252cf6c43e193ed2c61677e009225",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:37:36.007Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0xd5ac33d79adc3dcd3f8807ff128a385ee5a02c33129c88a378fc7d959b98eb49",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:40:07.177Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #348 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xdcabe33718646e58e5ac07331e20fac03b164651d7d266c835e93ee90eb9e795",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-02T06:36:35.978Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x38aa51f53c5e0aa3630cb0e11e35405620960ef8d8f022f793dc9292cbad35a4",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:38:52.272Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #347 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x94301851b41e7c453a65882c854600c2ad2a0e42e69d1eba881741e233df849c",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-02T06:38:47.869Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #346 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x1e55f485404101de75913ce06877697b5b930cb3771f8f9b3a766976a20a5d58",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-02T06:35:35.983Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x8bf10d04844ffa37e7c1d09bd9ec570c4032d9562795c549af0ddefa8b678d28",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:37:42.015Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #345 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x737b5bf5897ad38c3f67748ebd078e38f36fb6afe69da7686f092a3d2ea08339",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-02T06:34:35.978Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x22c031b14ba97857656266caffe547d86c045dc7dc82a02c0c980250f07c0000",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:33:35.978Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x060e0c7e11ee95fa1d8b1b1ab2a5962e6837071600c6cb2e6ef4b5814ca4e4d3",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:35:57.983Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #344 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xfacb2e35599228bf02465c42ea0c96dddee233c0ec92481f9d88fe5ea585043a",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-02T06:32:35.978Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x3f61dff0923a1238a08aa55086b5040c523348561da7292f428398581088eab8",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:35:02.315Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #343 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x56d1155c02da6f91d625e6e1878f5ac840082f5be75595131262cbcc10307b9d",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-02T06:34:58.744Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #342 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x893b6ab49970dc72f9402e14facd858402ef52bf670516621359f5a56902c653",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-02T06:31:35.969Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0xb44c9ae8d0e4e18bf2c080e5ed43342f3ce800939ad722a8bbf3b2330c80c5a0",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:33:54.986Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #341 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xbee93c332f9f2174e185145a77f3f37d0ecd0ee079225a1b8b52bb545041f83d",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-02T06:30:35.961Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0x14e706622e3866b47b10c366f366d01b1ae0dab1f80375683804fd291088a938",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:32:53.866Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #340 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x4e480bbc513dadaccb64d33d49905a77ec62957afc8796fb3760dd9fcf2031c8",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-02T06:29:35.956Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 1.575987 USDC — below 10 threshold. Proposing emergency funding request.",
+    "txHash": "0xef8a429869111ed8c979cb78256c7d857832f667b5f4b344cf583370f3bd6702",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-07-02T06:31:59.709Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #339 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xa03f9928a42d2d277bfa587956c3a4c6f5eefb20133eeb7694f7946bc747a6aa",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-02T06:31:56.590Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #338 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x78be5111a403c2eba6148e5e466b1d1ed1b7977c1f2cecd0b6055723dd2f18da",
+    "status": "executed"
   }
 ]

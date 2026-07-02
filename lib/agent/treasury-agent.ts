@@ -407,6 +407,62 @@ export class TreasuryAgent {
     }
   }
 
+  async getSepoliaBalance(): Promise<number> {
+    try {
+      const cctp = new CCTPExecutor(this.privateKey)
+      return await cctp.getSepoliaUSDCBalance()
+    } catch (err) {
+      console.error('[TreasuryAgent] Failed to check Sepolia USDC balance:', err)
+      return 0
+    }
+  }
+
+  async triggerReturnFunds(): Promise<void> {
+    const startTime = new Date().toISOString()
+    const returnAction: AgentAction = {
+      timestamp: startTime,
+      action: 'return_funds',
+      reasoning: '[CCTP Step 1/3] Return funds process triggered by administrator. Initializing Sepolia -> Arc transfer...',
+      status: 'pending'
+    }
+    this.logAction(returnAction)
+
+    try {
+      const cctp = new CCTPExecutor(this.privateKey)
+      
+      // 1. Get Sepolia USDC Balance
+      const balance = await cctp.getSepoliaUSDCBalance()
+      if (balance <= 0) {
+        throw new Error('No USDC funds available on Ethereum Sepolia for the Treasury Agent.')
+      }
+
+      returnAction.usdcAmount = balance
+      this.logAction(returnAction)
+
+      // Callback to update progress log in actions DB
+      const onProgress = (msg: string) => {
+        returnAction.reasoning = msg
+        this.logAction(returnAction)
+      }
+
+      // Main Treasury contract is the recipient of the returned funds
+      const treasuryAddress = CONTRACTS.treasury
+
+      // 2. Run the bridge
+      const bridgeRes = await cctp.bridgeToArc(balance, treasuryAddress, onProgress)
+      
+      returnAction.status = 'executed'
+      returnAction.txHash = bridgeRes.burnTxHash
+      returnAction.reasoning = `RETURN SUCCESSFUL: Successfully returned ${balance} USDC from Ethereum Sepolia back to the main Treasury contract on Arc Testnet via CCTP. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
+      this.logAction(returnAction)
+    } catch (err: any) {
+      console.error('[TreasuryAgent] returnFunds failed:', err)
+      returnAction.status = 'failed'
+      returnAction.reasoning = `Return funds failed: ${err?.message || err}`
+      this.logAction(returnAction)
+    }
+  }
+
   getRecentActions(): AgentAction[] {
     return this.loadActions()
   }

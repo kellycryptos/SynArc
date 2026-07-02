@@ -7,6 +7,7 @@ export async function GET() {
     const treasury = await treasuryAgent.checkTreasury()
     const recentActions = treasuryAgent.getRecentActions()
     const paymentHistory = gatewayPayments.getPaymentHistory()
+    const sepoliaUsdc = await treasuryAgent.getSepoliaBalance()
 
     return NextResponse.json({
       success: true,
@@ -14,6 +15,7 @@ export async function GET() {
       treasury: {
         usdc: treasury.usdc,
         eurc: treasury.eurc,
+        sepoliaUsdc,
       },
       treasurySource: treasury.usedFallback ? 'fallback' : 'live',
       recentActions,
@@ -38,6 +40,7 @@ export async function POST(req: NextRequest) {
   try {
     const action = await treasuryAgent.run()
     const treasury = await treasuryAgent.checkTreasury()
+    const sepoliaUsdc = await treasuryAgent.getSepoliaBalance()
     
     return NextResponse.json({
       success: true,
@@ -45,6 +48,7 @@ export async function POST(req: NextRequest) {
       treasury: {
         usdc: treasury.usdc,
         eurc: treasury.eurc,
+        sepoliaUsdc,
       },
       treasurySource: treasury.usedFallback ? 'fallback' : 'live',
       recentActions: treasuryAgent.getRecentActions(),
