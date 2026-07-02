@@ -231,6 +231,43 @@ export class TreasuryAgent {
     return txHash
   }
 
+  async proposeReturnFunds(): Promise<string> {
+    const cctp = new CCTPExecutor(this.privateKey)
+    const balance = await cctp.getSepoliaUSDCBalance()
+    if (balance <= 0) {
+      throw new Error('No USDC funds on Ethereum Sepolia to return.')
+    }
+
+    const title = `Proposed by Treasury Agent — Return ${balance.toFixed(2)} USDC from Sepolia`
+    const description = `Proposed by Treasury Agent\n\nAUTONOMOUS RETURN PROPOSAL\nAction: return_funds\nAmount: ${balance.toFixed(2)} USDC\nDestination: Main Treasury (${CONTRACTS.treasury})\nAgent: ${this.getAgentAddress()}\nTimestamp: ${new Date().toISOString()}\n\nThis proposal was created to return bridged stablecoin reserves back to the main Treasury contract on Arc Testnet via CCTP.`
+
+    const txHash = await this.walletClient.writeContract({
+      address: CONTRACTS.governor,
+      abi: GOVERNOR_ABI,
+      functionName: 'propose',
+      args: [
+        title,
+        description,
+        'TREASURY_REBALANCE',
+        300n,
+        0n,
+        this.getAgentAddress() as `0x${string}`
+      ],
+    })
+    await this.publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 })
+
+    this.logAction({
+      timestamp: new Date().toISOString(),
+      action: 'return_funds',
+      reasoning: `ADMIN INITIATED: Proposed return of ${balance.toFixed(2)} USDC from Ethereum Sepolia back to main Treasury. Governance Proposal created. Tx: ${txHash}`,
+      txHash,
+      status: 'pending',
+      usdcAmount: balance
+    })
+
+    return txHash
+  }
+
   /**
    * Scans and autonomously executes succeeded rebalance proposals on-chain
    */
@@ -283,43 +320,92 @@ export class TreasuryAgent {
             // Wait a few seconds for blockchain settlement
             await new Promise(resolve => setTimeout(resolve, 5000))
 
-            // 2. Trigger CCTP transfer on Arc Testnet
-            const amountUsdc = Number(impact) / 1_000_000
-            console.log(`[TreasuryAgent] Initiating CCTP bridge for ${amountUsdc} USDC to Ethereum Sepolia...`)
+            // 2. Trigger CCTP transfer
+            const description = prop[3] || ""
+            const isReturn = title.toLowerCase().includes('return') || description.toLowerCase().includes('return_funds')
 
-            // Log starting of CCTP
-            const liveAction: AgentAction = {
-              timestamp: new Date().toISOString(),
-              action: 'bridge_to_ethereum',
-              reasoning: `[CCTP Step 1/3] Succeeded proposal #${i} executed on governor. Initializing CCTP transfer...`,
-              status: 'pending',
-              usdcAmount: amountUsdc
-            }
-            this.logAction(liveAction)
+            if (isReturn) {
+              console.log(`[TreasuryAgent] Initiating reverse CCTP bridge to return funds to main Treasury...`)
 
-            const cctp = new CCTPExecutor(this.privateKey)
-            
-            // Callback to update actions log in real-time
-            const onProgress = (msg: string) => {
-              liveAction.reasoning = msg
-              this.logAction(liveAction)
-            }
-
-            try {
-              const bridgeRes = await cctp.bridgeToEthereum(amountUsdc, this.account.address, onProgress)
-              console.log(`[TreasuryAgent] CCTP bridge completed successfully. Hash: ${bridgeRes.burnTxHash}`)
-              
-              liveAction.status = 'executed'
-              liveAction.txHash = bridgeRes.burnTxHash
-              liveAction.reasoning = `AUTONOMOUS EXECUTION SUCCESSFUL: Succeeded rebalancing proposal #${i} executed on-chain. CCTP bridged ${amountUsdc} USDC to Ethereum Sepolia. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
+              const liveAction: AgentAction = {
+                timestamp: new Date().toISOString(),
+                action: 'return_funds',
+                reasoning: `[CCTP Step 1/3] Succeeded return proposal #${i} executed on governor. Initializing Sepolia -> Arc transfer...`,
+                status: 'pending'
+              }
               this.logAction(liveAction)
 
-              executedTxHashes.push(bridgeRes.burnTxHash)
-            } catch (bridgeErr: any) {
-              console.error('[TreasuryAgent] CCTP bridge failed:', bridgeErr)
-              liveAction.status = 'failed'
-              liveAction.reasoning = `CCTP bridge execution failed: ${bridgeErr?.message || bridgeErr}`
+              const cctp = new CCTPExecutor(this.privateKey)
+
+              // Callback to update actions log in real-time
+              const onProgress = (msg: string) => {
+                liveAction.reasoning = msg
+                this.logAction(liveAction)
+              }
+
+              try {
+                // Query Sepolia USDC balance to return
+                const balance = await cctp.getSepoliaUSDCBalance()
+                if (balance <= 0) {
+                  throw new Error('No USDC funds available on Ethereum Sepolia to return.')
+                }
+
+                liveAction.usdcAmount = balance
+                this.logAction(liveAction)
+
+                const bridgeRes = await cctp.bridgeToArc(balance, CONTRACTS.treasury, onProgress)
+                console.log(`[TreasuryAgent] CCTP return completed successfully. Hash: ${bridgeRes.burnTxHash}`)
+
+                liveAction.status = 'executed'
+                liveAction.txHash = bridgeRes.burnTxHash
+                liveAction.reasoning = `RETURN SUCCESSFUL: Succeeded return proposal #${i} executed on-chain. CCTP returned ${balance} USDC to main Treasury. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
+                this.logAction(liveAction)
+
+                executedTxHashes.push(bridgeRes.burnTxHash)
+              } catch (bridgeErr: any) {
+                console.error('[TreasuryAgent] CCTP return failed:', bridgeErr)
+                liveAction.status = 'failed'
+                liveAction.reasoning = `CCTP return execution failed: ${bridgeErr?.message || bridgeErr}`
+                this.logAction(liveAction)
+              }
+            } else {
+              const amountUsdc = Number(impact) / 1_000_000
+              console.log(`[TreasuryAgent] Initiating CCTP bridge for ${amountUsdc} USDC to Ethereum Sepolia...`)
+
+              // Log starting of CCTP
+              const liveAction: AgentAction = {
+                timestamp: new Date().toISOString(),
+                action: 'bridge_to_ethereum',
+                reasoning: `[CCTP Step 1/3] Succeeded proposal #${i} executed on governor. Initializing CCTP transfer...`,
+                status: 'pending',
+                usdcAmount: amountUsdc
+              }
               this.logAction(liveAction)
+
+              const cctp = new CCTPExecutor(this.privateKey)
+
+              // Callback to update actions log in real-time
+              const onProgress = (msg: string) => {
+                liveAction.reasoning = msg
+                this.logAction(liveAction)
+              }
+
+              try {
+                const bridgeRes = await cctp.bridgeToEthereum(amountUsdc, this.account.address, onProgress)
+                console.log(`[TreasuryAgent] CCTP bridge completed successfully. Hash: ${bridgeRes.burnTxHash}`)
+
+                liveAction.status = 'executed'
+                liveAction.txHash = bridgeRes.burnTxHash
+                liveAction.reasoning = `AUTONOMOUS EXECUTION SUCCESSFUL: Succeeded rebalancing proposal #${i} executed on-chain. CCTP bridged ${amountUsdc} USDC to Ethereum Sepolia. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
+                this.logAction(liveAction)
+
+                executedTxHashes.push(bridgeRes.burnTxHash)
+              } catch (bridgeErr: any) {
+                console.error('[TreasuryAgent] CCTP bridge failed:', bridgeErr)
+                liveAction.status = 'failed'
+                liveAction.reasoning = `CCTP bridge execution failed: ${bridgeErr?.message || bridgeErr}`
+                this.logAction(liveAction)
+              }
             }
           }
         }

@@ -110,7 +110,8 @@ export default function AgentPage() {
   const [withdrawalRecipient, setWithdrawalRecipient] = useState<string>("");
   const [withdrawalAmount, setWithdrawalAmount] = useState<string>("");
   const [isQueueingWithdrawal, setIsQueueingWithdrawal] = useState<boolean>(false);
-  const [isReturningFunds, setIsReturningFunds] = useState<boolean>(false);
+  const [showReturnModal, setShowReturnModal] = useState<boolean>(false);
+  const [proposingReturn, setProposingReturn] = useState<boolean>(false);
 
   // ── Auto Payments State ──────────────────────────────────────────────────
   const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
@@ -397,24 +398,25 @@ export default function AgentPage() {
     }
   };
 
-  const handleReturnFunds = async () => {
-    setIsReturningFunds(true);
-    const toastId = toast.loading("Initiating return of Sepolia funds to Treasury...");
+  const handleProposeReturn = async () => {
+    setProposingReturn(true);
+    const toastId = toast.loading("Creating governance proposal for return of funds...");
     try {
-      const response = await fetch("/api/agent/return-funds", {
+      const response = await fetch("/api/agent/propose-return", {
         method: "POST",
       });
       const data = await response.json();
       if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to trigger return process");
+        throw new Error(data.error || "Failed to create return proposal");
       }
-      toast.success("Return funds process started successfully! ✅ Track progress in the Action Console.", { id: toastId, duration: 6000 });
+      toast.success("Governance proposal created successfully! ✅ Proposal Tx: " + data.txHash.substring(0, 10) + "...", { id: toastId, duration: 6000 });
+      setShowReturnModal(false);
       fetchAgentState();
     } catch (err: any) {
       console.error(err);
-      toast.error(err?.message || "Failed to return funds.", { id: toastId });
+      toast.error(err?.message || "Failed to create proposal.", { id: toastId });
     } finally {
-      setIsReturningFunds(false);
+      setProposingReturn(false);
     }
   };
 
@@ -1042,12 +1044,12 @@ export default function AgentPage() {
             </div>
             {isAuthenticated && (
               <button
-                onClick={handleReturnFunds}
-                disabled={isReturningFunds || (agentState?.treasury?.sepoliaUsdc ?? 0) <= 0}
+                onClick={() => setShowReturnModal(true)}
+                disabled={proposingReturn || (agentState?.treasury?.sepoliaUsdc ?? 0) <= 0}
                 className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs font-bold text-blue-400 hover:bg-blue-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RotateCw className={`w-3.5 h-3.5 ${isReturningFunds ? 'animate-spin' : ''}`} />
-                {isReturningFunds ? "Returning Funds..." : "Return Funds to Treasury"}
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                Return Funds from Ethereum
               </button>
             )}
             <p className="text-xs text-muted">
@@ -2106,6 +2108,81 @@ export default function AgentPage() {
                     className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-black hover:bg-primary-glow text-sm font-bold transition-all cursor-pointer"
                   >
                     Save Settings
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Return Proposal Confirmation Modal */}
+      <AnimatePresence>
+        {showReturnModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
+            >
+              <button
+                onClick={() => setShowReturnModal(false)}
+                className="absolute top-4 right-4 text-muted hover:text-text-primary transition-colors cursor-pointer bg-transparent border-0 p-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <h3 className="text-lg font-bold text-text-primary mb-2 flex items-center gap-2">
+                <ArrowLeftRight className="w-5 h-5 text-blue-400" />
+                Return Funds Proposal
+              </h3>
+              <p className="text-xs text-muted mb-4">
+                This will submit an on-chain governance proposal to bridge USDC back from Ethereum Sepolia and deposit it to the main Treasury contract on Arc Testnet.
+              </p>
+
+              <div className="space-y-4">
+                <div className="p-3.5 rounded-xl bg-surface/50 border border-border-thin space-y-2.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-muted">Return Amount</span>
+                    <span className="text-text-primary font-bold font-mono">
+                      {(agentState?.treasury?.sepoliaUsdc ?? 0).toFixed(2)} USDC
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-start">
+                    <span className="text-muted">Source Wallet (Sepolia)</span>
+                    <span className="text-text-secondary font-mono text-[10px] break-all text-right max-w-[200px]">
+                      0x88BdF819466C1802ce6C780a9fbdF3A314cab07D
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-start">
+                    <span className="text-muted">Destination (Arc Testnet)</span>
+                    <span className="text-text-secondary font-mono text-[10px] break-all text-right max-w-[200px]">
+                      Main Treasury (0xFE0F6bF45D363d34CD5fC1781594a7471736dC18)
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted">Voting Duration</span>
+                    <span className="text-text-primary font-medium">5 minutes (300s)</span>
+                  </div>
+                </div>
+
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-[11px] text-amber-400 leading-relaxed">
+                  ⚠️ <strong>Security Note:</strong> Once created, the community must vote to pass the proposal. Upon success, the agent will autonomously trigger CCTP and complete the deposit securely.
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setShowReturnModal(false)}
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleProposeReturn}
+                    disabled={proposingReturn || (agentState?.treasury?.sepoliaUsdc ?? 0) <= 0}
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-blue-500 text-white hover:bg-blue-600 text-sm font-bold transition-all disabled:opacity-50 cursor-pointer"
+                  >
+                    {proposingReturn ? "Submitting..." : "Submit Proposal"}
                   </button>
                 </div>
               </div>
