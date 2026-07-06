@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
       console.warn('Failed to estimate gas for faucet:', e)
     }
 
-    // Send 1000 sARC (18 decimals)
+    // 1. Send 1000 sARC (18 decimals)
     const txHash = await walletClient.writeContract({
       address: CONTRACTS.token,
       abi: TOKEN_ABI,
@@ -153,14 +153,43 @@ export async function POST(req: NextRequest) {
       ...gasParams,
     })
 
-    // Wait for real confirmation
+    // Wait for sARC confirmation
     const receipt = await publicClient.waitForTransactionReceipt({
       hash: txHash,
       timeout: 60_000
     })
 
     if (receipt.status !== 'success') {
-      return NextResponse.json({ error: 'Transaction failed on-chain' }, { status: 500 })
+      return NextResponse.json({ error: 'sARC transaction failed on-chain' }, { status: 500 })
+    }
+
+    // 2. Send 2 USDC gas (6 decimals)
+    const USDC_ADDRESS = "0x3600000000000000000000000000000000000000"
+    let usdcTxHash: string | undefined
+    try {
+      // Estimate gas price and limits again or reuse gasParams
+      usdcTxHash = await walletClient.writeContract({
+        address: USDC_ADDRESS,
+        abi: TOKEN_ABI,
+        functionName: 'transfer',
+        args: [walletAddress as `0x${string}`, BigInt(2 * 1e6)],
+        gas: finalGasLimit,
+        ...gasParams,
+      })
+
+      const usdcReceipt = await publicClient.waitForTransactionReceipt({
+        hash: usdcTxHash as `0x${string}`,
+        timeout: 60_000
+      })
+
+      if (usdcReceipt.status !== 'success') {
+        throw new Error('USDC transaction reverted on-chain')
+      }
+    } catch (usdcErr: any) {
+      console.error('Faucet USDC gas transfer failed:', usdcErr)
+      return NextResponse.json({
+        error: `sARC sent successfully, but USDC gas transfer failed: ${usdcErr?.shortMessage || usdcErr?.message || usdcErr}`
+      }, { status: 500 })
     }
 
     // Register claim time on success
@@ -168,8 +197,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "1000 sARC claimed successfully!",
+      message: "1000 sARC and 2 USDC gas claimed successfully!",
       txHash,
+      usdcTxHash,
       explorerUrl: `https://testnet.arcscan.app/tx/${txHash}`
     })
 
