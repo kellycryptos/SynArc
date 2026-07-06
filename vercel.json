@@ -2,6 +2,19 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm install",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "synarcdao.xyz"
+        }
+      ],
+      "destination": "https://www.synarcdao.xyz/$1",
+      "permanent": true
+    }
+  ],
   "crons": [
     {
       "path": "/api/agent/run",

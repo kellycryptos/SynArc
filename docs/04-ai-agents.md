@@ -77,12 +77,45 @@ Every inference request and transaction analysis run by the guard is paid for us
 
 ---
 
-## Programmatic Developer API
+## Programmatic Developer API & Cron Scheduling
 
-Integrate your own autonomous scripts with SynArc's endpoints:
+SynArc’s Treasury Agent is executed programmatically on a **5-minute recurring schedule** via [cron-job.org](https://cron-job.org) rather than native Vercel crons (due to Hobby tier limitations).
 
 ### 1. Run Agent Scan
-* **Method:** `POST`
-* **Endpoint:** `/api/agent/run`
-* **Payload:** `{}`
-* **Description:** Forces the agent script to run a scan, check active rules, and submit proposals or transactions on-chain.
+* **Method:** `POST` / `GET`
+* **Endpoint:** `https://www.synarcdao.xyz/api/agent/run`
+* **Headers:**
+  - `x-cron-secret`: `<CRON_SECRET>` (shared-secret authentication header)
+* **Payload:** `{}` (optional)
+* **Description:** Triggers the agent's main decision cycle. The agent checks active rules, parses on-chain state, votes on active proposals, and submits transactions/proposals on-chain.
+
+#### Execution Response Shape
+The endpoint returns a structured JSON payload detailing the current agent state, treasury balances, and the specific action evaluated during this tick:
+
+```json
+{
+  "success": true,
+  "action": {
+    "timestamp": "2026-07-06T14:32:00.000Z",
+    "action": "monitoring",
+    "reasoning": "Treasury balance is healthy ($142.50 USDC). No active threshold triggers found. Continuous passive monitoring active.",
+    "status": "executed",
+    "usdcAmount": 0
+  },
+  "treasury": {
+    "usdc": 142.5,
+    "eurc": 50,
+    "sepoliaUsdc": 10
+  },
+  "treasurySource": "live",
+  "recentActions": [
+    {
+      "timestamp": "2026-07-06T14:32:00.000Z",
+      "action": "monitoring",
+      "reasoning": "Treasury balance is healthy ($142.50 USDC). No active threshold triggers found. Continuous passive monitoring active.",
+      "status": "executed"
+    }
+  ]
+}
+```
+

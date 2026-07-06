@@ -94,6 +94,8 @@ Creator DAOs are decentralized funding and governance structures that allow buil
 
 SynArc features a fully autonomous Treasury Agent deployed and verified on Arc Testnet at `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D`.
 
+To bypass the daily limits of Vercel Hobby tier crons, the Treasury Agent runs on a **5-minute recurring schedule** via [cron-job.org](https://cron-job.org). The `/api/agent/run` endpoint is secured with a shared-secret verification header (`x-cron-secret`) to prevent unauthorized triggers.
+
 - **Auto Rebalancing (via CCTP)**: Programmatically shifts stablecoin reserves across chains without wrapper tokens to maximize DAO treasury health. (Live)
 - **Auto Payments & Payouts**: Manages scheduled or milestone-based USDC/EURC distributions directly to creators, team members, or contributors. (Live)
 - **Risk Monitoring & Emergency Pause**: Monitors treasury reserves in real-time, alert on unusual outflow rates or low liquidity, and executes on-chain pauses if anomalies are found. (Live)

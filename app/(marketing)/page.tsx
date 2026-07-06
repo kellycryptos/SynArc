@@ -223,9 +223,7 @@ export default function LandingPage() {
               className="w-full sm:w-auto"
             >
               <Link 
-                href="https://docs.synarcdao.xyz"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/docs"
                 className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-3.5 rounded-xl border border-border hover:border-accent-purple/30 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-sm sm:text-base bg-surface"
               >
                 View Docs &rarr;
