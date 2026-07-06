@@ -28,6 +28,14 @@ const slugMap: Record<string, string> = {
   "faq": "09-faq.md"
 };
 
+export async function generateStaticParams() {
+  const slugKeys = Object.keys(slugMap).filter((s) => s !== "");
+  return [
+    { slug: undefined }, // catches /docs with no slug segment
+    ...slugKeys.map((s) => ({ slug: [s] })),
+  ];
+}
+
 const docsNav = [
   { label: "Overview", slug: "" },
   { label: "Governance", slug: "governance" },
