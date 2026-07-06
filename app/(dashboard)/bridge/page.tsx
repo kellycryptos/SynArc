@@ -596,6 +596,9 @@ export default function BridgePage() {
                                   >
                                     <span className="text-sm select-none">{chain.icon}</span>
                                     <span>{chain.name}</span>
+                                    {chain.id === "SOL_DEVNET" && (
+                                      <span className="ml-auto text-[9px] font-extrabold text-muted-foreground bg-surface-elevated px-1.5 py-0.5 rounded border border-border-thin select-none">SOON</span>
+                                    )}
                                   </button>
                                 ))}
                               </div>
@@ -793,6 +796,14 @@ export default function BridgePage() {
                         className="w-full py-4 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary-hover transition-all shadow-[0_0_24px_rgba(124,58,237,0.25)] flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
                       >
                         Connect Wallet to Bridge
+                      </button>
+                    ) : selectedChain.id === "SOL_DEVNET" ? (
+                      <button
+                        type="button"
+                        disabled={true}
+                        className="w-full py-4 bg-surface-elevated/40 border border-border-thin text-text-tertiary font-bold text-sm rounded-xl flex items-center justify-center gap-2 cursor-not-allowed opacity-55"
+                      >
+                        Solana Bridge — Coming Soon
                       </button>
                     ) : requiresNetworkSwitch ? (
                       <button
