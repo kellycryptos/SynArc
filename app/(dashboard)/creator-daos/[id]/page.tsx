@@ -431,7 +431,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
       const gasParams = await getAggressiveGasParams(publicClient);
 
-      console.log(`Creator on-chain trigger: Approving Milestone ${index + 1}...`);
+      console.log(`User on-chain trigger: Voting/Approving Milestone ${index + 1}...`);
       const approveHash = await walletClient.writeContract({
         address: campaign.escrowAddress as `0x${string}`,
         abi: SynArcCrowdfundABI,
@@ -443,20 +443,24 @@ export default function CampaignDetailPage({ params }: PageProps) {
       });
       await waitForTransaction(publicClient, approveHash);
 
-      console.log(`Milestone ${index + 1} approved. Executing withdrawal of locked USDC to recipient: ${campaign.recipient}...`);
-      const withdrawHash = await walletClient.writeContract({
-        address: campaign.escrowAddress as `0x${string}`,
-        abi: SynArcCrowdfundABI,
-        functionName: "withdrawMilestone",
-        chain: walletClient.chain,
-        args: [BigInt(index)],
-        gas: 250000n, // Slightly higher gas limit floor
-        ...gasParams,
-      });
-      const receipt = await waitForTransaction(publicClient, withdrawHash);
-      console.log("🎉 ESCROW RELEASE COMPLETED! Milestone locked USDC successfully disbursed.", receipt);
-
-      alert(`Success! Milestone ${index + 1} funds released and sent to recipient on-chain.`);
+      try {
+        console.log(`Milestone ${index + 1} voted. Attempting withdrawal...`);
+        const withdrawHash = await walletClient.writeContract({
+          address: campaign.escrowAddress as `0x${string}`,
+          abi: SynArcCrowdfundABI,
+          functionName: "withdrawMilestone",
+          chain: walletClient.chain,
+          args: [BigInt(index)],
+          gas: 250000n, // Slightly higher gas limit floor
+          ...gasParams,
+        });
+        const receipt = await waitForTransaction(publicClient, withdrawHash);
+        console.log("🎉 ESCROW RELEASE COMPLETED! Milestone locked USDC successfully disbursed.", receipt);
+        alert(`Success! Milestone ${index + 1} funds released and sent to recipient on-chain.`);
+      } catch (withdrawErr: any) {
+        console.log("Milestone not yet fully approved by backers. Vote registered successfully.", withdrawErr);
+        alert(`Your vote to approve Milestone ${index + 1} has been registered! Once a majority of backers approve, the funds will be claimable.`);
+      }
 
       // Sync and force reload
       await syncOnChainCampaign(campaignId);
@@ -684,7 +688,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
                         </p>
                       )}
                       
-                      {isActive && isCreator && (
+                      {isActive && (isCreator || isAuthenticated) && (
                         <div className="mt-3 flex justify-end">
                           <button
                             type="button"
@@ -695,10 +699,12 @@ export default function CampaignDetailPage({ params }: PageProps) {
                             {releasingMilestone ? (
                               <>
                                 <Loader2 className="w-3 h-3 animate-spin" />
-                                Releasing Escrow...
+                                Processing...
                               </>
+                            ) : isCreator ? (
+                              "🔓 Release Escrow Funds"
                             ) : (
-                              "🔓 Approve & Release Funds"
+                              "🗳️ Vote Approve Milestone"
                             )}
                           </button>
                         </div>

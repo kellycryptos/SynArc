@@ -30,10 +30,16 @@ contract SynArcCrowdfund is ReentrancyGuard {
     uint256 public totalContributors;
     mapping(address => uint256) public contributions;
     
+    // Milestone index -> contributor -> voted approval
+    mapping(uint256 => mapping(address => bool)) public milestoneVotes;
+    // Milestone index -> total vote weight (contributions)
+    mapping(uint256 => uint256) public milestoneApprovedWeight;
+    
     Milestone[] public milestones;
 
     event Contributed(address indexed contributor, uint256 amount);
     event MilestoneApproved(uint256 indexed milestoneIndex);
+    event MilestoneVoted(uint256 indexed milestoneIndex, address indexed contributor, uint256 weight);
     event FundsWithdrawn(address indexed recipient, uint256 amount);
     event RefundClaimed(address indexed contributor, uint256 amount);
 
@@ -93,13 +99,24 @@ contract SynArcCrowdfund is ReentrancyGuard {
         emit Contributed(msg.sender, amount);
     }
 
-    function approveMilestone(uint256 index) external {
+    function approveMilestone(uint256 index) external nonReentrant {
         require(index < milestones.length, "Invalid milestone index");
         require(!milestones[index].approved, "Milestone already approved");
-        require(msg.sender == creator, "Unauthorized: Only creator");
+        
+        uint256 weight = contributions[msg.sender];
+        require(weight > 0, "Only contributors can approve");
+        require(!milestoneVotes[index][msg.sender], "Already voted for this milestone");
 
-        milestones[index].approved = true;
-        emit MilestoneApproved(index);
+        milestoneVotes[index][msg.sender] = true;
+        milestoneApprovedWeight[index] += weight;
+
+        emit MilestoneVoted(index, msg.sender, weight);
+
+        // If approved by > 50% of the total raised contributions, mark it as approved
+        if (milestoneApprovedWeight[index] * 2 > totalRaised) {
+            milestones[index].approved = true;
+            emit MilestoneApproved(index);
+        }
     }
 
     function withdrawMilestone(uint256 index) external nonReentrant {
