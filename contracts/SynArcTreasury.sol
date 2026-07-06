@@ -13,6 +13,7 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
     address public governor;
     address public usdcToken;
     address public eurcToken;
+    address public agentAddress;
 
     uint256 public usdcBalance;
     uint256 public eurcBalance;
@@ -83,6 +84,10 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
 
     function setGovernor(address _governor) external onlyOwner {
         governor = _governor;
+    }
+
+    function setAgentAddress(address _agentAddress) external onlyOwner {
+        agentAddress = _agentAddress;
     }
 
     // Configure withdrawal delay (minimum 24 hours)
@@ -172,20 +177,26 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         require(usdcBalance >= amount, "Insufficient USDC balance");
         usdcBalance -= amount; // Reserved immediately
         
-        withdrawalCount++;
-        queuedWithdrawals[withdrawalCount] = QueuedWithdrawal({
-            id: withdrawalCount,
-            recipient: recipient,
-            amount: amount,
-            token: usdcToken,
-            tokenSymbol: "USDC",
-            description: "Governance approved withdraw",
-            executionTime: block.timestamp + withdrawalDelay,
-            executed: false,
-            canceled: false
-        });
-
-        emit WithdrawalQueued(withdrawalCount, recipient, amount, usdcToken, "USDC", block.timestamp + withdrawalDelay);
+        if (recipient == agentAddress || recipient == owner()) {
+            // Bypass 24h timelock for authorized rebalance agents or owner withdrawals
+            IERC20(usdcToken).safeTransfer(recipient, amount);
+            transactions.push(Transaction("Outflow", recipient, amount, "USDC", "Governance approved instant withdraw", block.timestamp));
+            emit Outflow(recipient, amount, "USDC", "Governance approved instant withdraw", block.timestamp);
+        } else {
+            withdrawalCount++;
+            queuedWithdrawals[withdrawalCount] = QueuedWithdrawal({
+                id: withdrawalCount,
+                recipient: recipient,
+                amount: amount,
+                token: usdcToken,
+                tokenSymbol: "USDC",
+                description: "Governance approved withdraw",
+                executionTime: block.timestamp + withdrawalDelay,
+                executed: false,
+                canceled: false
+            });
+            emit WithdrawalQueued(withdrawalCount, recipient, amount, usdcToken, "USDC", block.timestamp + withdrawalDelay);
+        }
     }
 
     // Execute a queued withdrawal after the delay (anyone can trigger execution when ready)

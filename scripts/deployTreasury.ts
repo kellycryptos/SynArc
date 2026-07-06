@@ -22,6 +22,12 @@ async function main() {
   await tx.wait();
   console.log("Governor successfully set in new Treasury!");
 
+  const AGENT_ADDRESS = process.env.NEXT_PUBLIC_AGENT_ADDRESS || "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D";
+  console.log("Setting Agent address in new Treasury contract:", AGENT_ADDRESS);
+  const txAgent = await treasury.setAgentAddress(AGENT_ADDRESS);
+  await txAgent.wait();
+  console.log("Agent address successfully set in new Treasury!");
+
   // Read existing deployments/arcTestnet.json if it exists and update it
   const deploymentsPath = path.join(__dirname, "../deployments/arcTestnet.json");
   let deploymentData = {
