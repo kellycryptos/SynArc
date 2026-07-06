@@ -155,8 +155,8 @@ export class TreasuryAgent {
   async checkTreasury(): Promise<{ usdc: number; eurc: number; usedFallback: boolean }> {
     try {
       const [usdc, eurc] = await Promise.all([
-        this.publicClient.readContract({ address: CONTRACTS.treasury, abi: TREASURY_ABI, functionName: 'usdcBalance' }),
-        this.publicClient.readContract({ address: CONTRACTS.treasury, abi: TREASURY_ABI, functionName: 'eurcBalance' }),
+        this.publicClient.readContract({ address: CONTRACTS.treasuryAgent, abi: TREASURY_ABI, functionName: 'usdcBalance' }),
+        this.publicClient.readContract({ address: CONTRACTS.treasuryAgent, abi: TREASURY_ABI, functionName: 'eurcBalance' }),
       ])
       return { usdc: Number(usdc) / 1_000_000, eurc: Number(eurc) / 1_000_000, usedFallback: false }
     } catch {
@@ -239,7 +239,7 @@ export class TreasuryAgent {
     }
 
     const title = `Proposed by Treasury Agent — Return ${balance.toFixed(2)} USDC from Sepolia`
-    const description = `Proposed by Treasury Agent\n\nAUTONOMOUS RETURN PROPOSAL\nAction: return_funds\nAmount: ${balance.toFixed(2)} USDC\nDestination: Main Treasury (${CONTRACTS.treasury})\nAgent: ${this.getAgentAddress()}\nTimestamp: ${new Date().toISOString()}\n\nThis proposal was created to return bridged stablecoin reserves back to the main Treasury contract on Arc Testnet via CCTP.`
+    const description = `Proposed by Treasury Agent\n\nAUTONOMOUS RETURN PROPOSAL\nAction: return_funds\nAmount: ${balance.toFixed(2)} USDC\nDestination: Agent Operating Treasury (${CONTRACTS.treasuryAgent})\nAgent: ${this.getAgentAddress()}\nTimestamp: ${new Date().toISOString()}\n\nThis proposal was created to return bridged stablecoin reserves back to the agent operating treasury on Arc Testnet via CCTP.`
 
     const txHash = await this.walletClient.writeContract({
       address: CONTRACTS.governor,
@@ -353,7 +353,7 @@ export class TreasuryAgent {
                 liveAction.usdcAmount = balance
                 this.logAction(liveAction)
 
-                const bridgeRes = await cctp.bridgeToArc(balance, CONTRACTS.treasury, onProgress)
+                const bridgeRes = await cctp.bridgeToArc(balance, CONTRACTS.treasuryAgent, onProgress)
                 console.log(`[TreasuryAgent] CCTP return completed successfully. Hash: ${bridgeRes.burnTxHash}`)
 
                 liveAction.status = 'executed'

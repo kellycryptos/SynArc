@@ -991,6 +991,32 @@ export default function AgentPage() {
                 </div>
               )}
 
+              {/* ── Two-Treasury Architecture Note ─────────────────────── */}
+              <div className="pt-3 border-t border-border-thin">
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/15">
+                  <Layers className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-bold text-amber-300">Two-Treasury Architecture</p>
+                    <p className="text-[10px] text-text-secondary leading-relaxed">
+                      The agent operates from a dedicated <span className="text-amber-300 font-semibold">Agent Operating Treasury</span> — a fast-access contract that allows instant CCTP rebalances without a 24-hour timelock.
+                    </p>
+                    <p className="text-[10px] text-text-secondary leading-relaxed">
+                      Community balances, governance proposals, and all user-facing displays read from the <span className="text-primary font-semibold">Governance Treasury</span>, which enforces the full timelock for security.
+                    </p>
+                    <div className="flex flex-col gap-1 mt-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                        <a href="https://testnet.arcscan.app/address/0xFE0F6bF45D363d34CD5fC1781594a7471736dC18#code" target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-primary hover:underline">Governance Treasury ↗</a>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                        <a href="https://testnet.arcscan.app/address/0x302D7cba3553e22E24C7A5C9aFee3942EBC6ea63#code" target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-amber-300 hover:underline">Agent Operating Treasury ↗</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {isAuthenticated && (
                 <div className="pt-2 border-t border-border-thin">
                   <button

@@ -398,8 +398,8 @@ export const GOVERNANCE_CONTRACTS = {
   // USDC token for voting power
   token: (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e') as `0x${string}`,
   
-  // Treasury for fund management
-  treasury: (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '0x302D7cba3553e22E24C7A5C9aFee3942EBC6ea63') as `0x${string}`,
+  // Governance Treasury (timelocked) — source of truth for balances and proposals
+  treasury: (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '0xFE0F6bF45D363d34CD5fC1781594a7471736dC18') as `0x${string}`,
   
   // EURC token address
   eurc: (process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS || '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}`,
