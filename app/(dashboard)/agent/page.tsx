@@ -9,7 +9,7 @@ import {
   Clock, AlertTriangle, Shield, Cpu, Wallet, ChevronRight,
   TrendingUp, ArrowLeftRight, CreditCard, Plus, Users, X, Check,
   Calendar, DollarSign, Percent, Globe, BarChart2, BellRing,
-  Lock, Layers, TrendingDown, Repeat, Eye, ChevronDown
+  Lock, Layers, Landmark, TrendingDown, Repeat, Eye, ChevronDown
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -17,7 +17,8 @@ import { AGENT_CAPABILITIES, AGENT_INTEGRATIONS, AGENT_CONFIG } from "@/lib/agen
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { createPublicClient, http, fallback, parseUnits } from "viem";
-import { ARC_CHAIN, ARC_RPC_URLS } from "@/lib/arc-config";
+import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
+import { useTreasuryBalances } from "@/hooks/useTreasuryBalances";
 import { AgentABI } from "@/lib/governance/contracts";
 import { parseArcError } from "@/lib/utils";
 import { getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
@@ -637,6 +638,19 @@ export default function AgentPage() {
   const actions = agentState?.recentActions || [];
   const payments = agentState?.payments;
 
+  const {
+    usdcBalance: govUsdcBalance,
+    loading: govLoading,
+    activities: govActivities,
+  } = useTreasuryBalances(process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18");
+
+  const agentFundingHistory = useMemo(() => {
+    return govActivities.filter(act => 
+      act.type === "Outflow" && 
+      act.party?.toLowerCase() === (CONTRACTS.treasuryAgent || "0x302D7cba3553e22E24C7A5C9aFee3942EBC6ea63").toLowerCase()
+    );
+  }, [govActivities]);
+
   // Determine active rules based on treasury
   const usdcAbove100 = (treasury?.usdc || 0) > 100;
   const usdcBelow10 = (treasury?.usdc || 0) < 10;
@@ -794,10 +808,11 @@ export default function AgentPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
-          { label: "USDC Balance", value: loading ? "..." : demoUSDCBalance !== null ? `${demoUSDCBalance.toFixed(2)}` : `${(treasury?.usdc || 0).toFixed(2)}`, unit: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", isBalance: true },
-          { label: "EURC Balance", value: loading ? "..." : `${(treasury?.eurc || 0).toFixed(2)}`, unit: "EURC", icon: Coins, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", isBalance: true },
+          { label: "Agent Treasury (USDC)", value: loading ? "..." : demoUSDCBalance !== null ? `${demoUSDCBalance.toFixed(2)}` : `${(treasury?.usdc || 0).toFixed(2)}`, unit: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", isBalance: true },
+          { label: "Agent Treasury (EURC)", value: loading ? "..." : `${(treasury?.eurc || 0).toFixed(2)}`, unit: "EURC", icon: Coins, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", isBalance: true },
+          { label: "Governance Treasury (USDC)", value: govLoading ? "..." : `${govUsdcBalance.toFixed(2)}`, unit: "USDC", icon: Landmark, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", isBalance: true },
           { label: "Actions Today", value: actions.length.toString(), unit: "actions", icon: Zap, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", isBalance: false },
           { label: "Inference Paid", value: (payments?.totalSpent || 0).toFixed(4), unit: "USDC", icon: CreditCard, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", isBalance: false },
         ].map((stat) => {
@@ -1203,6 +1218,51 @@ export default function AgentPage() {
               </div>
             </GlassCard>
           )}
+
+          {/* Agent Treasury Funding History */}
+          <GlassCard className="p-5 space-y-4 col-span-1 lg:col-span-1 order-12 lg:order-none" hover={false}>
+            <div className="flex items-center gap-2">
+              <Landmark className="w-5 h-5 text-amber-400" />
+              <h2 className="text-sm font-bold text-text-primary">Funding History</h2>
+              <span className="ml-auto text-xs text-muted">Governance Transfers</span>
+            </div>
+            
+            <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
+              {govLoading ? (
+                <div className="flex items-center justify-center py-6 text-xs text-muted">
+                  <RotateCw className="w-4 h-4 animate-spin mr-2" />
+                  Loading funding history...
+                </div>
+              ) : agentFundingHistory.length === 0 ? (
+                <div className="text-center py-8 text-xs text-muted">
+                  No governance funding history found.
+                </div>
+              ) : (
+                agentFundingHistory.map((act) => (
+                  <div key={act.id} className="p-3 rounded-xl border border-border-thin bg-surface-elevated/40 flex flex-col gap-1.5 hover:bg-surface-elevated/60 transition-all">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-emerald-400">
+                        +{act.amount.toLocaleString()} {act.token}
+                      </span>
+                      <span className="text-[10px] text-muted">
+                        {new Date(act.timestamp).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-text-secondary leading-normal">{act.description}</p>
+                    <a
+                      href={`https://testnet.arcscan.app/tx/${act.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[9px] text-primary hover:underline self-start"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      View Transfer Tx
+                    </a>
+                  </div>
+                ))
+              )}
+            </div>
+          </GlassCard>
 
           {/* Live On-Chain Rebalance Monitor */}
           <GlassCard className="p-5 space-y-5 border-border-thin bg-surface-elevated/30 col-span-1 lg:col-span-2 order-2 lg:order-none" hover={false}>

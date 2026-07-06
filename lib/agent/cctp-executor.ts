@@ -95,6 +95,38 @@ export class CCTPExecutor {
     const zeroBytes32 = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`
 
     if (agentAddress) {
+      const treasuryAgentAddress = process.env.NEXT_PUBLIC_TREASURY_AGENT_ADDRESS as `0x${string}` | undefined
+      if (treasuryAgentAddress) {
+        const msgTextPrep = `[CCTP Step 0/3] Pulling ${amountUSDC} USDC from Agent Operating Treasury ${treasuryAgentAddress} to Smart Account...`
+        console.log(`[CCTPExecutor] ${msgTextPrep}`)
+        if (onProgress) onProgress(msgTextPrep)
+
+        const withdrawCalldata = encodeFunctionData({
+          abi: parseAbi([
+            'function withdraw(address recipient, uint256 amount) external'
+          ]),
+          functionName: 'withdraw',
+          args: [agentAddress, amountRaw]
+        })
+
+        const pullTx = await this.arcWalletClient.writeContract({
+          address: agentAddress,
+          abi: parseAbi([
+            'function executeYieldStrategy(address targetContract, address token, uint256 amount, bytes calldata data) external'
+          ]),
+          functionName: 'executeYieldStrategy',
+          args: [
+            treasuryAgentAddress,
+            CCTP_CONTRACTS.arcTestnet.usdc,
+            amountRaw,
+            withdrawCalldata
+          ],
+        })
+        console.log(`[CCTPExecutor] Pull tx submitted: ${pullTx}. Waiting for confirmation...`)
+        await this.arcPublicClient.waitForTransactionReceipt({ hash: pullTx, timeout: 120_000 })
+        console.log(`[CCTPExecutor] Pull tx confirmed. USDC now in smart account.`)
+      }
+
       const msgText = `[CCTP Step 1/3] Using Smart Account: ${agentAddress}. Encoding depositForBurn and executing...`
       console.log(`[CCTPExecutor] ${msgText}`)
       if (onProgress) onProgress(msgText)

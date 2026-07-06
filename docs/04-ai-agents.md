@@ -62,6 +62,24 @@ Instead of manual collections, this feature sweeps bridged assets across Ethereu
 
 ---
 
+## Two-Treasury Architecture & Governance Gating
+
+To maximize security while maintaining high operational mobility, SynArc implements a **Two-Treasury Architecture**:
+
+1. **Governance Treasury (Timelocked)**: Holds the bulk of DAO funds. Any withdrawal or allocation from this treasury requires a standard governance proposal, community vote, and a mandatory 24-hour timelock delay.
+2. **Agent Operating Treasury (Fast-Access)**: A dedicated, smaller treasury used by the Treasury Agent to perform swift rebalances and operations. The agent contract holds withdrawal and execution rights here to respond immediately to changing yields or risk parameters.
+
+### Funding Flow (Governance-Gated)
+
+To fund the Agent Operating Treasury:
+1. A user submits a **Fund Agent Treasury** proposal via the dashboard, specifying the amount of USDC to allocate.
+2. The proposal is voted on by sARC token holders.
+3. Once approved, the proposal is queued in the Governance Treasury's withdrawal queue.
+4. After the **24-hour timelock** expires, the proposal is executed, transferring the USDC to the Agent Operating Treasury.
+5. Anyone can then call the `syncBalance()` function on the Agent Operating Treasury to update its internal balance state, allowing the agent to begin utilizing the newly allocated capital.
+
+---
+
 ## Deep Circle Integrations
 
 The Automated Treasury Guard incorporates three key pillars of safe stablecoin management:

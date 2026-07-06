@@ -40,6 +40,7 @@ export interface TreasuryActivity {
   timestamp: string;
   description: string;
   txHash: string;
+  party?: string;
 }
 
 export interface GovernanceMetric {

@@ -241,6 +241,23 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         emit WithdrawalCanceled(id);
     }
 
+    /**
+     * @notice Syncs the internal balance state with the actual contract ERC20 balance.
+     * This is useful when the treasury receives direct ERC20 transfers (e.g. from governance funding).
+     */
+    function syncBalance() external nonReentrant whenNotPaused {
+        uint256 actualUsdc = IERC20(usdcToken).balanceOf(address(this));
+        if (actualUsdc > usdcBalance) {
+            emit Inflow(msg.sender, actualUsdc - usdcBalance, "USDC", "Direct transfer sync", block.timestamp);
+            usdcBalance = actualUsdc;
+        }
+        uint256 actualEurc = IERC20(eurcToken).balanceOf(address(this));
+        if (actualEurc > eurcBalance) {
+            emit Inflow(msg.sender, actualEurc - eurcBalance, "EURC", "Direct transfer sync", block.timestamp);
+            eurcBalance = actualEurc;
+        }
+    }
+
     // Legacy balance view (returns USDC balance)
     function balance() external view returns (uint256) {
         return IERC20(usdcToken).balanceOf(address(this));

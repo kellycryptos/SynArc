@@ -16,7 +16,7 @@ import { parseArcError } from "@/lib/utils";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
 import { toast } from "react-hot-toast";
 import { writeWithRetry, enforceChain, getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
-import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS } from "@/lib/arc-config";
+import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 import { GovernorABI } from "@/lib/governance/contracts";
 import { createWalletClient, createPublicClient, custom, fallback, http } from "viem";
 
@@ -97,6 +97,38 @@ export default function CreateProposalPage() {
     executionTarget: "",
     votingDuration: 7,
   });
+
+  const [proposalType, setProposalType] = useState<"standard" | "fund_agent">("standard");
+  const [fundingAmount, setFundingAmount] = useState<string>("");
+
+  React.useEffect(() => {
+    if (proposalType === "fund_agent") {
+      const amountNum = parseFloat(fundingAmount) || 0;
+      setFormData(prev => ({
+        ...prev,
+        title: `Fund Agent Treasury - ${amountNum} USDC`,
+        category: "Treasury Allocation",
+        executionTarget: CONTRACTS.treasuryAgent,
+        treasuryImpactValue: -amountNum,
+        description: `This governance proposal approves the transfer of ${amountNum} USDC from the primary community-controlled treasury (treasuryGovernance) to the dedicated agent operating treasury (treasuryAgent) to fund autonomous CCTP rebalances. This proposal will go through the standard 24-hour timelock upon approval.`
+      }));
+    }
+  }, [proposalType, fundingAmount]);
+
+  const handleTypeChange = (type: "standard" | "fund_agent") => {
+    setProposalType(type);
+    if (type === "standard") {
+      setFormData({
+        title: "",
+        category: "Governance Parameter",
+        description: "",
+        treasuryImpactValue: 0,
+        executionTarget: "",
+        votingDuration: 7,
+      });
+      setFundingAmount("");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -279,6 +311,32 @@ export default function CreateProposalPage() {
         <GlassCard className="p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             
+            {/* Proposal Type Tabs */}
+            <div className="flex gap-2 p-1.5 bg-surface-elevated/40 border border-border-thin rounded-xl mb-6">
+              <button
+                type="button"
+                onClick={() => handleTypeChange("standard")}
+                className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  proposalType === "standard"
+                    ? "bg-accent-purple text-white shadow-[0_0_15px_rgba(124,58,237,0.25)]"
+                    : "text-muted hover:text-text-primary"
+                }`}
+              >
+                Standard Proposal
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTypeChange("fund_agent")}
+                className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  proposalType === "fund_agent"
+                    ? "bg-accent-purple text-white shadow-[0_0_15px_rgba(124,58,237,0.25)]"
+                    : "text-muted hover:text-text-primary"
+                }`}
+              >
+                Fund Agent Operating Treasury
+              </button>
+            </div>
+
             {error && (
               <div className="p-4 bg-danger/10 border border-danger/20 rounded-xl flex items-center gap-3 text-sm text-danger">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -324,158 +382,246 @@ export default function CreateProposalPage() {
               </>
             )}
 
-            {/* AI Proposal Assistant Box */}
-            <div className="bg-surface-elevated/40 border border-primary/20 rounded-2xl p-4 overflow-hidden mb-6">
-              <button
-                type="button"
-                onClick={() => setIsAssistantOpen(!isAssistantOpen)}
-                className="w-full flex items-center justify-between text-left font-bold text-white text-sm cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-primary" />
-                  <span>✨ AI Proposal Assistant (Groq Llama 3.3)</span>
-                </div>
-                <ChevronDown className={`w-4 h-4 text-muted transition-transform duration-300 ${isAssistantOpen ? "rotate-180 text-white" : ""}`} />
-              </button>
+            {proposalType === "standard" && (
+              /* AI Proposal Assistant Box */
+              <div className="bg-surface-elevated/40 border border-primary/20 rounded-2xl p-4 overflow-hidden mb-6">
+                <button
+                  type="button"
+                  onClick={() => setIsAssistantOpen(!isAssistantOpen)}
+                  className="w-full flex items-center justify-between text-left font-bold text-white text-sm cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <Bot className="w-5 h-5 text-primary" />
+                    <span>✨ AI Proposal Assistant (Groq Llama 3.3)</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-muted transition-transform duration-300 ${isAssistantOpen ? "rotate-180 text-white" : ""}`} />
+                </button>
 
-              <AnimatePresence>
-                {isAssistantOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="space-y-4 pt-4"
-                  >
-                    <p className="text-xs text-text-tertiary leading-relaxed leading-normal">
-                      Rough idea? Write it down in plain English (e.g. &quot;Allocate 2,500 USDC for community marketing materials next month&quot;), and our AI assistant will draft the titles, categories, voting parameters, and descriptions!
-                    </p>
+                <AnimatePresence>
+                  {isAssistantOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="space-y-4 pt-4"
+                    >
+                      <p className="text-xs text-text-tertiary leading-relaxed">
+                        Rough idea? Write it down in plain English (e.g. &quot;Allocate 2,500 USDC for community marketing materials next month&quot;), and our AI assistant will draft the titles, categories, voting parameters, and descriptions!
+                      </p>
 
-                    {aiGenError && (
-                      <div className="p-3 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span>{aiGenError}</span>
+                      {aiGenError && (
+                        <div className="p-3 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 shrink-0" />
+                          <span>{aiGenError}</span>
+                        </div>
+                      )}
+
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <textarea
+                          value={userIdea}
+                          onChange={(e) => {
+                            setUserIdea(e.target.value);
+                            if (aiGenError) setAiGenError("");
+                          }}
+                          disabled={aiGenerating}
+                          placeholder="Describe your proposal idea here..."
+                          rows={2}
+                          className="flex-1 bg-surface border border-border-thin focus:border-primary rounded-xl px-4 py-3 text-xs text-white outline-none placeholder:text-text-tertiary transition-colors resize-none disabled:opacity-50"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleGenerateProposal}
+                          disabled={aiGenerating || !userIdea}
+                          className="py-3 px-5 bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                        >
+                          {aiGenerating ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              Drafting...
+                            </>
+                          ) : (
+                            <>
+                              <Wand2 className="w-3.5 h-3.5" />
+                              Generate with AI
+                            </>
+                          )}
+                        </button>
                       </div>
-                    )}
-
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <textarea
-                        value={userIdea}
-                        onChange={(e) => {
-                          setUserIdea(e.target.value);
-                          if (aiGenError) setAiGenError("");
-                        }}
-                        disabled={aiGenerating}
-                        placeholder="Describe your proposal idea here..."
-                        rows={2}
-                        className="flex-1 bg-surface border border-border-thin focus:border-primary rounded-xl px-4 py-3 text-xs text-white outline-none placeholder:text-text-tertiary transition-colors resize-none disabled:opacity-50"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleGenerateProposal}
-                        disabled={aiGenerating || !userIdea}
-                        className="py-3 px-5 bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                      >
-                        {aiGenerating ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            Drafting...
-                          </>
-                        ) : (
-                          <>
-                            <Wand2 className="w-3.5 h-3.5" />
-                            Generate with AI
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
 
             <div className="space-y-4">
-              <div>
-                <label htmlFor="title" className="block text-sm font-bold text-text-secondary mb-1">Proposal Title *</label>
-                <input
-                  id="title"
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g., Update Governance Quorum Parameter"
-                  className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
-                  required
-                />
-              </div>
+              {proposalType === "standard" ? (
+                <>
+                  <div>
+                    <label htmlFor="title" className="block text-sm font-bold text-text-secondary mb-1">Proposal Title *</label>
+                    <input
+                      id="title"
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="e.g., Update Governance Quorum Parameter"
+                      className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
+                      required
+                    />
+                  </div>
 
-              <div>
-                <label htmlFor="category" className="block text-sm font-bold text-text-secondary mb-1">Category</label>
-                <select
-                  id="category"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary transition-colors"
-                >
-                  <option value="Governance Parameter">Governance Parameter</option>
-                  <option value="Treasury Allocation">Treasury Allocation</option>
-                  <option value="Ecosystem Grant">Ecosystem Grant</option>
-                  <option value="Delegate Onboarding">Delegate Onboarding</option>
-                  <option value="Protocol Upgrade">Protocol Upgrade</option>
-                </select>
-              </div>
+                  <div>
+                    <label htmlFor="category" className="block text-sm font-bold text-text-secondary mb-1">Category</label>
+                    <select
+                      id="category"
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary transition-colors"
+                    >
+                      <option value="Governance Parameter">Governance Parameter</option>
+                      <option value="Treasury Allocation">Treasury Allocation</option>
+                      <option value="Ecosystem Grant">Ecosystem Grant</option>
+                      <option value="Delegate Onboarding">Delegate Onboarding</option>
+                      <option value="Protocol Upgrade">Protocol Upgrade</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label htmlFor="description" className="block text-sm font-bold text-text-secondary mb-1">Description *</label>
-                <textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Provide detailed context, rationale, and execution steps in Markdown..."
-                  rows={8}
-                  className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors resize-y"
-                  required
-                />
-              </div>
+                  <div>
+                    <label htmlFor="description" className="block text-sm font-bold text-text-secondary mb-1">Description *</label>
+                    <textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Provide detailed context, rationale, and execution steps in Markdown..."
+                      rows={8}
+                      className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors resize-y"
+                      required
+                    />
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="treasuryImpact" className="block text-sm font-bold text-text-secondary mb-1">Treasury Impact (USDC)</label>
-                  <input
-                    id="treasuryImpact"
-                    type="number"
-                    value={formData.treasuryImpactValue}
-                    onChange={(e) => setFormData({ ...formData, treasuryImpactValue: parseInt(e.target.value) || 0 })}
-                    placeholder="-50000"
-                    className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
-                  />
-                  <p className="text-xs text-text-tertiary mt-1.5">Use negative values for outflows (e.g., grants).</p>
-                </div>
-                
-                <div>
-                  <label htmlFor="votingDuration" className="block text-sm font-bold text-text-secondary mb-1">Voting Duration (Days)</label>
-                  <input
-                    id="votingDuration"
-                    type="number"
-                    min="1"
-                    max="14"
-                    value={formData.votingDuration}
-                    onChange={(e) => setFormData({ ...formData, votingDuration: parseInt(e.target.value) || 7 })}
-                    className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
-                  />
-                </div>
-              </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="treasuryImpact" className="block text-sm font-bold text-text-secondary mb-1">Treasury Impact (USDC)</label>
+                      <input
+                        id="treasuryImpact"
+                        type="number"
+                        value={formData.treasuryImpactValue}
+                        onChange={(e) => setFormData({ ...formData, treasuryImpactValue: parseInt(e.target.value) || 0 })}
+                        placeholder="-50000"
+                        className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
+                      />
+                      <p className="text-xs text-text-tertiary mt-1.5">Use negative values for outflows (e.g., grants).</p>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="votingDuration" className="block text-sm font-bold text-text-secondary mb-1">Voting Duration (Days)</label>
+                      <input
+                        id="votingDuration"
+                        type="number"
+                        min="1"
+                        max="14"
+                        value={formData.votingDuration}
+                        onChange={(e) => setFormData({ ...formData, votingDuration: parseInt(e.target.value) || 7 })}
+                        className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
+                      />
+                    </div>
+                  </div>
 
-              <div>
-                <label htmlFor="executionTarget" className="block text-sm font-bold text-text-secondary mb-1">Execution Target Contract (Optional)</label>
-                <input
-                  id="executionTarget"
-                  type="text"
-                  value={formData.executionTarget}
-                  onChange={(e) => setFormData({ ...formData, executionTarget: e.target.value })}
-                  placeholder="0x..."
-                  className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
-                />
-              </div>
+                  <div>
+                    <label htmlFor="executionTarget" className="block text-sm font-bold text-text-secondary mb-1">Execution Target Contract (Optional)</label>
+                    <input
+                      id="executionTarget"
+                      type="text"
+                      value={formData.executionTarget}
+                      onChange={(e) => setFormData({ ...formData, executionTarget: e.target.value })}
+                      placeholder="0x..."
+                      className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label htmlFor="fundingAmount" className="block text-sm font-bold text-text-secondary mb-1">Funding Amount (USDC) *</label>
+                    <input
+                      id="fundingAmount"
+                      type="number"
+                      min="1"
+                      value={fundingAmount}
+                      onChange={(e) => setFundingAmount(e.target.value)}
+                      placeholder="e.g. 50"
+                      className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
+                      required
+                    />
+                    <p className="text-xs text-text-tertiary mt-1.5">
+                      Enter the amount of USDC to transfer from the governance treasury to the agent operating treasury.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-text-secondary mb-1">Proposal Title (Generated)</label>
+                    <input
+                      type="text"
+                      value={formData.title}
+                      className="w-full bg-surface-elevated/40 border border-border-thin rounded-xl px-4 py-3 text-sm text-text-tertiary font-medium cursor-not-allowed"
+                      disabled
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-text-secondary mb-1">Category (Generated)</label>
+                    <input
+                      type="text"
+                      value={formData.category}
+                      className="w-full bg-surface-elevated/40 border border-border-thin rounded-xl px-4 py-3 text-sm text-text-tertiary font-medium cursor-not-allowed"
+                      disabled
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-text-secondary mb-1">Description (Generated)</label>
+                    <textarea
+                      value={formData.description}
+                      rows={5}
+                      className="w-full bg-surface-elevated/40 border border-border-thin rounded-xl px-4 py-3 text-sm text-text-tertiary font-medium cursor-not-allowed resize-none"
+                      disabled
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-text-secondary mb-1">Execution Target (Generated)</label>
+                      <input
+                        type="text"
+                        value={formData.executionTarget}
+                        className="w-full bg-surface-elevated/40 border border-border-thin rounded-xl px-4 py-3 text-sm font-mono text-text-tertiary font-medium cursor-not-allowed"
+                        disabled
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="votingDuration" className="block text-sm font-bold text-text-secondary mb-1">Voting Duration (Days)</label>
+                      <input
+                        id="votingDuration"
+                        type="number"
+                        min="1"
+                        max="14"
+                        value={formData.votingDuration}
+                        onChange={(e) => setFormData({ ...formData, votingDuration: parseInt(e.target.value) || 7 })}
+                        className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-amber-500/5 border border-amber-500/15 rounded-xl flex items-start gap-3 text-xs text-amber-300 leading-normal">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 animate-pulse" />
+                    <div>
+                      <span className="font-bold">Timelock Notice: </span>
+                      Since the destination contract is the Agent Operating Treasury, this transfer will not bypass the timelock. Upon proposal passage, it will undergo the standard 24-hour timelock queue before execution is finalized.
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="pt-6 border-t border-border-subtle flex justify-end">

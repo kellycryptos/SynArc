@@ -26,6 +26,14 @@ TimelockController delay
   On-chain Execution → Target Address
 ```
 
+### Two-Treasury Architecture
+
+SynArc operates a split-treasury design:
+- **Governance Treasury**: Community-visible, fully timelocked vault for primary reserves.
+- **Agent Operating Treasury**: Fast-access, dedicated vault for the Automated Treasury Guard's cross-chain CCTP rebalances.
+
+For details on this split and the governance funding flow, see the [Automated Treasury Guard guide](04-ai-agents.md).
+
 ---
 
 ## How to Deposit USDC
