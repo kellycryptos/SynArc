@@ -522,10 +522,10 @@ export default function BridgePage() {
         </div>
 
         {/* Main Interface Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
+        <div className="max-w-2xl mx-auto w-full space-y-4">
           
           {/* Centered Swapping Box */}
-          <div className="md:col-span-3 space-y-4">
+          <div className="space-y-4">
             <GlassCard hover={false} className="p-6 border border-border-thin/80 shadow-2xl rounded-3xl relative overflow-hidden backdrop-blur-xl bg-surface-elevated/45">
               
               {/* Settings / Title Area */}
@@ -1024,51 +1024,6 @@ export default function BridgePage() {
             </div>
           </div>
 
-          {/* Quick FAQ / Instructions Panel */}
-          <div className="md:col-span-2 space-y-4">
-            <GlassCard hover={false} className="p-5 border border-border-thin space-y-5 bg-surface/35 backdrop-blur-md">
-              <h4 className="font-bold text-xs text-white uppercase tracking-wider border-b border-border-thin/40 pb-2">
-                How Bridging Works
-              </h4>
-
-              <div className="space-y-4 text-xs">
-                <div className="flex gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-[10px] shrink-0">1</div>
-                  <div>
-                    <h5 className="font-bold text-white mb-0.5">1. Send USDC</h5>
-                    <p className="text-text-tertiary leading-normal">
-                      USDC is sent from your wallet on the starting chain.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-[10px] shrink-0">2</div>
-                  <div>
-                    <h5 className="font-bold text-white mb-0.5">2. Verification</h5>
-                    <p className="text-text-tertiary leading-normal">
-                      The transfer is verified securely on-chain.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-[10px] shrink-0">3</div>
-                  <div>
-                    <h5 className="font-bold text-white mb-0.5">3. Receive USDC</h5>
-                    <p className="text-text-tertiary leading-normal">
-                      USDC is delivered directly to your wallet on the destination chain.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-3 bg-primary/5 rounded-xl border border-primary/15 text-[10px] text-text-tertiary leading-relaxed">
-                <p className="font-semibold text-white mb-1">💡 Safe and Direct</p>
-                No wrapped tokens or intermediary pools. You always receive exactly 1:1 value of your USDC minus standard gas fees.
-              </div>
-            </GlassCard>
-          </div>
         </div>
 
         {/* Transactions History Section */}

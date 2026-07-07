@@ -235,40 +235,6 @@ export default function CampaignsPage() {
           </button>
         </div>
 
-        {/* 9. Visual Architecture Separation Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-elevated/40 border border-border-thin rounded-2xl p-6 relative overflow-hidden backdrop-blur-md">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.01] to-purple-glow/[0.01] pointer-events-none" />
-          
-          <div className="space-y-2 flex flex-col justify-between h-full">
-            <div>
-              <h4 className="text-sm font-bold text-text-primary flex items-center gap-2">
-                <span className="p-1 rounded bg-blue-500/10 border border-blue-400/20 text-blue-400">🏛</span>
-                SynArc Governance
-              </h4>
-              <p className="text-xs text-muted leading-relaxed mt-1">
-                Protocol-wide governance upgrades, parameter alterations, delegate listings, and core DAO treasury allocations.
-              </p>
-            </div>
-            <Link href="/proposals" className="text-xs font-bold text-primary hover:text-primary-glow flex items-center gap-1 pt-3">
-              View Proposals <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-          
-          <div className="space-y-2 md:pl-6 md:border-l md:border-border-thin flex flex-col justify-between h-full">
-            <div>
-              <h4 className="text-sm font-bold text-purple-300 flex items-center gap-2">
-                <span className="p-1 rounded bg-purple-500/15 border border-purple-400/20 text-purple-300">⚡</span>
-                Creator DAOs
-              </h4>
-              <p className="text-xs text-muted leading-relaxed mt-1">
-                Permissionless coordinate platforms, dynamic milestone-locked escrows, and automated AI Risk due diligence.
-              </p>
-            </div>
-            <Link href="/creator-daos" className="text-xs font-bold text-purple-300 hover:text-purple-200 flex items-center gap-1 pt-3">
-              Explore Creator DAOs <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

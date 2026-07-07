@@ -154,6 +154,18 @@ await agent.vote(proposalId, 1 /* For */);
 
 ---
 
+## 3e. Circle & Agent Integrations
+
+SynArc integrates with the Circle ecosystem and autonomous systems to power its rebalancing, governance, and onboarding systems:
+
+*   **Circle CCTP (Cross-Chain Transfer Protocol)** — *Fully Deployed & Functional*: Handles native burn-and-mint USDC routing between Arc Testnet and Ethereum Sepolia. In `lib/agent/cctp-executor.ts`, the system executes burns, polls Circle's Iris attestation API for validation consensus, and triggers mint receipts on the destination Messenger contract.
+*   **Circle Gateway (x402 Nanopayments)** — *Simulated/Planned*: Tracks AI model execution fees for each inference call in `lib/agent/gateway-payments.ts`. The codebase contains hooks to deduct USDC internally for every Groq API request, awaiting live production endpoints to route actual on-chain fee payments.
+*   **Modular Wallets (ERC-4337 & Social Auth)** — *Fully Deployed & Functional*: Provisioned dynamically for users using Privy social logins and Circle's Web3 Services (W3S). In `lib/tx-helper.ts`, transactions submitted by Circle embedded wallets are routed via custom EIP-1193 providers and sponsored gaslessly via paymasters.
+*   **Groq AI** — *Fully Deployed & Functional*: Powers the agent's real-time treasury analysis engine in `lib/agent/treasury-agent.ts`. The agent script calls the Groq SDK using the `qwen/qwen3.6-27b` model to evaluate current balances and autonomously execute or queue rebalancing decisions.
+*   **ERC-8004 Identity Registry** — *Fully Deployed & Functional*: The `SynArcAgent.sol` contract implements the `IERC8004Registry` interface. Upon deployment, the agent calls the registry contract at `0x8004A818BFB912233c491871b3d84c89A494BD9e` to register its identity, capabilities, and IPFS metadata on-chain.
+
+---
+
 ## 4. Arc Ecosystem Alignment
 
 SynArc is built natively for **Arc** — a high-performance, EVM-equivalent blockchain engineered to power the agentic economy.
@@ -318,46 +330,15 @@ synarc-dao/
 
 ---
 
-## 9. Roadmap
+## 9. Roadmap & Feature Status
 
-### ✅ Phase 1 — Governance Frontend
-*   ✅ Clean, modern landing pages with Arc-native glassmorphic aesthetics
-*   ✅ Real-time analytics dashboard with deep data visualization
-*   ✅ Responsive, mobile-optimized UI layout
-*   ✅ Proposal submission and detail view pages
+Below is the verified status of core milestones:
 
-### ✅ Phase 2 — Authentication & Onboarding
-*   ✅ Privy authentication with embedded wallets (email, social, MetaMask)
-*   ✅ Zero-gas cryptographic signature verification
-*   ✅ Live balance polling from Arc Testnet nodes
-*   ✅ Creator DAO template system (milestone escrow, AI + human campaigns)
-*   ✅ `SynArcCrowdfund` escrow contract — deployed, verified on ArcScan
-*   ✅ Live USDC milestone approvals and on-chain releases
-
-### ✅ Phase 3 — On-Chain Governance
-*   ✅ `SynArcGovernor` (OpenZeppelin Governor) deployed and verified on Arc Testnet
-*   ✅ `TimelockController` with configurable execution buffers
-*   ✅ Full EVM smart contract reads/writes in the UI (USDC, Governor, escrows)
-*   ✅ Proposal submission, voting, queueing, and execution on-chain
-
-### ✅ Phase 4 — Arc Ecosystem Integration
-*   ✅ Real USDC-denominated treasury disbursements via governance
-*   ✅ Autonomous AI agent identity registered on ERC-8004 registry on-chain
-*   ✅ Delegate registries for frictionless voting weight delegation
-*   ✅ Bidirectional Circle CCTP Bridge (Arc ↔ Ethereum Sepolia, Base, Fuji, Solana)
-*   ✅ Treasury Agent live: Auto Payments, Risk Monitoring & Emergency Pause, Auto Rebalancing
-*   ✅ `@synarc/agent-sdk` TypeScript SDK published on npm
-
-### 🚧 Phase 5 — Advanced Features (In Progress)
-*   🔜 Auto Yield Farming — deploy idle stablecoins to Aave / Compound / Morpho
-*   🔜 Multi-Chain Auto Sweep — pull bridge deposits automatically into treasury
-*   🔜 Creator DAO mainnet graduation — move verified escrows to Arc Mainnet
-*   🔜 Cross-DAO nanopayment routing — pay creators across DAOs from any chain
-
-### 🗓 Phase 6 — Future Architecture
-*   [ ] Encrypted voting via Zero-Knowledge (ZK) proofs
-*   [ ] Private coordinator sets for shielded voting positions
-*   [ ] DAO configuration dashboard and parameter management UI
+*   **Milestone Fix**: ✅ Deployed and Verified. Creator DAOs deploy isolated `SynArcCrowdfund` milestone escrow contracts (such as template version `0xd5374DFC4B01F60115A52Df027704062506b3030`) with backer-voting release logic.
+*   **Timelock Fix**: ✅ Completed. Governance system has reverted to utilizing the timelocked primary treasury (`0xFE0F6bF45D363d34CD5fC1781594a7471736dC18`) as the main source of truth for dashboard and voter balances.
+*   **Agent Funding Flow**: ✅ Completed. Implemented a two-treasury separation (Governance vs Operating Agent) with governance-gated transfer proposals and on-chain balance synchronization.
+*   **Cron Execution**: ✅ Completed. Secured `/api/agent/run` with `x-cron-secret` validation and connected to recurring 5-minute external execution tasks on cron-job.org to bypass daily Vercel Hobby limits.
+*   **Solana Bridge Status**: 🚧 Mock Simulation. Bridging USDC to/from Solana Devnet runs in frontend mock simulation mode pending full client-side keypair support on the Arc network.
 
 
 ## 10. Deployment
@@ -385,18 +366,22 @@ https://www.synarcdao.xyz/
 
 ---
 
-## 10a. Deployed Contracts
+## 10a. Deployed Contracts & Network Reference
 
-All core SynArc smart contracts are deployed on the Arc Testnet (`chainId: 5042002`) and are verified on the ArcScan block explorer:
+Below is the official network configuration and deployed smart contract addresses for SynArc on the Arc Testnet (`chainId: 5042002`).
 
-| Contract Name | Address | Description | ArcScan |
-| :--- | :--- | :--- | :--- |
-| **SynArc Governor** | `0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e` | Proposal voting and supermajority execution logic | [Inspect](https://testnet.arcscan.app/address/0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e) |
-| **SynArc Treasury** | `0xFE0F6bF45D363d34CD5fC1781594a7471736dC18` | Vault managing USDC/EURC stablecoin deposits and timelocked releases | [Inspect](https://testnet.arcscan.app/address/0xFE0F6bF45D363d34CD5fC1781594a7471736dC18) |
-| **SynArcToken (sARC)** | `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e` | ERC20 governance token authorizing user voting weight checkpoints | [Inspect](https://testnet.arcscan.app/address/0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e) |
-| **EURC Token** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | Circle stablecoin accepted for treasury operations and campaigns | [Inspect](https://testnet.arcscan.app/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a) |
-| **ERC-8004 Registry** | `0x8004A818BFB912233c491871b3d84c89A494BD9e` | Trustless Agents Identity Registry for agent verification | [Inspect](https://testnet.arcscan.app/address/0x8004A818BFB912233c491871b3d84c89A494BD9e) |
-| **SynArcAgent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | Autonomous portfolio monitoring, rebalancing, and CCTP bridge triggers | [Inspect](https://testnet.arcscan.app/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
+| Configuration / Contract | Value / Address | Description | ArcScan Explorer |
+|:---|:---|:---|:---|
+| **Chain ID** | `5042002` | Arc Testnet Chain Identifier | — |
+| **RPC Endpoint** | `https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f` | Primary RPC endpoint for client node calls | — |
+| **SynArcGovernor** | `0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e` | Governance proposal and voting controller | [Inspect](https://testnet.arcscan.app/address/0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e) |
+| **Governance Treasury (`treasuryGovernance`)** | `0xFE0F6bF45D363d34CD5fC1781594a7471736dC18` | Timelocked treasury for core DAO balances | [Inspect](https://testnet.arcscan.app/address/0xFE0F6bF45D363d34CD5fC1781594a7471736dC18) |
+| **Agent Operating Treasury (`treasuryAgent`)** | `0x302D7cba3553e22E24C7A5C9aFee3942EBC6ea63` | Fast-access agent operating reserves | [Inspect](https://testnet.arcscan.app/address/0x302D7cba3553e22E24C7A5C9aFee3942EBC6ea63) |
+| **Crowdfund Factory / Template** | `0xd5374DFC4B01F60115A52Df027704062506b3030` | Deploys new campaign milestone escrows | [Inspect](https://testnet.arcscan.app/address/0xd5374DFC4B01F60115A52Df027704062506b3030) |
+| **SynArcToken (sARC)** | `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e` | Primary governance voting weight token | [Inspect](https://testnet.arcscan.app/address/0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e) |
+| **EURC Token** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | EURC stablecoin contract address | [Inspect](https://testnet.arcscan.app/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a) |
+| **USDC (Gas Token)** | `0x3600000000000000000000000000000000000000` | Native USDC stablecoin for fee payment | [Inspect](https://testnet.arcscan.app/address/0x3600000000000000000000000000000000000000) |
+| **Treasury Agent Contract** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | On-chain autonomous agent rules executor | [Inspect](https://testnet.arcscan.app/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
 
 > ℹ️ All contracts are deployed on Arc Testnet. Verified contracts have direct explorer links.
 

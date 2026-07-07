@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { AGENT_CAPABILITIES, AGENT_INTEGRATIONS, AGENT_CONFIG } from "@/lib/agent/smart-account";
+import { AGENT_CAPABILITIES, AGENT_CONFIG } from "@/lib/agent/smart-account";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import { createPublicClient, http, fallback, parseUnits } from "viem";
@@ -1670,25 +1670,6 @@ export default function AgentPage() {
                 <RotateCw className="w-3.5 h-3.5" />
                 Refresh
               </button>
-            </div>
-          </GlassCard>
-
-          {/* Circle Integrations */}
-          <GlassCard className="p-5 space-y-4 col-span-1 lg:col-span-2 order-10 lg:order-none" hover={false}>
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
-              <h2 className="text-sm font-bold text-text-primary">Circle Integrations</h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {AGENT_INTEGRATIONS.map((integration) => (
-                <div key={integration.name} className="flex items-start gap-3 p-3 rounded-xl border border-border-thin bg-surface-elevated/30">
-                  <CheckCircle className="w-4 h-4 text-success mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-xs font-bold text-text-primary">{integration.name}</p>
-                    <p className="text-xs text-muted mt-0.5">{integration.description}</p>
-                  </div>
-                </div>
-              ))}
             </div>
           </GlassCard>
 

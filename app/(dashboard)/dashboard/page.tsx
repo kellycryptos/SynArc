@@ -70,49 +70,6 @@ export default function DashboardOverview() {
       {/* Wallet Balance & Arc Testnet Faucet */}
       <WalletFaucetCard />
 
-      {/* ⚡ Treasury Agent Feature Card */}
-      <GlassCard className="p-6 border border-primary/30 bg-primary/[0.02] space-y-5 relative overflow-hidden" hover={false}>
-        <div className="absolute top-0 right-0 w-64 h-32 bg-primary/5 blur-3xl rounded-full" />
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-primary/15 border border-primary/25">
-              <Zap className="w-5 h-5 text-primary" />
-            </div>
-            <h2 className="text-lg sm:text-xl font-bold font-heading text-text-primary">Automated Treasury Guard</h2>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-primary/20 border border-primary/30 text-primary">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping inline-block" />
-              ACTIVE
-            </span>
-          </div>
-          <Link href="/agent" className="text-xs font-bold text-primary hover:text-primary-glow flex items-center gap-1 transition-all">
-            View Treasury Rules <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-        <p className="text-sm text-muted relative z-10 max-w-2xl">
-          Automate asset protection and yield optimization. Set up community-approved rules for CCTP rebalancing, scheduled payroll or milestone payouts, yield farming, multi-chain sweeps, and emergency auto-pause guardrails.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
-          {[
-            { label: "Auto Payments & Sweep", value: "Milestones / Multi-Chain", color: "text-primary" },
-            { label: "Auto Yield Farming", value: "DeFi Pools (Aave/Morpho)", color: "text-purple-400" },
-            { label: "Risk Pause Guardrails", value: "Active Live Monitoring", color: "text-blue-400" },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-surface-elevated/60 rounded-xl p-3 border border-border-thin">
-              <p className="text-xs text-muted mb-1">{stat.label}</p>
-              <p className={`text-sm font-bold ${stat.color}`}>{stat.value}</p>
-            </div>
-          ))}
-        </div>
-        <div className="relative z-10">
-          <Link
-            href="/agent"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-accent-purple to-accent-blue text-white text-sm font-bold rounded-xl hover:opacity-90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)]"
-          >
-            <Zap className="w-4 h-4" />
-            Open Treasury Agent
-          </Link>
-        </div>
-      </GlassCard>
 
       {/* ⚡ Creator DAOs Section */}
       <GlassCard className="p-6 border border-primary/20 bg-primary/[0.01] space-y-6" hover={false}>
