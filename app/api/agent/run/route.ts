@@ -19,7 +19,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Detect if this is an automated cron scheduler request
+  const isCronTrigger = req.headers.get('x-vercel-cron') === 'true' || 
+                        req.nextUrl.searchParams.get('cron') === 'true' ||
+                        req.headers.get('x-cron-secret') !== null;
+
   try {
+    let actionResult = undefined;
+    if (isCronTrigger) {
+      console.log('[API Cron] Automated run triggered via GET request.');
+      actionResult = await treasuryAgent.run();
+    }
+
     const treasury = await treasuryAgent.checkTreasury()
     const recentActions = treasuryAgent.getRecentActions()
     const paymentHistory = gatewayPayments.getPaymentHistory()
@@ -28,6 +39,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       agentAddress: treasuryAgent.getAgentAddress(),
+      cronExecuted: isCronTrigger,
+      action: actionResult,
       treasury: {
         usdc: treasury.usdc,
         eurc: treasury.eurc,
@@ -46,11 +59,12 @@ export async function GET(req: NextRequest) {
     })
   } catch (error: any) {
     return NextResponse.json(
-      { error: error?.message || 'Failed to get agent state' },
+      { error: error?.message || 'Failed to process agent state' },
       { status: 500 }
     )
   }
 }
+
 
 export async function POST(req: NextRequest) {
   if (!verifyCronSecret(req)) {
