@@ -647,7 +647,7 @@ export default function AgentPage() {
   const agentFundingHistory = useMemo(() => {
     return govActivities.filter(act => 
       act.type === "Outflow" && 
-      act.party?.toLowerCase() === (CONTRACTS.treasuryAgent || "0x302D7cba3553e22E24C7A5C9aFee3942EBC6ea63").toLowerCase()
+      act.party?.toLowerCase() === (CONTRACTS.treasuryAgent || "0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28").toLowerCase()
     );
   }, [govActivities]);
 
@@ -1033,7 +1033,7 @@ export default function AgentPage() {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                        <a href="https://testnet.arcscan.app/address/0x302D7cba3553e22E24C7A5C9aFee3942EBC6ea63#code" target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-amber-300 hover:underline">Agent Operating Treasury ↗</a>
+                        <a href="https://testnet.arcscan.app/address/0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28#code" target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-amber-300 hover:underline">Agent Operating Treasury ↗</a>
                       </div>
                     </div>
                   </div>
