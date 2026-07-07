@@ -307,105 +307,109 @@ export class TreasuryAgent {
           if ((title.includes('[AGENT]') || title.includes('Proposed by Treasury Agent')) && target.toLowerCase() === agentAddr) {
             console.log(`[TreasuryAgent] Found succeeded proposal #${i}: "${title}". Executing...`)
 
-            // 1. Call execute on governor
-            const execTx = await this.walletClient.writeContract({
-              address: CONTRACTS.governor,
-              abi: GOVERNOR_ABI,
-              functionName: 'execute',
-              args: [BigInt(i)],
-            })
-            await this.publicClient.waitForTransactionReceipt({ hash: execTx, timeout: 120_000 })
-            console.log(`[TreasuryAgent] Governor executed proposal #${i}. Hash: ${execTx}`)
+            try {
+              // 1. Call execute on governor
+              const execTx = await this.walletClient.writeContract({
+                address: CONTRACTS.governor,
+                abi: GOVERNOR_ABI,
+                functionName: 'execute',
+                args: [BigInt(i)],
+              })
+              await this.publicClient.waitForTransactionReceipt({ hash: execTx, timeout: 120_000 })
+              console.log(`[TreasuryAgent] Governor executed proposal #${i}. Hash: ${execTx}`)
 
-            // Wait a few seconds for blockchain settlement
-            await new Promise(resolve => setTimeout(resolve, 5000))
+              // Wait a few seconds for blockchain settlement
+              await new Promise(resolve => setTimeout(resolve, 5000))
 
-            // 2. Trigger CCTP transfer
-            const description = prop[3] || ""
-            const isReturn = title.toLowerCase().includes('return') || description.toLowerCase().includes('return_funds')
+              // 2. Trigger CCTP transfer
+              const description = prop[3] || ""
+              const isReturn = title.toLowerCase().includes('return') || description.toLowerCase().includes('return_funds')
 
-            if (isReturn) {
-              console.log(`[TreasuryAgent] Initiating reverse CCTP bridge to return funds to main Treasury...`)
+              if (isReturn) {
+                console.log(`[TreasuryAgent] Initiating reverse CCTP bridge to return funds to main Treasury...`)
 
-              const liveAction: AgentAction = {
-                timestamp: new Date().toISOString(),
-                action: 'return_funds',
-                reasoning: `[CCTP Step 1/3] Succeeded return proposal #${i} executed on governor. Initializing Sepolia -> Arc transfer...`,
-                status: 'pending'
-              }
-              this.logAction(liveAction)
-
-              const cctp = new CCTPExecutor(this.privateKey)
-
-              // Callback to update actions log in real-time
-              const onProgress = (msg: string) => {
-                liveAction.reasoning = msg
+                const liveAction: AgentAction = {
+                  timestamp: new Date().toISOString(),
+                  action: 'return_funds',
+                  reasoning: `[CCTP Step 1/3] Succeeded return proposal #${i} executed on governor. Initializing Sepolia -> Arc transfer...`,
+                  status: 'pending'
+                }
                 this.logAction(liveAction)
-              }
 
-              try {
-                // Query Sepolia USDC balance to return
-                const balance = await cctp.getSepoliaUSDCBalance()
-                if (balance <= 0) {
-                  throw new Error('No USDC funds available on Ethereum Sepolia to return.')
+                const cctp = new CCTPExecutor(this.privateKey)
+
+                // Callback to update actions log in real-time
+                const onProgress = (msg: string) => {
+                  liveAction.reasoning = msg
+                  this.logAction(liveAction)
                 }
 
-                liveAction.usdcAmount = balance
+                try {
+                  // Query Sepolia USDC balance to return
+                  const balance = await cctp.getSepoliaUSDCBalance()
+                  if (balance <= 0) {
+                    throw new Error('No USDC funds available on Ethereum Sepolia to return.')
+                  }
+
+                  liveAction.usdcAmount = balance
+                  this.logAction(liveAction)
+
+                  const bridgeRes = await cctp.bridgeToArc(balance, CONTRACTS.treasuryAgent, onProgress)
+                  console.log(`[TreasuryAgent] CCTP return completed successfully. Hash: ${bridgeRes.burnTxHash}`)
+
+                  liveAction.status = 'executed'
+                  liveAction.txHash = bridgeRes.burnTxHash
+                  liveAction.reasoning = `RETURN SUCCESSFUL: Succeeded return proposal #${i} executed on-chain. CCTP returned ${balance} USDC to main Treasury. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
+                  this.logAction(liveAction)
+
+                  executedTxHashes.push(bridgeRes.burnTxHash)
+                } catch (bridgeErr: any) {
+                  console.error('[TreasuryAgent] CCTP return failed:', bridgeErr)
+                  liveAction.status = 'failed'
+                  liveAction.reasoning = `CCTP return execution failed: ${bridgeErr?.message || bridgeErr}`
+                  this.logAction(liveAction)
+                }
+              } else {
+                const amountUsdc = Number(impact) / 1_000_000
+                console.log(`[TreasuryAgent] Initiating CCTP bridge for ${amountUsdc} USDC to Ethereum Sepolia...`)
+
+                // Log starting of CCTP
+                const liveAction: AgentAction = {
+                  timestamp: new Date().toISOString(),
+                  action: 'bridge_to_ethereum',
+                  reasoning: `[CCTP Step 1/3] Succeeded proposal #${i} executed on governor. Initializing CCTP transfer...`,
+                  status: 'pending',
+                  usdcAmount: amountUsdc
+                }
                 this.logAction(liveAction)
 
-                const bridgeRes = await cctp.bridgeToArc(balance, CONTRACTS.treasuryAgent, onProgress)
-                console.log(`[TreasuryAgent] CCTP return completed successfully. Hash: ${bridgeRes.burnTxHash}`)
+                const cctp = new CCTPExecutor(this.privateKey)
 
-                liveAction.status = 'executed'
-                liveAction.txHash = bridgeRes.burnTxHash
-                liveAction.reasoning = `RETURN SUCCESSFUL: Succeeded return proposal #${i} executed on-chain. CCTP returned ${balance} USDC to main Treasury. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
-                this.logAction(liveAction)
+                // Callback to update actions log in real-time
+                const onProgress = (msg: string) => {
+                  liveAction.reasoning = msg
+                  this.logAction(liveAction)
+                }
 
-                executedTxHashes.push(bridgeRes.burnTxHash)
-              } catch (bridgeErr: any) {
-                console.error('[TreasuryAgent] CCTP return failed:', bridgeErr)
-                liveAction.status = 'failed'
-                liveAction.reasoning = `CCTP return execution failed: ${bridgeErr?.message || bridgeErr}`
-                this.logAction(liveAction)
+                try {
+                  const bridgeRes = await cctp.bridgeToEthereum(amountUsdc, this.account.address, onProgress)
+                  console.log(`[TreasuryAgent] CCTP bridge completed successfully. Hash: ${bridgeRes.burnTxHash}`)
+
+                  liveAction.status = 'executed'
+                  liveAction.txHash = bridgeRes.burnTxHash
+                  liveAction.reasoning = `AUTONOMOUS EXECUTION SUCCESSFUL: Succeeded rebalancing proposal #${i} executed on-chain. CCTP bridged ${amountUsdc} USDC to Ethereum Sepolia. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
+                  this.logAction(liveAction)
+
+                  executedTxHashes.push(bridgeRes.burnTxHash)
+                } catch (bridgeErr: any) {
+                  console.error('[TreasuryAgent] CCTP bridge failed:', bridgeErr)
+                  liveAction.status = 'failed'
+                  liveAction.reasoning = `CCTP bridge execution failed: ${bridgeErr?.message || bridgeErr}`
+                  this.logAction(liveAction)
+                }
               }
-            } else {
-              const amountUsdc = Number(impact) / 1_000_000
-              console.log(`[TreasuryAgent] Initiating CCTP bridge for ${amountUsdc} USDC to Ethereum Sepolia...`)
-
-              // Log starting of CCTP
-              const liveAction: AgentAction = {
-                timestamp: new Date().toISOString(),
-                action: 'bridge_to_ethereum',
-                reasoning: `[CCTP Step 1/3] Succeeded proposal #${i} executed on governor. Initializing CCTP transfer...`,
-                status: 'pending',
-                usdcAmount: amountUsdc
-              }
-              this.logAction(liveAction)
-
-              const cctp = new CCTPExecutor(this.privateKey)
-
-              // Callback to update actions log in real-time
-              const onProgress = (msg: string) => {
-                liveAction.reasoning = msg
-                this.logAction(liveAction)
-              }
-
-              try {
-                const bridgeRes = await cctp.bridgeToEthereum(amountUsdc, this.account.address, onProgress)
-                console.log(`[TreasuryAgent] CCTP bridge completed successfully. Hash: ${bridgeRes.burnTxHash}`)
-
-                liveAction.status = 'executed'
-                liveAction.txHash = bridgeRes.burnTxHash
-                liveAction.reasoning = `AUTONOMOUS EXECUTION SUCCESSFUL: Succeeded rebalancing proposal #${i} executed on-chain. CCTP bridged ${amountUsdc} USDC to Ethereum Sepolia. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
-                this.logAction(liveAction)
-
-                executedTxHashes.push(bridgeRes.burnTxHash)
-              } catch (bridgeErr: any) {
-                console.error('[TreasuryAgent] CCTP bridge failed:', bridgeErr)
-                liveAction.status = 'failed'
-                liveAction.reasoning = `CCTP bridge execution failed: ${bridgeErr?.message || bridgeErr}`
-                this.logAction(liveAction)
-              }
+            } catch (proposalExecErr: any) {
+              console.error(`[TreasuryAgent] Failed to execute succeeded proposal #${i}:`, proposalExecErr?.message || proposalExecErr)
             }
           }
         }
