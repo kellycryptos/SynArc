@@ -94,7 +94,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
 
     const publicClient = createPublicClient({
       chain: arcTestnet,
-      transport: fallback(ARC_RPC_URLS.map((url) => http(url))),
+      transport: fallback(ARC_RPC_URLS.map((url) => http(url, { timeout: 5000 }))),
     });
 
     try {

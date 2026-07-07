@@ -109,8 +109,13 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const count = await governorContract.proposalCount();
       const totalCount = Number(count);
 
-      // Fetch all proposals in parallel for dramatically faster load times
-      const proposalIndices = Array.from({ length: totalCount }, (_, i) => i + 1);
+      // Optimize: Only fetch on-chain proposals starting from 431 (after historical proposals)
+      // to avoid rate-limiting and hanging RPC requests.
+      const START_INDEX = totalCount > 430 ? 431 : 1;
+      const proposalIndices = Array.from(
+        { length: Math.max(0, totalCount - START_INDEX + 1) },
+        (_, i) => START_INDEX + i
+      );
       const settled = await Promise.allSettled(
         proposalIndices.map(async (i) => {
           const [p, proposalStateNum] = await Promise.all([

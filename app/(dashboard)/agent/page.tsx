@@ -136,7 +136,7 @@ export default function AgentPage() {
     setOnChainLoading(true);
     const publicClient = createPublicClient({
       chain: ARC_CHAIN,
-      transport: fallback(ARC_RPC_URLS.map((url) => http(url))),
+      transport: fallback(ARC_RPC_URLS.map((url) => http(url, { timeout: 5000 }))),
     });
 
     const agentAddr = (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
@@ -810,11 +810,11 @@ export default function AgentPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
-          { label: "Agent Treasury (USDC)", value: loading ? "..." : demoUSDCBalance !== null ? `${demoUSDCBalance.toFixed(2)}` : `${(treasury?.usdc || 0).toFixed(2)}`, unit: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", isBalance: true },
-          { label: "Agent Treasury (EURC)", value: loading ? "..." : `${(treasury?.eurc || 0).toFixed(2)}`, unit: "EURC", icon: Coins, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", isBalance: true },
-          { label: "Governance Treasury (USDC)", value: govLoading ? "..." : `${govUsdcBalance.toFixed(2)}`, unit: "USDC", icon: Landmark, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", isBalance: true },
-          { label: "Actions Today", value: actions.length.toString(), unit: "actions", icon: Zap, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", isBalance: false },
-          { label: "Inference Paid", value: (payments?.totalSpent || 0).toFixed(4), unit: "USDC", icon: CreditCard, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", isBalance: false },
+          { label: "Agent Treasury (USDC)", value: demoUSDCBalance !== null ? `${demoUSDCBalance.toFixed(2)}` : `${(treasury?.usdc || 0).toFixed(2)}`, isLoading: loading, unit: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", isBalance: true },
+          { label: "Agent Treasury (EURC)", value: `${(treasury?.eurc || 0).toFixed(2)}`, isLoading: loading, unit: "EURC", icon: Coins, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", isBalance: true },
+          { label: "Governance Treasury (USDC)", value: `${govUsdcBalance.toFixed(2)}`, isLoading: govLoading, unit: "USDC", icon: Landmark, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", isBalance: true },
+          { label: "Actions Today", value: actions.length.toString(), isLoading: loading, unit: "actions", icon: Zap, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", isBalance: false },
+          { label: "Inference Paid", value: (payments?.totalSpent || 0).toFixed(4), isLoading: loading, unit: "USDC", icon: CreditCard, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", isBalance: false },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
@@ -824,7 +824,7 @@ export default function AgentPage() {
                   <div className={`p-2 rounded-lg ${stat.bg} border ${stat.border}`}>
                     <Icon className={`w-4 h-4 ${stat.color}`} />
                   </div>
-                  {stat.isBalance && !loading && (
+                  {stat.isBalance && !stat.isLoading && (
                     <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded border ${
                       treasurySource === 'live'
                         ? 'bg-emerald-500/15 border-emerald-500/25 text-emerald-400'
@@ -838,9 +838,13 @@ export default function AgentPage() {
                 </div>
                 <div>
                   <p className="text-xs text-muted font-medium">{stat.label}</p>
-                  <p className={`text-xl font-bold ${stat.color}`}>
-                    {stat.value} <span className="text-xs text-muted font-normal">{stat.unit}</span>
-                  </p>
+                  {stat.isLoading ? (
+                    <div className="h-7 w-24 bg-white/10 rounded animate-pulse mt-1" />
+                  ) : (
+                    <p className={`text-xl font-bold ${stat.color}`}>
+                      {stat.value} <span className="text-xs text-muted font-normal">{stat.unit}</span>
+                    </p>
+                  )}
                 </div>
               </GlassCard>
             </motion.div>
@@ -952,10 +956,14 @@ export default function AgentPage() {
               <div className="flex items-center justify-between text-xs pt-1 border-t border-border-thin/40">
                 <span className="text-muted">Max Rebalance Limit</span>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-text-secondary font-bold font-mono">
-                    {onChainLoading ? "..." : `${maxRebalanceAmount} USDC`}
-                  </span>
-                  {isAuthenticated && (
+                  {onChainLoading ? (
+                    <div className="h-4 w-14 bg-white/10 rounded animate-pulse" />
+                  ) : (
+                    <span className="text-text-secondary font-bold font-mono">
+                      {maxRebalanceAmount} USDC
+                    </span>
+                  )}
+                  {isAuthenticated && !onChainLoading && (
                     <button
                       onClick={() => {
                         setNewLimitInput(maxRebalanceAmount.toString());
@@ -1078,9 +1086,13 @@ export default function AgentPage() {
             <div className="space-y-1.5 pt-1 border-t border-border-thin/40 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-muted">Sepolia Balance</span>
-                <span className="text-text-primary font-bold font-mono">
-                  {loading ? "..." : `${(agentState?.treasury?.sepoliaUsdc ?? 0).toFixed(2)} USDC`}
-                </span>
+                {loading ? (
+                  <div className="h-4 w-14 bg-white/10 rounded animate-pulse" />
+                ) : (
+                  <span className="text-text-primary font-bold font-mono">
+                    {`${(agentState?.treasury?.sepoliaUsdc ?? 0).toFixed(2)} USDC`}
+                  </span>
+                )}
               </div>
             </div>
             {isAuthenticated && (
@@ -1283,10 +1295,17 @@ export default function AgentPage() {
                     <p className="text-xs text-muted leading-relaxed">
                       The Treasury Guard is actively running on the server. It monitors the treasury and executes rules on-chain when thresholds are met.
                     </p>
-                    <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                      <span className="text-xs text-text-secondary font-medium">Status: Idle & Monitoring Rules</span>
-                    </div>
+                    {onChainPaused ? (
+                      <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        <span className="text-xs text-red-500 font-semibold">Status: Paused / Suspended</span>
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                        <span className="text-xs text-text-secondary font-medium">Status: Idle & Monitoring Rules</span>
+                      </div>
+                    )}
                   </div>
                 )
               }

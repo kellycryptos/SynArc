@@ -112,7 +112,12 @@ export default function ProposalsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">Governance Proposals</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">Governance Proposals</h1>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-primary/10 border border-primary/20 text-primary">
+                {isLoading ? "..." : `${proposals.length} Total`}
+              </span>
+            </div>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <p className="text-muted text-sm">
                 Review, discuss, and vote on active proposals for your community.
@@ -162,19 +167,33 @@ export default function ProposalsPage() {
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Filter className="w-4 h-4 text-text-tertiary" />
             <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
-              {["All", "Active", "Pending", "Executed", "Defeated"].map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setFilter(status)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                    filter === status 
-                      ? "bg-accent-purple text-white-keep border-accent-purple" 
-                      : "bg-surface border-border-thin text-text-secondary hover:text-foreground"
-                  } border`}
-                >
-                  {status}
-                </button>
-              ))}
+              {["All", "Active", "Pending", "Executed", "Defeated"].map((status) => {
+                const count = status === "All"
+                  ? proposals.length
+                  : proposals.filter((p) => p.status === status).length;
+                return (
+                  <button
+                    key={status}
+                    onClick={() => setFilter(status)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                      filter === status
+                        ? "bg-accent-purple text-white-keep border-accent-purple"
+                        : "bg-surface border-border-thin text-text-secondary hover:text-foreground"
+                    } border flex items-center gap-1.5`}
+                  >
+                    <span>{status}</span>
+                    {!isLoading && (
+                      <span className={`px-1.5 py-0.2 rounded text-[10px] ${
+                        filter === status
+                          ? "bg-white/20 text-white-keep"
+                          : "bg-surface-elevated text-muted"
+                      }`}>
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
           

@@ -363,9 +363,8 @@ export default function BridgePage() {
   }, []);
 
   const totalVolumeToDisplay = useMemo(() => {
-    const baseVolume = 12450.00;
-    return baseVolume + realVolume;
-  }, [realVolume]);
+    return bridgeHistory.reduce((sum, tx) => sum + tx.amount, 0);
+  }, [bridgeHistory]);
 
   // Load balance for the selected EVM source chain
   const fetchSourceBalance = useCallback(async () => {
