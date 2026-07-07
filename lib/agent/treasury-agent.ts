@@ -282,7 +282,8 @@ export class TreasuryAgent {
 
       const agentAddr = this.getAgentAddress().toLowerCase()
 
-      for (let i = 1; i <= Number(count); i++) {
+      const startIdx = Math.max(1, Number(count) - 15)
+      for (let i = startIdx; i <= Number(count); i++) {
         const state = await this.publicClient.readContract({
           address: CONTRACTS.governor,
           abi: GOVERNOR_ABI,
@@ -433,7 +434,8 @@ export class TreasuryAgent {
 
       const agentAddr = this.getAgentAddress().toLowerCase()
 
-      for (let i = 1; i <= Number(count); i++) {
+      const startIdx = Math.max(1, Number(count) - 15)
+      for (let i = startIdx; i <= Number(count); i++) {
         const state = await this.publicClient.readContract({
           address: CONTRACTS.governor,
           abi: GOVERNOR_ABI,
