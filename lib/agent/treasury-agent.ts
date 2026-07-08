@@ -173,9 +173,10 @@ export class TreasuryAgent {
         this.publicClient.readContract({ address: CONTRACTS.treasuryAgent, abi: TREASURY_ABI, functionName: 'eurcBalance' }),
       ])
       return { usdc: Number(usdc) / 1_000_000, eurc: Number(eurc) / 1_000_000, usedFallback: false }
-    } catch {
-      // Contract read failed — return last known fallback values clearly flagged
-      return { usdc: 0, eurc: 0, usedFallback: true }
+    } catch (err: any) {
+      // Contract read failed — throw error to prevent dangerous fallback to 0 balance
+      console.error('[TreasuryAgent] Critical: failed to read treasury balances on-chain:', err)
+      throw new Error(`Failed to read treasury balances on-chain: ${err?.message || err}`)
     }
   }
 
