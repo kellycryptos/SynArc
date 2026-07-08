@@ -637,7 +637,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                   {proposal.category}
                 </span>
               </div>
-              <h1 className="text-3xl font-bold tracking-tight text-text-primary">{proposal.title}</h1>
+              <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-text-primary break-words">{proposal.title}</h1>
             </div>
             
             {/* Execute Button if conditions met (simulation) */}
@@ -723,7 +723,14 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                         {event.txHash && (
                           <>
                             <span>•</span>
-                            <span className="font-mono text-primary/70">{event.txHash}</span>
+                            <a
+                              href={`https://testnet.arcscan.app/tx/${event.txHash}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono text-primary/70 hover:text-primary hover:underline"
+                            >
+                              {event.txHash.slice(0, 6)}...{event.txHash.slice(-4)}
+                            </a>
                           </>
                         )}
                       </div>

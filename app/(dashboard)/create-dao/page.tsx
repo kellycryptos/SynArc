@@ -788,7 +788,7 @@ export default function CreateDaoPage() {
                 </div>
                 <div className="grid grid-cols-3 p-4">
                   <span className="font-bold text-muted uppercase">Creator URL</span>
-                  <span className="col-span-2 font-mono font-bold text-purple-300">
+                  <span className="col-span-2 font-mono font-bold text-purple-300 break-all">
                     synarcdao.xyz/creator/{formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
                   </span>
                 </div>

@@ -34,6 +34,7 @@ import {
   ShieldAlert
 } from "lucide-react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -117,9 +118,13 @@ export default function CampaignDetailPage({ params }: PageProps) {
       const data = await response.json();
       if (response.ok && data.success && data.decision) {
         setAIAnalysis(campaignId, data.decision);
+        toast.success("AI Campaign Audit completed successfully!");
+      } else {
+        toast.error(data.error || "Failed to run AI campaign audit.");
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to run AI campaign audit", e);
+      toast.error("AI campaign audit connection failed.");
     } finally {
       setAnalyzing(false);
     }
@@ -1020,9 +1025,17 @@ export default function CampaignDetailPage({ params }: PageProps) {
               <div className="py-4 text-center">
                 <button
                   onClick={runAIAnalysis}
-                  className="px-4 py-2 rounded-xl bg-purple-glow/10 border border-purple-glow/20 text-purple-300 font-bold text-xs hover:bg-purple-glow/20 hover:border-purple-glow/40 transition-all cursor-pointer"
+                  disabled={analyzing}
+                  className="px-4 py-2 rounded-xl bg-purple-glow/10 border border-purple-glow/20 text-purple-300 font-bold text-xs hover:bg-purple-glow/20 hover:border-purple-glow/40 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 mx-auto"
                 >
-                  Trigger AI Audit
+                  {analyzing ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    "Trigger AI Audit"
+                  )}
                 </button>
               </div>
             )}

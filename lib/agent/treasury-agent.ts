@@ -173,13 +173,26 @@ export class TreasuryAgent {
       const response = await groq.chat.completions.create({
         model: 'qwen/qwen3.6-27b',
         messages: [
-          { role: 'system', content: 'You are SynArc Treasury Agent. You are a helpful treasury and governance analyst. Always respond with a single valid JSON object containing: shouldAct, action, reasoning, proposedAmount. Respond ONLY with valid JSON. Do not include markdown formatting or extra text.' },
+          { role: 'system', content: 'You are SynArc Treasury Agent. You are a helpful treasury and governance analyst. Keep your reasoning and thinking process extremely concise. Your thinking process inside <think> tags MUST be under 100 words. Always respond with a single valid JSON object containing: shouldAct, action, reasoning, proposedAmount. Respond ONLY with valid JSON. Do not include markdown formatting or extra text.' },
           {
             role: 'user',
-            content: `Treasury: USDC=${treasury.usdc}, EURC=${treasury.eurc}. Rules: USDC>100 => bridge_to_ethereum, USDC<10 => emergency_funding, EURC>50 => rebalance_eurc, else monitoring. Respond: {"shouldAct":bool,"action":"string","reasoning":"string","proposedAmount":number}`
+            content: `Treasury: USDC=${treasury.usdc}, EURC=${treasury.eurc}.
+Rules:
+- USDC > 100 => bridge_to_ethereum (proposedAmount = 30% of USDC balance)
+- USDC < 10 => emergency_funding (proposedAmount = 75 USDC)
+- EURC > 50 => rebalance_eurc (proposedAmount = 40% of EURC balance)
+- else => monitoring (proposedAmount = 0)
+
+Respond in JSON format:
+{
+  "shouldAct": true,
+  "action": "emergency_funding",
+  "reasoning": "USDC balance is 0, which is below the 10 USDC threshold. Requesting emergency funding.",
+  "proposedAmount": 75
+}`
           },
         ],
-        max_tokens: 300,
+        max_tokens: 2048,
         temperature: 0.2,
       })
       rawContentRef.content = response.choices[0].message.content || '{}';
@@ -542,6 +555,22 @@ export class TreasuryAgent {
 
       // 2. Vote on any active proposals autonomously
       await this.voteOnActiveProposals()
+
+      // 2.5 Sync balance of the agent operating treasury first
+      try {
+        console.log('[TreasuryAgent] Syncing on-chain balances for the agent operating treasury...')
+        const syncTx = await this.walletClient.writeContract({
+          address: CONTRACTS.treasuryAgent,
+          abi: parseAbi(['function syncBalance() external']),
+          functionName: 'syncBalance',
+          args: []
+        })
+        console.log(`[TreasuryAgent] Balance sync transaction submitted: ${syncTx}`)
+        await this.publicClient.waitForTransactionReceipt({ hash: syncTx, timeout: 60_000 })
+        console.log('[TreasuryAgent] Balance sync completed successfully.')
+      } catch (syncErr) {
+        console.warn('[TreasuryAgent] Failed to sync operating treasury balances:', syncErr)
+      }
 
       // 3. Check treasury and proposal creation rules
       const treasury = await this.checkTreasury()

@@ -7,7 +7,7 @@ import {
   Bot, Zap, Activity, Play, RotateCw, ExternalLink,
   BrainCircuit, Coins, ArrowRight, CheckCircle, XCircle,
   Clock, AlertTriangle, Shield, Cpu, Wallet, ChevronRight,
-  TrendingUp, ArrowLeftRight, CreditCard, Plus, Users, X, Check,
+  TrendingUp, ArrowLeftRight, CreditCard, Plus, Users, X, Check, Copy,
   Calendar, DollarSign, Percent, Globe, BarChart2, BellRing,
   Lock, Layers, Landmark, TrendingDown, Repeat, Eye, ChevronDown
 } from "lucide-react";
@@ -58,8 +58,8 @@ function ActionIcon({ action }: { action: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   if (status === "executed") return <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-success/15 border border-success/25 text-success">EXECUTED</span>;
-  if (status === "pending") return <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 border border-amber-500/25 text-amber-400 animate-pulse">PENDING</span>;
-  return <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/15 border border-red-500/25 text-red-400">FAILED</span>;
+  if (status === "failed") return <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-danger/15 border border-danger/25 text-danger">FAILED</span>;
+  return <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-warning/15 border border-warning/25 text-warning">PENDING</span>;
 }
 
 function RuleCard({ condition, action, met }: { condition: string; action: string; met: boolean }) {
@@ -78,6 +78,15 @@ function RuleCard({ condition, action, met }: { condition: string; action: strin
 }
 
 export default function AgentPage() {
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
+  const handleCopy = (address: string, key: string) => {
+    navigator.clipboard.writeText(address);
+    setCopiedAddress(key);
+    toast.success("Address copied to clipboard!", { id: "copy-toast" });
+    setTimeout(() => setCopiedAddress(null), 2000);
+  };
+
   const [agentState, setAgentState] = useState<AgentState | null>(null);
   const [running, setRunning] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -981,15 +990,27 @@ export default function AgentPage() {
                 <div className="pt-2 border-t border-border-thin space-y-2">
                   <div>
                     <p className="text-[10px] text-muted mb-0.5">Smart Account Address</p>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <code className="text-xs text-primary font-mono truncate flex-1">
                         {agentState.agentAddress}
                       </code>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(agentState.agentAddress, "agent")}
+                        className="text-muted hover:text-primary transition-colors cursor-pointer p-0.5 focus:outline-none"
+                        title="Copy Address"
+                      >
+                        {copiedAddress === "agent" ? (
+                          <Check className="w-3.5 h-3.5 text-success" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
                       <a
                         href={`https://testnet.arcscan.app/address/${agentState.agentAddress}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-muted hover:text-primary transition-colors"
+                        className="text-muted hover:text-primary transition-colors shrink-0"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                       </a>
@@ -997,15 +1018,27 @@ export default function AgentPage() {
                   </div>
                   <div>
                     <p className="text-[10px] text-muted mb-0.5">Executor EOA Signer</p>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <code className="text-xs text-text-secondary font-mono truncate flex-1">
                         0x35630dFE2592AB19d979ec1B173697aEa554b66b
                       </code>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy("0x35630dFE2592AB19d979ec1B173697aEa554b66b", "executor")}
+                        className="text-muted hover:text-primary transition-colors cursor-pointer p-0.5 focus:outline-none"
+                        title="Copy Address"
+                      >
+                        {copiedAddress === "executor" ? (
+                          <Check className="w-3.5 h-3.5 text-success" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
                       <a
                         href={`https://testnet.arcscan.app/address/0x35630dFE2592AB19d979ec1B173697aEa554b66b`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-muted hover:text-primary transition-colors"
+                        className="text-muted hover:text-primary transition-colors shrink-0"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                       </a>

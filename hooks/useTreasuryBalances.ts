@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { createPublicClient, http, fallback } from 'viem';
+import { createPublicClient, http, fallback, parseAbi } from 'viem';
 import { arcTestnet, ARC_RPC_URLS } from '@/lib/arc-config';
 import { TreasuryActivity } from '@/types';
 
@@ -59,6 +59,11 @@ const TREASURY_ABI = [
   },
 ] as const;
 
+const TREASURY_EVENTS_ABI = parseAbi([
+  'event Inflow(address indexed sender, uint256 amount, string tokenSymbol, string description, uint256 timestamp)',
+  'event Outflow(address indexed recipient, uint256 amount, string tokenSymbol, string description, uint256 timestamp)'
+]);
+
 const USDC_ADDRESS = '0x3600000000000000000000000000000000000000' as `0x${string}`;
 const EURC_ADDRESS = (process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS ||
   '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}`;
@@ -98,8 +103,8 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
     });
 
     try {
-      // Fetch USDC, EURC, activities, and queued withdrawals in parallel
-      const [usdcBal, eurcBal, rawActivities, rawQueued] = await Promise.all([
+      // Fetch USDC, EURC, activities events, and queued withdrawals in parallel
+      const [usdcBal, eurcBal, logs, rawQueued] = await Promise.all([
         publicClient.readContract({
           address: USDC_ADDRESS,
           abi: ERC20_ABI,
@@ -112,11 +117,11 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
           functionName: 'balanceOf',
           args: [treasuryAddress],
         }).catch(() => 0n),
-        publicClient.readContract({
+        publicClient.getLogs({
           address: treasuryAddress,
-          abi: TREASURY_ABI,
-          functionName: 'getTransactions',
-        }).catch(() => [] as any),
+          events: TREASURY_EVENTS_ABI,
+          fromBlock: 0n,
+        }).catch(() => []),
         publicClient.readContract({
           address: treasuryAddress,
           abi: TREASURY_ABI,
@@ -127,17 +132,22 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
       const usdcVal = Number(usdcBal) / 1_000_000;
       const eurcVal = Number(eurcBal) / 1_000_000;
 
-      // Format activities
-      const formattedActivities: TreasuryActivity[] = rawActivities.map((act: any, idx: number) => ({
-        id: idx.toString(),
-        type: act.txType as "Inflow" | "Outflow",
-        amount: Number(act.amount) / 1_000_000,
-        token: act.tokenSymbol || "USDC",
-        timestamp: new Date(Number(act.timestamp) * 1000).toISOString(),
-        description: act.description,
-        party: act.party,
-        txHash: "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("")
-      }));
+      // Format activities using actual event logs to get real transaction hashes
+      const formattedActivities: TreasuryActivity[] = logs.map((log: any, idx: number) => {
+        const args = log.args || {};
+        const isOutflow = log.eventName === 'Outflow';
+        const party = isOutflow ? args.recipient : args.sender;
+        return {
+          id: `${log.transactionHash || idx}-${idx}`,
+          type: (isOutflow ? "Outflow" : "Inflow") as "Inflow" | "Outflow",
+          amount: Number(args.amount || 0n) / 1_000_000,
+          token: args.tokenSymbol || "USDC",
+          timestamp: new Date(Number(args.timestamp || 0n) * 1000).toISOString(),
+          description: args.description || "",
+          party: party || "",
+          txHash: log.transactionHash
+        };
+      }).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
       // Format queued withdrawals
       const formattedQueued: QueuedWithdrawal[] = rawQueued.map((q: any) => ({

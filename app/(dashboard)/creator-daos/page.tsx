@@ -237,7 +237,7 @@ export default function CampaignsPage() {
 
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <GlassCard className="p-5 flex flex-col gap-1 border border-border-thin" hover={false}>
             <span className="text-[10px] sm:text-xs uppercase font-extrabold tracking-widest text-muted/60">Total Creator DAOs</span>
             <span className="text-2xl sm:text-3xl font-extrabold font-heading text-text-primary mt-1">{totalCampaigns}</span>

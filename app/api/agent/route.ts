@@ -263,7 +263,7 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: "You are SynArc's governance AI agent. You are a helpful treasury and governance analyst. Always respond with a single valid JSON object containing reasoning, vote, riskLevel, confidence, summary, and concerns. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
+            content: "You are SynArc's governance AI agent. You are a helpful treasury and governance analyst. Keep your reasoning and thinking process extremely concise. Your thinking process inside <think> tags MUST be under 100 words. Always respond with a single valid JSON object containing reasoning, vote, riskLevel, confidence, summary, and concerns. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
           },
           {
             role: "user",
@@ -282,19 +282,19 @@ export async function POST(req: NextRequest) {
               2. What is the reasoning?
               3. Risk level: LOW, MEDIUM, HIGH?
               
-              Respond in JSON:
+              Respond in JSON format:
               {
-                "vote": "FOR" or "AGAINST" or "ABSTAIN",
-                "reasoning": "explanation",
-                "riskLevel": "LOW" or "MEDIUM" or "HIGH",
-                "confidence": 0 to 100,
-                "summary": "one sentence plain English summary",
-                "concerns": "any red flags or concerns"
+                "vote": "FOR",
+                "reasoning": "Detailed reasoning explaining decisions.",
+                "riskLevel": "LOW",
+                "confidence": 90,
+                "summary": "Plain English summary of the assessment.",
+                "concerns": "Specific flags or none."
               }
             `
           }
         ],
-        max_tokens: 600,
+        max_tokens: 2048,
         temperature: 0.3
       });
 
@@ -333,7 +333,7 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: "You are a DAO governance expert for SynArc on Arc Network. Generate professional governance proposals. Always respond with a single valid JSON object containing title, description, category, treasuryImpact, and votingDuration. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
+            content: "You are a DAO governance expert for SynArc on Arc Network. Keep your reasoning and thinking process extremely concise. Your thinking process inside <think> tags MUST be under 100 words. Generate professional governance proposals. Always respond with a single valid JSON object containing title, description, category, treasuryImpact, and votingDuration. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
           },
           {
             role: "user",
@@ -341,18 +341,23 @@ export async function POST(req: NextRequest) {
               Generate a complete governance proposal based on this idea:
               "${proposalData?.idea}"
               
-              Respond in JSON:
+              Constraints:
+              1. Category must be one of: "Treasury", "Governance", "Ecosystem", "Protocol Upgrade"
+              2. TreasuryImpact must be one of: "none", "low", "medium", "high"
+              3. VotingDuration must be one of: 3, 5, 7
+              
+              Respond in JSON format:
               {
-                "title": "clear proposal title",
-                "description": "detailed 2-3 paragraph description",
-                "category": "Treasury" or "Governance" or "Ecosystem" or "Protocol Upgrade",
-                "treasuryImpact": "none" or "low" or "medium" or "high",
-                "votingDuration": 3 or 5 or 7
+                "title": "Upgrade Governance Smart Contracts",
+                "description": "Provide a detailed 2-3 paragraph explanation of the proposal detailing value, execution path, and safety protocols.",
+                "category": "Governance",
+                "treasuryImpact": "none",
+                "votingDuration": 7
               }
             `
           }
         ],
-        max_tokens: 800,
+        max_tokens: 2048,
         temperature: 0.7
       });
 
@@ -463,7 +468,7 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: "You are SynArc AI Risk Engine. Perform comprehensive due diligence on Creator DAOs. Always respond with a single valid JSON object containing recommendation, scores, riskFlags, strengths, milestoneFeedback, treasuryRisk, verdict, and dueDiligenceNotes. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
+            content: "You are SynArc AI Risk Engine. Perform comprehensive due diligence on Creator DAOs. Keep your reasoning and thinking process extremely concise. Your thinking process inside <think> tags MUST be under 100 words. Always respond with a single valid JSON object containing recommendation, scores, riskFlags, strengths, milestoneFeedback, treasuryRisk, verdict, and dueDiligenceNotes. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
           },
           {
             role: "user",
@@ -476,28 +481,28 @@ export async function POST(req: NextRequest) {
               Milestones: ${JSON.stringify(campaignData.milestones)}
               Creator wallet: ${campaignData.creator}
               
-              Perform full risk assessment:
+              Perform full risk assessment in JSON format:
               {
-                "recommendation": "FUND" or "REJECT" or "REVIEW",
+                "recommendation": "FUND",
                 "scores": {
-                  "legitimacy": 0-100,
-                  "impact": 0-100,
-                  "arcAlignment": 0-100,
-                  "executionFeasibility": 0-100,
-                  "milestoneRealism": 0-100,
-                  "governanceAlignment": 0-100
+                  "legitimacy": 85,
+                  "impact": 75,
+                  "arcAlignment": 90,
+                  "executionFeasibility": 80,
+                  "milestoneRealism": 85,
+                  "governanceAlignment": 88
                 },
-                "riskFlags": ["list of specific concerns"],
-                "strengths": ["list of positive signals"],
-                "milestoneFeedback": "feedback on milestone structure",
-                "treasuryRisk": "LOW" or "MEDIUM" or "HIGH",
-                "verdict": "one sentence summary",
-                "dueDiligenceNotes": "detailed analysis paragraph"
+                "riskFlags": [],
+                "strengths": ["Clear value proposition and realistic milestones."],
+                "milestoneFeedback": "Milestones are structured properly and correspond to project phases.",
+                "treasuryRisk": "LOW",
+                "verdict": "A well-structured campaign that aligns with platform goals.",
+                "dueDiligenceNotes": "Provide a detailed analysis paragraph here."
               }
             `
           }
         ],
-        max_tokens: 1000,
+        max_tokens: 3000,
         temperature: 0.3
       });
 
@@ -548,7 +553,7 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: "You are an expert Creator DAO builder for the SynArc platform on Arc Network. Generate detailed, aligned Creator DAOs for developers and agents. Always respond with a single valid JSON object containing title, description, category, goal, duration, recipient, and milestones. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
+            content: "You are an expert Creator DAO builder for the SynArc platform on Arc Network. Keep your reasoning and thinking process extremely concise. Your thinking process inside <think> tags MUST be under 100 words. Generate detailed, aligned Creator DAOs for developers and agents. Always respond with a single valid JSON object containing title, description, category, goal, duration, recipient, and milestones. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
           },
           {
             role: "user",
@@ -557,26 +562,32 @@ export async function POST(req: NextRequest) {
               Idea: "${idea}"
               Creator DAO Type: ${isAgent ? 'Autonomous Agent Fund (AI created)' : 'Human Creator DAO (Developer/Community built)'}
               
-              Create a realistic funding goal, duration (days), and split it into 3 clear, logical milestones. The sum of the milestone amounts MUST equal the goal amount exactly.
+              Constraints:
+              1. Title must start with "✨ AI: "
+              2. Category must be exactly one of: "Ecosystem Grant", "AI Infrastructure", "Product Development", "Protocol Upgrade", "Community Initiative", "Research"
+              3. Goal must be a number between 5000 and 25000 (USDC amount as number)
+              4. Duration must be a number between 14 and 60 (number of days)
+              5. Split it into 3 clear, logical milestones. The sum of the milestone amounts MUST equal the goal amount exactly.
+              6. Recipient must be a realistic Ethereum address.
               
-              Respond in JSON:
+              Respond in JSON format:
               {
-                "title": "a clean, compelling title prefixed with '✨ AI: '",
-                "description": "a beautifully structured 2-3 paragraph description explaining value and implementation plans",
-                "category": "Ecosystem Grant" or "AI Infrastructure" or "Product Development" or "Protocol Upgrade" or "Community Initiative" or "Research",
-                "goal": 5000 to 25000 (USDC amount as number),
-                "duration": 14 to 60 (number of days),
-                "recipient": "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53" (or similar realistic address),
+                "title": "✨ AI: Arcade Ecosystem Hub",
+                "description": "Provide a detailed 2-3 paragraph explanation of the value proposition, development milestones, and ecosystem benefits.",
+                "category": "Community Initiative",
+                "goal": 10000,
+                "duration": 30,
+                "recipient": "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53",
                 "milestones": [
-                  { "title": "Milestone 1 title", "amount": USDC amount as number, "description": "deliverable description", "status": "pending" },
-                  { "title": "Milestone 2 title", "amount": USDC amount as number, "description": "deliverable description", "status": "pending" },
-                  { "title": "Milestone 3 title", "amount": USDC amount as number, "description": "deliverable description", "status": "pending" }
+                  { "title": "Milestone 1: Prototype", "amount": 2500, "description": "Core interface and initial contracts.", "status": "pending" },
+                  { "title": "Milestone 2: Testnet Integration", "amount": 5000, "description": "Integrate USDC nanopayments and deploy testnets.", "status": "pending" },
+                  { "title": "Milestone 3: Mainnet Launch", "amount": 2500, "description": "Final audit and live public launch.", "status": "pending" }
                 ]
               }
             `
           }
         ],
-        max_tokens: 1000,
+        max_tokens: 3000,
         temperature: 0.7
       });
 
