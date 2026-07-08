@@ -18,17 +18,28 @@ const TOKEN_ABI = [
 
 const COOLDOWN_MS = 24 * 60 * 60 * 1000 // 24 hours
 const claims = new Map<string, number>()
+const ipClaims = new Map<string, number>()
+
+function getClientIp(req: NextRequest): string {
+  const forwarded = req.headers.get('x-forwarded-for')
+  if (forwarded) {
+    return forwarded.split(',')[0].trim()
+  }
+  return req.headers.get('x-real-ip') || 'unknown-ip'
+}
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const walletAddress = searchParams.get('wallet')?.toLowerCase()
+    const ip = getClientIp(req)
 
     if (!walletAddress || !walletAddress.startsWith('0x')) {
       return NextResponse.json({ error: 'Invalid wallet address' }, { status: 400 })
     }
 
     const lastClaim = claims.get(walletAddress)
+    const lastIpClaim = ipClaims.get(ip)
     const now = Date.now()
 
     if (lastClaim && now - lastClaim < COOLDOWN_MS) {
@@ -43,6 +54,18 @@ export async function GET(req: NextRequest) {
       })
     }
 
+    if (ip !== 'unknown-ip' && lastIpClaim && now - lastIpClaim < COOLDOWN_MS) {
+      const nextClaimAt = new Date(lastIpClaim + COOLDOWN_MS).toISOString()
+      const cooldownSecs = Math.ceil((lastIpClaim + COOLDOWN_MS - now) / 1000)
+      const hours = Math.floor(cooldownSecs / 3600)
+      const minutes = Math.floor((cooldownSecs % 3600) / 60)
+      return NextResponse.json({
+        eligible: false,
+        nextClaimAt,
+        cooldown: `${hours}h ${minutes}m (IP cooldown)`
+      })
+    }
+
     return NextResponse.json({ eligible: true })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -53,12 +76,14 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const walletAddress = (body.walletAddress || body.wallet)?.toLowerCase()
+    const ip = getClientIp(req)
 
     if (!walletAddress || !walletAddress.startsWith('0x')) {
       return NextResponse.json({ error: 'Invalid wallet address' }, { status: 400 })
     }
 
     const lastClaim = claims.get(walletAddress)
+    const lastIpClaim = ipClaims.get(ip)
     const now = Date.now()
 
     if (lastClaim && now - lastClaim < COOLDOWN_MS) {
@@ -69,6 +94,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: 'Already claimed today',
+          eligible: false,
+          nextClaimAt,
+          cooldown: `${hours}h ${minutes}m`
+        },
+        { status: 429 }
+      )
+    }
+
+    if (ip !== 'unknown-ip' && lastIpClaim && now - lastIpClaim < COOLDOWN_MS) {
+      const nextClaimAt = new Date(lastIpClaim + COOLDOWN_MS).toISOString()
+      const cooldownSecs = Math.ceil((lastIpClaim + COOLDOWN_MS - now) / 1000)
+      const hours = Math.floor(cooldownSecs / 3600)
+      const minutes = Math.floor((cooldownSecs % 3600) / 60)
+      return NextResponse.json(
+        {
+          error: 'IP address already claimed today',
           eligible: false,
           nextClaimAt,
           cooldown: `${hours}h ${minutes}m`
@@ -194,6 +235,9 @@ export async function POST(req: NextRequest) {
 
     // Register claim time on success
     claims.set(walletAddress, Date.now())
+    if (ip !== 'unknown-ip') {
+      ipClaims.set(ip, Date.now())
+    }
 
     return NextResponse.json({
       success: true,
