@@ -13,22 +13,16 @@ import {
   CheckCircle, 
   ExternalLink,
   Copy,
-  Check,
-  Activity,
-  Play
+  Check
 } from "lucide-react";
-import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import { parseArcError } from "@/lib/utils";
-import { GOVERNANCE_CONTRACTS, ERC20ABI, GovernorABI, TreasuryABI } from "@/lib/governance/contracts";
+import { GOVERNANCE_CONTRACTS, ERC20ABI } from "@/lib/governance/contracts";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 import { useTheme } from "@/providers/ThemeProvider";
-import { ethers, Contract, formatUnits } from "ethers";
+import { Contract, formatUnits } from "ethers";
 import { getResilientProvider } from "@/lib/rpc/config";
-import { ARC_RPC_URL } from "@/lib/arc/config";
-import { enforceChain, getAuthenticatedClient } from "@/lib/tx-helper";
 
 export default function SettingsPage() {
   const { walletAddress, isAuthenticated, isCircle } = useAuth();
@@ -37,214 +31,9 @@ export default function SettingsPage() {
   const { switchToArc, isSwitching } = useSwitchArcNetwork();
   const { theme, setTheme } = useTheme();
   
-  // Safe: Circle wallet does not register with Privy wallets list
-  const { wallets: privyWallets } = usePrivyWallets();
-  const wallets = privyWallets ?? [];
-  const [diagLog, setDiagLog] = useState<string>("Ready for diagnostics testing...");
-  const [diagLoading, setDiagLoading] = useState<Record<string, boolean>>({
-    approve: false,
-    vote: false,
-    ping: false
-  });
-
   const [tokenBalance, setTokenBalance] = useState<string>("0.00");
   const [tokenLoading, setTokenLoading] = useState(false);
   const [copiedContract, setCopiedContract] = useState<string | null>(null);
-  const [logs, setLogs] = useState<string[]>([]);
-  const [diagnosticsRunning, setDiagnosticsRunning] = useState(false);
-
-  const addLog = (msg: string) => {
-    setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
-  };
-
-  const runDiagnostics = async () => {
-    setLogs([]);
-    setDiagnosticsRunning(true);
-    addLog("Starting DAO diagnostics...");
-
-    try {
-      // Test 1 — RPC connection
-      addLog(`Testing RPC connection to: ${ARC_RPC_URL.slice(0, 60)}...`);
-      const provider = new ethers.JsonRpcProvider(ARC_RPC_URL);
-      const blockNumber = await provider.getBlockNumber();
-      addLog(`✅ RPC connected. Latest block: ${blockNumber}`);
-
-      // Test 2 — Governor contract
-      addLog("Testing Governor contract...");
-      const governorAddress = process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || GOVERNANCE_CONTRACTS.governor;
-      const governor = new ethers.Contract(
-        governorAddress,
-        GovernorABI,
-        provider
-      );
-      const proposalCount = await governor.proposalCount?.() || "N/A";
-      addLog(`✅ Governor contract responding. Proposals: ${proposalCount}`);
-
-      // Test 3 — Treasury contract
-      addLog("Testing Treasury contract...");
-      const treasuryAddress = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || GOVERNANCE_CONTRACTS.treasury;
-      const treasury = new ethers.Contract(
-        treasuryAddress,
-        TreasuryABI,
-        provider
-      );
-      
-      let usdcValRaw = 0n;
-      try {
-        if (treasury.getUSDCBalance) {
-          usdcValRaw = await treasury.getUSDCBalance();
-        } else if (treasury.usdcBalance) {
-          usdcValRaw = await treasury.usdcBalance();
-        } else if (treasury.balance) {
-          usdcValRaw = await treasury.balance();
-        }
-      } catch (err) {
-        console.error(err);
-      }
-      
-      addLog(`✅ Treasury responding. USDC: ${Number(usdcValRaw) / 1_000_000}`);
-
-      // Test 4 — Wallet connection
-      addLog("Testing wallet connection...");
-      if (walletAddress) {
-        addLog(`✅ Wallet connected: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`);
-      } else {
-        addLog("⚠️ No wallet connected");
-      }
-
-      // Test 5 — Gas estimation
-      addLog("Estimating gas for vote transaction...");
-      addLog("✅ Gas estimation passed. Intrinsic checks OK.");
-
-      addLog("✅ All diagnostics passed!");
-    } catch (error: any) {
-      addLog(`❌ Error: ${error.message}`);
-    } finally {
-      setDiagnosticsRunning(false);
-    }
-  };
-
-  const logDiag = (msg: string) => {
-    setDiagLog(prev => `${prev}\n[${new Date().toLocaleTimeString()}] ${msg}`);
-  };
-
-  const handleTestApprove = async () => {
-    setDiagLoading(prev => ({ ...prev, approve: true }));
-    logDiag("Initiating lightweight contract write (USDC.approve)...");
-    try {
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
-      const provider = new ethers.BrowserProvider(walletClient.transport as any);
-      const signer = await provider.getSigner(address);
-
-      const usdcAddress = "0x3600000000000000000000000000000000000000";
-      const treasuryAddress = GOVERNANCE_CONTRACTS.treasury;
-      const tokenContract = new Contract(usdcAddress, [
-        "function approve(address spender, uint256 amount) external returns (bool)"
-      ], signer);
-
-      logDiag(`Sending approve(spender=${treasuryAddress}, amount=0)...`);
-      const tx = await tokenContract.approve(treasuryAddress, 0n, {
-        gasLimit: 100000n,
-        gasPrice: 10000000n,
-      });
-      logDiag(`Transaction submitted! Hash: ${tx.hash}`);
-      logDiag("Waiting for transaction receipt...");
-      const receipt = await tx.wait();
-      logDiag(`Success! Approved 0 USDC. Gas used: ${receipt.gasUsed.toString()}. Block: ${receipt.blockNumber}`);
-    } catch (err: any) {
-      console.error(err);
-      logDiag(`Transaction failed: ${parseArcError(err)}`);
-    } finally {
-      setDiagLoading(prev => ({ ...prev, approve: false }));
-    }
-  };
-
-  const handleTestMockVote = async () => {
-    setDiagLoading(prev => ({ ...prev, vote: true }));
-    logDiag("Initiating mock vote write on Governor (castVote)...");
-    try {
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
-      const provider = new ethers.BrowserProvider(walletClient.transport as any);
-      const signer = await provider.getSigner(address);
-
-      const governorAddress = GOVERNANCE_CONTRACTS.governor;
-      const governorContract = new Contract(governorAddress, [
-        "function castVote(uint256 proposalId, uint8 support) external returns (uint256)"
-      ], signer);
-
-      logDiag("Submitting vote for proposal ID 9999 (support = 1)...");
-      logDiag("Note: This is expected to revert at the contract level (ID doesn't exist).");
-      
-      const tx = await governorContract.castVote(9999n, 1, {
-        gasLimit: 300000n,
-        gasPrice: 10000000n,
-      });
-      logDiag(`Transaction submitted! Hash: ${tx.hash}`);
-      await tx.wait();
-      logDiag("Vote cast transaction completed successfully (unexpected but valid).");
-    } catch (err: any) {
-      console.error(err);
-      const parsed = parseArcError(err);
-      if (parsed.toLowerCase().includes("reverted")) {
-        logDiag(`Diagnostics Pass: Contract reverted correctly. Intrinsic gas checks passed! Error: ${parsed}`);
-      } else {
-        logDiag(`Transaction failed: ${parsed}`);
-      }
-    } finally {
-      setDiagLoading(prev => ({ ...prev, vote: false }));
-    }
-  };
-
-  const handleCheckGasEstimation = async () => {
-    setDiagLoading(prev => ({ ...prev, ping: true }));
-    logDiag("Initiating gas estimation & RPC diagnostics...");
-    try {
-      const provider = await getResilientProvider();
-      const start = Date.now();
-      const blockNumber = await provider.getBlockNumber();
-      const latency = Date.now() - start;
-      
-      logDiag(`Connected to RPC. Current Block: ${blockNumber}. Latency: ${latency}ms`);
-      
-      const feeData = await provider.getFeeData();
-      const gasPrice = feeData.gasPrice || 20000000000n;
-      logDiag(`Gas Price: ${gasPrice.toString()} wei (${ethers.formatUnits(gasPrice, "gwei")} gwei)`);
-
-      const governorAddress = GOVERNANCE_CONTRACTS.governor;
-      const governorContract = new Contract(governorAddress, [
-        "function propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget) external returns (uint256)"
-      ], provider);
-
-      logDiag("Populating propose transaction for gas estimation...");
-      const txData = await governorContract.propose.populateTransaction(
-        "Diagnostic Test Proposal",
-        "Diagnostic Test Proposal description string.",
-        "Governance Parameter",
-        604800n,
-        0n,
-        ethers.ZeroAddress
-      );
-
-      if (walletAddress) {
-        txData.from = walletAddress;
-        logDiag(`Estimating gas with sender: ${walletAddress}...`);
-        const gasEst = await provider.estimateGas(txData);
-        logDiag(`Estimated Gas Limit: ${gasEst.toString()}`);
-        const totalCostWei = gasEst * gasPrice;
-        logDiag(`Computed intrinsic cost: ${totalCostWei.toString()} wei (${Number(totalCostWei) / 1e18} USDC)`);
-      } else {
-        logDiag("Warning: Connect wallet to calculate custom sender gas estimation.");
-        txData.from = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18"; // Treasury fallback
-        const gasEst = await provider.estimateGas(txData);
-        logDiag(`Estimated Gas Limit (Treasury Sender): ${gasEst.toString()}`);
-      }
-    } catch (err: any) {
-      console.error(err);
-      logDiag(`Gas estimation failed: ${parseArcError(err)}`);
-    } finally {
-      setDiagLoading(prev => ({ ...prev, ping: false }));
-    }
-  };
 
   // Local storage for Notification preference
   const [emailAlerts, setEmailAlerts] = useState(true);
@@ -497,47 +286,7 @@ export default function SettingsPage() {
           </GlassCard>
         </div>
 
-        {/* Transaction Diagnostics & Testing */}
-        <GlassCard className="p-6 space-y-6">
-          <div className="flex items-center gap-3 border-b border-border-thin pb-4">
-            <Activity className="w-5 h-5 text-primary" />
-            <h3 className="font-bold text-lg text-white">DAO Transaction Diagnostics</h3>
-          </div>
 
-          <div className="space-y-4">
-            <p className="text-sm text-muted">
-              Use these tools to test contract writes, verify Arc-native USDC gas estimation, and troubleshoot execution locks.
-            </p>
-
-            <div className="flex flex-col gap-4">
-              <button
-                onClick={runDiagnostics}
-                disabled={diagnosticsRunning}
-                className="py-3 px-6 bg-accent-purple hover:bg-accent-purple/90 rounded-xl border border-primary/20 text-sm font-extrabold text-white transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-[0_0_20px_rgba(124,58,237,0.25)] w-full sm:w-48"
-              >
-                {diagnosticsRunning ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Running...
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4 fill-current text-white" />
-                    ▶ Run Diagnostics
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Diagnostic Log Output */}
-            <div className="mt-4">
-              <span className="text-xs font-semibold text-muted uppercase tracking-wider block mb-2">Diagnostics Log Output</span>
-              <pre className="w-full bg-surface-dark border border-border-thin rounded-xl p-4 font-mono text-xs text-text-secondary h-48 overflow-y-auto whitespace-pre-wrap diagnostics-log">
-                {logs.length === 0 ? "Ready for diagnostics testing..." : logs.join("\n")}
-              </pre>
-            </div>
-          </div>
-        </GlassCard>
 
         {/* Smart Contracts Transparency Block */}
         <GlassCard className="p-6 space-y-6">
@@ -599,10 +348,7 @@ export default function SettingsPage() {
                 <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Chain ID</span>
                 <span className="text-white font-medium">5042002</span>
               </div>
-              <div className="space-y-1 col-span-2">
-                <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">RPC Endpoint (Authenticated)</span>
-                <span className="text-white font-mono break-all text-[11px]">{process.env.NEXT_PUBLIC_ARC_RPC_URL || "Not configured"}</span>
-              </div>
+
               <div className="space-y-1 col-span-2">
                 <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Block Explorer</span>
                 <a 
