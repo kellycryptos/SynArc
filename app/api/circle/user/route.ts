@@ -5,7 +5,7 @@ const CIRCLE_API_URL = 'https://api.circle.com/v1/w3s'
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await req.json()
-    const apiKey = process.env.CIRCLE_API_KEY || process.env.NEXT_PUBLIC_CIRCLE_API_KEY || ''
+    const apiKey = process.env.CIRCLE_API_KEY || ''
 
     if (!userId) {
       return NextResponse.json({ error: 'Missing userId parameter' }, { status: 400 })

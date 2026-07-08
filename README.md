@@ -373,7 +373,7 @@ Below is the official network configuration and deployed smart contract addresse
 | Configuration / Contract | Value / Address | Description | ArcScan Explorer |
 |:---|:---|:---|:---|
 | **Chain ID** | `5042002` | Arc Testnet Chain Identifier | — |
-| **RPC Endpoint** | `https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f` | Primary RPC endpoint for client node calls | — |
+| **RPC Endpoint** | `https://rpc.testnet.arc.network` | Primary RPC endpoint for client node calls | — |
 | **SynArcGovernor** | `0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e` | Governance proposal and voting controller | [Inspect](https://testnet.arcscan.app/address/0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e) |
 | **Governance Treasury (`treasuryGovernance`)** | `0xFE0F6bF45D363d34CD5fC1781594a7471736dC18` | Timelocked treasury for core DAO balances | [Inspect](https://testnet.arcscan.app/address/0xFE0F6bF45D363d34CD5fC1781594a7471736dC18) |
 | **Agent Operating Treasury (`treasuryAgent`)** | `0x302D7cba3553e22E24C7A5C9aFee3942EBC6ea63` | Fast-access agent operating reserves | [Inspect](https://testnet.arcscan.app/address/0x302D7cba3553e22E24C7A5C9aFee3942EBC6ea63) |

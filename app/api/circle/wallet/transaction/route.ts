@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get('id')
     const userToken = req.headers.get('x-user-token')
-    const apiKey = process.env.CIRCLE_API_KEY || process.env.NEXT_PUBLIC_CIRCLE_API_KEY || ''
+    const apiKey = process.env.CIRCLE_API_KEY || ''
 
     if (!id) {
       return NextResponse.json({ error: 'Missing transaction id parameter' }, { status: 400 })

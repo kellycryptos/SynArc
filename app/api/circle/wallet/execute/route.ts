@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const userToken = headerToken || body.userToken
     const { contractAddress, callData, value, feeLevel = 'HIGH' } = body
 
-    const apiKey = process.env.CIRCLE_API_KEY || process.env.NEXT_PUBLIC_CIRCLE_API_KEY || ''
+    const apiKey = process.env.CIRCLE_API_KEY || ''
 
     if (!userToken) {
       return NextResponse.json({ error: 'Missing userToken parameter' }, { status: 400 })

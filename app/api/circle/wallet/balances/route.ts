@@ -5,7 +5,7 @@ const CIRCLE_API_URL = 'https://api.circle.com/v1/w3s'
 export async function GET(req: NextRequest) {
   try {
     const userToken = req.headers.get('x-user-token')
-    const apiKey = process.env.CIRCLE_API_KEY || process.env.NEXT_PUBLIC_CIRCLE_API_KEY || ''
+    const apiKey = process.env.CIRCLE_API_KEY || ''
 
     if (!userToken) {
       return NextResponse.json({ error: 'Missing X-User-Token header' }, { status: 400 })

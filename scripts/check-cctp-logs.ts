@@ -5,13 +5,13 @@ const arcTestnet = {
   name: "Arc Testnet",
   nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
   rpcUrls: {
-    default: { http: ["https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f"] },
-    public: { http: ["https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f"] }
+    default: { http: ["https://rpc.testnet.arc.network"] },
+    public: { http: ["https://rpc.testnet.arc.network"] }
   }
 };
 
 async function main() {
-  const rpcUrl = "https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f";
+  const rpcUrl = "https://rpc.testnet.arc.network";
   const client = createPublicClient({
     chain: arcTestnet as any,
     transport: http(rpcUrl),

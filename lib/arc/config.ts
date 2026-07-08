@@ -1,7 +1,7 @@
 import { defineChain, createPublicClient, http, fallback } from "viem";
 import { JsonRpcProvider } from "ethers";
 
-const CANTEEN_RPC = "https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f";
+const CANTEEN_RPC = "https://rpc.testnet.arc.network";
 const PUBLIC_ARC_RPC = "https://rpc.testnet.arc.network";
 const ALCHEMY_ARC_RPC = "https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev";
 const QUICKNODE_ARC_RPC = "https://rpc.quicknode.testnet.arc.network";

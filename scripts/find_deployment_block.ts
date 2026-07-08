@@ -2,7 +2,7 @@ import { createPublicClient, http } from 'viem';
 import { arcTestnet } from '../lib/arc-config';
 
 const treasuryAddress = '0xFE0F6bF45D363d34CD5fC1781594a7471736dC18';
-const primaryUrl = 'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f';
+const primaryUrl = 'https://rpc.testnet.arc.network';
 
 async function main() {
   const client = createPublicClient({
@@ -34,10 +34,12 @@ async function main() {
         low = mid + 1n; // Look later
       }
     } catch (err: any) {
-      // If pruned history error, we know deployment is after mid block
-      if (err.message.includes('pruned history')) {
+      const msg = err.message || '';
+      // If pruned state or pruned history, we know deployment is after mid block
+      if (msg.includes('pruned') || msg.includes('32603') || msg.includes('InternalRpcError')) {
         low = mid + 1n;
       } else {
+        console.error('Unhandled error during binary search:', err);
         throw err;
       }
     }

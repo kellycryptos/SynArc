@@ -8,7 +8,7 @@ const TREASURY_EVENTS_ABI = parseAbi([
 
 const treasuryAddress = '0xFE0F6bF45D363d34CD5fC1781594a7471736dC18';
 const urls = [
-  'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f',
+  'https://rpc.testnet.arc.network',
   'https://rpc.testnet.arc.network',
   'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev',
   'https://rpc.quicknode.testnet.arc.network',

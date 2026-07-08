@@ -1,7 +1,7 @@
 import { createPublicClient, http, defineChain, getAddress, encodeDeployData } from 'viem';
 import { SynArcCrowdfundABI, SynArcCrowdfundBytecode } from '../lib/governance/SynArcCrowdfund';
 
-const CANTEEN_RPC = 'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f';
+const CANTEEN_RPC = 'https://rpc.testnet.arc.network';
 const USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
 
 const arcTestnet = defineChain({

@@ -2,7 +2,7 @@ import { createPublicClient, http, parseAbi } from 'viem'
 import { arcTestnet } from '../lib/arc-config'
 
 const ARC_RPC_URLS = [
-  'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f',
+  'https://rpc.testnet.arc.network',
   'https://rpc.testnet.arc.network',
   'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev',
   'https://arc-testnet.drpc.org'
