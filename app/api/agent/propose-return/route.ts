@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { treasuryAgent } from '@/lib/agent/treasury-agent'
 
 export async function POST(req: NextRequest) {
+  const incoming = req.headers.get('x-cron-secret');
+  const expected = process.env.CRON_SECRET;
+  if (!incoming || !expected || incoming !== expected) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const txHash = await treasuryAgent.proposeReturnFunds()
     return NextResponse.json({
