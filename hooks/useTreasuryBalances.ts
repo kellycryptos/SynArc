@@ -129,12 +129,14 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
       let logs: any[] = [];
       if (currentBlock > 0n) {
         // Try 100k block range first (primary canteen RPC limit and recent history check)
+        const toBlock = currentBlock;
         const fromBlock = currentBlock - 99999n > 0n ? currentBlock - 99999n : 0n;
         try {
           logs = await publicClient.getLogs({
             address: treasuryAddress,
             events: TREASURY_EVENTS_ABI,
             fromBlock,
+            toBlock,
           });
         } catch (err) {
           console.warn('useTreasuryBalances: getLogs failed for 100k range, retrying with 10k range...', err);
@@ -145,12 +147,14 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
               address: treasuryAddress,
               events: TREASURY_EVENTS_ABI,
               fromBlock: fallbackFromBlock,
+              toBlock,
             });
           } catch (err2) {
             console.error('useTreasuryBalances: getLogs failed for 10k range as well', err2);
           }
         }
       }
+
 
 
       const usdcVal = Number(usdcBal) / 1_000_000;
