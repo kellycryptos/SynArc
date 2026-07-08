@@ -106,6 +106,7 @@ function fallbackTreasuryDecide(text: string): any {
 }
 
 export class TreasuryAgent {
+  public lastExecutionTime = 0
   private walletClient: any
   private publicClient: any
   private account: any
@@ -138,8 +139,21 @@ export class TreasuryAgent {
   }
 
   constructor() {
-    const key = (process.env.FAUCET_PRIVATE_KEY || process.env.AGENT_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000001') as `0x${string}`
-    this.privateKey = key.startsWith('0x') ? key : `0x${key}` as `0x${string}`
+    const rawKey = process.env.FAUCET_PRIVATE_KEY || process.env.AGENT_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY
+    if (!rawKey) {
+      // Prevent Next.js compilation/build errors when env vars are missing
+      const isBuildOrTest = process.env.NEXT_PHASE === 'phase-production-build' || 
+                            process.env.NODE_ENV === 'test' || 
+                            process.env.NODE_ENV === 'production'
+      if (isBuildOrTest) {
+        this.privateKey = '0x0000000000000000000000000000000000000000000000000000000000000001'
+      } else {
+        throw new Error('AGENT_PRIVATE_KEY environment variable is not set')
+      }
+    } else {
+      const key = rawKey as `0x${string}`
+      this.privateKey = key.startsWith('0x') ? key : `0x${key}` as `0x${string}`
+    }
 
     try {
       this.account = privateKeyToAccount(this.privateKey)
@@ -523,6 +537,16 @@ Respond in JSON format:
   }
 
   async run(): Promise<AgentAction> {
+    if (this.privateKey === '0x0000000000000000000000000000000000000000000000000000000000000001') {
+      throw new Error('AGENT_PRIVATE_KEY environment variable is not set. Silent fallback disabled.')
+    }
+
+    const cooldown = 30000 // 30 seconds
+    if (Date.now() - this.lastExecutionTime < cooldown) {
+      throw new Error(`Rate limit exceeded. Please wait ${Math.ceil((cooldown - (Date.now() - this.lastExecutionTime)) / 1000)}s before triggering the agent again.`)
+    }
+    this.lastExecutionTime = Date.now()
+
     const startTime = new Date().toISOString()
     try {
       // Check if the agent is paused on-chain before running
