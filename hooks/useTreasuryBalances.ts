@@ -103,8 +103,8 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
     });
 
     try {
-      // Fetch USDC, EURC, activities events, and queued withdrawals in parallel
-      const [usdcBal, eurcBal, logs, rawQueued] = await Promise.all([
+      // Fetch USDC, EURC, current block, and queued withdrawals in parallel
+      const [usdcBal, eurcBal, currentBlock, rawQueued] = await Promise.all([
         publicClient.readContract({
           address: USDC_ADDRESS,
           abi: ERC20_ABI,
@@ -117,17 +117,41 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
           functionName: 'balanceOf',
           args: [treasuryAddress],
         }).catch(() => 0n),
-        publicClient.getLogs({
-          address: treasuryAddress,
-          events: TREASURY_EVENTS_ABI,
-          fromBlock: 0n,
-        }).catch(() => []),
+        publicClient.getBlockNumber().catch(() => 0n),
         publicClient.readContract({
           address: treasuryAddress,
           abi: TREASURY_ABI,
           functionName: 'getQueuedWithdrawals',
         }).catch(() => [] as any),
       ]);
+
+      // Query logs resiliently using target block ranges to satisfy RPC range and pruning limits
+      let logs: any[] = [];
+      if (currentBlock > 0n) {
+        // Try 100k block range first (primary canteen RPC limit and recent history check)
+        const fromBlock = currentBlock - 99999n > 0n ? currentBlock - 99999n : 0n;
+        try {
+          logs = await publicClient.getLogs({
+            address: treasuryAddress,
+            events: TREASURY_EVENTS_ABI,
+            fromBlock,
+          });
+        } catch (err) {
+          console.warn('useTreasuryBalances: getLogs failed for 100k range, retrying with 10k range...', err);
+          // Try 10k block range (fallback public RPC nodes limit)
+          const fallbackFromBlock = currentBlock - 9999n > 0n ? currentBlock - 9999n : 0n;
+          try {
+            logs = await publicClient.getLogs({
+              address: treasuryAddress,
+              events: TREASURY_EVENTS_ABI,
+              fromBlock: fallbackFromBlock,
+            });
+          } catch (err2) {
+            console.error('useTreasuryBalances: getLogs failed for 10k range as well', err2);
+          }
+        }
+      }
+
 
       const usdcVal = Number(usdcBal) / 1_000_000;
       const eurcVal = Number(eurcBal) / 1_000_000;
