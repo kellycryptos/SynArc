@@ -16,6 +16,7 @@ import toast from "react-hot-toast";
 import { AGENT_CAPABILITIES, AGENT_CONFIG } from "@/lib/agent/smart-account";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
+import { usePrivyWallet } from "@/hooks/auth/usePrivyWallet";
 import { createPublicClient, http, fallback, parseUnits } from "viem";
 import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 import { useTreasuryBalances } from "@/hooks/useTreasuryBalances";
@@ -100,6 +101,7 @@ export default function AgentPage() {
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
+  const { signMessage, address: privyAddress } = usePrivyWallet();
 
   const [onChainPaused, setOnChainPaused] = useState<boolean>(false);
   const [maxRebalanceAmount, setMaxRebalanceAmount] = useState<number>(50);
@@ -442,7 +444,7 @@ export default function AgentPage() {
 
   const fetchAgentState = useCallback(async () => {
     try {
-      const res = await fetch("/api/agent/run");
+      const res = await fetch("/api/agent/status");
       const data = await res.json();
       if (data.success !== false) {
         setAgentState(data);
@@ -534,11 +536,31 @@ export default function AgentPage() {
     fetchAgentState();
   };
 
+  const triggerManualRun = async () => {
+    if (!privyAddress) {
+      throw new Error("Please connect your wallet first via Privy to trigger the agent manually.");
+    }
+    const message = "Sign this message to authenticate your manual agent run request.";
+    const signature = await signMessage(message);
+    const res = await fetch("/api/agent/manual-run", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        address: privyAddress,
+        signature,
+        message,
+      }),
+    });
+    return res;
+  };
+
   const runAutoSweep = async () => {
     setIsSweepRunning(true);
-    const toastId = toast.loading("Running auto sweep cycle...");
+    const toastId = toast.loading("Signing auth message & running auto sweep...");
     try {
-      const res = await fetch("/api/agent/run", { method: "POST" });
+      const res = await triggerManualRun();
       const data = await res.json();
       if (data.success) {
         await fetchAgentState();
@@ -551,8 +573,8 @@ export default function AgentPage() {
       } else {
         toast.error(data.error || "Sweep failed", { id: toastId });
       }
-    } catch {
-      toast.error("Failed to run sweep", { id: toastId });
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to run sweep", { id: toastId });
     } finally {
       setIsSweepRunning(false);
     }
@@ -560,9 +582,9 @@ export default function AgentPage() {
 
   const proposeYieldAllocation = async () => {
     setIsYieldProposing(true);
-    const toastId = toast.loading("Agent preparing yield allocation proposal...");
+    const toastId = toast.loading("Signing auth message & preparing proposal...");
     try {
-      const res = await fetch("/api/agent/run", { method: "POST" });
+      const res = await triggerManualRun();
       const data = await res.json();
       if (data.success) {
         await fetchAgentState();
@@ -570,8 +592,8 @@ export default function AgentPage() {
       } else {
         toast.error(data.error || "Failed to propose yield allocation", { id: toastId });
       }
-    } catch {
-      toast.error("Failed to propose yield allocation", { id: toastId });
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to propose yield allocation", { id: toastId });
     } finally {
       setIsYieldProposing(false);
     }
@@ -595,9 +617,9 @@ export default function AgentPage() {
     setRunning(true);
     setShowVerifyResult(false);
     setVerifyResult(null);
-    const toastId = toast.loading("Agent analyzing treasury...");
+    const toastId = toast.loading("Signing auth message & running agent analysis...");
     try {
-      const res = await fetch("/api/agent/run", { method: "POST" });
+      const res = await triggerManualRun();
       const data = await res.json();
       if (data.success) {
         await fetchAgentState();
@@ -618,8 +640,8 @@ export default function AgentPage() {
       } else {
         toast.error(data.error || "Agent run failed", { id: toastId });
       }
-    } catch {
-      toast.error("Failed to run agent", { id: toastId });
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to run agent", { id: toastId });
     } finally {
       setRunning(false);
     }

@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { treasuryAgent } from '@/lib/agent/treasury-agent'
-import { gatewayPayments } from '@/lib/agent/gateway-payments'
 
-// ─── Auth helper ──────────────────────────────────────────────────────────────
-// Requests that arrive with an x-cron-secret header must match CRON_SECRET.
-// Requests without the header (e.g. from the dashboard UI) are passed through
-// so the existing UX is not broken.
+export const dynamic = 'force-dynamic';
+
 function verifyCronSecret(req: NextRequest): boolean {
   const incoming = req.headers.get('x-cron-secret');
-  if (!incoming) return true; // no header → internal/dashboard call, allow
+  if (!incoming) return false; // missing header -> fail closed!
   const expected = process.env.CRON_SECRET;
-  if (!expected) return true; // secret not configured yet → allow (fail-open during dev)
+  if (!expected) return false; // expected not set -> fail closed!
   return incoming === expected;
 }
 
@@ -19,27 +16,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Detect if this is an automated cron scheduler request
-  const isCronTrigger = req.headers.get('x-vercel-cron') === 'true' || 
-                        req.nextUrl.searchParams.get('cron') === 'true' ||
-                        req.headers.get('x-cron-secret') !== null;
-
   try {
-    let actionResult = undefined;
-    if (isCronTrigger) {
-      console.log('[API Cron] Automated run triggered via GET request.');
-      actionResult = await treasuryAgent.run();
-    }
-
+    console.log('[API Cron] Automated run triggered via GET request.');
+    const actionResult = await treasuryAgent.run();
     const treasury = await treasuryAgent.checkTreasury()
-    const recentActions = treasuryAgent.getRecentActions()
-    const paymentHistory = gatewayPayments.getPaymentHistory()
     const sepoliaUsdc = await treasuryAgent.getSepoliaBalance()
 
     return NextResponse.json({
       success: true,
       agentAddress: treasuryAgent.getAgentAddress(),
-      cronExecuted: isCronTrigger,
+      cronExecuted: true,
       action: actionResult,
       treasury: {
         usdc: treasury.usdc,
@@ -47,15 +33,9 @@ export async function GET(req: NextRequest) {
         sepoliaUsdc,
       },
       treasurySource: treasury.usedFallback ? 'fallback' : 'live',
-      recentActions,
+      recentActions: treasuryAgent.getRecentActions(),
       isRunning: true,
       lastCheck: new Date().toISOString(),
-      payments: {
-        history: paymentHistory.slice(0, 10),
-        totalSpent: gatewayPayments.getTotalSpent(),
-        callCount: gatewayPayments.getCallCount(),
-        avgCost: gatewayPayments.getAverageCost(),
-      },
     })
   } catch (error: any) {
     return NextResponse.json(
@@ -64,7 +44,6 @@ export async function GET(req: NextRequest) {
     )
   }
 }
-
 
 export async function POST(req: NextRequest) {
   if (!verifyCronSecret(req)) {
@@ -94,4 +73,3 @@ export async function POST(req: NextRequest) {
     )
   }
 }
-

@@ -1,0 +1,40 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { treasuryAgent } from '@/lib/agent/treasury-agent'
+import { gatewayPayments } from '@/lib/agent/gateway-payments'
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(req: NextRequest) {
+  try {
+    const treasury = await treasuryAgent.checkTreasury()
+    const recentActions = treasuryAgent.getRecentActions()
+    const paymentHistory = gatewayPayments.getPaymentHistory()
+    const sepoliaUsdc = await treasuryAgent.getSepoliaBalance()
+
+    return NextResponse.json({
+      success: true,
+      agentAddress: treasuryAgent.getAgentAddress(),
+      cronExecuted: false,
+      treasury: {
+        usdc: treasury.usdc,
+        eurc: treasury.eurc,
+        sepoliaUsdc,
+      },
+      treasurySource: treasury.usedFallback ? 'fallback' : 'live',
+      recentActions,
+      isRunning: true,
+      lastCheck: new Date().toISOString(),
+      payments: {
+        history: paymentHistory.slice(0, 10),
+        totalSpent: gatewayPayments.getTotalSpent(),
+        callCount: gatewayPayments.getCallCount(),
+        avgCost: gatewayPayments.getAverageCost(),
+      },
+    })
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || 'Failed to process agent state' },
+      { status: 500 }
+    )
+  }
+}
