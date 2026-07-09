@@ -204,7 +204,9 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
           console.error("Failed to parse simulated activities from localStorage", err);
         }
       }
-      const combinedActivities = [...simulatedActivities, ...formattedActivities];
+      // Merge and sort all activities newest-first
+      const combinedActivities = [...simulatedActivities, ...formattedActivities]
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
       // Sum up simulated activities to adjust balances
       let simulatedUSDC = 0;
@@ -229,7 +231,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
       const combinedVal = finalUSDC + (finalEURC * 1.08);
       setBalance(combinedVal);
 
-      setActivities(combinedActivities.reverse());
+      setActivities(combinedActivities);
     } catch (err) {
       console.error('useTreasuryBalances: fetch failed', err);
       setError('Failed to fetch treasury balances');
