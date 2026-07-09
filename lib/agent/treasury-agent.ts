@@ -224,15 +224,15 @@ Respond in JSON format:
       
       // Local rules fallback if AI fully failed
       if (treasury.usdc > 100) {
-        return { shouldAct: true, action: 'bridge_to_ethereum', reasoning: `Treasury holds ${treasury.usdc} USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.`, proposedAmount: Math.floor(treasury.usdc * 0.3) }
+        return { shouldAct: true, action: 'bridge_to_ethereum', reasoning: `[Rule-based: AI rate-limited/unavailable] Treasury holds ${treasury.usdc} USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.`, proposedAmount: Math.floor(treasury.usdc * 0.3) }
       }
       if (treasury.usdc < 10) {
-        return { shouldAct: true, action: 'emergency_funding', reasoning: `Treasury holds ${treasury.usdc} USDC — below 10 threshold. Proposing emergency funding request.`, proposedAmount: 50 }
+        return { shouldAct: true, action: 'emergency_funding', reasoning: `[Rule-based: AI rate-limited/unavailable] Treasury holds ${treasury.usdc} USDC — below 10 threshold. Proposing emergency funding request.`, proposedAmount: 50 }
       }
       if (treasury.eurc > 50) {
-        return { shouldAct: true, action: 'rebalance_eurc', reasoning: `Treasury holds ${treasury.eurc} EURC — above 50 threshold. Proposing EURC rebalancing.`, proposedAmount: Math.floor(treasury.eurc * 0.4) }
+        return { shouldAct: true, action: 'rebalance_eurc', reasoning: `[Rule-based: AI rate-limited/unavailable] Treasury holds ${treasury.eurc} EURC — above 50 threshold. Proposing EURC rebalancing.`, proposedAmount: Math.floor(treasury.eurc * 0.4) }
       }
-      return { shouldAct: false, action: 'monitoring', reasoning: `Treasury healthy (USDC: ${treasury.usdc}, EURC: ${treasury.eurc}). Continuing to monitor.` }
+      return { shouldAct: false, action: 'monitoring', reasoning: `[Rule-based: AI rate-limited/unavailable] Treasury healthy (USDC: ${treasury.usdc}, EURC: ${treasury.eurc}). Continuing to monitor.` }
     }
   }
 
@@ -542,7 +542,7 @@ Respond in JSON format:
       throw new Error('AGENT_PRIVATE_KEY environment variable is not set. Silent fallback disabled.')
     }
 
-    const cooldown = 30000 // 30 seconds
+    const cooldown = 15000 // 15 seconds
     if (Date.now() - this.lastExecutionTime < cooldown) {
       throw new Error(`Rate limit exceeded. Please wait ${Math.ceil((cooldown - (Date.now() - this.lastExecutionTime)) / 1000)}s before triggering the agent again.`)
     }
@@ -599,7 +599,20 @@ Respond in JSON format:
 
       // 3. Check treasury and proposal creation rules
       const treasury = await this.checkTreasury()
-      const decision = await this.analyzeAndDecide(treasury)
+      
+      // Local check: if treasury is healthy, skip calling AI to prevent free-tier rate limits
+      let decision;
+      if (treasury.usdc >= 10 && treasury.usdc <= 100 && treasury.eurc <= 50) {
+        console.log('[TreasuryAgent] Local health check passed. Skipping AI call.')
+        decision = {
+          shouldAct: false,
+          action: 'monitoring',
+          reasoning: `Treasury healthy (USDC: ${treasury.usdc}, EURC: ${treasury.eurc}). Continuing to monitor.`
+        }
+      } else {
+        decision = await this.analyzeAndDecide(treasury)
+      }
+      
       if (!decision.shouldAct) {
         const action: AgentAction = { timestamp: startTime, action: 'monitoring', reasoning: decision.reasoning, status: 'executed' }
         this.logAction(action)
@@ -694,15 +707,21 @@ export const treasuryAgent = new TreasuryAgent()
 
 // Start autonomous background loop if running in Node.js server environment
 if (typeof window === 'undefined' && process.env.TEST_TICK !== 'true') {
-  console.log('[TreasuryAgent] Initializing autonomous background loop (every 60s)...')
-  setTimeout(() => {
-    setInterval(async () => {
-      try {
-        console.log('[TreasuryAgent] Running autonomous background tick...')
-        await treasuryAgent.run()
-      } catch (err) {
-        console.error('[TreasuryAgent] Error in autonomous background tick:', err)
-      }
-    }, 60000)
-  }, 10000)
+  const isDev = process.env.NODE_ENV === 'development'
+  if (isDev) {
+    console.log('[TreasuryAgent] Background loop disabled in development mode to prevent rate limits.')
+  } else {
+    const interval = 300000 // 5 minutes in production
+    console.log(`[TreasuryAgent] Initializing autonomous background loop (every ${interval / 1000}s)...`)
+    setTimeout(() => {
+      setInterval(async () => {
+        try {
+          console.log('[TreasuryAgent] Running autonomous background tick...')
+          await treasuryAgent.run()
+        } catch (err) {
+          console.error('[TreasuryAgent] Error in autonomous background tick:', err)
+        }
+      }, interval)
+    }, 10000)
+  }
 }

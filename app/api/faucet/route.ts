@@ -21,11 +21,14 @@ const claims = new Map<string, number>()
 const ipClaims = new Map<string, number>()
 
 function getClientIp(req: NextRequest): string {
+  if ((req as any).ip) return (req as any).ip
+  const realIp = req.headers.get('x-real-ip')
+  if (realIp) return realIp
   const forwarded = req.headers.get('x-forwarded-for')
   if (forwarded) {
     return forwarded.split(',')[0].trim()
   }
-  return req.headers.get('x-real-ip') || 'unknown-ip'
+  return 'unknown-ip'
 }
 
 export async function GET(req: NextRequest) {

@@ -446,7 +446,7 @@ export default function AgentPage() {
     try {
       const res = await fetch("/api/agent/status");
       const data = await res.json();
-      if (data.success !== false) {
+      if (data && data.success) {
         setAgentState(data);
         setLastChecked(new Date());
         if (data.treasurySource) setTreasurySource(data.treasurySource);
