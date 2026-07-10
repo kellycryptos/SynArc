@@ -80,6 +80,96 @@ export interface QueuedWithdrawal {
   canceled: boolean;
 }
 
+const DEPLOYMENT_BLOCK = 45973599n;
+
+interface CachedData {
+  activities: TreasuryActivity[];
+  lastFetchedBlock: string;
+}
+
+const getCache = (treasuryAddress: string): CachedData => {
+  if (typeof window === 'undefined') {
+    return { activities: [], lastFetchedBlock: (DEPLOYMENT_BLOCK - 1n).toString() };
+  }
+  try {
+    const data = localStorage.getItem(`synarc_treasury_cache_${treasuryAddress}`);
+    if (data) {
+      const parsed = JSON.parse(data);
+      if (parsed && Array.isArray(parsed.activities) && typeof parsed.lastFetchedBlock === 'string') {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error('Failed to read treasury cache from localStorage', err);
+  }
+  return { activities: [], lastFetchedBlock: (DEPLOYMENT_BLOCK - 1n).toString() };
+};
+
+const setCache = (treasuryAddress: string, data: CachedData) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(`synarc_treasury_cache_${treasuryAddress}`, JSON.stringify(data));
+  } catch (err) {
+    console.error('Failed to write treasury cache to localStorage', err);
+  }
+};
+
+const fetchLogsInChunkWithRetry = async (
+  publicClient: any,
+  queryOptions: {
+    address: `0x${string}`;
+    events: any;
+    fromBlock: bigint;
+    toBlock: bigint;
+  },
+  retries = 3,
+  delayMs = 1000
+): Promise<any[]> => {
+  try {
+    return await publicClient.getLogs(queryOptions);
+  } catch (err) {
+    if (retries > 0) {
+      console.warn(`getLogs failed for range ${queryOptions.fromBlock}-${queryOptions.toBlock}, retrying in ${delayMs}ms...`, err);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      return fetchLogsInChunkWithRetry(publicClient, queryOptions, retries - 1, delayMs * 2);
+    }
+    throw err;
+  }
+};
+
+const formatLogsToActivities = (logs: any[]): TreasuryActivity[] => {
+  return logs.map((log: any, idx: number) => {
+    const args = log.args || {};
+    const isOutflow = log.eventName === 'Outflow';
+    const party = isOutflow ? args.recipient : args.sender;
+    return {
+      id: `${log.transactionHash || idx}-${log.logIndex ?? idx}`,
+      type: (isOutflow ? "Outflow" : "Inflow") as "Inflow" | "Outflow",
+      amount: Number(args.amount || 0n) / 1_000_000,
+      token: args.tokenSymbol || "USDC",
+      timestamp: new Date(Number(args.timestamp || 0n) * 1000).toISOString(),
+      description: args.description || "",
+      party: party || "",
+      txHash: log.transactionHash
+    };
+  });
+};
+
+const mergeAndSortActivities = (
+  simulated: TreasuryActivity[],
+  fetched: TreasuryActivity[],
+  cached: TreasuryActivity[]
+): TreasuryActivity[] => {
+  const map = new Map<string, TreasuryActivity>();
+  
+  cached.forEach(act => map.set(act.id, act));
+  fetched.forEach(act => map.set(act.id, act));
+  simulated.forEach(act => map.set(act.id, act));
+  
+  return Array.from(map.values())
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+};
+
 export const useTreasuryBalances = (customTreasuryAddress?: string) => {
   const treasuryAddress = (customTreasuryAddress ||
     process.env.NEXT_PUBLIC_TREASURY_ADDRESS ||
@@ -91,7 +181,14 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
   const [activities, setActivities] = useState<TreasuryActivity[]>([]);
   const [queuedWithdrawals, setQueuedWithdrawals] = useState<QueuedWithdrawal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load activities from cache on mount/address change
+  useEffect(() => {
+    const cached = getCache(treasuryAddress);
+    setActivities(cached.activities);
+  }, [treasuryAddress]);
 
   const fetchBalances = useCallback(async () => {
     setLoading(true);
@@ -125,57 +222,8 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
         }).catch(() => [] as any),
       ]);
 
-      // Query logs resiliently using target block ranges to satisfy RPC range and pruning limits
-      let logs: any[] = [];
-      if (currentBlock > 0n) {
-        // Try 100k block range first (primary canteen RPC limit and recent history check)
-        const toBlock = currentBlock;
-        const fromBlock = currentBlock - 99999n > 0n ? currentBlock - 99999n : 0n;
-        try {
-          logs = await publicClient.getLogs({
-            address: treasuryAddress,
-            events: TREASURY_EVENTS_ABI,
-            fromBlock,
-            toBlock,
-          });
-        } catch (err) {
-          console.warn('useTreasuryBalances: getLogs failed for 100k range, retrying with 10k range...', err);
-          // Try 10k block range (fallback public RPC nodes limit)
-          const fallbackFromBlock = currentBlock - 9999n > 0n ? currentBlock - 9999n : 0n;
-          try {
-            logs = await publicClient.getLogs({
-              address: treasuryAddress,
-              events: TREASURY_EVENTS_ABI,
-              fromBlock: fallbackFromBlock,
-              toBlock,
-            });
-          } catch (err2) {
-            console.error('useTreasuryBalances: getLogs failed for 10k range as well', err2);
-          }
-        }
-      }
-
-
-
       const usdcVal = Number(usdcBal) / 1_000_000;
       const eurcVal = Number(eurcBal) / 1_000_000;
-
-      // Format activities using actual event logs to get real transaction hashes
-      const formattedActivities: TreasuryActivity[] = logs.map((log: any, idx: number) => {
-        const args = log.args || {};
-        const isOutflow = log.eventName === 'Outflow';
-        const party = isOutflow ? args.recipient : args.sender;
-        return {
-          id: `${log.transactionHash || idx}-${idx}`,
-          type: (isOutflow ? "Outflow" : "Inflow") as "Inflow" | "Outflow",
-          amount: Number(args.amount || 0n) / 1_000_000,
-          token: args.tokenSymbol || "USDC",
-          timestamp: new Date(Number(args.timestamp || 0n) * 1000).toISOString(),
-          description: args.description || "",
-          party: party || "",
-          txHash: log.transactionHash
-        };
-      }).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
       // Format queued withdrawals
       const formattedQueued: QueuedWithdrawal[] = rawQueued.map((q: any) => ({
@@ -204,9 +252,10 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
           console.error("Failed to parse simulated activities from localStorage", err);
         }
       }
-      // Merge and sort all activities newest-first
-      const combinedActivities = [...simulatedActivities, ...formattedActivities]
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+      // Initial merge of cached and simulated activities
+      const cached = getCache(treasuryAddress);
+      const initialActivities = mergeAndSortActivities(simulatedActivities, [], cached.activities);
 
       // Sum up simulated activities to adjust balances
       let simulatedUSDC = 0;
@@ -230,12 +279,97 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
 
       const combinedVal = finalUSDC + (finalEURC * 1.08);
       setBalance(combinedVal);
+      setActivities(initialActivities);
 
-      setActivities(combinedActivities);
+      // We set loading to false here so the balances and cached activities display immediately
+      setLoading(false);
+
+      // Query logs in the background if there are new blocks
+      let cachedLastBlock = BigInt(cached.lastFetchedBlock);
+      if (cachedLastBlock < DEPLOYMENT_BLOCK - 1n) {
+        cachedLastBlock = DEPLOYMENT_BLOCK - 1n;
+      }
+
+      const startBlock = cachedLastBlock + 1n;
+      const endBlock = currentBlock;
+
+      if (endBlock > 0n && startBlock <= endBlock) {
+        // Kick off non-blocking async log fetching
+        (async () => {
+          setHistoryLoading(true);
+          const fetchedLogs: any[] = [];
+          
+          try {
+            const chunkSize = 5000n;
+            const batchCount = 10;
+            let currentEnd = endBlock;
+            
+            while (currentEnd >= startBlock) {
+              const chunkRanges: { from: bigint; to: bigint }[] = [];
+              for (let i = 0; i < batchCount; i++) {
+                const to = currentEnd;
+                if (to < startBlock) break;
+                const from = to - chunkSize + 1n > startBlock ? to - chunkSize + 1n : startBlock;
+                chunkRanges.push({ from, to });
+                currentEnd = from - 1n;
+              }
+              
+              if (chunkRanges.length === 0) break;
+              
+              // Query this batch of chunks in parallel
+              const batchLogs = await Promise.all(
+                chunkRanges.map((range) =>
+                  fetchLogsInChunkWithRetry(publicClient, {
+                    address: treasuryAddress,
+                    events: TREASURY_EVENTS_ABI,
+                    fromBlock: range.from,
+                    toBlock: range.to,
+                  })
+                )
+              );
+              
+              const flatLogs = batchLogs.flat();
+              fetchedLogs.push(...flatLogs);
+              
+              if (flatLogs.length > 0) {
+                const newActivities = formatLogsToActivities(flatLogs);
+                setActivities((prevActivities) => {
+                  // Re-fetch simulated activities in case they changed
+                  let freshSimulated: TreasuryActivity[] = [];
+                  if (typeof window !== "undefined") {
+                    try {
+                      const stored = localStorage.getItem(`synarc_simulated_activities_${treasuryAddress}`);
+                      if (stored) freshSimulated = JSON.parse(stored);
+                    } catch (e) {}
+                  }
+                  return mergeAndSortActivities(freshSimulated, newActivities, prevActivities);
+                });
+              }
+            }
+            
+            // Once all chunks are successfully loaded, write to localStorage cache
+            const formattedFetched = formatLogsToActivities(fetchedLogs);
+            
+            // Read fresh cache from localStorage to merge
+            const freshCached = getCache(treasuryAddress);
+            const finalMerged = mergeAndSortActivities([], formattedFetched, freshCached.activities);
+            
+            setCache(treasuryAddress, {
+              activities: finalMerged,
+              lastFetchedBlock: endBlock.toString(),
+            });
+            
+          } catch (err) {
+            console.error("useTreasuryBalances: Background fetch failed", err);
+          } finally {
+            setHistoryLoading(false);
+          }
+        })();
+      }
+
     } catch (err) {
       console.error('useTreasuryBalances: fetch failed', err);
       setError('Failed to fetch treasury balances');
-    } finally {
       setLoading(false);
     }
   }, [treasuryAddress]);
@@ -260,6 +394,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
     queuedWithdrawals,
     loading,
     isLoading: loading,
+    isHistoryLoading: historyLoading,
     error,
     refetch: fetchBalances,
   };

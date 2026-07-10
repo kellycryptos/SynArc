@@ -72,6 +72,7 @@ function TreasuryPageContent() {
     activities, 
     queuedWithdrawals,
     isLoading: treasuryLoading, 
+    isHistoryLoading,
     refetch: refetchTreasury 
   } = useTreasuryBalances();
 
@@ -786,7 +787,15 @@ function TreasuryPageContent() {
 
         {/* Transactions Table */}
         <GlassCard className="p-6">
-          <h3 className="text-lg font-bold text-text-primary mb-6">Recent Activities</h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-text-primary">Recent Activities</h3>
+            {isHistoryLoading && (
+              <span className="flex items-center gap-1.5 text-xs text-primary font-semibold animate-pulse">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                Syncing history...
+              </span>
+            )}
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -799,7 +808,7 @@ function TreasuryPageContent() {
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {treasuryLoading ? (
+                {treasuryLoading || (isHistoryLoading && recentTransactions.length === 0) ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b border-border-thin/50">
                       <td className="py-4 pl-2">
