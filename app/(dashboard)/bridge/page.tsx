@@ -7,7 +7,6 @@ import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useSwitchChain, useAccount } from "wagmi";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
-import { getLogsResiliently } from "@/lib/rpc/config";
 import { selectActiveWallet } from "@/lib/tx-helper";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -146,10 +145,6 @@ export default function BridgePage() {
   const [activeTxHash, setActiveTxHash] = useState("");
   const [bridgeHistory, setBridgeHistory] = useState<BridgeTx[]>([]);
   const [historyOpen, setHistoryOpen] = useState(true);
-
-  // Live volume states
-  const [realVolume, setRealVolume] = useState<number>(0);
-  const [volumeLoading, setVolumeLoading] = useState<boolean>(true);
 
   // Switch/Add network helper
   const handleSwitchNetwork = async () => {
@@ -294,78 +289,26 @@ export default function BridgePage() {
     }
   }, [bridgeState.status, bridgeState.txHash, bridgeState.burnTxHash, bridgeState.errorMessage, refetchArcUSDC, amount, selectedChain, walletAddress, direction]);
 
-  // Load history from localStorage
+  // Load history from localStorage — always keyed by wallet address.
+  // When wallet disconnects (walletAddress becomes null/undefined) we clear the
+  // in-memory history so the header total and the table remain in sync.
   useEffect(() => {
-    if (typeof window !== "undefined" && walletAddress) {
-      const stored = localStorage.getItem(`synarc_bridge_history_${walletAddress.toLowerCase()}`);
-      if (stored) {
-        setBridgeHistory(JSON.parse(stored));
+    if (typeof window !== "undefined") {
+      if (walletAddress) {
+        const stored = localStorage.getItem(`synarc_bridge_history_${walletAddress.toLowerCase()}`);
+        setBridgeHistory(stored ? JSON.parse(stored) : []);
       } else {
+        // No wallet connected — reset so header can never contradict the empty table
         setBridgeHistory([]);
       }
     }
   }, [walletAddress]);
 
-  // Load volume from CCTP MessageReceived events
-  useEffect(() => {
-    async function fetchRealVolume() {
-      try {
-        setVolumeLoading(true);
-        const messageReceivedAbi = parseAbi([
-          "event MessageReceived(address indexed caller, uint32 sourceDomain, uint64 indexed nonce, bytes32 messageHash, bytes message)"
-        ]);
-        const transmitterAddress = "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275";
-        
-        const total = await getLogsResiliently(async (rpcUrl) => {
-          const client = createPublicClient({
-            transport: http(rpcUrl, {
-              timeout: 10000,
-              retryCount: 3,
-              retryDelay: 1000,
-            })
-          });
-          const latestBlock = await client.getBlockNumber();
-          
-          const isAlchemy = rpcUrl.includes("alchemy.com");
-          const scanRange = isAlchemy ? 10n : 10000n;
-          const fromBlock = latestBlock - scanRange > 0n ? latestBlock - scanRange : 0n;
-          
-          const logs = await client.getLogs({
-            address: transmitterAddress as `0x${string}`,
-            event: messageReceivedAbi[0],
-            fromBlock: fromBlock,
-            toBlock: 'latest'
-          });
-          
-          let sum = 0;
-          logs.forEach(log => {
-            const messageHex = log.args?.message;
-            if (messageHex) {
-              const amountHex = messageHex.slice(362, 362 + 64);
-              const amount = Number(BigInt("0x" + amountHex)) / 1_000_000;
-              sum += amount;
-            }
-          });
-          return sum;
-        });
-        
-        setRealVolume(total);
-      } catch (err) {
-        console.error("Failed to fetch real bridged volume:", err);
-      } finally {
-        setVolumeLoading(false);
-      }
-    }
-    
-    fetchRealVolume();
-    const interval = setInterval(fetchRealVolume, 120_000);
-    return () => clearInterval(interval);
-  }, []);
-
+  // Total volume is derived purely from the same bridgeHistory that populates the
+  // activity table — the two can now never contradict each other.
   const totalVolumeToDisplay = useMemo(() => {
-    const localSum = bridgeHistory.reduce((sum, tx) => sum + tx.amount, 0);
-    return realVolume > 0 ? realVolume : localSum;
-  }, [realVolume, bridgeHistory]);
+    return bridgeHistory.reduce((sum, tx) => sum + tx.amount, 0);
+  }, [bridgeHistory]);
 
   // Load balance for the selected EVM source chain
   const fetchSourceBalance = useCallback(async () => {
@@ -513,10 +456,13 @@ export default function BridgePage() {
             </div>
             <div>
               <div className="text-[10px] text-text-tertiary font-bold uppercase tracking-wider">
-                Total Bridged Volume
+                Your Bridged Volume
               </div>
               <div className="text-sm font-bold font-mono text-white mt-0.5">
-                ${totalVolumeToDisplay.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC
+                {isAuthenticated
+                  ? `$${totalVolumeToDisplay.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC`
+                  : <span className="text-text-tertiary text-xs font-normal">Connect wallet to view</span>
+                }
               </div>
             </div>
           </div>
