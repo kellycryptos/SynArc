@@ -115,7 +115,7 @@ export default function ProposalsPage() {
             <div className="flex items-center gap-3">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">Governance Proposals</h1>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-primary/10 border border-primary/20 text-primary">
-                {isLoading ? "..." : `${proposals.length} Total`}
+                {proposals.length > 0 ? `${proposals.length} Total` : isLoading ? "..." : "0 Total"}
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -211,7 +211,7 @@ export default function ProposalsPage() {
 
         {/* Proposals List */}
         <div className="grid grid-cols-1 gap-6">
-          {isLoading ? (
+          {isLoading && proposals.length === 0 ? (
             // Skeleton loading state — 3 placeholder cards
             <>
               {[0, 1, 2].map((i) => <ProposalSkeleton key={i} />)}

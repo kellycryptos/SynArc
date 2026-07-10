@@ -99,6 +99,26 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       activeContracts: contracts 
     });
 
+    // --- Step 0: Eagerly pre-populate with historical + simulated proposals so the UI
+    // renders immediately for guests (before any RPC round-trip completes).
+    let simulatedProposalsEager: Proposal[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("synarc_simulated_proposals");
+        if (stored) simulatedProposalsEager = JSON.parse(stored);
+      } catch { /* ignore */ }
+    }
+    const eagerProposals = activeDaoId === 'synarc'
+      ? [...simulatedProposalsEager, ...(historicalProposals as Proposal[])]
+      : simulatedProposalsEager;
+
+    // Show historical proposals immediately so guests aren't stuck on a blank page.
+    set({
+      proposals: eagerProposals,
+      // Leave initialized: false so the skeleton still shows that live data is loading,
+      // but the count badge will already show the historical count.
+    });
+
     try {
       const provider = await getCachedProvider();
 
