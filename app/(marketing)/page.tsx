@@ -667,20 +667,20 @@ export default function LandingPage() {
  
             {/* Phase 3 */}
             <div className="relative pl-8 group">
-              <div className="absolute -left-[11px] top-1.5 w-5 h-5 rounded-full bg-amber-500 border-4 border-background shadow-[0_0_12px_rgba(245,158,11,0.5)] flex items-center justify-center z-20 group-hover:scale-125 transition-transform duration-300 animate-pulse" />
+              <div className="absolute -left-[11px] top-1.5 w-5 h-5 rounded-full bg-emerald-500 border-4 border-background shadow-[0_0_12px_rgba(16,185,129,0.5)] flex items-center justify-center z-20 group-hover:scale-125 transition-transform duration-300" />
               
               <div className="absolute -left-[144px] top-1.5 hidden md:block text-right w-24">
-                <span className="text-xs font-semibold uppercase tracking-wider text-amber-500">Phase 3</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-500">Phase 3</span>
                 <p className="text-[10px] text-muted uppercase">Q3 2026</p>
               </div>
  
-              <GlassCard className="p-8 transition-all duration-300 group-hover:border-amber-500/30 group-hover:shadow-[0_0_25px_rgba(245,158,11,0.05)]">
+              <GlassCard className="p-8 transition-all duration-300 group-hover:border-emerald-500/30 group-hover:shadow-[0_0_25px_rgba(16,185,129,0.05)]">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                   <h3 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
                     Milestone Escrows
                   </h3>
-                  <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400">
-                    In Progress
+                  <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                    Live
                   </span>
                 </div>
                 <p className="text-muted leading-relaxed mb-4 text-[15px]">
