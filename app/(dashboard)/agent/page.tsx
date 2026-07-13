@@ -12,6 +12,8 @@ import {
   Lock, Layers, Landmark, TrendingDown, Repeat, Eye, ChevronDown
 } from "lucide-react";
 import Link from "next/link";
+import { CctpStepVisualizer } from "@/components/dashboard/CctpStepVisualizer";
+import { ProofOfAutonomyTimeline } from "@/components/dashboard/ProofOfAutonomyTimeline";
 import toast from "react-hot-toast";
 import { AGENT_CAPABILITIES, AGENT_CONFIG } from "@/lib/agent/smart-account";
 import { useAuth } from "@/hooks/auth/useAuth";
@@ -89,6 +91,7 @@ export default function AgentPage() {
   };
 
   const [agentState, setAgentState] = useState<AgentState | null>(null);
+  const [consoleTab, setConsoleTab] = useState<'console' | 'autonomy'>('autonomy');
   const [running, setRunning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [autoRunning, setAutoRunning] = useState(false);
@@ -1167,90 +1170,117 @@ export default function AgentPage() {
 
           {/* Agent Controls */}
           <GlassCard className="p-5 col-span-1 lg:col-span-2 order-1 lg:order-none" hover={false}>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-3 border-b border-border-thin">
               <div className="flex items-center gap-2">
                 <Cpu className="w-5 h-5 text-primary" />
-                <h2 className="text-sm font-bold text-text-primary">Agent Action Console</h2>
+                <h2 className="text-sm font-bold text-text-primary">Agent Operations</h2>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                Live
+              
+              <div className="flex bg-surface-elevated/80 border border-border-thin p-1 rounded-xl gap-1 shrink-0 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setConsoleTab('autonomy')}
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    consoleTab === 'autonomy'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  Proof of Autonomy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConsoleTab('console')}
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    consoleTab === 'console'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  Rule Actions Log
+                </button>
               </div>
             </div>
 
-            {/* Recent Actions */}
-            <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-              <AnimatePresence>
-                {loading ? (
-                  <div className="space-y-2">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-16 rounded-xl bg-surface-elevated/40 animate-pulse border border-border-thin" />
-                    ))}
-                  </div>
-                ) : actions.length === 0 ? (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex flex-col items-center justify-center py-12 gap-3"
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                      <Bot className="w-7 h-7 text-primary/60" />
+            {consoleTab === 'autonomy' ? (
+              <div className="overflow-y-auto max-h-[420px] pr-1">
+                <ProofOfAutonomyTimeline limit={6} />
+              </div>
+            ) : (
+              /* Recent Actions Log */
+              <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                <AnimatePresence>
+                  {loading ? (
+                    <div className="space-y-2">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="h-16 rounded-xl bg-surface-elevated/40 animate-pulse border border-border-thin" />
+                      ))}
                     </div>
-                    <p className="text-sm text-muted text-center">
-                      No actions yet.<br />Click <strong className="text-text-primary">Verify Rules Now</strong> to run the rules check.
-                    </p>
-                  </motion.div>
-                ) : (
-                  actions.map((action, i) => (
+                  ) : actions.length === 0 ? (
                     <motion.div
-                      key={`${action.timestamp}-${i}`}
-                      initial={{ opacity: 0, x: -16 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.04 }}
-                      className="flex items-start gap-3 p-3 rounded-xl border border-border-thin bg-surface-elevated/30 hover:bg-surface-elevated/60 transition-all"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex flex-col items-center justify-center py-12 gap-3"
                     >
-                      <div className="mt-0.5 p-1.5 rounded-lg bg-surface-elevated border border-border-thin">
-                        <ActionIcon action={action.action} />
+                      <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                        <Bot className="w-7 h-7 text-primary/60" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-bold text-text-primary truncate">
-                            {action.action === "bridge_to_ethereum" ? `CCTP Bridge ${action.usdcAmount || 0} USDC` :
-                             action.action === "return_funds" ? `CCTP Return ${action.usdcAmount || 0} USDC` :
-                             action.action === "rebalance_eurc" ? `Rebalance ${action.usdcAmount || 0} EURC` :
-                             action.action === "emergency_funding" ? "Emergency Funding Request" :
-                             action.action === "monitoring" ? "Treasury Monitoring" :
-                             action.action === "vote_for_proposal" ? "Voted FOR Proposal" :
-                             action.action}
-                          </span>
-                          <StatusBadge status={action.status} />
-                          {action.action !== "monitoring" && action.action !== "error" && (
-                            <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary shrink-0 whitespace-nowrap">
-                              🤖 Treasury Agent
+                      <p className="text-sm text-muted text-center">
+                        No actions yet.<br />Click <strong className="text-text-primary">Verify Rules Now</strong> to run the rules check.
+                      </p>
+                    </motion.div>
+                  ) : (
+                    actions.map((action, i) => (
+                      <motion.div
+                        key={`${action.timestamp}-${i}`}
+                        initial={{ opacity: 0, x: -16 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        className="flex items-start gap-3 p-3 rounded-xl border border-border-thin bg-surface-elevated/30 hover:bg-surface-elevated/60 transition-all"
+                      >
+                        <div className="mt-0.5 p-1.5 rounded-lg bg-surface-elevated border border-border-thin">
+                          <ActionIcon action={action.action} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-bold text-text-primary truncate">
+                              {action.action === "bridge_to_ethereum" ? `CCTP Bridge ${action.usdcAmount || 0} USDC` :
+                               action.action === "return_funds" ? `CCTP Return ${action.usdcAmount || 0} USDC` :
+                               action.action === "rebalance_eurc" ? `Rebalance ${action.usdcAmount || 0} EURC` :
+                               action.action === "emergency_funding" ? "Emergency Funding Request" :
+                               action.action === "monitoring" ? "Treasury Monitoring" :
+                               action.action === "vote_for_proposal" ? "Voted FOR Proposal" :
+                               action.action}
                             </span>
+                            <StatusBadge status={action.status} />
+                            {action.action !== "monitoring" && action.action !== "error" && (
+                              <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary shrink-0 whitespace-nowrap">
+                                🤖 Treasury Agent
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted leading-relaxed line-clamp-2">{action.reasoning}</p>
+                          {action.txHash && (
+                            <a
+                              href={`https://testnet.arcscan.app/tx/${action.txHash}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-1 inline-flex items-center gap-1 text-[10px] text-primary hover:text-primary-glow transition-colors"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              View on ArcScan
+                            </a>
                           )}
                         </div>
-                        <p className="text-xs text-muted leading-relaxed line-clamp-2">{action.reasoning}</p>
-                        {action.txHash && (
-                          <a
-                            href={`https://testnet.arcscan.app/tx/${action.txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-1 inline-flex items-center gap-1 text-[10px] text-primary hover:text-primary-glow transition-colors"
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                            View on ArcScan
-                          </a>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-muted shrink-0 mt-0.5">
-                        {new Date(action.timestamp).toLocaleTimeString()}
-                      </span>
-                    </motion.div>
-                  ))
-                )}
-              </AnimatePresence>
-            </div>
+                        <span className="text-[10px] text-muted shrink-0 mt-0.5">
+                          {new Date(action.timestamp).toLocaleTimeString()}
+                        </span>
+                      </motion.div>
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
           </GlassCard>
 
 
@@ -1342,7 +1372,7 @@ export default function AgentPage() {
             </div>
  
             {(() => {
-              const activeCctp = actions.find(a => a.action === 'bridge_to_ethereum' || a.action === 'vote_for_proposal')
+              const activeCctp = actions.find(a => a.action === 'bridge_to_ethereum' || a.action === 'return_funds')
               
               if (!activeCctp) {
                 return (
@@ -1361,6 +1391,15 @@ export default function AgentPage() {
                         <span className="text-xs text-text-secondary font-medium">Status: Idle & Monitoring Rules</span>
                       </div>
                     )}
+                    
+                    <CctpStepVisualizer 
+                      txState={{
+                        isActive: false,
+                        sourceChain: "Arc Testnet",
+                        destChain: "Ethereum Sepolia",
+                        currentStep: "idle"
+                      }}
+                    />
                   </div>
                 )
               }
@@ -1389,6 +1428,22 @@ export default function AgentPage() {
                 stageText = reasoning
               }
 
+              // Parse burn/mint hashes from description or txHash if available
+              let burnTxHash = activeCctp.txHash;
+              let mintTxHash = undefined;
+              
+              const burnMatch = reasoning.match(/Burn Tx:\s*(0x[a-fA-F0-9]+)/i);
+              const mintMatch = reasoning.match(/Mint Tx:\s*(0x[a-fA-F0-9]+)/i);
+              if (burnMatch) burnTxHash = burnMatch[1];
+              if (mintMatch) mintTxHash = mintMatch[1];
+
+              let currentStep: "idle" | "burn" | "attestation" | "received" | "mint" | "success" | "error" = "idle";
+              if (stage === "failed") currentStep = "error";
+              else if (stage === "burn") currentStep = "burn";
+              else if (stage === "attestation") currentStep = "attestation";
+              else if (stage === "mint") currentStep = "mint";
+              else if (stage === "done") currentStep = "success";
+
               return (
                 <div className="space-y-4">
                   <div className="p-3 bg-surface-elevated/40 border border-primary/20 rounded-xl space-y-2">
@@ -1404,71 +1459,20 @@ export default function AgentPage() {
                     </p>
                   </div>
 
-                  {stage !== "failed" && (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between text-[10px] text-muted font-mono">
-                        <span>Source: Arc Testnet</span>
-                        <span className="animate-pulse text-primary font-bold">CCTP Tunnel Active</span>
-                        <span>Destination: Ethereum Sepolia</span>
-                      </div>
-                      
-                      {/* Visualizer Flowchart */}
-                      <div className="flex items-center justify-between gap-1 p-3.5 bg-surface-elevated/40 border border-border-thin rounded-2xl relative overflow-hidden">
-                        {/* Progress Line */}
-                        <div className="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-[3px] bg-border-thin z-0" />
-                        <div 
-                          className="absolute left-10 top-1/2 -translate-y-1/2 h-[3px] bg-gradient-to-r from-primary via-purple-500 to-blue-500 z-0 transition-all duration-[2000ms]"
-                          style={{
-                            width: stage === "burn" ? "25%" : 
-                                   stage === "attestation" ? "60%" : 
-                                   stage === "mint" ? "90%" : 
-                                   stage === "done" ? "100%" : "0%"
-                          }}
-                        />
-
-                        {/* Node 1: Burn */}
-                        <div className="flex flex-col items-center gap-1 z-10">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-500 ${
-                            stage !== "idle" ? "bg-primary border-primary text-white-keep shadow-[0_0_12px_rgba(124,58,237,0.5)]" : "bg-surface border-border text-muted"
-                          }`}>
-                            <Coins className="w-3.5 h-3.5" />
-                          </div>
-                          <span className="text-[8px] font-bold text-text-primary">Burn Arc</span>
-                        </div>
-
-                        {/* Node 2: Attestation */}
-                        <div className="flex flex-col items-center gap-1 z-10">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-500 ${
-                            stage === "attestation" || stage === "mint" || stage === "done" ? "bg-purple-600 border-purple-500 text-white-keep shadow-[0_0_12px_rgba(147,51,234,0.5)]" : "bg-surface border-border text-muted"
-                          }`}>
-                            <BrainCircuit className="w-3.5 h-3.5" />
-                          </div>
-                          <span className="text-[8px] font-bold text-text-primary">Attest</span>
-                        </div>
-
-                        {/* Node 3: Mint */}
-                        <div className="flex flex-col items-center gap-1 z-10">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-500 ${
-                            stage === "mint" || stage === "done" ? "bg-blue-600 border-blue-500 text-white-keep shadow-[0_0_12px_rgba(37,99,235,0.5)]" : "bg-surface border-border text-muted"
-                          }`}>
-                            <CheckCircle className="w-3.5 h-3.5" />
-                          </div>
-                          <span className="text-[8px] font-bold text-text-primary">Mint Eth</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {stage === "done" && (
-                    <div className="p-3 bg-success/10 border border-success/20 rounded-xl text-center space-y-1">
-                      <p className="text-xs font-bold text-success">Rebalance Complete!</p>
-                      <p className="text-[10px] text-muted font-mono truncate">
-                        Burn Tx: {activeCctp.txHash || "0xbc84...25d8"}
-                      </p>
-                    </div>
-                  )}
+                  <CctpStepVisualizer 
+                    txState={{
+                      isActive: true,
+                      sourceChain: activeCctp.action === "return_funds" ? "Ethereum Sepolia" : "Arc Testnet",
+                      destChain: activeCctp.action === "return_funds" ? "Arc Testnet" : "Ethereum Sepolia",
+                      amount: activeCctp.usdcAmount,
+                      currentStep,
+                      burnTxHash,
+                      mintTxHash,
+                      errorMessage: activeCctp.status === "failed" ? reasoning : undefined
+                    }}
+                  />
                 </div>
-              )
+              );
             })()}
             
             <div className="flex gap-3 pt-1 border-t border-border-thin">

@@ -29,6 +29,7 @@ import {
   ArrowLeftRight
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { CctpStepVisualizer } from "@/components/dashboard/CctpStepVisualizer";
 
 // ABI for ERC20 balanceOf & decimals
 const erc20Abi = parseAbi([
@@ -868,94 +869,26 @@ export default function BridgePage() {
                         </button>
                       </div>
                     ) : (
-                      /* Progress View with Checklist Steps */
-                      <div className="space-y-6 py-4">
-                        <div className="relative w-16 h-16 mx-auto flex items-center justify-center">
-                          <div className="absolute inset-0 rounded-full border-[3px] border-primary/10 border-t-primary animate-spin" />
-                          <span className="text-xl">🌉</span>
-                        </div>
-
-                        <div className="space-y-1">
-                          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                            {bridgeState.status === "approving" && `Approving USDC on ${fromChain.name}...`}
-                            {bridgeState.status === "burning" && `Burning USDC on ${fromChain.name}...`}
-                            {bridgeState.status === "waiting-attestation" && `Waiting for Circle Attestation... (${bridgeState.elapsedSeconds}s)`}
-                            {bridgeState.status === "minting" && `Minting USDC on ${toChain.name}...`}
-                          </h3>
-                          <p className="text-[11px] text-text-tertiary max-w-xs mx-auto leading-relaxed font-medium">
-                            {bridgeState.status === "approving" && `Please approve the USDC allowance on ${fromChain.name} in your connected wallet.`}
-                            {bridgeState.status === "burning" && `Submitting transaction to burn USDC on ${fromChain.name}.`}
-                            {bridgeState.status === "waiting-attestation" && "Polling Circle Sandbox Iris API for consensus validation (usually takes 15-20 seconds)."}
-                            {bridgeState.status === "minting" && `Submitting Circle proofs to mint native USDC on ${toChain.name}.`}
-                          </p>
-                        </div>
-
-                        {/* Step checklist */}
-                        <div className="max-w-sm mx-auto p-4 bg-surface/50 border border-border-thin rounded-2xl text-left space-y-3.5">
-                          {/* Step 1: Approve */}
-                          <div className="flex items-center gap-3">
-                            <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[9px] ${
-                              bridgeState.status === "approving" 
-                                ? "bg-primary/20 border-primary text-primary animate-pulse font-bold" 
-                                : "bg-success/15 border-success text-success"
-                            }`}>
-                              {bridgeState.status === "approving" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                            </div>
-                            <span className={`text-[11px] ${bridgeState.status === "approving" ? "text-white font-bold" : "text-muted"}`}>
-                              1. Approve USDC Spending
-                            </span>
-                          </div>
-
-                          {/* Step 2: Burn */}
-                          <div className="flex items-center gap-3">
-                            <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[9px] ${
-                              bridgeState.status === "approving"
-                                ? "bg-surface border-border-thin text-text-tertiary"
-                                : bridgeState.status === "burning"
-                                ? "bg-primary/20 border-primary text-primary animate-pulse font-bold"
-                                : "bg-success/15 border-success text-success"
-                            }`}>
-                              {bridgeState.status === "approving" ? "2" : bridgeState.status === "burning" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                            </div>
-                            <span className={`text-[11px] ${
-                              bridgeState.status === "burning" ? "text-white font-bold" : bridgeState.status === "approving" ? "text-text-tertiary" : "text-muted"
-                            }`}>
-                              2. Burn USDC on {fromChain.name}
-                            </span>
-                          </div>
-
-                          {/* Step 3: Attestation */}
-                          <div className="flex items-center gap-3">
-                            <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[9px] ${
-                              bridgeState.status === "approving" || bridgeState.status === "burning"
-                                ? "bg-surface border-border-thin text-text-tertiary"
-                                : bridgeState.status === "waiting-attestation"
-                                ? "bg-primary/20 border-primary text-primary animate-pulse font-bold"
-                                : "bg-success/15 border-success text-success"
-                            }`}>
-                              {bridgeState.status === "approving" || bridgeState.status === "burning" ? "3" : bridgeState.status === "waiting-attestation" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                            </div>
-                            <span className={`text-[11px] ${
-                              bridgeState.status === "waiting-attestation" ? "text-white font-bold" : (bridgeState.status === "approving" || bridgeState.status === "burning") ? "text-text-tertiary" : "text-muted"
-                            }`}>
-                              3. Poll Circle Attestation
-                            </span>
-                          </div>
-
-                          {/* Step 4: Mint */}
-                          <div className="flex items-center gap-3">
-                            <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[9px] ${
-                              bridgeState.status === "minting"
-                                ? "bg-primary/20 border-primary text-primary animate-pulse font-bold"
-                                : "bg-surface border-border-thin text-text-tertiary"
-                            }`}>
-                              {bridgeState.status === "minting" ? <Loader2 className="w-3 h-3 animate-spin" /> : "4"}
-                            </div>
-                            <span className={`text-[11px] ${bridgeState.status === "minting" ? "text-white font-bold" : "text-text-tertiary"}`}>
-                              4. Mint USDC on {toChain.name}
-                            </span>
-                          </div>
-                        </div>
+                      /* Progress View with CCTP Step Visualizer */
+                      <div className="py-2">
+                        <CctpStepVisualizer 
+                          txState={{
+                            isActive: true,
+                            sourceChain: fromChain.name,
+                            destChain: toChain.name,
+                            amount,
+                            currentStep: bridgeState.status === "approving" ? "idle"
+                                       : bridgeState.status === "burning" ? "burn"
+                                       : bridgeState.status === "waiting-attestation" ? "attestation"
+                                       : bridgeState.status === "minting" ? "mint"
+                                       : bridgeState.status === "success" ? "success"
+                                       : "idle",
+                            burnTxHash: bridgeState.burnTxHash,
+                            mintTxHash: bridgeState.txHash,
+                            elapsedSeconds: bridgeState.elapsedSeconds,
+                            errorMessage: bridgeState.errorMessage
+                          }}
+                        />
                       </div>
                     )}
                   </motion.div>
@@ -963,6 +896,18 @@ export default function BridgePage() {
               </AnimatePresence>
             </GlassCard>
             
+            {/* Idle explainer visualizer for judges */}
+            {(progressState === "idle" || progressState === "error") && (
+              <CctpStepVisualizer 
+                txState={{
+                  isActive: false,
+                  sourceChain: fromChain.name,
+                  destChain: toChain.name,
+                  currentStep: "idle"
+                }}
+              />
+            )}
+
             <div className="text-center">
               <span className="text-[10px] text-text-tertiary tracking-wider font-semibold select-none flex items-center justify-center gap-1 uppercase">
                 <ShieldCheck className="w-3.5 h-3.5 text-success" />
