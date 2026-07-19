@@ -175,14 +175,20 @@ export default function LandingPage() {
           className="max-w-6xl mx-auto relative z-10 text-center"
         >
 
-          <h1 className="text-4xl sm:text-6xl md:text-[58px] font-bold font-space tracking-tight mb-6 leading-[1.12] text-[#F5F7FA] max-w-4xl mx-auto">
+          <h1
+            className="text-4xl sm:text-6xl md:text-[58px] font-bold font-space tracking-tight mb-6 leading-[1.12] text-[#F5F7FA] max-w-4xl mx-auto"
+            style={{ color: '#F5F7FA' }}
+          >
             Coordinate and protect{" "}
             <span className="bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] bg-clip-text text-transparent">
               your community's funds
             </span>
           </h1>
           
-          <p className="text-base sm:text-lg md:text-[17px] text-[#8B93A5] max-w-2xl mx-auto mb-10 leading-relaxed font-space">
+          <p
+            className="text-base sm:text-lg md:text-[17px] text-[#8B93A5] max-w-2xl mx-auto mb-10 leading-relaxed font-space"
+            style={{ color: '#9CA6B8' }}
+          >
             Keep project funds secure in milestone-based escrows, vote transparently on releases, and automatically prevent funds from sitting idle.
           </p>
           

@@ -230,13 +230,15 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 /* Ensure headings inside hero-dark always use the dark text color */
+/* !important required: beats the global h1-h6 { color: var(--color-text-primary) } rule
+   which can resolve before the scoped CSS var override takes effect in Tailwind v4 */
 .hero-dark h1,
 .hero-dark h2,
 .hero-dark h3,
 .hero-dark h4,
 .hero-dark h5,
 .hero-dark h6 {
-  color: #F5F7FA;
+  color: #F5F7FA !important;
 }
 
 .font-body {
