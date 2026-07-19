@@ -1,9 +1,9 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { usePathname } from "next/navigation";
-import { ShieldAlert, Wallet, Sparkles } from "lucide-react";
+import { ShieldAlert, Wallet, Sparkles, RefreshCw } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { WalletConnectModal } from "@/components/ui/WalletConnectModal";
 
@@ -21,12 +21,41 @@ export function WalletGuard({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
+  // Timeout state — if Privy takes more than 6s to initialize, show a retry prompt
+  const [timedOut, setTimedOut] = useState(false);
+  useEffect(() => {
+    if (!isProtected || ready) return;
+    const timer = setTimeout(() => setTimedOut(true), 6000);
+    return () => clearTimeout(timer);
+  }, [isProtected, ready]);
+
   // Prevent app render flash while Privy is computing auth cookies ONLY for protected routes
   if (!ready) {
+    if (timedOut) {
+      return (
+        <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4 px-4 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+            <RefreshCw className="w-5 h-5 text-amber-400" />
+          </div>
+          <p className="text-sm font-semibold text-text-tertiary">
+            Taking longer than expected
+          </p>
+          <p className="text-xs text-text-tertiary/60 max-w-[260px]">
+            Your connection may be slow. Try refreshing the page.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-1 px-5 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors cursor-pointer"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
     return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center text-text-tertiary">
-        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm font-semibold tracking-wide uppercase text-text-tertiary">Loading layout rails...</p>
+      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3 text-text-tertiary">
+        <div className="w-9 h-9 border-[3px] border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-text-tertiary/70">Just a moment…</p>
       </div>
     );
   }
