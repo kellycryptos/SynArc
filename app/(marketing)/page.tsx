@@ -175,12 +175,7 @@ export default function LandingPage() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="max-w-6xl mx-auto relative z-10 text-center"
         >
-          {/* Pill Badge */}
-          <div className="inline-flex items-center gap-2.5 px-4.5 py-2 rounded-full bg-[#0B111C] border border-[#1B2536] text-xs md:text-sm text-[#9CA6B8] mb-8 font-space">
-            <span className="w-1.75 h-1.75 rounded-full bg-[#22D3EE] animate-pulse" />
-            <span>Proven on Arc Testnet with 900+ proposals · Powered by X Layer</span>
-          </div>
-          
+
           <h1 className="text-4xl sm:text-6xl md:text-[58px] font-bold font-space tracking-tight mb-6 leading-[1.12] text-[#F5F7FA] max-w-4xl mx-auto">
             Coordinate and protect{" "}
             <span className="bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] bg-clip-text text-transparent">
