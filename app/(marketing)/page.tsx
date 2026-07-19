@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Shield, Lock, Globe, Grid, X, Send, CheckCircle2, Award, Plus, MessageSquare, Bot, Loader2 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { ProofOfAutonomyTimeline } from "@/components/dashboard/ProofOfAutonomyTimeline";
 import { AnimatePresence, motion } from "framer-motion";
 
 
@@ -259,46 +258,6 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* Proof of Autonomy Timeline Section */}
-      <section className="py-20 relative overflow-hidden px-4 border-b border-border-thin bg-[#160B2E]/10">
-        <div className="max-w-4xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
-            className="text-center mb-12"
-          >
-            <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 uppercase tracking-widest">
-              Live Network Operations
-            </span>
-            <h2 className="text-2xl md:text-3xl font-bold font-heading mt-3 mb-4 text-text-primary">
-              Proof of Autonomy Timeline
-            </h2>
-            <p className="text-xs md:text-sm text-text-secondary max-w-xl mx-auto leading-relaxed">
-              Verify real-time on-chain actions triggered and executed autonomously by the SynArc Treasury Agent when threshold rules are violated.
-            </p>
-          </motion.div>
-
-          <GlassCard className="p-6 md:p-8 bg-surface-elevated/20 border-border-thin" hover={false}>
-            <ProofOfAutonomyTimeline limit={3} />
-            
-            <div className="mt-8 pt-6 border-t border-border-thin/60 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-left text-xs text-text-secondary">
-                <span className="font-bold text-text-primary block mb-0.5">Want to verify the Smart Agent account?</span>
-                Explore the complete agent operations log, treasury rules console, and CCTP monitoring.
-              </div>
-              <Link 
-                href="/agent" 
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-xs hover:bg-primary-hover shadow-lg shadow-primary/10 transition-all active:scale-[0.99] cursor-pointer"
-              >
-                <span>Open Agent Console</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          </GlassCard>
-        </div>
-      </section>
 
       {/* Features Section */}
       <section id="features" className="py-24 relative z-10 bg-surface/50 border-y border-border-thin">
