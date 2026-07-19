@@ -15,18 +15,18 @@ export function NetworkStatusBadge() {
   const { isHealthy, latency, message } = useRpcStatus();
 
   const statusColor = isHealthy
-    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-    : "bg-red-500/10 border-red-500/20 text-red-400";
+    ? "bg-[#0B111C] border-[#1B2536] text-[#22D3EE]"
+    : "bg-[#170F09] border-[#3A2A1E] text-[#E2A66B]";
 
   const indicatorColor = isHealthy
-    ? "bg-emerald-400"
-    : "bg-red-400";
+    ? "bg-[#22D3EE]"
+    : "bg-[#E2A66B]";
 
   const animationClass = isHealthy ? "animate-pulse" : "animate-none";
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusColor} transition-all`}
+      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-mono border ${statusColor} transition-all`}
       title={message}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${indicatorColor} ${animationClass}`} />

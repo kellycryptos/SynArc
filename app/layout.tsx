@@ -54,10 +54,10 @@ export default function RootLayout({
             <div className="absolute inset-0 grid-overlay opacity-30" />
             {/* Subtle top glow */}
             <div
-              className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] opacity-20"
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] opacity-15"
               style={{
                 background:
-                  "radial-gradient(ellipse at top, var(--glow-purple, rgba(168,85,247,0.15)) 0%, var(--glow-blue, rgba(59,130,246,0.08)) 40%, transparent 70%)",
+                  "radial-gradient(ellipse at top, rgba(47,111,255,0.2) 0%, rgba(34,211,238,0.1) 45%, transparent 70%)",
               }}
             />
           </div>

@@ -70,22 +70,24 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
   };
 
   return (
-    <aside className={cn("w-64 bg-background-surface border-r border-border flex flex-col h-full", className)}>
+    <aside className={cn("w-64 bg-[#05080F] border-r border-[#151C29] flex flex-col h-full", className)}>
       {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-border-thin shrink-0">
+      <div className="h-16 flex items-center px-5 border-b border-[#151C29] shrink-0">
         <button
           onClick={() => handleNavClick("/")}
           className="flex items-center gap-2.5 group cursor-pointer"
         >
-          <SynArcLogo size={28} animated />
-          <span className="text-xl font-bold tracking-tight">
-            <span className="gradient-text">SynArc</span>
+          <div className="w-[30px] h-[30px] rounded-[7px] bg-gradient-to-br from-[#2F6FFF] to-[#22D3EE] flex items-center justify-center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#04101C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z"/></svg>
+          </div>
+          <span className="text-[16px] font-bold font-space tracking-tight text-[#F5F7FA]">
+            SynArc
           </span>
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-        {/* ⚡ AGENT — Primary Feature */}
+      <div className="flex-1 overflow-y-auto py-5 px-3.5 space-y-1">
+        {/* ⚡ AGENT — Primary Feature Card */}
         {(() => {
           const href = "/agent";
           const active = pathname === href || pathname.startsWith(href + "/");
@@ -93,42 +95,28 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
             <button
               onClick={() => handleNavClick(href)}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold transition-all duration-200 group cursor-pointer text-left mb-2",
-                active
-                  ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_24px_rgba(124,58,237,0.18)]"
-                  : "text-foreground hover:text-primary hover:bg-primary/10 border border-primary/20 hover:border-primary/40 hover:shadow-[0_0_16px_rgba(124,58,237,0.12)] bg-primary/5"
+                "w-full flex items-center justify-between border border-[#1B2536] bg-[#0B111C] rounded-lg px-3.5 py-3 text-xs font-medium transition-all group cursor-pointer text-left mb-4",
+                active && "border-[#22D3EE]/40 bg-[#0F1620]"
               )}
             >
-              <Zap
-                className={cn(
-                  "w-4.5 h-4.5 shrink-0 transition-colors duration-200",
-                  active ? "text-primary" : "text-primary/80 group-hover:text-primary"
-                )}
-              />
-              <span>Treasury Agent</span>
-              {!active && (
-                <span className="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-primary/20 border border-primary/30 text-primary tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping inline-block" />
-                  LIVE
-                </span>
-              )}
-              {active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(124,58,237,0.8)]" />
-              )}
+              <span className="text-[13px] font-medium text-[#F5F7FA] flex items-center gap-2 font-space">
+                ⚡ Treasury Agent
+              </span>
+              <span className="font-mono text-[10px] tracking-wider text-[#22D3EE] border border-[#163241] bg-[#08161C] px-1.75 py-0.5 rounded flex items-center gap-1.25">
+                <span className="w-1.25 h-1.25 rounded-full bg-[#22D3EE] animate-pulse" />
+                LIVE
+              </span>
             </button>
           );
         })()}
 
         {/* Section label */}
-        <p className="px-3 pb-2 text-[10px] uppercase tracking-[0.15em] font-semibold text-muted/50">
+        <p className="px-1.5 pb-2 text-[11px] uppercase tracking-[0.1em] font-mono text-[#4E566A]">
           Governance
         </p>
 
         {/* Active navigation links */}
         {activeLinks.map((link) => {
-          // Mark active if exact match, or if current path starts with link href
-          // (handles sub-routes like /proposals/[id], /daos/[id])
-          // Special case: /dashboard only matches exactly to avoid matching all paths
           const active =
             pathname === link.href ||
             (link.href !== "/dashboard" && pathname.startsWith(link.href + "/")) ||
@@ -140,26 +128,26 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
               key={link.href}
               onClick={() => handleNavClick(link.href)}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer text-left",
+                "w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm font-space transition-all group cursor-pointer text-left",
                 active
-                  ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_18px_rgba(124,58,237,0.12)]"
-                  : "text-muted hover:text-foreground hover:bg-surface-elevated border border-transparent hover:border-border-thin hover:shadow-[0_0_10px_rgba(124,58,237,0.05)]"
+                  ? "bg-[#0F1620] text-[#F5F7FA] font-medium"
+                  : "text-[#9CA6B8] hover:text-[#F5F7FA] hover:bg-[#0F1620]/50"
               )}
             >
               <Icon
                 className={cn(
-                  "w-4.5 h-4.5 shrink-0 transition-colors duration-200",
-                  active ? "text-primary" : "text-muted group-hover:text-foreground"
+                  "w-[17px] h-[17px] shrink-0 transition-colors",
+                  active ? "stroke-[#22D3EE]" : "stroke-[#6B7385] group-hover:stroke-[#9CA6B8]"
                 )}
               />
               <span>{link.label}</span>
               {link.isNew && !active && (
-                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-primary/15 border border-primary/25 text-primary tracking-wider animate-pulse">
+                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-mono bg-[#08161C] border border-[#163241] text-[#22D3EE]">
                   NEW
                 </span>
               )}
               {active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(124,58,237,0.8)]" />
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#22D3EE]" />
               )}
             </button>
           );

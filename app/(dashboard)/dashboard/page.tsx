@@ -44,22 +44,17 @@ export default function DashboardOverview() {
 
       {/* ⚡ Agent Status Banner */}
       <Link href="/agent" className="block">
-        <div className="flex items-center justify-between gap-4 px-5 py-3.5 rounded-xl border border-primary/25 bg-primary/5 hover:bg-primary/8 hover:border-primary/40 transition-all group cursor-pointer">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Bot className="w-5 h-5 text-primary" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary animate-ping" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
-            </div>
+        <div className="relative overflow-hidden flex items-center justify-between gap-4 px-5 py-4 rounded-lg border border-[#1B2536] bg-[#0B111C] hover:border-[#22D3EE]/40 transition-all group cursor-pointer">
+          <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-[#2F6FFF] to-[#22D3EE]" />
+          <div className="flex items-center gap-3.5 pl-1">
+            <span className="text-lg text-[#22D3EE]">🛡</span>
             <div>
-              <span className="text-sm font-bold text-text-primary">Treasury Guard Active</span>
-              <span className="ml-3 text-xs text-muted">Monitoring treasury · Automated rules active</span>
+              <div className="text-sm font-medium text-[#F5F7FA] font-space">Treasury guard active</div>
+              <div className="text-xs text-[#6B7385] font-mono mt-0.5">monitoring treasury · automated rules active</div>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-primary text-xs font-bold group-hover:gap-3 transition-all">
-            <Activity className="w-3.5 h-3.5 animate-pulse" />
-            View Agent
-            <ArrowRight className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-1.5 text-[#22D3EE] text-xs font-medium font-space group-hover:gap-2.5 transition-all">
+            View agent &rarr;
           </div>
         </div>
       </Link>

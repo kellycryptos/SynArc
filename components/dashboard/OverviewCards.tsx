@@ -6,6 +6,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { DollarSign, FileText, Activity, Users, ArrowRightLeft, CheckCircle2 } from "lucide-react";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 function RenderAnimatedValue({ value }: { value: string | number }) {
   if (typeof value === "number") {
@@ -86,39 +87,30 @@ export function OverviewCards() {
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#151C29] border border-[#151C29] rounded-[10px] overflow-hidden"
     >
       {cards.map((card) => {
         const Icon = card.icon;
+        const isUp = card.trend.includes("+") || card.trend === "High";
         return (
-          <motion.div key={card.title} variants={itemVariants}>
-            <motion.div
-              whileHover={{ 
-                y: -4,
-                boxShadow: '0 20px 40px rgba(124, 58, 237, 0.12)',
-                borderColor: 'rgba(124, 58, 237, 0.3)',
-              }}
-              transition={{ duration: 0.2 }}
-              className="rounded-2xl overflow-hidden h-full"
-            >
-              <GlassCard className="p-5 flex flex-col gap-4 relative overflow-hidden group bg-background-surface border border-border h-full" hover={false}>
-                <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
-                <div className="flex items-start justify-between relative z-10">
-                  <div className="p-2 bg-surface-elevated rounded-lg border border-border-thin shadow-sm">
-                    <Icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-full border border-success/20">
-                    {card.trend}
-                  </span>
-                </div>
-                <div className="relative z-10">
-                  <p className="text-sm text-muted font-medium mb-1">{card.title}</p>
-                  <h3 className="text-2xl font-bold font-heading tracking-tight text-text-primary">
-                    <RenderAnimatedValue value={card.value} />
-                  </h3>
-                </div>
-              </GlassCard>
-            </motion.div>
+          <motion.div key={card.title} variants={itemVariants} className="bg-[#080C14] p-5.5 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-5">
+              <Icon className="w-4.5 h-4.5 text-[#6B7385]" />
+              <span className={cn(
+                "font-mono text-xs px-2 py-0.5 rounded-[5px] border",
+                isUp 
+                  ? "text-[#22D3EE] bg-[#08161C] border-[#163241]" 
+                  : "text-[#8B93A5] bg-[#10151F] border-[#1B2536]"
+              )}>
+                {card.trend}
+              </span>
+            </div>
+            <div>
+              <p className="text-xs sm:text-[13px] text-[#6B7385] mb-2 font-space">{card.title}</p>
+              <h3 className="font-mono text-2xl sm:text-[26px] font-medium text-[#F5F7FA]">
+                <RenderAnimatedValue value={card.value} />
+              </h3>
+            </div>
           </motion.div>
         );
       })}

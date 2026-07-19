@@ -27,6 +27,9 @@ const config: Config = {
         },
       },
       fontFamily: {
+        space: ["Space Grotesk", "sans-serif"],
+        heading: ["Space Grotesk", "sans-serif"],
+        mono: ["IBM Plex Mono", "monospace"],
         inter: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
         sora: ["var(--font-sora)", "ui-sans-serif", "system-ui", "sans-serif"],
       },

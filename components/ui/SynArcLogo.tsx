@@ -56,9 +56,8 @@ export function SynArcLogo({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="#a855f7" />
-            <stop offset="50%" stopColor="#3b82f6" />
-            <stop offset="100%" stopColor="#22d3ee" />
+            <stop offset="0%" stopColor="#2F6FFF" />
+            <stop offset="100%" stopColor="#22D3EE" />
           </linearGradient>
           <linearGradient
             id="logoGradientInner"
@@ -67,9 +66,8 @@ export function SynArcLogo({
             x2="0%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="#22d3ee" />
-            <stop offset="50%" stopColor="#3b82f6" />
-            <stop offset="100%" stopColor="#a855f7" />
+            <stop offset="0%" stopColor="#22D3EE" />
+            <stop offset="100%" stopColor="#2F6FFF" />
           </linearGradient>
         </defs>
 

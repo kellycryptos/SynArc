@@ -164,44 +164,46 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden px-4">
+      <section className="relative pt-24 pb-16 md:pt-36 md:pb-24 overflow-hidden px-4 bg-[#05080F]">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] opacity-30 bg-gradient-to-r from-primary via-arc-blue to-accent blur-[100px] rounded-full" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] opacity-20 bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] blur-[120px] rounded-full" />
         </div>
         
         <motion.div 
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="max-w-7xl mx-auto relative z-10 text-center"
+          className="max-w-6xl mx-auto relative z-10 text-center"
         >
-          {/* Live agent badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-elevated border border-primary/30 text-sm font-medium mb-8">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            ⚡ Automated Treasury Rules
+          {/* Pill Badge */}
+          <div className="inline-flex items-center gap-2.5 px-4.5 py-2 rounded-full bg-[#0B111C] border border-[#1B2536] text-xs md:text-sm text-[#9CA6B8] mb-8 font-space">
+            <span className="w-1.75 h-1.75 rounded-full bg-[#22D3EE] animate-pulse" />
+            <span>Proven on Arc Testnet with 900+ proposals · Powered by X Layer</span>
           </div>
           
-          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold font-heading tracking-tight mb-6 leading-tight text-text-primary">
-            Coordinate and Protect <br className="hidden md:block" />
-            <span className="gradient-text">Your Community's Funds</span>
+          <h1 className="text-4xl sm:text-6xl md:text-[58px] font-bold font-space tracking-tight mb-6 leading-[1.12] text-[#F5F7FA] max-w-4xl mx-auto">
+            Coordinate and protect{" "}
+            <span className="bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] bg-clip-text text-transparent">
+              your community's funds
+            </span>
           </h1>
           
-          <p className="text-sm sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto mb-8 sm:mb-10">
-            Keep your project funds secure in milestone-based escrows, vote transparently on releases, and automatically prevent funds from sitting idle.
+          <p className="text-base sm:text-lg md:text-[17px] text-[#8B93A5] max-w-2xl mx-auto mb-10 leading-relaxed font-space">
+            Keep project funds secure in milestone-based escrows, vote transparently on releases, and automatically prevent funds from sitting idle.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             {/* Primary CTA — Agent */}
             <motion.div
-              whileHover={{ scale: 1.04, y: -2 }}
+              whileHover={{ scale: 1.03, y: -1 }}
               whileTap={{ scale: 0.98 }}
               className="w-full sm:w-auto"
             >
               <Link 
                 href="/agent"
-                className="w-full sm:w-auto px-6 py-3.5 sm:px-10 sm:py-4.5 rounded-xl bg-gradient-to-r from-accent-purple via-purple-600 to-accent-blue text-white font-black hover:opacity-95 transition-all shadow-[0_0_35px_rgba(124,58,237,0.35)] hover:shadow-[0_0_50px_rgba(124,58,237,0.55)] flex items-center justify-center gap-2 text-base sm:text-lg border border-white/10"
+                className="w-full sm:w-auto px-6 py-3.5 sm:px-7 sm:py-3.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] text-[#04101C] font-bold hover:opacity-95 transition-all shadow-[0_0_30px_rgba(34,211,238,0.2)] flex items-center justify-center gap-2 text-base font-space"
               >
-                <span className="text-white-keep">View Automated Treasury &rarr;</span>
+                <span>View automated treasury &rarr;</span>
               </Link>
             </motion.div>
             {/* Secondary CTA — Dashboard */}
@@ -212,9 +214,9 @@ export default function LandingPage() {
             >
               <Link 
                 href="/dashboard"
-                className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-3.5 rounded-xl border border-border hover:border-accent-purple/30 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-sm sm:text-base bg-surface"
+                className="w-full sm:w-auto px-6 py-3.5 sm:px-7 sm:py-3.5 rounded-lg bg-[#0B111C] border border-[#232E42] hover:border-[#22D3EE]/40 text-[#F5F7FA] font-medium transition-all flex items-center justify-center gap-2 text-base font-space"
               >
-                Launch Dashboard
+                Launch dashboard
               </Link>
             </motion.div>
             {/* Docs CTA */}
@@ -225,16 +227,40 @@ export default function LandingPage() {
             >
               <Link 
                 href="/docs"
-                className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-3.5 rounded-xl border border-border hover:border-accent-purple/30 hover:bg-surface-elevated text-text-primary font-semibold transition-all flex items-center justify-center gap-2 text-sm sm:text-base bg-surface"
+                className="w-full sm:w-auto px-6 py-3.5 sm:px-7 sm:py-3.5 rounded-lg bg-[#0B111C] border border-[#232E42] hover:border-[#22D3EE]/40 text-[#F5F7FA] font-medium transition-all flex items-center justify-center gap-2 text-base font-space"
               >
-                View Docs &rarr;
+                View docs &rarr;
               </Link>
             </motion.div>
           </div>
           
-          <p className="text-xs text-text-tertiary/60 mt-6 font-mono tracking-wider select-none">
-            ⚡ Secure milestone escrows · Direct cross-chain transfers · Community-governed treasuries
-          </p>
+          {/* Bordered 4-Stat Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 max-w-5xl mx-auto mt-16 pt-8 border-t border-[#151C29] gap-y-6">
+            <div className="stat px-4 text-center md:border-r border-[#151C29]">
+              <div className="font-mono text-2xl sm:text-[27px] font-medium bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] bg-clip-text text-transparent">
+                $2.4M
+              </div>
+              <div className="text-xs sm:text-[13px] text-[#6B7385] mt-2 font-space">Under escrow</div>
+            </div>
+            <div className="stat px-4 text-center md:border-r border-[#151C29]">
+              <div className="font-mono text-2xl sm:text-[27px] font-medium bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] bg-clip-text text-transparent">
+                900+
+              </div>
+              <div className="text-xs sm:text-[13px] text-[#6B7385] mt-2 font-space">Proposals recorded</div>
+            </div>
+            <div className="stat px-4 text-center md:border-r border-[#151C29]">
+              <div className="font-mono text-2xl sm:text-[27px] font-medium bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] bg-clip-text text-transparent">
+                100%
+              </div>
+              <div className="text-xs sm:text-[13px] text-[#6B7385] mt-2 font-space">Vote transparency</div>
+            </div>
+            <div className="stat px-4 text-center">
+              <div className="font-mono text-2xl sm:text-[27px] font-medium bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] bg-clip-text text-transparent">
+                0
+              </div>
+              <div className="text-xs sm:text-[13px] text-[#6B7385] mt-2 font-space">Idle fund incidents</div>
+            </div>
+          </div>
         </motion.div>
       </section>
 

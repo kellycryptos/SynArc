@@ -66,18 +66,18 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </div>
 
         {/* Search Bar (Desktop Only) */}
-        <div className="hidden md:flex items-center bg-surface-elevated border border-border-thin rounded-full px-3 py-1.5 w-64 lg:w-80 focus-within:border-primary/50 focus-within:shadow-[0_0_10px_rgba(124,58,237,0.1)] transition-all">
-          <Search className="w-4 h-4 text-muted mr-2" />
+        <div className="hidden md:flex items-center bg-[#0B111C] border border-[#1B2536] rounded-lg px-3.5 py-2.5 w-64 lg:w-80 focus-within:border-[#22D3EE]/40 transition-all">
+          <Search className="w-4 h-4 text-[#6B7385] mr-2" />
           <input 
             type="text" 
-            placeholder="Search proposals, addresses..." 
-            className="bg-transparent border-none outline-none text-sm w-full text-foreground placeholder:text-muted"
+            placeholder="Search proposals, addresses…" 
+            className="bg-transparent border-none outline-none text-sm w-full text-[#F5F7FA] placeholder:text-[#6B7385] font-space"
           />
         </div>
       </div>
       
       {/* Right side (Desktop Only) */}
-      <div className="hidden md:flex items-center gap-3 sm:gap-4">
+      <div className="hidden md:flex items-center gap-3 sm:gap-4 font-mono text-xs">
         {isAuthenticated ? (
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Arc Network Status Badge with RPC Health */}
@@ -85,31 +85,27 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
             {/* USDC Balance Display */}
             {loading ? (
-              <div className="h-7 w-24 bg-surface-elevated animate-pulse rounded-full border border-border-thin shrink-0" />
+              <div className="h-8 w-24 bg-[#0B111C] animate-pulse rounded-lg border border-[#1B2536] shrink-0" />
             ) : error ? (
-              <span className="hidden xs:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-danger/10 border border-danger/20 text-danger shrink-0" title="Failed to fetch balance from Arc RPC">
+              <span className="hidden xs:inline-flex items-center px-3 py-2 rounded-lg text-xs font-mono bg-danger/10 border border-danger/20 text-danger shrink-0">
                 -- USDC
               </span>
             ) : balance !== null ? (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/20 text-primary-glow text-purple-300 shrink-0">
+              <span className="inline-flex items-center px-3 py-2 rounded-lg text-xs font-mono bg-[#0B111C] border border-[#1B2536] text-[#F5F7FA] shrink-0">
                 {parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
               </span>
             ) : null}
 
             {/* User Profile Card */}
-            <div className="flex items-center gap-2 bg-surface-elevated border border-border-thin rounded-full px-3 py-1.5 hover:border-primary/20 transition-all duration-300">
-              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+            <div className="flex items-center gap-2 bg-[#0B111C] border border-[#1B2536] rounded-lg px-3 py-2 text-[#22D3EE] font-mono">
+              <span className="text-xs font-mono flex items-center gap-1.5">
                 {isCircle ? (
                   <>
-                    <span>⭕</span>
-                    <span>Circle Wallet</span>
-                    <span className="text-[10px] font-mono text-muted/80 font-medium">({shortAddress})</span>
+                    <span>⭕ Circle Wallet ({shortAddress})</span>
                   </>
                 ) : (
                   <>
-                    <span>🔐</span>
-                    <span>Privy Wallet</span>
-                    <span className="text-[10px] font-mono text-muted/80 font-medium">({shortAddress})</span>
+                    <span>🔒 Privy Wallet ({shortAddress})</span>
                   </>
                 )}
               </span>
