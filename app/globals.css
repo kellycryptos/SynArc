@@ -211,6 +211,34 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   color: var(--color-text-primary);
 }
 
+/* ── hero-dark: force dark palette regardless of page theme ── */
+/* Applied to sections that should always render dark-on-dark (e.g. the hero
+   landing section). Overrides the .light class CSS variable values scoped
+   within this element so text + background are always contrast-safe together. */
+.hero-dark {
+  --bg-primary: #05080F;
+  --bg-surface: #0B111C;
+  --text-primary: #F5F7FA;
+  --text-secondary: #9CA6B8;
+  --text-muted: #6B7385;
+  --border: #151C29;
+  --border-card: #1B2536;
+  --color-text-primary: #F5F7FA;
+  --color-text-secondary: #9CA6B8;
+  --color-text-muted: #6B7385;
+  --color-foreground: #F5F7FA;
+}
+
+/* Ensure headings inside hero-dark always use the dark text color */
+.hero-dark h1,
+.hero-dark h2,
+.hero-dark h3,
+.hero-dark h4,
+.hero-dark h5,
+.hero-dark h6 {
+  color: #F5F7FA;
+}
+
 .font-body {
   font-family: 'Space Grotesk', sans-serif;
 }

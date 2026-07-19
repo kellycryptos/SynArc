@@ -162,8 +162,8 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="relative pt-24 pb-16 md:pt-36 md:pb-24 overflow-hidden px-4 bg-[#05080F]">
+      {/* Hero Section — intentionally always dark; hero-dark class pins dark CSS vars */}
+      <section className="relative pt-24 pb-16 md:pt-36 md:pb-24 overflow-hidden px-4 bg-[#05080F] hero-dark">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] opacity-20 bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] blur-[120px] rounded-full" />
         </div>
@@ -209,6 +209,7 @@ export default function LandingPage() {
               <Link 
                 href="/dashboard"
                 className="w-full sm:w-auto px-6 py-3.5 sm:px-7 sm:py-3.5 rounded-lg bg-[#0B111C] border border-[#232E42] hover:border-[#22D3EE]/40 text-[#F5F7FA] font-medium transition-all flex items-center justify-center gap-2 text-base font-space"
+                style={{ color: '#F5F7FA' }}
               >
                 Launch dashboard
               </Link>
@@ -222,6 +223,7 @@ export default function LandingPage() {
               <Link 
                 href="/docs"
                 className="w-full sm:w-auto px-6 py-3.5 sm:px-7 sm:py-3.5 rounded-lg bg-[#0B111C] border border-[#232E42] hover:border-[#22D3EE]/40 text-[#F5F7FA] font-medium transition-all flex items-center justify-center gap-2 text-base font-space"
+                style={{ color: '#F5F7FA' }}
               >
                 View docs &rarr;
               </Link>
