@@ -899,18 +899,6 @@ export default function BridgePage() {
                 )}
               </AnimatePresence>
             </GlassCard>
-            
-            {/* Idle explainer visualizer for judges */}
-            {(progressState === "idle" || progressState === "error") && (
-              <CctpStepVisualizer 
-                txState={{
-                  isActive: false,
-                  sourceChain: fromChain.name,
-                  destChain: toChain.name,
-                  currentStep: "idle"
-                }}
-              />
-            )}
 
             <div className="text-center">
               <span className="text-[10px] text-text-tertiary tracking-wider font-semibold select-none flex items-center justify-center gap-1 uppercase">

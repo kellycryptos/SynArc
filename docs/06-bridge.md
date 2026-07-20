@@ -16,7 +16,15 @@ SynArc supports bridging in both directions:
 
 ### How Direct Transfers Work Under the Hood
 
-Unlike traditional lock-and-mint bridges that issue synthetic, wrapped tokens (which introduce custodian risks and pool fragmentation), our direct transfer route uses a native burn-and-mint mechanism for absolute security:
+Cross-Chain Transfer Protocol (CCTP) is a native utility by Circle that enables secure burn-and-mint transfers of USDC across blockchains. No liquidity pools or third-party wrappers are used.
+
+#### The 4-Step Bridge Pipeline
+1. **01 - Burn USDC on Source**: Initiate burn on source chain (e.g., Arc Testnet or Ethereum Sepolia).
+2. **02 - Circle Consensus Attestation**: Poll Circle Sandbox Iris API for consensus validation.
+3. **03 - Attestation Signed & Received**: Cryptographic proof generated and returned by Circle.
+4. **04 - Mint USDC on Destination**: Submit message and attestation to complete mint on destination chain.
+
+> 💡 **Try It Yourself:** Trigger a CCTP Transfer on the **Bridge** tab or run a rebalance on the **Agent** dashboard to see this pipeline execute live in real-time.
 
 ```mermaid
 sequenceDiagram

@@ -13,7 +13,6 @@ import {
   Clock
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import Link from "next/link";
 
 export interface CctpTxState {
   isActive: boolean;
@@ -128,50 +127,7 @@ export function CctpStepVisualizer({ txState }: { txState: CctpTxState }) {
   ];
 
   if (!isActive) {
-    // ──── IDLE STATE EXPLAINER FOR JUDGES ────
-    return (
-      <GlassCard className="p-5 border-border-thin bg-surface-elevated/20 text-left space-y-4" hover={false}>
-        <div className="flex items-center gap-2">
-          <HelpCircle className="w-5 h-5 text-primary" />
-          <h2 className="text-sm font-bold text-text-primary">Circle CCTP Consensus Flow</h2>
-          <span className="ml-auto text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-surface border border-border-thin text-muted uppercase tracking-widest">
-            Idle Explainer
-          </span>
-        </div>
-
-        <p className="text-xs text-text-secondary leading-relaxed">
-          Cross-Chain Transfer Protocol (CCTP) is a native utility by Circle that enables secure burn-and-mint transfers of USDC across blockchains. No liquidity pools or third-party wrappers are used.
-        </p>
-
-        {/* 4-Step Diagram in Idle State */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1">
-          {steps.map((step, idx) => {
-            const Icon = step.icon;
-            return (
-              <div 
-                key={idx} 
-                className="p-3 rounded-xl border border-border-thin bg-surface-elevated/40 flex flex-col gap-2 relative group hover:border-primary/20 transition-all duration-300"
-              >
-                <div className="flex items-center justify-between">
-                  <div className={`w-8 h-8 rounded-lg bg-surface border border-border-thin flex items-center justify-center text-xs font-bold text-muted group-hover:text-primary transition-all`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <span className="text-[10px] font-bold text-muted font-mono">0{idx + 1}</span>
-                </div>
-                <div>
-                  <h4 className="text-[11px] font-bold text-text-primary leading-tight">{step.title}</h4>
-                  <p className="text-[9px] text-text-tertiary mt-0.5 leading-snug">{step.description}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="p-3 bg-primary/5 border border-primary/10 rounded-xl text-[10px] text-text-tertiary leading-relaxed">
-          💡 <strong>Demo Tip:</strong> Trigger a CCTP Transfer on the <Link href="/bridge" className="text-primary hover:underline font-bold">Bridge</Link> tab or run a rebalance on the <Link href="/agent" className="text-primary hover:underline font-bold">Agent</Link> dashboard to see this pipeline execute live in real-time.
-        </div>
-      </GlassCard>
-    );
+    return null;
   }
 
   // ──── ACTIVE STATE VISUALIZER ────
