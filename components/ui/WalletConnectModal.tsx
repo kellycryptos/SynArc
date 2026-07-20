@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { useCircleWallet } from '@/hooks/useCircleWallet';
 import { X, Loader2 } from 'lucide-react';
 
@@ -11,7 +11,7 @@ interface WalletConnectModalProps {
 }
 
 export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps) {
-  const { login } = usePrivy();
+  const { login } = useAuth();
   const { connectCircleWallet, loading, loadingStep } = useCircleWallet();
   const [emailInput, setEmailInput] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
