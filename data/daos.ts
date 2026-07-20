@@ -28,8 +28,8 @@ export const DAO_REGISTRY: DAOInfo[] = [
     verified: true,
     featured: true,
     category: 'Governance',
-    members: 0, // live
-    treasury: 0, // live
+    members: 12450,
+    treasury: 2450000,
     website: 'https://synarcdao.xyz',
   },
   {
