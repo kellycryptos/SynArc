@@ -4,6 +4,8 @@ import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+
 const inter = { variable: "--font-inter" };
 const sora = { variable: "--font-sora" };
 
@@ -48,23 +50,25 @@ export default function RootLayout({
         className={`${inter.variable} ${sora.variable} antialiased min-h-screen flex flex-col relative bg-background text-foreground`}
       >
         <ThemeProvider>
-          {/* Ambient page background */}
-          <div className="fixed inset-0 pointer-events-none z-0">
-            <div className="absolute inset-0 bg-background" />
-            <div className="absolute inset-0 grid-overlay opacity-30" />
-            {/* Subtle top glow */}
-            <div
-              className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] opacity-15"
-              style={{
-                background:
-                  "radial-gradient(ellipse at top, rgba(47,111,255,0.2) 0%, rgba(34,211,238,0.1) 45%, transparent 70%)",
-              }}
-            />
-          </div>
+          <ErrorBoundary sectionName="Root Application">
+            {/* Ambient page background */}
+            <div className="fixed inset-0 pointer-events-none z-0">
+              <div className="absolute inset-0 bg-background" />
+              <div className="absolute inset-0 grid-overlay opacity-30" />
+              {/* Subtle top glow */}
+              <div
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] opacity-15"
+                style={{
+                  background:
+                    "radial-gradient(ellipse at top, rgba(47,111,255,0.2) 0%, rgba(34,211,238,0.1) 45%, transparent 70%)",
+                }}
+              />
+            </div>
 
-          <div className="relative z-10 flex flex-col min-h-screen">
-            {children}
-          </div>
+            <div className="relative z-10 flex flex-col min-h-screen">
+              {children}
+            </div>
+          </ErrorBoundary>
         </ThemeProvider>
         <Analytics />
         <SpeedInsights />

@@ -1,5 +1,107 @@
 [
   {
+    "timestamp": "2026-07-19T12:26:20.616Z",
+    "action": "error",
+    "reasoning": "Failed to read treasury balances on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_call\",\"params\":[{\"data\":\"0x73688e56\",\"to\":\"0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28\"},\"latest\"]}\n \nRaw Call Arguments:\n  to:    0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28\n  data:  0x73688e56\n \nContract Call:\n  address:   0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28\n  function:  usdcBalance()\n\nDocs: https://viem.sh/docs/contract/readContract\nDetails: fetch failed\nVersion: viem@2.49.3",
+    "status": "failed"
+  },
+  {
+    "timestamp": "2026-07-19T12:21:20.600Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T12:16:20.599Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T12:11:20.599Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T12:06:20.599Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T12:01:20.596Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T11:56:20.582Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T11:51:20.579Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T11:46:20.570Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T11:41:20.557Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T11:36:20.557Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T11:31:20.548Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T11:26:20.544Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T11:21:20.536Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T11:16:20.527Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T11:11:20.523Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T11:06:20.515Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
     "timestamp": "2026-07-09T06:24:34.840Z",
     "action": "monitoring",
     "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
@@ -217,117 +319,5 @@
     "action": "monitoring",
     "reasoning": "AI analysis completed with parser fallback.",
     "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:16:13.308Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:15:20.280Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:15:13.303Z",
-    "action": "emergency_funding",
-    "reasoning": "USDC balance is 0",
-    "txHash": "0x28027eeff1efca0f5757c5fc437750712a1c6bc87a169a1df18e611e7538613f",
-    "status": "executed",
-    "usdcAmount": 0
-  },
-  {
-    "timestamp": "2026-07-07T19:14:20.272Z",
-    "action": "string",
-    "reasoning": "string",
-    "txHash": "0xdb59cbb14705c35e8f0cf0e0dcf440417cd27a943e786335e83e1cb76719e451",
-    "status": "executed",
-    "usdcAmount": 0
-  },
-  {
-    "timestamp": "2026-07-07T19:14:13.305Z",
-    "action": "emergency_funding",
-    "reasoning": "USDC balance is 0",
-    "txHash": "0x9dd6d4cabb24e0ffc7d6fbcb4e016d92b4a67ce915418a7178b818b3d73f0412",
-    "status": "executed",
-    "usdcAmount": 0
-  },
-  {
-    "timestamp": "2026-07-07T19:13:13.313Z",
-    "action": "emergency_funding",
-    "reasoning": "USDC balance is 0",
-    "txHash": "0x7fd4897a39f9f81d5ca3bb973a1b4a1fc3c64b28f7c275912a7e7acf88fb34d0",
-    "status": "executed",
-    "usdcAmount": 0
-  },
-  {
-    "timestamp": "2026-07-07T19:13:20.282Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:12:20.298Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:12:13.317Z",
-    "action": "monitoring",
-    "reasoning": "(string)",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:11:20.306Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:11:13.329Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:10:20.313Z",
-    "action": "monitoring",
-    "reasoning": "(string)",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:10:13.336Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:09:20.314Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:09:13.342Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:08:20.316Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:08:13.341Z",
-    "action": "emergency_funding",
-    "reasoning": "USDC balance is 0",
-    "txHash": "0xf50ee2f5eebd664228561c68f0f127d890c15e122cc3d9e6ec4a3b6a5c852917",
-    "status": "executed",
-    "usdcAmount": 0
   }
 ]

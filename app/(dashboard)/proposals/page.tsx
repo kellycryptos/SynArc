@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { SectionErrorBoundary } from "@/components/ErrorBoundary";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
@@ -212,7 +213,8 @@ export default function ProposalsPage() {
         </div>
 
         {/* Proposals List */}
-        <div className="grid grid-cols-1 gap-6">
+        <SectionErrorBoundary sectionName="Proposals List">
+          <div className="grid grid-cols-1 gap-6">
           {isLoading && proposals.length === 0 ? (
             // Skeleton loading state — 3 placeholder cards
             <>
@@ -337,8 +339,8 @@ export default function ProposalsPage() {
               );
             })
           )}
-
-      </div>
+        </div>
+        </SectionErrorBoundary>
     </div>
   );
 }

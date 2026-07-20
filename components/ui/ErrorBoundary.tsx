@@ -80,3 +80,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+export { SectionErrorBoundary } from "@/components/ErrorBoundary";
+
+

@@ -3,6 +3,7 @@
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useTreasury } from "@/hooks/useTreasury";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { SectionErrorBoundary } from "@/components/ErrorBoundary";
 import { BarChart3, TrendingUp, Users, Activity, AlertCircle, RefreshCw, Calendar } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { ethers, Contract, formatUnits } from "ethers";
@@ -300,76 +301,79 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Overview Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <GlassCard className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Activity className="w-5 h-5 text-primary" />
-              <span className="font-medium text-sm text-muted">Total Proposals</span>
-            </div>
-            {!initialized ? (
-              <div className="h-10 bg-surface-elevated rounded animate-pulse" />
-            ) : (
-              <>
-                <h3 className="text-3xl font-extrabold text-white">{filteredProposals.length}</h3>
-                <p className="text-xs text-primary-glow mt-2">Active + Resolved</p>
-              </>
-            )}
-          </GlassCard>
+        <SectionErrorBoundary sectionName="Analytics Overview Metrics">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <Activity className="w-5 h-5 text-primary" />
+                <span className="font-medium text-sm text-muted">Total Proposals</span>
+              </div>
+              {!initialized ? (
+                <div className="h-10 bg-surface-elevated rounded animate-pulse" />
+              ) : (
+                <>
+                  <h3 className="text-3xl font-extrabold text-white">{filteredProposals.length}</h3>
+                  <p className="text-xs text-primary-glow mt-2">Active + Resolved</p>
+                </>
+              )}
+            </GlassCard>
 
-          <GlassCard className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Users className="w-5 h-5 text-arc-blue" />
-              <span className="font-medium text-sm text-muted">Total Votes Cast</span>
-            </div>
-            {!initialized ? (
-              <div className="h-10 bg-surface-elevated rounded animate-pulse" />
-            ) : (
-              <>
-                <h3 className="text-3xl font-extrabold text-white">
-                  {totalVotesCast >= 1_000_000
-                    ? `${(totalVotesCast / 1_000_000).toFixed(2)}M`
-                    : totalVotesCast >= 1_000
-                    ? `${(totalVotesCast / 1_000).toFixed(1)}K`
-                    : totalVotesCast.toFixed(2)}
-                </h3>
-                <p className="text-xs text-success mt-2">sARC voted</p>
-              </>
-            )}
-          </GlassCard>
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <Users className="w-5 h-5 text-arc-blue" />
+                <span className="font-medium text-sm text-muted">Total Votes Cast</span>
+              </div>
+              {!initialized ? (
+                <div className="h-10 bg-surface-elevated rounded animate-pulse" />
+              ) : (
+                <>
+                  <h3 className="text-3xl font-extrabold text-white">
+                    {totalVotesCast >= 1_000_000
+                      ? `${(totalVotesCast / 1_000_000).toFixed(2)}M`
+                      : totalVotesCast >= 1_000
+                      ? `${(totalVotesCast / 1_000).toFixed(1)}K`
+                      : totalVotesCast.toFixed(2)}
+                  </h3>
+                  <p className="text-xs text-success mt-2">sARC voted</p>
+                </>
+              )}
+            </GlassCard>
 
-          <GlassCard className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-5 h-5 text-accent" />
-              <span className="font-medium text-sm text-muted">Avg Participation</span>
-            </div>
-            {!initialized ? (
-              <div className="h-10 bg-surface-elevated rounded animate-pulse" />
-            ) : (
-              <>
-                <h3 className="text-3xl font-extrabold text-white">{avgParticipation}%</h3>
-                <p className="text-xs text-success mt-2">of 15M sARC supply</p>
-              </>
-            )}
-          </GlassCard>
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <TrendingUp className="w-5 h-5 text-accent" />
+                <span className="font-medium text-sm text-muted">Avg Participation</span>
+              </div>
+              {!initialized ? (
+                <div className="h-10 bg-surface-elevated rounded animate-pulse" />
+              ) : (
+                <>
+                  <h3 className="text-3xl font-extrabold text-white">{avgParticipation}%</h3>
+                  <p className="text-xs text-success mt-2">of 15M sARC supply</p>
+                </>
+              )}
+            </GlassCard>
 
-          <GlassCard className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <BarChart3 className="w-5 h-5 text-success" />
-              <span className="font-medium text-sm text-muted">Proposal Pass Rate</span>
-            </div>
-            {!initialized ? (
-              <div className="h-10 bg-surface-elevated rounded animate-pulse" />
-            ) : (
-              <>
-                <h3 className="text-3xl font-extrabold text-white">{proposalPassRate}%</h3>
-                <p className="text-xs text-muted mt-2">{executedCount} execution target hits</p>
-              </>
-            )}
-          </GlassCard>
-        </div>
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <BarChart3 className="w-5 h-5 text-success" />
+                <span className="font-medium text-sm text-muted">Proposal Pass Rate</span>
+              </div>
+              {!initialized ? (
+                <div className="h-10 bg-surface-elevated rounded animate-pulse" />
+              ) : (
+                <>
+                  <h3 className="text-3xl font-extrabold text-white">{proposalPassRate}%</h3>
+                  <p className="text-xs text-muted mt-2">{executedCount} execution target hits</p>
+                </>
+              )}
+            </GlassCard>
+          </div>
+        </SectionErrorBoundary>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        <SectionErrorBoundary sectionName="DAO Analytics Charts">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           
           {/* Line Chart — Treasury balance over time */}
           <GlassCard className="p-4 sm:p-6 col-span-1 lg:col-span-2 h-[260px] sm:h-[380px] flex flex-col">
@@ -507,6 +511,7 @@ export default function AnalyticsPage() {
           </GlassCard>
 
         </div>
+        </SectionErrorBoundary>
 
       </div>
     );

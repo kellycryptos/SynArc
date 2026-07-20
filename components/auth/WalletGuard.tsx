@@ -15,19 +15,18 @@ export function WalletGuard({ children }: { children: ReactNode }) {
   const [modalOpen, setModalOpen] = useState(false);
 
   const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
-
-  // 🔥 THE FIX: If NOT protected, render IMMEDIATELY to avoid blocking public read-only views
-  if (!isProtected) {
-    return <>{children}</>;
-  }
-
-  // Timeout state — if Privy takes more than 6s to initialize, show a retry prompt
   const [timedOut, setTimedOut] = useState(false);
+
   useEffect(() => {
     if (!isProtected || ready) return;
     const timer = setTimeout(() => setTimedOut(true), 6000);
     return () => clearTimeout(timer);
   }, [isProtected, ready]);
+
+  // 🔥 THE FIX: If NOT protected, render IMMEDIATELY to avoid blocking public read-only views
+  if (!isProtected) {
+    return <>{children}</>;
+  }
 
   // Prevent app render flash while Privy is computing auth cookies ONLY for protected routes
   if (!ready) {

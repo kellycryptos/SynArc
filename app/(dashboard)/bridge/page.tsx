@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { CctpStepVisualizer } from "@/components/dashboard/CctpStepVisualizer";
+import { SectionErrorBoundary } from "@/components/ErrorBoundary";
 
 // ABI for ERC20 balanceOf & decimals
 const erc20Abi = parseAbi([
@@ -437,6 +438,7 @@ export default function BridgePage() {
       <div className="absolute bottom-1/4 left-1/3 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[90px] pointer-events-none z-0" />
 
       <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 animate-fade-in-up relative z-10">
+        <SectionErrorBoundary sectionName="CCTP Cross-Chain Bridge">
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-border-thin pb-6">
@@ -1004,7 +1006,7 @@ export default function BridgePage() {
             </div>
           )}
         </div>
-
+        </SectionErrorBoundary>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { SectionErrorBoundary } from "@/components/ErrorBoundary";
 import { 
   Shield, 
   Bell, 
@@ -134,162 +135,165 @@ export default function SettingsPage() {
         </div>
 
         {/* Wallet & Connection Status */}
-        <GlassCard className="p-6 space-y-6">
-          <div className="flex items-center gap-3 border-b border-border-thin pb-4">
-            <Wallet className="w-5 h-5 text-primary" />
-            <h3 className="font-bold text-lg text-white">Connected Wallet Info</h3>
-          </div>
-
-          {!isAuthenticated ? (
-            <div className="text-center py-6 text-muted">
-              Please connect your wallet to view connection status and balances.
+        <SectionErrorBoundary sectionName="Wallet & Connection Status">
+          <GlassCard className="p-6 space-y-6">
+            <div className="flex items-center gap-3 border-b border-border-thin pb-4">
+              <Wallet className="w-5 h-5 text-primary" />
+              <h3 className="font-bold text-lg text-white">Connected Wallet Info</h3>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-muted uppercase tracking-wider">Connected Address</p>
-                <div className="flex items-center gap-2 font-mono text-sm text-white bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin">
-                  <span className="truncate flex-1">{walletAddress}</span>
-                  <button 
-                    onClick={() => copyToClipboard(walletAddress || "", "wallet")}
-                    className="p-1 text-muted hover:text-white transition-colors cursor-pointer"
-                  >
-                    {copiedContract === "wallet" ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
 
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-muted uppercase tracking-wider">Network Status</p>
-                <div className="flex items-center justify-between bg-surface-elevated px-3 py-2 rounded-lg border border-border-thin min-h-[46px]">
-                  {isArcTestnet && !isUnsupported ? (
-                    <div className="flex items-center gap-2 text-success font-semibold text-sm">
-                      <CheckCircle className="w-4 h-4 text-success animate-pulse" />
-                      <span>Arc Testnet ✅</span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-1 items-center justify-between gap-3">
-                      <div className="flex items-center gap-2 text-danger font-semibold text-sm">
-                        <AlertCircle className="w-4 h-4 text-danger" />
-                        <span>Wrong Network</span>
+            {!isAuthenticated ? (
+              <div className="text-center py-6 text-muted">
+                Please connect your wallet to view connection status and balances.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wider">Connected Address</p>
+                  <div className="flex items-center gap-2 font-mono text-sm text-white bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin">
+                    <span className="truncate flex-1">{walletAddress}</span>
+                    <button 
+                      onClick={() => copyToClipboard(walletAddress || "", "wallet")}
+                      className="p-1 text-muted hover:text-white transition-colors cursor-pointer"
+                    >
+                      {copiedContract === "wallet" ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wider">Network Status</p>
+                  <div className="flex items-center justify-between bg-surface-elevated px-3 py-2 rounded-lg border border-border-thin min-h-[46px]">
+                    {isArcTestnet && !isUnsupported ? (
+                      <div className="flex items-center gap-2 text-success font-semibold text-sm">
+                        <CheckCircle className="w-4 h-4 text-success animate-pulse" />
+                        <span>Arc Testnet ✅</span>
                       </div>
-                      <button
-                        onClick={switchToArc}
-                        disabled={isSwitching}
-                        className="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-background font-bold text-xs transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
-                      >
-                        {isSwitching ? "Switching..." : "Switch to Arc"}
-                      </button>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="flex flex-1 items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-danger font-semibold text-sm">
+                          <AlertCircle className="w-4 h-4 text-danger" />
+                          <span>Wrong Network</span>
+                        </div>
+                        <button
+                          onClick={switchToArc}
+                          disabled={isSwitching}
+                          className="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-background font-bold text-xs transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
+                        >
+                          {isSwitching ? "Switching..." : "Switch to Arc"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-muted uppercase tracking-wider">USDC Balance</p>
-                <div className="font-semibold font-mono text-base text-white bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin">
-                  {usdcLoading ? "Loading..." : `${parseFloat(usdcBalance || "0.0").toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC`}
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wider">USDC Balance</p>
+                  <div className="font-semibold font-mono text-base text-white bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin">
+                    {usdcLoading ? "Loading..." : `${parseFloat(usdcBalance || "0.0").toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC`}
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-muted uppercase tracking-wider">sARC TOKEN (VOTING POWER)</p>
-                <div className="font-semibold font-mono text-base text-white bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin flex justify-between items-center">
-                  <span>{tokenLoading ? "Loading..." : `${tokenBalance} sARC`}</span>
-                  <button 
-                    onClick={fetchTokenBalance}
-                    className="p-1 text-muted hover:text-white transition-colors cursor-pointer"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </button>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wider">sARC TOKEN (VOTING POWER)</p>
+                  <div className="font-semibold font-mono text-base text-white bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin flex justify-between items-center">
+                    <span>{tokenLoading ? "Loading..." : `${tokenBalance} sARC`}</span>
+                    <button 
+                      onClick={fetchTokenBalance}
+                      className="p-1 text-muted hover:text-white transition-colors cursor-pointer"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </GlassCard>
+            )}
+          </GlassCard>
+        </SectionErrorBoundary>
 
         {/* Preferences Toggle */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Theme Preference Toggle */}
-          <GlassCard className="p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-              <div>
-                <h3 className="font-extrabold text-lg text-white">Appearance</h3>
-                <p className="text-sm text-muted">Choose your preferred theme</p>
-              </div>
-              <div className="flex gap-2 bg-surface-elevated p-1.5 rounded-xl border border-border-thin">
-                <button 
-                  onClick={() => setTheme('dark')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    theme === 'dark' 
-                      ? 'bg-accent-purple text-white-keep shadow-md' 
-                      : 'text-muted hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  🌙 Dark
-                </button>
-                <button 
-                  onClick={() => setTheme('light')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    theme === 'light' 
-                      ? 'bg-accent-purple text-white-keep shadow-md' 
-                      : 'text-muted hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  ☀️ Light
-                </button>
-              </div>
-            </div>
-          </GlassCard>
-
-          {/* Email Notification Toggle */}
-          <GlassCard className="p-6 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-3 border-b border-border-thin pb-4 mb-4">
-                <Bell className="w-5 h-5 text-accent" />
-                <h3 className="font-bold text-lg text-white">Notification Alerts</h3>
-              </div>
-              <p className="text-sm text-muted mb-4">
-                Receive instant email alerts whenever new governance proposals are submitted.
-              </p>
-              
-              {subscribeError && (
-                <div className="p-3 mb-4 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger">
-                  {subscribeError}
+        <SectionErrorBoundary sectionName="User Preferences">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Theme Preference Toggle */}
+            <GlassCard className="p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div>
+                  <h3 className="font-extrabold text-lg text-white">Appearance</h3>
+                  <p className="text-sm text-muted">Choose your preferred theme</p>
                 </div>
-              )}
-
-              {subscribed ? (
-                <p className="text-sm text-success font-semibold flex items-center gap-1.5 py-2">
-                  ✅ Subscribed! Check your email for confirmation.
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  <input 
-                    type="email"
-                    placeholder="Enter your email"
-                    value={emailInput}
-                    onChange={handleEmailChange}
-                    disabled={subscribeLoading}
-                    className="w-full px-4 py-2.5 bg-surface border border-border-thin rounded-xl text-sm text-white placeholder:text-text-tertiary focus:border-primary outline-none transition-colors"
-                  />
+                <div className="flex gap-2 bg-surface-elevated p-1.5 rounded-xl border border-border-thin">
                   <button 
-                    onClick={handleSubscribe}
-                    disabled={subscribeLoading || !emailInput}
-                    className="w-full py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-bold text-xs transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2"
+                    onClick={() => setTheme('dark')}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      theme === 'dark' 
+                        ? 'bg-accent-purple text-white-keep shadow-md' 
+                        : 'text-muted hover:text-white hover:bg-white/5'
+                    }`}
                   >
-                    {subscribeLoading ? 'Subscribing...' : 'Enable Notifications'}
+                    🌙 Dark
+                  </button>
+                  <button 
+                    onClick={() => setTheme('light')}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      theme === 'light' 
+                        ? 'bg-accent-purple text-white-keep shadow-md' 
+                        : 'text-muted hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    ☀️ Light
                   </button>
                 </div>
-              )}
-            </div>
-          </GlassCard>
-        </div>
+              </div>
+            </GlassCard>
 
+            {/* Email Notification Toggle */}
+            <GlassCard className="p-6 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-3 border-b border-border-thin pb-4 mb-4">
+                  <Bell className="w-5 h-5 text-accent" />
+                  <h3 className="font-bold text-lg text-white">Notification Alerts</h3>
+                </div>
+                <p className="text-sm text-muted mb-4">
+                  Receive instant email alerts whenever new governance proposals are submitted.
+                </p>
+                
+                {subscribeError && (
+                  <div className="p-3 mb-4 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger">
+                    {subscribeError}
+                  </div>
+                )}
 
+                {subscribed ? (
+                  <p className="text-sm text-success font-semibold flex items-center gap-1.5 py-2">
+                    ✅ Subscribed! Check your email for confirmation.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    <input 
+                      type="email"
+                      placeholder="Enter your email"
+                      value={emailInput}
+                      onChange={handleEmailChange}
+                      disabled={subscribeLoading}
+                      className="w-full px-4 py-2.5 bg-surface border border-border-thin rounded-xl text-sm text-white placeholder:text-text-tertiary focus:border-primary outline-none transition-colors"
+                    />
+                    <button 
+                      onClick={handleSubscribe}
+                      disabled={subscribeLoading || !emailInput}
+                      className="w-full py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-bold text-xs transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2"
+                    >
+                      {subscribeLoading ? 'Subscribing...' : 'Enable Notifications'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </GlassCard>
+          </div>
+        </SectionErrorBoundary>
 
         {/* Smart Contracts Transparency Block */}
-        <GlassCard className="p-6 space-y-6">
+        <SectionErrorBoundary sectionName="Smart Contract Addresses">
+          <GlassCard className="p-6 space-y-6">
           <div className="flex items-center gap-3 border-b border-border-thin pb-4">
             <Shield className="w-5 h-5 text-accent" />
             <h3 className="font-bold text-lg text-white">Transparency Contract Addresses</h3>
@@ -364,7 +368,7 @@ export default function SettingsPage() {
             </div>
           </div>
         </GlassCard>
-
+        </SectionErrorBoundary>
 
     </div>
   );

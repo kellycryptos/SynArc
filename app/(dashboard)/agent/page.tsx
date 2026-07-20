@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { SectionErrorBoundary } from "@/components/ErrorBoundary";
 import {
   Bot, Zap, Activity, Play, RotateCw, ExternalLink,
   BrainCircuit, Coins, ArrowRight, CheckCircle, XCircle,
@@ -842,7 +843,8 @@ export default function AgentPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <SectionErrorBoundary sectionName="Agent Treasury Stats">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
           { label: "Agent Treasury (USDC)", value: demoUSDCBalance !== null ? `${demoUSDCBalance.toFixed(2)}` : `${(treasury?.usdc || 0).toFixed(2)}`, isLoading: loading, unit: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", isBalance: true },
           { label: "Agent Treasury (EURC)", value: `${(treasury?.eurc || 0).toFixed(2)}`, isLoading: loading, unit: "EURC", icon: Coins, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", isBalance: true },
@@ -885,6 +887,7 @@ export default function AgentPage() {
           );
         })}
       </div>
+      </SectionErrorBoundary>
 
       {/* Verify Rules Result Panel */}
       <AnimatePresence>
@@ -1169,7 +1172,8 @@ export default function AgentPage() {
           </GlassCard>
 
           {/* Agent Controls */}
-          <GlassCard className="p-5 col-span-1 lg:col-span-2 order-1 lg:order-none" hover={false}>
+          <SectionErrorBoundary sectionName="Agent Operations & Autonomy Log">
+            <GlassCard className="p-5 col-span-1 lg:col-span-2 order-1 lg:order-none" hover={false}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-3 border-b border-border-thin">
               <div className="flex items-center gap-2">
                 <Cpu className="w-5 h-5 text-primary" />
@@ -1282,6 +1286,7 @@ export default function AgentPage() {
               </div>
             )}
           </GlassCard>
+          </SectionErrorBoundary>
 
 
           {/* Gateway Inference Payments */}

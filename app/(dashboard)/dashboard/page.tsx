@@ -12,6 +12,8 @@ import { ArrowRight, Rocket, Plus, Coins, Users, Trophy, Zap, Bot, Activity } fr
 import Link from "next/link";
 import { useCreatorStore } from "@/hooks/useCreatorStore";
 
+import { SectionErrorBoundary } from "@/components/ErrorBoundary";
+
 const GovernanceAnalytics = dynamic(
   () => import("@/components/analytics/GovernanceAnalytics").then((m) => m.GovernanceAnalytics),
   {
@@ -60,101 +62,106 @@ export default function DashboardOverview() {
       </Link>
   
       {/* Metrics */}
-      <OverviewCards />
+      <SectionErrorBoundary sectionName="Overview Cards">
+        <OverviewCards />
+      </SectionErrorBoundary>
   
       {/* Wallet Balance & Arc Testnet Faucet */}
-      <WalletFaucetCard />
-
+      <SectionErrorBoundary sectionName="Wallet & Faucet">
+        <WalletFaucetCard />
+      </SectionErrorBoundary>
 
       {/* ⚡ Creator DAOs Section */}
-      <GlassCard className="p-6 border border-primary/20 bg-primary/[0.01] space-y-6" hover={false}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Rocket className="w-5 h-5 text-primary" />
-            <h2 className="text-lg sm:text-xl font-bold font-heading text-text-primary">⚡ Creator DAOs</h2>
+      <SectionErrorBoundary sectionName="Creator DAOs">
+        <GlassCard className="p-6 border border-primary/20 bg-primary/[0.01] space-y-6" hover={false}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Rocket className="w-5 h-5 text-primary" />
+              <h2 className="text-lg sm:text-xl font-bold font-heading text-text-primary">⚡ Creator DAOs</h2>
+            </div>
+            <Link href="/creator-daos" className="text-xs font-bold text-primary hover:text-primary-glow flex items-center gap-1 transition-all">
+              View All Creator DAOs <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
-          <Link href="/creator-daos" className="text-xs font-bold text-primary hover:text-primary-glow flex items-center gap-1 transition-all">
-            View All Creator DAOs <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
 
-        {/* Dynamic Aggregated Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-          <div className="px-4 py-3 rounded-xl bg-surface/30 border border-border-thin/60">
-            <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Active DAOs</span>
-            <span className="text-lg font-bold text-success mt-1 block">{activeCampaigns}</span>
+          {/* Dynamic Aggregated Metrics */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+            <div className="px-4 py-3 rounded-xl bg-surface/30 border border-border-thin/60">
+              <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Active DAOs</span>
+              <span className="text-lg font-bold text-success mt-1 block">{activeCampaigns}</span>
+            </div>
+            <div className="px-4 py-3 rounded-xl bg-surface/30 border border-border-thin/60">
+              <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Total USDC Raised</span>
+              <span className="text-lg font-bold text-purple-300 mt-1 block">{totalRaised.toLocaleString()} USDC</span>
+            </div>
+            <div className="px-4 py-3 rounded-xl bg-surface/30 border border-border-thin/60">
+              <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">DAOs Funded</span>
+              <span className="text-lg font-bold text-arc-blue mt-1 block">{fundedCount}</span>
+            </div>
           </div>
-          <div className="px-4 py-3 rounded-xl bg-surface/30 border border-border-thin/60">
-            <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Total USDC Raised</span>
-            <span className="text-lg font-bold text-purple-300 mt-1 block">{totalRaised.toLocaleString()} USDC</span>
-          </div>
-          <div className="px-4 py-3 rounded-xl bg-surface/30 border border-border-thin/60">
-            <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">DAOs Funded</span>
-            <span className="text-lg font-bold text-arc-blue mt-1 block">{fundedCount}</span>
-          </div>
-        </div>
 
-        {/* Mini Creator DAOs list */}
-        {featuredCampaigns.length === 0 ? (
-          <div className="p-8 rounded-xl border border-dashed border-border-thin bg-surface/10 text-center space-y-2">
-            <Rocket className="w-8 h-8 text-muted mx-auto" />
-            <h4 className="text-sm font-bold text-text-primary">No Active Workspaces</h4>
-            <p className="text-xs text-muted max-w-sm mx-auto">No workspaces have been launched yet. Be the first to launch a community project workspace!</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {featuredCampaigns.map((c) => {
-              const progress = Math.min(100, (c.raised / c.goal) * 100);
-              return (
-                <Link href={`/creator-daos/${c.id}`} key={c.id} className="block group">
-                  <div className="p-4 rounded-xl border border-border-thin/80 bg-surface/20 group-hover:border-primary/20 group-hover:bg-primary/[0.01] transition-all flex flex-col justify-between h-full gap-3">
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center">
-                        <span className={`text-[9px] px-2 py-0.2 rounded font-extrabold tracking-wide uppercase ${
-                          c.isAgent 
-                            ? "bg-purple-500/10 border border-purple-400/20 text-purple-300" 
-                            : "bg-blue-500/10 border border-blue-400/20 text-blue-300"
-                        }`}>
-                          {c.isAgent ? "🤖 Agent" : "👤 Human"}
-                        </span>
-                        <span className="text-[9px] text-muted uppercase font-bold">{c.state}</span>
+          {/* Mini Creator DAOs list */}
+          {featuredCampaigns.length === 0 ? (
+            <div className="p-8 rounded-xl border border-dashed border-border-thin bg-surface/10 text-center space-y-2">
+              <Rocket className="w-8 h-8 text-muted mx-auto" />
+              <h4 className="text-sm font-bold text-text-primary">No Active Workspaces</h4>
+              <p className="text-xs text-muted max-w-sm mx-auto">No workspaces have been launched yet. Be the first to launch a community project workspace!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {featuredCampaigns.map((c) => {
+                const progress = Math.min(100, (c.raised / c.goal) * 100);
+                return (
+                  <Link href={`/creator-daos/${c.id}`} key={c.id} className="block group">
+                    <div className="p-4 rounded-xl border border-border-thin/80 bg-surface/20 group-hover:border-primary/20 group-hover:bg-primary/[0.01] transition-all flex flex-col justify-between h-full gap-3">
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className={`text-[9px] px-2 py-0.2 rounded font-extrabold tracking-wide uppercase ${
+                            c.isAgent 
+                              ? "bg-purple-500/10 border border-purple-400/20 text-purple-300" 
+                              : "bg-blue-500/10 border border-blue-400/20 text-blue-300"
+                          }`}>
+                            {c.isAgent ? "🤖 Agent" : "👤 Human"}
+                          </span>
+                          <span className="text-[9px] text-muted uppercase font-bold">{c.state}</span>
+                        </div>
+                        <h4 className="text-sm font-bold text-text-primary group-hover:text-primary transition-colors">{c.title}</h4>
+                        <p className="text-xs text-muted leading-relaxed line-clamp-1">{c.description}</p>
                       </div>
-                      <h4 className="text-sm font-bold text-text-primary group-hover:text-primary transition-colors">{c.title}</h4>
-                      <p className="text-xs text-muted leading-relaxed line-clamp-1">{c.description}</p>
+
+                      <div className="space-y-1.5 pt-1">
+                        <div className="w-full h-1 bg-surface rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-300" style={{ width: `${progress}%` }} />
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-text-tertiary">
+                          <span className="flex items-center gap-1 font-semibold text-text-secondary">
+                            <Coins className="w-3 h-3 text-primary" />
+                            {c.raised.toLocaleString()} / {c.goal.toLocaleString()} USDC
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            {c.contributors} contributors
+                          </span>
+                        </div>
+                      </div>
                     </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
 
-                    <div className="space-y-1.5 pt-1">
-                      <div className="w-full h-1 bg-surface rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-300" style={{ width: `${progress}%` }} />
-                      </div>
-                      <div className="flex items-center justify-between text-[10px] text-text-tertiary">
-                        <span className="flex items-center gap-1 font-semibold text-text-secondary">
-                          <Coins className="w-3 h-3 text-primary" />
-                          {c.raised.toLocaleString()} / {c.goal.toLocaleString()} USDC
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          {c.contributors} contributors
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+          {/* CTA Launch shortcut */}
+          <div className="flex justify-end pt-2">
+            <Link href="/create-dao">
+              <button className="px-4 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer">
+                <Plus className="w-4 h-4" />
+                🚀 Launch Creator DAO
+              </button>
+            </Link>
           </div>
-        )}
-
-        {/* CTA Launch shortcut */}
-        <div className="flex justify-end pt-2">
-          <Link href="/create-dao">
-            <button className="px-4 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer">
-              <Plus className="w-4 h-4" />
-              🚀 Launch Creator DAO
-            </button>
-          </Link>
-        </div>
-      </GlassCard>
+        </GlassCard>
+      </SectionErrorBoundary>
   
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -165,13 +172,17 @@ export default function DashboardOverview() {
               View All <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          <ProposalFeed />
+          <SectionErrorBoundary sectionName="Recent Proposals Feed">
+            <ProposalFeed />
+          </SectionErrorBoundary>
         </div>
         <div className="space-y-4">
           <div className="mb-2">
             <h2 className="text-lg sm:text-xl font-bold font-heading">Analytics</h2>
           </div>
-          <GovernanceAnalytics />
+          <SectionErrorBoundary sectionName="Governance Analytics">
+            <GovernanceAnalytics />
+          </SectionErrorBoundary>
 
           {/* Creator Economy Card */}
           {(() => {

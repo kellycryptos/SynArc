@@ -7,7 +7,7 @@ import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useEURCBalance } from "@/hooks/useEURCBalance";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary, SectionErrorBoundary } from "@/components/ErrorBoundary";
 import { Contract, parseUnits, BrowserProvider } from "ethers";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, TreasuryABI } from "@/lib/governance/contracts";
 import { useWriteContract, useAccount, usePublicClient, useSwitchChain } from "wagmi";
@@ -594,7 +594,8 @@ function TreasuryPageContent() {
         </div>
 
         {/* Balance Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <SectionErrorBoundary sectionName="Treasury Balance Overview">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <GlassCard className="p-6 relative overflow-hidden group">
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
             <div className="flex justify-between items-start mb-4">
@@ -648,9 +649,11 @@ function TreasuryPageContent() {
             <p className="text-[11px] text-text-tertiary mt-1">Multi-signature emergency pause enabled</p>
           </GlassCard>
         </div>
+      </SectionErrorBoundary>
 
         {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <SectionErrorBoundary sectionName="Treasury Valuation & Composition Charts">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Main Growth Chart */}
           <GlassCard className="lg:col-span-2 p-6 h-[400px] flex flex-col">
@@ -706,9 +709,11 @@ function TreasuryPageContent() {
             </div>
           </GlassCard>
         </div>
+      </SectionErrorBoundary>
 
         {/* Pending Withdrawals (Timelocks) */}
-        {pendingWithdrawals.length > 0 && (
+        <SectionErrorBoundary sectionName="Treasury Timelocked Withdrawals & Activity">
+          {pendingWithdrawals.length > 0 && (
           <GlassCard className="p-6 border border-warning/20 bg-warning/[0.01]">
             <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
               <Clock className="w-5 h-5 text-warning" />
@@ -870,8 +875,7 @@ function TreasuryPageContent() {
             </table>
           </div>
         </GlassCard>
-
-
+      </SectionErrorBoundary>
 
       {/* Deposit Modal */}
       {modalOpen && (
