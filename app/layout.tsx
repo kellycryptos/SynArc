@@ -7,10 +7,13 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const sora = Sora({ subsets: ["latin"], variable: "--font-sora", display: "swap" });
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space", display: "swap" });
-const ibmPlexMono = IBM_Plex_Mono({ weight: ["400", "500", "600"], subsets: ["latin"], variable: "--font-mono", display: "swap" });
+// display:'optional' — browser uses system fallback if the webfont misses the ~100ms
+// block window and does NOT swap later. This eliminates the font-swap-triggered second
+// LCP timestamp that was causing the hero <h1> to be re-measured as a late LCP event.
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "optional" });
+const sora = Sora({ subsets: ["latin"], variable: "--font-sora", display: "optional" });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space", display: "optional" });
+const ibmPlexMono = IBM_Plex_Mono({ weight: ["400", "500", "600"], subsets: ["latin"], variable: "--font-mono", display: "optional" });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.synarcdao.xyz"),

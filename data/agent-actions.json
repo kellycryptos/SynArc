@@ -1,5 +1,119 @@
 [
   {
+    "timestamp": "2026-07-20T12:40:27.741Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T12:35:27.734Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T12:30:27.727Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T12:25:27.727Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T12:20:27.716Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T12:15:27.696Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T12:10:27.696Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T12:05:27.684Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T12:00:27.674Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T11:55:27.655Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T09:28:09.594Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T09:23:09.587Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T09:18:09.580Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T09:13:09.580Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T09:08:09.568Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T09:03:09.555Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T08:58:09.550Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T08:53:09.544Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T08:48:09.538Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
     "timestamp": "2026-07-20T08:43:09.529Z",
     "action": "monitoring",
     "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
@@ -191,133 +305,5 @@
     "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30372d30375431393a33303a30322e3134395a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-07-07T19:30:02.149Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
     "status": "failed",
     "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-07T19:27:13.312Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30372d30375431393a33303a30312e3234325a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-07-07T19:30:01.242Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-07T19:25:13.314Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30372d30375431393a33303a30312e3138305a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-07-07T19:30:01.180Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-07T19:26:13.315Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30372d30375431393a33303a30312e3136385a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-07-07T19:30:01.168Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-07T19:25:20.320Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30372d30375431393a33303a30302e3938395a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-07-07T19:30:00.989Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-07T19:26:20.327Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30372d30375431393a33303a30302e3633325a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-07-07T19:30:00.632Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-07T19:27:20.357Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0 USDC — below 10 threshold. Proposing emergency funding request. [Failed to create proposal on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_getTransactionCount\",\"params\":[\"0x35630dFE2592AB19d979ec1B173697aEa554b66b\",\"pending\"]}\n \nRequest Arguments:\n  from:  0x35630dFE2592AB19d979ec1B173697aEa554b66b\n  to:    0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  data:  0xdb19330f00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000002a0000000000000000000000000000000000000000000000000000000000000012c0000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000015d50726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d30372d30375431393a33303a30302e3438305a0a0a414920526561736f6e696e673a0a547265617375727920686f6c64732030205553444320e280942062656c6f77203130207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e43450000000000000000000000000000\n \nContract Call:\n  address:   0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-07-07T19:30:00.480Z\n\nAI Reasoning:\nTreasury holds 0 USDC — below 10 threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 300, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D)\n  sender:    0x35630dFE2592AB19d979ec1B173697aEa554b66b\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: fetch failed\nVersion: viem@2.49.3]",
-    "status": "failed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-07-07T19:24:20.323Z",
-    "action": "emergency_funding",
-    "reasoning": "USDC balance is 5",
-    "txHash": "0x75216c2536b1b953d6f047f03dcdbb40fb58a9c6ef0eeba5beb448f170c1b2dc",
-    "status": "executed",
-    "usdcAmount": 0
-  },
-  {
-    "timestamp": "2026-07-07T19:24:13.306Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:23:20.327Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:23:13.301Z",
-    "action": "monitoring",
-    "reasoning": "(string)",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:22:20.278Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:22:13.303Z",
-    "action": "emergency_funding",
-    "reasoning": "USDC balance is 0",
-    "txHash": "0xac4a86e8538c353f21f77d12afab9a26069660ebc36938597c0b842cdd935b1d",
-    "status": "executed",
-    "usdcAmount": 0
-  },
-  {
-    "timestamp": "2026-07-07T19:21:20.278Z",
-    "action": "emergency_funding",
-    "reasoning": "USDC balance is 5",
-    "txHash": "0x8b03fb034b2912e31ff2907da7f52264e4e55a5a84bcf94313678f3e250c991b",
-    "status": "executed",
-    "usdcAmount": 0
-  },
-  {
-    "timestamp": "2026-07-07T19:21:13.306Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:20:20.279Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:20:13.308Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:19:20.275Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:19:13.310Z",
-    "action": "monitoring",
-    "reasoning": "should explain why: USDC balance is 0",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:18:20.284Z",
-    "action": "emergency_funding",
-    "reasoning": "USDC balance is 5",
-    "txHash": "0x8e153440ab3aed3306e2fab23f264710399ecaa3532d1ebcdbbd14d13f01a284",
-    "status": "executed",
-    "usdcAmount": 0
   }
 ]

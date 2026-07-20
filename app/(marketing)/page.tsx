@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { ArrowRight, Shield, Lock, Globe, Grid, Award, CheckCircle2, Bot } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { FloatingAIChat } from "@/components/marketing/FloatingAIChat";
+// FloatingAIChatLazy wraps the actual FloatingAIChat behind next/dynamic(ssr:false)
+// inside a Client Component boundary (next/dynamic with ssr:false is forbidden directly
+// in Server Components). This keeps the interactive AI chat bundle entirely off the
+// server render critical path without breaking the Server Component contract.
+import { FloatingAIChatLazy } from "@/components/marketing/FloatingAIChatLazy";
 
 interface FeatureCardProps {
   icon: string;
@@ -312,8 +316,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Floating AI Assistant (Client Island) */}
-      <FloatingAIChat />
+      {/* Floating AI Assistant — lazy Client Island, never a LCP candidate */}
+      <FloatingAIChatLazy />
     </div>
   );
 }
