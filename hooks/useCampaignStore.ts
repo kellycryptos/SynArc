@@ -40,7 +40,7 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
   try {
     const client = getSharedPublicClient();
 
-    const [totalRaisedBigInt, totalContributorsBigInt, onChainMilestones] = await Promise.all([
+    const readPromise = Promise.all([
       client.readContract({
         address: escrowAddress as `0x${string}`,
         abi: SynArcCrowdfundABI,
@@ -56,6 +56,15 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
         abi: SynArcCrowdfundABI,
         functionName: "getMilestones"
       })
+    ]);
+
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("RPC readContract timeout")), 2000)
+    );
+
+    const [totalRaisedBigInt, totalContributorsBigInt, onChainMilestones] = await Promise.race([
+      readPromise,
+      timeoutPromise
     ]) as [bigint, bigint, any[]];
 
     const raised = Number(totalRaisedBigInt) / 1_000_000;
@@ -96,37 +105,6 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
         if (data.success && Array.isArray(data.campaigns)) {
           const rawCampaigns: Campaign[] = data.campaigns;
 
-          // Hydrate real on-chain parameters for deployed campaigns
-          const hydratedCampaigns = await Promise.all(
-            rawCampaigns.map(async (c) => {
-              const onChain = await fetchOnChainCampaignMetrics(c.escrowAddress);
-              if (onChain) {
-                // If goal is fully raised, advance lifecycle phase
-                let state = c.state;
-                if (onChain.raised >= c.goal && c.state === 'Active') {
-                  state = 'Voting';
-                }
-                
-                // If all milestones completed, mark Completed
-                const allMilestonesClaimed = onChain.milestones.every(m => m.status === 'completed');
-                if (allMilestonesClaimed && onChain.milestones.length > 0) {
-                  state = 'Completed';
-                } else if (onChain.milestones.some(m => m.status === 'active' && m.title.includes("approved"))) {
-                  state = 'Voting';
-                }
-
-                return {
-                  ...c,
-                  raised: onChain.raised,
-                  contributors: onChain.contributors,
-                  milestones: onChain.milestones,
-                  state
-                };
-              }
-              return c;
-            })
-          );
-
           // Get simulated campaigns from localStorage
           let simulatedCampaigns: Campaign[] = [];
           try {
@@ -138,18 +116,22 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
             console.error("Failed to parse simulated campaigns from localStorage", err);
           }
 
-          // Hydrate real on-chain parameters for simulated campaigns that have real escrow addresses
-          const hydratedSimulated = await Promise.all(
-            simulatedCampaigns.map(async (c) => {
+          // Unblock page shell immediately with raw DB & local simulated campaigns
+          set({
+            campaigns: [...simulatedCampaigns, ...rawCampaigns],
+            initialized: true
+          });
+          lastFetchTime = Date.now();
+
+          // Asynchronously hydrate on-chain parameters without blocking store initialization
+          Promise.allSettled(
+            rawCampaigns.map(async (c) => {
               const onChain = await fetchOnChainCampaignMetrics(c.escrowAddress);
               if (onChain) {
-                // If goal is fully raised, advance lifecycle phase
                 let state = c.state;
                 if (onChain.raised >= c.goal && c.state === 'Active') {
                   state = 'Voting';
                 }
-                
-                // If all milestones completed, mark Completed
                 const allMilestonesClaimed = onChain.milestones.every(m => m.status === 'completed');
                 if (allMilestonesClaimed && onChain.milestones.length > 0) {
                   state = 'Completed';
@@ -167,32 +149,16 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
               }
               return c;
             })
-          );
-
-          // Update simulated campaigns in local storage with hydrated on-chain metrics
-          try {
-            localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(hydratedSimulated));
-          } catch (e) {
-            console.warn("Failed to update hydrated campaigns in localStorage", e);
-          }
-
-          // Merge them. If any simulated campaign has the same ID, overwrite it.
-          const mergedCampaigns = [...hydratedCampaigns];
-          hydratedSimulated.forEach((sc) => {
-            const idx = mergedCampaigns.findIndex((c) => c.id === sc.id);
-            if (idx !== -1) {
-              mergedCampaigns[idx] = sc;
-            } else {
-              mergedCampaigns.push(sc);
-            }
+          ).then((results) => {
+            const hydratedRaw = results.map((r, i) => r.status === 'fulfilled' ? r.value : rawCampaigns[i]);
+            set({
+              campaigns: [...simulatedCampaigns, ...hydratedRaw]
+            });
           });
-
-          lastFetchTime = Date.now();
-          set({ campaigns: mergedCampaigns, initialized: true });
         }
       }
-    } catch (err) {
-      console.error("useCampaignStore: Failed to initialize campaigns:", err);
+    } catch (error) {
+      console.error("Failed to initialize campaign store:", error);
     }
   },
 

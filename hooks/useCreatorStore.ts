@@ -52,7 +52,7 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
   try {
     const client = getSharedPublicClient();
 
-    const [totalRaisedBigInt, totalContributorsBigInt] = await Promise.all([
+    const readPromise = Promise.all([
       client.readContract({
         address: escrowAddress as `0x${string}`,
         abi: SynArcCrowdfundABI,
@@ -63,6 +63,15 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
         abi: SynArcCrowdfundABI,
         functionName: "totalContributors"
       })
+    ]);
+
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("RPC readContract timeout")), 2000)
+    );
+
+    const [totalRaisedBigInt, totalContributorsBigInt] = await Promise.race([
+      readPromise,
+      timeoutPromise
     ]) as [bigint, bigint];
 
     const raised = Number(totalRaisedBigInt) / 1_000_000;
@@ -90,10 +99,8 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
     }
 
     try {
-      // Start with all MOCK_CREATORS (which includes the 'synarc' profile)
       let mappedCreators: Creator[] = [...MOCK_CREATORS];
 
-      // Fetch campaigns from the backend API
       const response = await fetch("/api/campaigns");
 
       if (response.ok) {
@@ -101,52 +108,76 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
         if (data.success && Array.isArray(data.campaigns)) {
           const rawCampaigns: Campaign[] = data.campaigns;
 
-          // Hydrate real on-chain parameters for deployed campaigns
-          const hydratedCreators: Creator[] = await Promise.all(
-            rawCampaigns.map(async (c) => {
-              const onChain = await fetchOnChainCampaignMetrics(c.escrowAddress);
-              
-              const raised = onChain ? onChain.raised : c.raised;
-              const supporters = onChain ? onChain.contributors : c.contributors;
+          const baseCreators: Creator[] = rawCampaigns.map((c) => {
+            const deadlineDate = new Date(c.deadline);
+            const diffTime = deadlineDate.getTime() - Date.now();
+            const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+            let category = c.category.toLowerCase().replace(" ", "-");
+            if (category === "ai-agent-fund" || category === "ai-infrastructure") {
+              category = "ai-agent";
+            }
+            const slug = c.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-              // Calculate days left
-              const deadlineDate = new Date(c.deadline);
-              const diffTime = deadlineDate.getTime() - Date.now();
-              const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+            return {
+              id: c.id,
+              name: c.title,
+              category,
+              description: c.description,
+              goal: c.goal,
+              raised: c.raised,
+              supporters: c.contributors,
+              daysLeft,
+              twitter: c.twitter || null,
+              wallet: c.recipient,
+              slug,
+              isAgent: c.isAgent,
+              image: c.image || undefined
+            };
+          });
 
-              // Category mapping
-              let category = c.category.toLowerCase().replace(" ", "-");
-              if (category === "ai-agent-fund" || category === "ai-infrastructure") {
-                category = "ai-agent";
-              }
-
-              const slug = c.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-
-              return {
-                id: c.id,
-                name: c.title,
-                category,
-                description: c.description,
-                goal: c.goal,
-                raised,
-                supporters,
-                daysLeft,
-                twitter: c.twitter || null,
-                wallet: c.recipient,
-                slug,
-                isAgent: c.isAgent,
-                image: c.image || undefined
-              };
-            })
-          );
-
-          // Merge hydrated creators by ID/slug
-          hydratedCreators.forEach((hc) => {
+          baseCreators.forEach((hc) => {
             const idx = mappedCreators.findIndex((c) => c.id === hc.id || c.slug === hc.slug);
             if (idx !== -1) {
               mappedCreators[idx] = { ...mappedCreators[idx], ...hc };
             } else {
               mappedCreators.push(hc);
+            }
+          });
+
+          // Unblock immediately with base DB values
+          set({
+            creators: [...mappedCreators],
+            initialized: true
+          });
+          lastFetchTime = Date.now();
+
+          // Asynchronously hydrate on-chain metrics
+          Promise.allSettled(
+            rawCampaigns.map(async (c) => {
+              const onChain = await fetchOnChainCampaignMetrics(c.escrowAddress);
+              if (onChain) {
+                return { id: c.id, raised: onChain.raised, supporters: onChain.contributors };
+              }
+              return null;
+            })
+          ).then((results) => {
+            const updates = results
+              .filter((r): r is PromiseFulfilledResult<{ id: string; raised: number; supporters: number }> => r.status === 'fulfilled' && r.value !== null)
+              .map(r => r.value);
+
+            if (updates.length > 0) {
+              const currentCreators = [...get().creators];
+              updates.forEach(u => {
+                const idx = currentCreators.findIndex(c => c.id === u.id);
+                if (idx !== -1) {
+                  currentCreators[idx] = {
+                    ...currentCreators[idx],
+                    raised: u.raised,
+                    supporters: u.supporters
+                  };
+                }
+              });
+              set({ creators: currentCreators });
             }
           });
         }

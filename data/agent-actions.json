@@ -1,5 +1,29 @@
 [
   {
+    "timestamp": "2026-07-20T08:43:09.529Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T08:38:09.516Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T08:33:09.512Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-20T08:28:09.508Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
     "timestamp": "2026-07-19T12:26:20.616Z",
     "action": "error",
     "reasoning": "Failed to read treasury balances on-chain: HTTP request failed.\n\nURL: https://arc-testnet.drpc.org/\nRequest body: {\"method\":\"eth_call\",\"params\":[{\"data\":\"0x73688e56\",\"to\":\"0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28\"},\"latest\"]}\n \nRaw Call Arguments:\n  to:    0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28\n  data:  0x73688e56\n \nContract Call:\n  address:   0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28\n  function:  usdcBalance()\n\nDocs: https://viem.sh/docs/contract/readContract\nDetails: fetch failed\nVersion: viem@2.49.3",
@@ -295,29 +319,5 @@
     "txHash": "0x8e153440ab3aed3306e2fab23f264710399ecaa3532d1ebcdbbd14d13f01a284",
     "status": "executed",
     "usdcAmount": 0
-  },
-  {
-    "timestamp": "2026-07-07T19:18:13.306Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:17:13.306Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:17:20.286Z",
-    "action": "monitoring",
-    "reasoning": "(string)",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-07T19:16:20.289Z",
-    "action": "monitoring",
-    "reasoning": "AI analysis completed with parser fallback.",
-    "status": "executed"
   }
 ]

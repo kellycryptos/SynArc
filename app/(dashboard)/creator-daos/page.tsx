@@ -6,6 +6,7 @@ import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { 
@@ -505,13 +506,12 @@ export default function CampaignsPage() {
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md relative overflow-hidden bg-gradient-to-br from-purple-deep to-primary/40 shrink-0">
                           {dao.logo ? (
-                            <img 
+                            <Image 
                               src={dao.logo} 
                               alt={dao.name} 
+                              width={48}
+                              height={48}
                               className="w-full h-full object-cover" 
-                              onError={(e) => {
-                                e.currentTarget.src = '/dao-placeholder.png';
-                              }}
                             />
                           ) : (
                             <span className="text-xs font-extrabold text-white">{initials}</span>

@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizeCss: true,
-    optimizePackageImports: ["lucide-react", "framer-motion", "@radix-ui/react-icons"],
+    optimizePackageImports: ["lucide-react", "framer-motion", "@radix-ui/react-icons", "recharts", "@privy-io/react-auth", "viem", "ethers"],
   },
 };
 
