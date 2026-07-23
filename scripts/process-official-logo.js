@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 
-const uploadedLogoPath = 'C:\\Users\\HP\\.gemini\\antigravity\\brain\\648a4830-4594-42c0-95bf-b918bf391f24\\.user_uploaded\\media__1784827786170.png';
+const uploadedLogoPath = 'C:\\Users\\HP\\.gemini\\antigravity\\brain\\648a4830-4594-42c0-95bf-b918bf391f24\\.user_uploaded\\media__1784828601647.png';
 
 async function processOfficialLogo() {
   const rootDir = path.resolve(__dirname, '..');
