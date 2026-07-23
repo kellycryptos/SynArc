@@ -40,8 +40,13 @@ export const metadata: Metadata = {
     images: ["https://www.synarcdao.xyz/og-image.jpg"],
   },
   icons: {
-    icon: "/favicon.ico",
-    apple: "/og-image.jpg",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
   }
 };
 
