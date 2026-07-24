@@ -158,18 +158,26 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       activeContracts: contracts 
     });
 
-    // --- Step 0: Eagerly pre-populate with historical + simulated proposals so the UI
-    // renders immediately for guests (before any RPC round-trip completes).
+    // --- Step 0: Eagerly pre-populate with cached live + historical + simulated proposals
+    // so the UI renders all 941+ proposals immediately for guests (before any RPC round-trip completes).
     let simulatedProposalsEager: Proposal[] = [];
+    let cachedLiveProposalsEager: Proposal[] = [];
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("synarc_simulated_proposals");
-        if (stored) simulatedProposalsEager = JSON.parse(stored);
+        const storedSim = localStorage.getItem("synarc_simulated_proposals");
+        if (storedSim) simulatedProposalsEager = JSON.parse(storedSim);
+        const storedLive = localStorage.getItem("synarc_cached_live_proposals");
+        if (storedLive) cachedLiveProposalsEager = JSON.parse(storedLive);
       } catch { /* ignore */ }
     }
+    
+    // Deduplicate eager proposals
+    const cachedLiveIds = new Set(cachedLiveProposalsEager.map(p => p.id));
+    const uniqueSimEager = simulatedProposalsEager.filter(p => !cachedLiveIds.has(p.id));
+
     const eagerProposals = activeDaoId === 'synarc'
-      ? [...simulatedProposalsEager, ...(historicalProposals as Proposal[])]
-      : simulatedProposalsEager;
+      ? [...cachedLiveProposalsEager, ...uniqueSimEager, ...(historicalProposals as Proposal[])]
+      : [...cachedLiveProposalsEager, ...uniqueSimEager];
 
     // Show historical proposals & baseline metrics immediately — the UI never shows zeros.
     // treasuryValue, governanceParticipation, daoMembers all default to the verified
@@ -370,6 +378,12 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const executionRate = combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
         ? ((combinedProposals.filter(p => p.status === "Executed").length / combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
         : "92.4%";
+
+      if (typeof window !== "undefined" && loadedProposals.length > 0) {
+        try {
+          localStorage.setItem("synarc_cached_live_proposals", JSON.stringify(loadedProposals));
+        } catch { /* ignore quota errors */ }
+      }
 
       set({
         proposals: combinedProposals,
