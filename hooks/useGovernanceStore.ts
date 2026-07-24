@@ -219,8 +219,8 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const count = await withTimeout(governorContract.proposalCount(), 8000);
       const totalCount = Number(count);
 
-      // Fetch new on-chain proposals starting after historical proposals (index 431), or index 1 if count <= 430
-      const START_INDEX = totalCount > 430 ? 431 : 1;
+      // Fetch new on-chain proposals starting after historical baseline proposals (index 942+)
+      const START_INDEX = totalCount > 941 ? 942 : totalCount + 1;
       const proposalIndices = Array.from(
         { length: Math.max(0, totalCount - START_INDEX + 1) },
         (_, i) => START_INDEX + i
