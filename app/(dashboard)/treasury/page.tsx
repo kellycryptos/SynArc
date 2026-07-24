@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useTreasuryBalances } from "@/hooks/useTreasuryBalances";
@@ -543,8 +544,16 @@ function TreasuryPageContent() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">DAO Treasury</h1>
-            <p className="text-muted text-xs sm:text-sm mt-1">Multi-asset capital reserves and smart treasury contracts on Arc Testnet.</p>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">DAO Treasury</h1>
+              <Link
+                href="/docs/treasury"
+                className="px-3 py-1 text-xs font-bold text-muted hover:text-white border border-border-thin bg-surface-elevated/40 hover:bg-surface-elevated rounded-xl transition-all"
+              >
+                Read Docs &rarr;
+              </Link>
+            </div>
+            <p className="text-muted text-xs sm:text-sm mt-1">Multi-asset capital reserves on Arc Testnet.</p>
           </div>
           
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 w-full lg:w-auto">

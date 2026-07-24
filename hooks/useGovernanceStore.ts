@@ -5,7 +5,6 @@ import { ethers, JsonRpcProvider, BrowserProvider, Contract, formatUnits, parseU
 import { GOVERNANCE_CONTRACTS, GovernorABI, ProposalState, VoteType, ERC20ABI } from "@/lib/governance/contracts";
 
 import { getCachedProvider } from "@/lib/rpc/provider-cache";
-import historicalProposals from "@/data/historical-proposals.json";
 
 /**
  * Counts unique addresses that currently hold a non-zero sARC token balance.
@@ -97,17 +96,14 @@ const INITIAL_TREASURY_ACTIVITIES: TreasuryActivity[] = [];
 
 export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   proposals: [],
-  // Reliable baseline metrics — displayed until on-chain data arrives or in case of RPC failure.
-  // These values ($2,450,000 treasury, 16.7% participation) are the verified on-chain
-  // historical baseline. Must not be reset to zero.
   metrics: {
-    treasuryValue: "$2,450,000",
+    treasuryValue: "$0",
     activeProposals: 0,
     totalProposals: 0,
-    governanceParticipation: "16.7%",
-    daoMembers: 12450,
-    treasuryTransactions: 3,
-    proposalExecutionRate: "92.4%",
+    governanceParticipation: "0%",
+    daoMembers: 0,
+    treasuryTransactions: 0,
+    proposalExecutionRate: "0%",
   },
   treasuryActivities: [],
   userVotes: {},
@@ -156,8 +152,6 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       activeContracts: contracts 
     });
 
-    // --- Step 0: Eagerly pre-populate with historical + simulated proposals so the UI
-    // renders immediately for guests (before any RPC round-trip completes).
     let simulatedProposalsEager: Proposal[] = [];
     if (typeof window !== "undefined") {
       try {
@@ -165,28 +159,22 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         if (stored) simulatedProposalsEager = JSON.parse(stored);
       } catch { /* ignore */ }
     }
-    const eagerProposals = activeDaoId === 'synarc'
-      ? [...simulatedProposalsEager, ...(historicalProposals as Proposal[])]
-      : simulatedProposalsEager;
 
-    // Show historical proposals & baseline metrics immediately — the UI never shows zeros.
-    // treasuryValue, governanceParticipation, daoMembers all default to the verified
-    // on-chain historical baseline; the live RPC fetch below will update them if it succeeds.
     set({
-      proposals: eagerProposals,
+      proposals: simulatedProposalsEager,
       initialized: true,
       metrics: {
-        treasuryValue: "$2,450,000",
-        activeProposals: eagerProposals.filter(p => p.status === "Active").length,
-        totalProposals: eagerProposals.length,
-        governanceParticipation: eagerProposals.length > 0
-          ? (eagerProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / eagerProposals.length).toFixed(1) + "%"
-          : "16.7%",
-        daoMembers: 12450,
-        treasuryTransactions: 3,
-        proposalExecutionRate: eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
-          ? ((eagerProposals.filter(p => p.status === "Executed").length / eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-          : "92.4%"
+        treasuryValue: "$0",
+        activeProposals: simulatedProposalsEager.filter(p => p.status === "Active").length,
+        totalProposals: simulatedProposalsEager.length,
+        governanceParticipation: simulatedProposalsEager.length > 0
+          ? (simulatedProposalsEager.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / simulatedProposalsEager.length).toFixed(1) + "%"
+          : "0%",
+        daoMembers: 0,
+        treasuryTransactions: 0,
+        proposalExecutionRate: simulatedProposalsEager.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
+          ? ((simulatedProposalsEager.filter(p => p.status === "Executed").length / simulatedProposalsEager.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
+          : "0%"
       }
     });
 
@@ -309,9 +297,6 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         }
       }
       let combinedProposals = [...simulatedProposals, ...loadedProposals];
-      if (activeDaoId === 'synarc') {
-        combinedProposals = [...combinedProposals, ...(historicalProposals as Proposal[])];
-      }
 
       const treasuryAddress = contracts.treasury;
       const treasuryContract = new Contract(treasuryAddress, [
@@ -343,13 +328,23 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         console.warn("Failed to load Treasury activities via RPC, preserving default treasury state:", err);
       }
 
+      let holderCount = 0;
+      try {
+        holderCount = await getTokenHolderCount(provider, contracts.token, 2000);
+      } catch {
+        const uniqueAddresses = new Set<string>();
+        combinedProposals.forEach(p => { if (p.proposer) uniqueAddresses.add(p.proposer.toLowerCase()); });
+        holderCount = uniqueAddresses.size;
+      }
+
       const avgPart = combinedProposals.length > 0
         ? (combinedProposals.reduce((sum, p) => sum + p.participationPercentage, 0) / combinedProposals.length).toFixed(1) + "%"
-        : "16.7%";
+        : "0%";
 
-      const executionRate = combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
-        ? ((combinedProposals.filter(p => p.status === "Executed").length / combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-        : "92.4%";
+      const completedProposals = combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated");
+      const executionRate = completedProposals.length > 0
+        ? ((combinedProposals.filter(p => p.status === "Executed").length / completedProposals.length) * 100).toFixed(1) + "%"
+        : "0%";
 
       set({
         proposals: combinedProposals,
@@ -357,13 +352,13 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
-          treasuryValue: treasuryVal > 0 ? `$${treasuryVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "$2,450,000",
+          treasuryValue: `$${treasuryVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
           activeProposals: combinedProposals.filter(p => p.status === "Active").length,
           totalProposals: combinedProposals.length,
-          governanceParticipation: avgPart !== "0.0%" && avgPart !== "0%" ? avgPart : "16.7%",
-          daoMembers: 12450,
-          treasuryTransactions: loadedActivities.length || 3,
-          proposalExecutionRate: executionRate !== "0.0%" && executionRate !== "0%" ? executionRate : "92.4%",
+          governanceParticipation: avgPart,
+          daoMembers: holderCount,
+          treasuryTransactions: loadedActivities.length,
+          proposalExecutionRate: executionRate,
         }
       });
     } catch (e) {
@@ -379,27 +374,24 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           console.error("Failed to parse simulated proposals from localStorage", err);
         }
       }
-      const fallbackProposals = activeDaoId === 'synarc'
-        ? [...simulatedProposals, ...(historicalProposals as Proposal[])]
-        : simulatedProposals;
-      // RPC timeout/failure: preserve the reliable baseline — never show zeros.
+      const fallbackProposals = simulatedProposals;
       set({
         proposals: fallbackProposals,
         treasuryActivities: [],
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
-          treasuryValue: "$2,450,000",
+          treasuryValue: "$0",
           activeProposals: fallbackProposals.filter(p => p.status === "Active").length,
           totalProposals: fallbackProposals.length,
           governanceParticipation: fallbackProposals.length > 0
             ? (fallbackProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / fallbackProposals.length).toFixed(1) + "%"
-            : "16.7%",
-          daoMembers: 12450,
-          treasuryTransactions: 3,
+            : "0%",
+          daoMembers: 0,
+          treasuryTransactions: 0,
           proposalExecutionRate: fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
             ? ((fallbackProposals.filter(p => p.status === "Executed").length / fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-            : "92.4%"
+            : "0%"
         }
       });
     }

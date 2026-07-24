@@ -392,7 +392,7 @@ export default function CreateProposalPage() {
                 >
                   <div className="flex items-center gap-2">
                     <Bot className="w-5 h-5 text-primary" />
-                    <span>✨ AI Proposal Assistant (Groq Llama 3.3)</span>
+                    <span>✨ AI Proposal Assistant</span>
                   </div>
                   <ChevronDown className={`w-4 h-4 text-muted transition-transform duration-300 ${isAssistantOpen ? "rotate-180 text-white" : ""}`} />
                 </button>

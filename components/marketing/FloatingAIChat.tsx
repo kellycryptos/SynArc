@@ -53,7 +53,7 @@ export function FloatingAIChat() {
               <Bot className="w-5 h-5 text-primary animate-pulse" />
               <div>
                 <h4 className="text-xs font-bold text-white tracking-wide">SynArc AI Companion</h4>
-                <span className="text-[9px] text-muted block">Online · Powered by Groq</span>
+                <span className="text-[9px] text-muted block">Online · AI Assistant</span>
               </div>
             </div>
             <button

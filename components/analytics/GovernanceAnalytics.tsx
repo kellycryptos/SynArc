@@ -1,30 +1,46 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const data = [
-  { name: 'Jan', participation: 45, proposals: 2 },
-  { name: 'Feb', participation: 52, proposals: 4 },
-  { name: 'Mar', participation: 48, proposals: 3 },
-  { name: 'Apr', participation: 61, proposals: 6 },
-  { name: 'May', participation: 68.5, proposals: 5 },
-];
+import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 
 export function GovernanceAnalytics() {
-  // Defer recharts mount until after an idle frame.
-  //
-  // Why: recharts parses + registers DOM event listeners + runs ResizeObserver
-  // synchronously when it first mounts. Even behind next/dynamic it executes as
-  // one large synchronous chunk once the lazy JS lands, blocking the main thread
-  // for ~400-600ms. Setting `chartReady` in a requestIdleCallback (with a
-  // setTimeout fallback for Safari which doesn't support rIC) pushes that work
-  // out of the LCP / TBT critical window entirely.
-  //
-  // The skeleton below has the same h-[400px] height as the real card so there
-  // is zero layout shift (CLS = 0) when the chart swaps in.
+  const { proposals } = useGovernanceStore();
   const [chartReady, setChartReady] = useState(false);
+
+  const chartData = useMemo(() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    const result: { name: string; participation: number; proposals: number }[] = [];
+
+    for (let i = 4; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const name = months[d.getMonth()];
+      const yearStr = d.getFullYear().toString().slice(-2);
+      const keyMonth = d.getMonth();
+      const keyYear = d.getFullYear();
+
+      const matchingProposals = (proposals || []).filter((p) => {
+        if (!p || !p.createdAt) return false;
+        const pDate = new Date(p.createdAt);
+        return pDate.getMonth() === keyMonth && pDate.getFullYear() === keyYear;
+      });
+
+      const count = matchingProposals.length;
+      const avgPart = count > 0
+        ? parseFloat((matchingProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / count).toFixed(1))
+        : 0;
+
+      result.push({
+        name: `${name} '${yearStr}`,
+        participation: avgPart,
+        proposals: count,
+      });
+    }
+
+    return result;
+  }, [proposals]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -63,7 +79,7 @@ export function GovernanceAnalytics() {
       <div className="flex-1 min-h-0">
         {chartReady ? (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorParticipation" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.3}/>

@@ -670,7 +670,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
             </div>
             
             <p className="text-xs text-text-tertiary leading-relaxed">
-              Get an AI-powered assessment of this creator campaign's validity and ecosystem impact powered by Llama 3.3.
+              Get an AI-powered assessment of this creator campaign's validity and ecosystem impact.
             </p>
 
             {!aiAnalysis ? (

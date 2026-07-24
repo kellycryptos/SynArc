@@ -71,11 +71,11 @@ export default function DAOsPage() {
         })();
 
         const combinedTreasury = await Promise.race([fetchPromise, timeoutPromise]);
-        setSynarcTreasury(combinedTreasury || 2450000);
-        setSynarcMembers(12450);
+        setSynarcTreasury(combinedTreasury || 0);
+        setSynarcMembers(0);
       } catch (err) {
-        setSynarcTreasury(2450000);
-        setSynarcMembers(12450);
+        setSynarcTreasury(0);
+        setSynarcMembers(0);
       } finally {
         setMetricsLoading(false);
       }
@@ -148,22 +148,31 @@ export default function DAOsPage() {
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">DAO Registry</h1>
           <p className="text-muted leading-relaxed">
-            SynArc hosts governance infrastructure for approved DAOs on Arc Testnet. Each DAO manages its own proposals and treasury.
+            Registered governance infrastructure on Arc Testnet.
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            if (!isAuthenticated) {
-              login();
-              return;
-            }
-            setIsModalOpen(true);
-          }}
-          className="md:self-start shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-purple text-white-keep font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer text-sm"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-3 md:self-start">
+          <Link
+            href="/docs/dao-registry"
+            className="px-4 py-3 rounded-xl border border-border-thin bg-surface-elevated/40 hover:bg-surface-elevated text-xs font-bold text-muted hover:text-white transition-all flex items-center gap-1.5"
+          >
+            Read Docs &rarr;
+          </Link>
+          <button
+            onClick={() => {
+              if (!isAuthenticated) {
+                login();
+                return;
+              }
+              setIsModalOpen(true);
+            }}
+            className="shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-purple text-white-keep font-semibold hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Register your DAO</span>
+          </button>
+        </div>
       </div>
 
       {/* Category Filter */}
