@@ -211,18 +211,28 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const count = await withTimeout(governorContract.proposalCount(), 8000);
       const totalCount = Number(count);
 
-      // Fetch all on-chain proposals starting from index 1 up to totalCount
-      const START_INDEX = 1;
+      // Fetch new on-chain proposals starting after historical proposals (index 431), or index 1 if count <= 430
+      const START_INDEX = totalCount > 430 ? 431 : 1;
       const proposalIndices = Array.from(
         { length: Math.max(0, totalCount - START_INDEX + 1) },
         (_, i) => START_INDEX + i
       );
       const settled = await Promise.allSettled(
         proposalIndices.map(async (i) => {
-          const [p, proposalStateNum] = await withTimeout(Promise.all([
-            governorContract.getProposal(i),
-            governorContract.state(i),
-          ]), 8000);
+          let p: any;
+          let proposalStateNum: any;
+          try {
+            [p, proposalStateNum] = await withTimeout(Promise.all([
+              governorContract.getProposal(i),
+              governorContract.state(i),
+            ]), 8000);
+          } catch {
+            // Fallback for standard OpenZeppelin governor contracts that expose proposals(uint256)
+            [p, proposalStateNum] = await withTimeout(Promise.all([
+              governorContract.proposals(i),
+              governorContract.state(i),
+            ]), 8000);
+          }
           return { i, p, proposalStateNum };
         })
       );
@@ -255,25 +265,31 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           };
           const status = statusMap[Number(proposalStateNum)] || "Active";
 
+          const startTimeSecs = p.startTime ? Number(p.startTime) : Date.now() / 1000;
+          const endTimeSecs = p.endTime ? Number(p.endTime) : (p.endBlock ? Date.now() / 1000 + 604800 : Date.now() / 1000 + 604800);
+          const treasuryImpactVal = p.treasuryImpactValue ? Number(formatUnits(p.treasuryImpactValue, 6)) : 0;
+
           const timeline: TimelineEvent[] = [
-            { title: "Proposal Created", timestamp: new Date(Number(p.startTime) * 1000).toISOString(), status: "Proposed" }
+            { title: "Proposal Created", timestamp: new Date(startTimeSecs * 1000).toISOString(), status: "Proposed" }
           ];
           if (status === "Active") {
-            timeline.push({ title: "Voting Phase Active", timestamp: new Date(Number(p.startTime) * 1000).toISOString(), status: "Active" });
+            timeline.push({ title: "Voting Phase Active", timestamp: new Date(startTimeSecs * 1000).toISOString(), status: "Active" });
           } else if (status === "Executed") {
-            timeline.push({ title: "Transaction Executed", timestamp: new Date(Number(p.endTime) * 1000).toISOString(), status: "Executed" });
+            timeline.push({ title: "Transaction Executed", timestamp: new Date(endTimeSecs * 1000).toISOString(), status: "Executed" });
           } else if (status === "Canceled") {
-            timeline.push({ title: "Proposal Canceled", timestamp: new Date(Number(p.endTime) * 1000).toISOString(), status: "Canceled" });
+            timeline.push({ title: "Proposal Canceled", timestamp: new Date(endTimeSecs * 1000).toISOString(), status: "Canceled" });
           } else if (status === "Defeated") {
-            timeline.push({ title: "Voting Closed & Defeated", timestamp: new Date(Number(p.endTime) * 1000).toISOString(), status: "Defeated" });
+            timeline.push({ title: "Voting Closed & Defeated", timestamp: new Date(endTimeSecs * 1000).toISOString(), status: "Defeated" });
           } else if (status === "Succeeded") {
-            timeline.push({ title: "Voting Closed & Passed", timestamp: new Date(Number(p.endTime) * 1000).toISOString(), status: "Passed" });
+            timeline.push({ title: "Voting Closed & Passed", timestamp: new Date(endTimeSecs * 1000).toISOString(), status: "Passed" });
           }
 
+          const propIdStr = p.id ? p.id.toString() : result.value.i.toString();
+
           loadedProposals.push({
-            id: `SIP-${p.id.toString()}`,
-            title: p.title || `Proposal #${p.id.toString()}`,
-            description: p.description,
+            id: `SIP-${propIdStr}`,
+            title: p.title || `Proposal #${propIdStr}`,
+            description: p.description || "Governance Proposal",
             proposer: p.proposer,
             category: p.category || "General",
             status: status as ProposalStatus,
@@ -282,15 +298,14 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
             abstainVotes: abstainV,
             totalVotes: total,
             participationPercentage: parseFloat(participation.toFixed(1)),
-            // treasuryImpactValue is USDC (6 decimals) — separate from vote weights
-            treasuryImpactValue: -Number(formatUnits(p.treasuryImpactValue, 6)),
-            treasuryImpact: p.treasuryImpactValue > 0n ? `-${Number(formatUnits(p.treasuryImpactValue, 6)).toLocaleString()} USDC` : "None",
-            timeRemaining: status === "Active" ? `${Math.max(0, Math.ceil((Number(p.endTime) - Date.now() / 1000) / 86400))} days left` : "Ended",
-            createdAt: new Date(Number(p.startTime) * 1000).toISOString(),
-            votingStarts: new Date(Number(p.startTime) * 1000).toISOString(),
-            votingEnds: new Date(Number(p.endTime) * 1000).toISOString(),
-            executionTarget: p.executionTarget,
-            votingDuration: Number(p.votingDuration) / 86400,
+            treasuryImpactValue: -treasuryImpactVal,
+            treasuryImpact: treasuryImpactVal > 0 ? `-${treasuryImpactVal.toLocaleString()} USDC` : "None",
+            timeRemaining: status === "Active" ? `${Math.max(0, Math.ceil((endTimeSecs - Date.now() / 1000) / 86400))} days left` : "Ended",
+            createdAt: new Date(startTimeSecs * 1000).toISOString(),
+            votingStarts: new Date(startTimeSecs * 1000).toISOString(),
+            votingEnds: new Date(endTimeSecs * 1000).toISOString(),
+            executionTarget: p.executionTarget || ethers.ZeroAddress,
+            votingDuration: p.votingDuration ? Number(p.votingDuration) / 86400 : 7,
             timeline
           });
       }
