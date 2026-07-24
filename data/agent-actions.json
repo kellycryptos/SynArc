@@ -1,11 +1,5 @@
 [
   {
-    "timestamp": "2026-07-24T07:54:55.477Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
     "timestamp": "2026-07-20T14:15:27.908Z",
     "action": "monitoring",
     "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
@@ -295,6 +289,12 @@
   },
   {
     "timestamp": "2026-07-19T11:56:20.582Z",
+    "action": "monitoring",
+    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-07-19T11:51:20.579Z",
     "action": "monitoring",
     "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
     "status": "executed"

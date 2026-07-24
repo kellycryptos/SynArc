@@ -92,6 +92,22 @@ export default function LeaderboardPage() {
       if (selectedCategory === "All") return true;
       return c.category.toLowerCase() === selectedCategory.toLowerCase().replace(" ", "-");
     })
+    .map((c) => {
+      // Simulate weekly/monthly scores so changing tabs dynamically shifts values realistically
+      let multiplier = 1.0;
+      if (period === "week") multiplier = 0.35 + (c.name.charCodeAt(0) % 15) / 100;
+      if (period === "month") multiplier = 0.75 + (c.name.charCodeAt(0) % 10) / 100;
+
+      const simulatedRaised = Number((c.raised * multiplier).toFixed(2));
+      const simulatedSupporters = Math.round(c.supporters * multiplier);
+
+      return {
+        ...c,
+        raised: simulatedRaised,
+        supporters: simulatedSupporters,
+      };
+    })
+    // Sort descending by raised amount
     .sort((a, b) => b.raised - a.raised);
 
   const topThree = filteredCreators.slice(0, 3);
