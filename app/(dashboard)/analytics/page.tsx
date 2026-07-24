@@ -85,7 +85,7 @@ export default function AnalyticsPage() {
 
       try {
         setVotersLoading(true);
-        const governorAddress = GOVERNANCE_CONTRACTS?.governor || '0xc986E06aF55d01E7833aB20f92B8b8B8a860D4e2';
+        const governorAddress = GOVERNANCE_CONTRACTS?.governor || '0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e';
 
         const events = await getLogsResiliently(async (rpcUrl) => {
           const provider = new ethers.JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
@@ -93,9 +93,8 @@ export default function AnalyticsPage() {
           const filter = governorContract.filters.VoteCast();
           const latestBlock = await provider.getBlockNumber();
           
-          const isAlchemy = rpcUrl.includes("alchemy.com");
-          const scanBlocks = isAlchemy ? 10 : 50000;
-          const chunkSize = isAlchemy ? 10 : 5000;
+          const scanBlocks = 50000;
+          const chunkSize = 5000;
           
           const fromBlock = Math.max(0, Number(latestBlock) - scanBlocks);
           const chunkEvents = [];

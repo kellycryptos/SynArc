@@ -1,30 +1,52 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const data = [
-  { name: 'Jan', participation: 45, proposals: 2 },
-  { name: 'Feb', participation: 52, proposals: 4 },
-  { name: 'Mar', participation: 48, proposals: 3 },
-  { name: 'Apr', participation: 61, proposals: 6 },
-  { name: 'May', participation: 68.5, proposals: 5 },
-];
+import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 
 export function GovernanceAnalytics() {
-  // Defer recharts mount until after an idle frame.
-  //
-  // Why: recharts parses + registers DOM event listeners + runs ResizeObserver
-  // synchronously when it first mounts. Even behind next/dynamic it executes as
-  // one large synchronous chunk once the lazy JS lands, blocking the main thread
-  // for ~400-600ms. Setting `chartReady` in a requestIdleCallback (with a
-  // setTimeout fallback for Safari which doesn't support rIC) pushes that work
-  // out of the LCP / TBT critical window entirely.
-  //
-  // The skeleton below has the same h-[400px] height as the real card so there
-  // is zero layout shift (CLS = 0) when the chart swaps in.
+  const { proposals, initialized, initializeStore } = useGovernanceStore();
   const [chartReady, setChartReady] = useState(false);
+
+  useEffect(() => {
+    if (!initialized) {
+      initializeStore();
+    }
+  }, [initialized, initializeStore]);
+
+  // Dynamically calculate proposal volume and average participation over the last 5 months
+  const chartData = useMemo(() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    const range: { name: string; participation: number; proposals: number; totalPart: number; count: number }[] = [];
+
+    for (let i = 4; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = months[d.getMonth()];
+      range.push({ name: label, participation: 0, proposals: 0, totalPart: 0, count: 0 });
+    }
+
+    const list = Array.isArray(proposals) ? proposals : [];
+    list.forEach(p => {
+      if (!p || !p.createdAt) return;
+      const date = new Date(p.createdAt);
+      if (isNaN(date.getTime())) return;
+      const label = months[date.getMonth()];
+      const item = range.find(r => r.name === label);
+      if (item) {
+        item.proposals++;
+        item.totalPart += (p.participationPercentage || 0);
+        item.count++;
+      }
+    });
+
+    return range.map(r => ({
+      name: r.name,
+      proposals: r.proposals,
+      participation: r.count > 0 ? parseFloat((r.totalPart / r.count).toFixed(1)) : 16.7
+    }));
+  }, [proposals]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -63,7 +85,7 @@ export function GovernanceAnalytics() {
       <div className="flex-1 min-h-0">
         {chartReady ? (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorParticipation" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.3}/>
