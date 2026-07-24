@@ -3,7 +3,9 @@ import { Proposal, ProposalStatus, TimelineEvent, GovernanceMetrics } from "@/ty
 import { TreasuryActivity } from "@/types";
 import { ethers, JsonRpcProvider, BrowserProvider, Contract, formatUnits, parseUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI, ProposalState, VoteType, ERC20ABI } from "@/lib/governance/contracts";
-
+import { getAggressiveGasParams, getAuthenticatedClient } from "@/lib/tx-helper";
+import { ARC_CHAIN, ARC_RPC_URLS } from "@/lib/arc-config";
+import { createPublicClient, fallback, http } from "viem";
 import { getCachedProvider } from "@/lib/rpc/provider-cache";
 import historicalProposals from "@/data/historical-proposals.json";
 
@@ -414,6 +416,23 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const absoluteImpactValue = BigInt(Math.abs(proposalData.treasuryImpactValue)) * 1000000n;
       const targetAddress = proposalData.executionTarget || ethers.ZeroAddress;
 
+      // Dynamically estimate gas for proposal submission
+      // Arc Testnet requires 20 Gwei minimum — use getAggressiveGasParams via a viem publicClient
+      let gasPrice = 20000000000n; // 20 Gwei fallback
+      try {
+        const publicClient = createPublicClient({
+          chain: ARC_CHAIN,
+          transport: fallback(ARC_RPC_URLS.map((url: string) => http(url, { timeout: 5000 }))),
+        });
+        const params = await getAggressiveGasParams(publicClient);
+        // Support both EIP-1559 (maxFeePerGas) and legacy (gasPrice)
+        if ('gasPrice' in params && params.gasPrice) {
+          gasPrice = (params.gasPrice as bigint) > 20000000000n ? (params.gasPrice as bigint) : 20000000000n;
+        } else if ('maxFeePerGas' in params && params.maxFeePerGas) {
+          gasPrice = (params.maxFeePerGas as bigint) > 20000000000n ? (params.maxFeePerGas as bigint) : 20000000000n;
+        }
+      } catch (_) { /* use default floor */ }
+
       const tx = await governorContract.propose(
         proposalData.title.trim(),
         proposalData.description.trim(),
@@ -422,8 +441,8 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         absoluteImpactValue,
         targetAddress,
         { 
-          gasLimit: 500000n, 
-          gasPrice: 10000000n, 
+          gasLimit: 600000n, // Upgraded from 500k — large proposals need more headroom
+          gasPrice,
         }
       );
 
@@ -458,6 +477,18 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
       return finalProposalId;
     } catch (err: any) {
+      // Provide clear human-readable error messages
+      const raw = err?.reason || err?.message || '';
+      const lower = raw.toLowerCase();
+      if (lower.includes('user rejected') || lower.includes('user denied') || lower.includes('cancelled')) {
+        throw new Error('Transaction was rejected by wallet.');
+      }
+      if (lower.includes('insufficient funds') || lower.includes('insufficient balance')) {
+        throw new Error('Insufficient USDC balance for gas fees. Please claim from the faucet.');
+      }
+      if (lower.includes('nonce too low')) {
+        throw new Error('Transaction nonce error. Please wait a moment and try again.');
+      }
       const message = err?.reason || err?.message || 'Failed to create proposal';
       throw new Error(message);
     }
@@ -475,9 +506,24 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     };
     const optionNum = optionMap[option];
 
+    // Dynamic gas for vote submission — 20 Gwei floor
+    let gasPrice = 20000000000n;
+    try {
+      const publicClient = createPublicClient({
+        chain: ARC_CHAIN,
+        transport: fallback(ARC_RPC_URLS.map((url: string) => http(url, { timeout: 4000 }))),
+      });
+      const params = await getAggressiveGasParams(publicClient);
+      if ('gasPrice' in params && params.gasPrice) {
+        gasPrice = (params.gasPrice as bigint) > 20000000000n ? (params.gasPrice as bigint) : 20000000000n;
+      } else if ('maxFeePerGas' in params && params.maxFeePerGas) {
+        gasPrice = (params.maxFeePerGas as bigint) > 20000000000n ? (params.maxFeePerGas as bigint) : 20000000000n;
+      }
+    } catch (_) { /* use default floor */ }
+
     const tx = await governorContract.castVoteWithReason(id, optionNum, signature, {
       gasLimit: 300000n,
-      gasPrice: 10000000n,
+      gasPrice,
     });
     await tx.wait();
 
@@ -492,9 +538,24 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
     const id = Number(proposalId.replace("SIP-", ""));
 
+    // Dynamic gas for proposal execution — 20 Gwei floor
+    let gasPrice = 20000000000n;
+    try {
+      const publicClient = createPublicClient({
+        chain: ARC_CHAIN,
+        transport: fallback(ARC_RPC_URLS.map((url: string) => http(url, { timeout: 4000 }))),
+      });
+      const params = await getAggressiveGasParams(publicClient);
+      if ('gasPrice' in params && params.gasPrice) {
+        gasPrice = (params.gasPrice as bigint) > 20000000000n ? (params.gasPrice as bigint) : 20000000000n;
+      } else if ('maxFeePerGas' in params && params.maxFeePerGas) {
+        gasPrice = (params.maxFeePerGas as bigint) > 20000000000n ? (params.maxFeePerGas as bigint) : 20000000000n;
+      }
+    } catch (_) { /* use default floor */ }
+
     const tx = await governorContract.execute(id, {
-      gasLimit: 300000n,
-      gasPrice: 10000000n,
+      gasLimit: 400000n,
+      gasPrice,
     });
     await tx.wait();
 

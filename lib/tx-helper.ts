@@ -97,9 +97,9 @@ class CircleEthereumProvider {
 
     // Poll for the transaction completion and fetch the txHash
     let attempts = 0;
-    const maxAttempts = 60; // 60 seconds timeout
+    const maxAttempts = 90; // 90s timeout — give extra headroom for slow Arc blocks
     while (attempts < maxAttempts) {
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 500)); // Reduced from 1000ms for faster UX
       const statusRes = await fetch(`/api/circle/wallet/transaction?id=${txId}`, {
         headers: { 'x-user-token': userToken }
       });
@@ -114,7 +114,11 @@ class CircleEthereumProvider {
         }
 
         if (txState === 'FAILED' || txState === 'DENIED') {
-          throw new Error(statusData.transaction?.errorReason || `Transaction failed with state: ${txState}`);
+          const reason = statusData.transaction?.errorReason;
+          throw new Error(reason
+            ? `Transaction failed: ${reason}`
+            : `Transaction failed with state: ${txState}. Please check your balance and try again.`
+          );
         }
       }
       attempts++;
@@ -256,7 +260,10 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
           params: [{ chainId: targetHex }]
         });
         console.log(`[enforceChain] wallet_switchEthereumChain completed for Privy embedded wallet.`);
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Reduced from 800ms — chain switch is fast on Privy embedded wallets
+        await new Promise(resolve => setTimeout(resolve, 400));
+        // Invalidate global public client to force fresh RPC connection
+        globalPublicClientInstance = null;
         return provider;
       } catch (switchError) {
         console.warn(`[enforceChain] wallet_switchEthereumChain failed, trying activeWallet.switchChain fallback:`, switchError);
@@ -270,8 +277,10 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
       console.log(`[enforceChain] switchChain to ${targetChainId}...`);
       await activeWallet.switchChain(targetChainId);
       console.log(`[enforceChain] switchChain call sent successfully.`);
-      // Delay to let Privy state propagate
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Reduced from 800ms — let provider confirm chain change naturally
+      await new Promise(resolve => setTimeout(resolve, 400));
+      // Invalidate global public client on chain switch
+      globalPublicClientInstance = null;
     }
   } catch (err: any) {
     console.warn('[enforceChain] switchChain call raised error, continuing with fallback checks:', err);
@@ -680,10 +689,11 @@ export const waitForTransaction = async (
     throw new Error('Transaction execution failed on-chain.');
   }
 
-  // Introduce a brief settlement delay (1.5 seconds) to allow RPC state synchronization
+  // Introduce a brief settlement delay (800ms) to allow RPC state synchronization
   // across nodes before proceeding with subsequent transactions or reads.
-  console.log(`[waitForTransaction] Transaction succeeded. Applying 1.5s RPC settlement delay...`);
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  // Reduced from 1500ms — Arc Testnet propagates quickly with low block times.
+  console.log(`[waitForTransaction] Transaction succeeded. Applying 800ms RPC settlement delay...`);
+  await new Promise((resolve) => setTimeout(resolve, 800));
   console.log(`[waitForTransaction] Settlement delay completed.`);
   
   return receipt;

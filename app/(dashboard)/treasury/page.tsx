@@ -361,28 +361,36 @@ function TreasuryPageContent() {
           signer
         );
 
-        // Step 1 — Approve
-        setDepositStatus('Sending transaction...');
-        const approveTx = await erc20.approve(
-          CONTRACTS.treasury,
-          amountRaw,
-          {
-            gasLimit: 250000,
-            gasPrice: gasPrice
-          }
-        );
+        // Step 1 — Check existing allowance to skip unnecessary approve tx
+        setDepositStatus('Checking allowance...');
+        const signerAddress = await signer.getAddress();
+        const existingAllowance: bigint = await erc20.allowance(signerAddress, CONTRACTS.treasury);
+        
+        if (existingAllowance < amountRaw) {
+          // Need to approve — either no allowance or insufficient
+          setDepositStatus('Approving ' + token + '...');
+          const approveTx = await erc20.approve(
+            CONTRACTS.treasury,
+            amountRaw,
+            {
+              gasLimit: 250000,
+              gasPrice: gasPrice
+            }
+          );
 
-        setDepositStatus('Confirming approval...');
-        const approveReceipt = await approveTx.wait(1);
-        if (!approveReceipt || approveReceipt.status !== 1) {
-          throw new Error('Approval failed on-chain.');
+          setDepositStatus('Confirming approval...');
+          const approveReceipt = await approveTx.wait(1);
+          if (!approveReceipt || approveReceipt.status !== 1) {
+            throw new Error('Approval failed on-chain.');
+          }
+          // Brief sync delay after approve
+          await new Promise((resolve) => setTimeout(resolve, 800));
+        } else {
+          console.log(`[Treasury Deposit] Existing allowance ${existingAllowance} >= ${amountRaw}. Skipping approve.`);
         }
 
-        // Apply a brief settlement delay for RPC sync
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
         // Step 2 — Deposit
-        setDepositStatus('Sending transaction...');
+        setDepositStatus('Depositing ' + token + ' to treasury...');
         const depositFn = token === 'USDC' ? 'depositUSDC' : 'depositEURC';
         const depositTx = await treasury[depositFn](
           amountRaw,
@@ -427,35 +435,61 @@ function TreasuryPageContent() {
       // Dynamically estimate fees using low-latency and aggressive parameters
       const gasParams = await getAggressiveGasParams(publicClient);
 
-      // Step 1 — Approve
-      let estimatedApproveGas = 250000n; // Slightly higher gas limit
+      // Step 1 — Check existing allowance to skip unnecessary approve tx
+      setDepositStatus('Checking allowance...');
+      const ERC20_ALLOWANCE_ABI = [{
+        name: 'allowance',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'owner', type: 'address' }, { name: 'spender', type: 'address' }],
+        outputs: [{ name: '', type: 'uint256' }]
+      }] as const;
+      
+      let existingAllowance = 0n;
       try {
-        const est = await publicClient.estimateContractGas({
+        existingAllowance = await publicClient.readContract({
+          address: tokenAddress,
+          abi: ERC20_ALLOWANCE_ABI,
+          functionName: 'allowance',
+          args: [address, CONTRACTS.treasury],
+        }) as bigint;
+      } catch (e) {
+        console.warn('Allowance check failed, proceeding with approve:', e);
+      }
+      
+      if (existingAllowance < amountRaw) {
+        // Need to approve — either no allowance or insufficient
+        let estimatedApproveGas = 250000n;
+        try {
+          const est = await publicClient.estimateContractGas({
+            address: tokenAddress,
+            abi: ERC20_ABI,
+            functionName: 'approve',
+            args: [CONTRACTS.treasury, amountRaw],
+            account: address,
+          })
+          estimatedApproveGas = (est * 150n) / 100n;
+          if (estimatedApproveGas < 250000n) estimatedApproveGas = 250000n;
+        } catch (e) {
+          console.warn('Approve gas estimation failed:', e)
+        }
+
+        setDepositStatus('Approving ' + token + '...');
+        const approveTx = await walletClient.writeContract({
           address: tokenAddress,
           abi: ERC20_ABI,
           functionName: 'approve',
           args: [CONTRACTS.treasury, amountRaw],
           account: address,
+          gas: estimatedApproveGas,
+          ...gasParams,
         })
-        estimatedApproveGas = (est * 150n) / 100n;
-        if (estimatedApproveGas < 250000n) estimatedApproveGas = 250000n;
-      } catch (e) {
-        console.warn('Approve gas estimation failed:', e)
+
+        setDepositStatus('Confirming approval...');
+        await waitForTransaction(publicClient, approveTx);
+      } else {
+        console.log(`[Treasury Deposit] Allowance ${existingAllowance} >= ${amountRaw}. Skipping approve.`);
       }
-
-      setDepositStatus('Sending transaction...');
-      const approveTx = await walletClient.writeContract({
-        address: tokenAddress,
-        abi: ERC20_ABI,
-        functionName: 'approve',
-        args: [CONTRACTS.treasury, amountRaw],
-        account: address,
-        gas: estimatedApproveGas,
-        ...gasParams,
-      })
-
-      setDepositStatus('Confirming approval...');
-      await waitForTransaction(publicClient, approveTx);
 
       // Step 2 — Deposit
       let estimatedDepositGas = 300000n; // Slightly higher gas limit

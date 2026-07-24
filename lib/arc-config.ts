@@ -25,12 +25,14 @@ export const arcTestnet = defineChain({
 export const ARC_CHAIN = arcTestnet;
 
 export const ARC_GAS = {
-  propose: 500000n,
+  propose: 600000n,
   vote: 300000n,
-  deposit: 200000n,
-  approve: 100000n,
-  faucet: 100000n,
-  gasPrice: 10000000n,
+  deposit: 300000n,
+  approve: 250000n,
+  faucet: 150000n,
+  // Arc Testnet requires a minimum of 20 Gwei for transaction inclusion.
+  // This is 2000x higher than the old 10 Mwei floor which caused stuck txs.
+  gasPrice: 20000000000n, // 20 Gwei — minimum Arc Testnet gas price floor
 } as const
 
 export const CONTRACTS = {
