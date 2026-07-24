@@ -334,13 +334,6 @@ function TreasuryPageContent() {
         const tokenAddress = token === 'USDC' ? USDC_ADDRESS : EURC_ADDRESS;
         const amountRaw = BigInt(Math.floor(amount * 1_000_000));
 
-        // Get dynamic gas price with a 20 Gwei floor
-        const feeData = await provider.getFeeData();
-        const networkGasPrice = feeData.gasPrice || 20000000000n;
-        const gasPrice = (networkGasPrice * 150n) / 100n > 20000000000n 
-          ? (networkGasPrice * 150n) / 100n 
-          : 20000000000n;
-
         // ERC20 Contract instance
         const erc20 = new Contract(
           tokenAddress,
@@ -371,11 +364,7 @@ function TreasuryPageContent() {
           setDepositStatus('Approving ' + token + '...');
           const approveTx = await erc20.approve(
             CONTRACTS.treasury,
-            amountRaw,
-            {
-              gasLimit: 250000,
-              gasPrice: gasPrice
-            }
+            amountRaw
           );
 
           setDepositStatus('Confirming approval...');
@@ -393,11 +382,7 @@ function TreasuryPageContent() {
         setDepositStatus('Depositing ' + token + ' to treasury...');
         const depositFn = token === 'USDC' ? 'depositUSDC' : 'depositEURC';
         const depositTx = await treasury[depositFn](
-          amountRaw,
-          {
-            gasLimit: 300000,
-            gasPrice: gasPrice
-          }
+          amountRaw
         );
 
         setTxHash(depositTx.hash);

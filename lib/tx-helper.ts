@@ -624,10 +624,7 @@ export const getAuthenticatedClient = async (
  * on mobile/embedded wallets on the Arc Testnet.
  */
 export const getAggressiveGasParams = async (publicClient: any) => {
-  const minMaxFeePerGas = 20000000000n;         // Floor: 20 Gwei/units
-  const minMaxPriorityFeePerGas = 15000000000n; // Floor: 15 Gwei/units
-
-  // Set a fast 3-second timeout for estimation so we don't block the wallet confirmation popup
+  // Set a fast 3-second timeout for fee estimation
   const estimatePromise = publicClient.estimateFeesPerGas();
   const estimateTimeout = new Promise<never>((_, reject) =>
     setTimeout(() => reject(new Error("Gas estimation timeout")), 3000)
@@ -636,13 +633,13 @@ export const getAggressiveGasParams = async (publicClient: any) => {
   try {
     const fees = await Promise.race([estimatePromise, estimateTimeout]);
     if (fees.maxFeePerGas && fees.maxPriorityFeePerGas) {
-      // Apply 1.5x multiplier to the estimated gas fees for faster inclusion
-      const estMax = (fees.maxFeePerGas * 150n) / 100n;
-      const estPriority = (fees.maxPriorityFeePerGas * 150n) / 100n;
+      // Apply subtle 1.25x multiplier for fast inclusion without inflating total gas cost
+      const estMax = (fees.maxFeePerGas * 125n) / 100n;
+      const estPriority = (fees.maxPriorityFeePerGas * 125n) / 100n;
 
       return {
-        maxFeePerGas: estMax > minMaxFeePerGas ? estMax : minMaxFeePerGas,
-        maxPriorityFeePerGas: estPriority > minMaxPriorityFeePerGas ? estPriority : minMaxPriorityFeePerGas,
+        maxFeePerGas: estMax,
+        maxPriorityFeePerGas: estPriority,
       };
     }
   } catch (err) {
@@ -655,15 +652,13 @@ export const getAggressiveGasParams = async (publicClient: any) => {
       setTimeout(() => reject(new Error("Gas price timeout")), 2000)
     );
     const gasPrice = await Promise.race([gasPricePromise, gasPriceTimeout]);
-    const estGasPrice = (gasPrice * 150n) / 100n;
+    const estGasPrice = (gasPrice * 125n) / 100n;
     return {
-      gasPrice: estGasPrice > minMaxFeePerGas ? estGasPrice : minMaxFeePerGas,
+      gasPrice: estGasPrice,
     };
   } catch (err) {
-    console.warn('[getAggressiveGasParams] getGasPrice failed or timed out, using default floors.');
-    return {
-      gasPrice: minMaxFeePerGas,
-    };
+    console.warn('[getAggressiveGasParams] getGasPrice failed or timed out, using fallback default.');
+    return {};
   }
 };
 

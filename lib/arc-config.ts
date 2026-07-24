@@ -30,9 +30,7 @@ export const ARC_GAS = {
   deposit: 300000n,
   approve: 250000n,
   faucet: 150000n,
-  // Arc Testnet requires a minimum of 20 Gwei for transaction inclusion.
-  // This is 2000x higher than the old 10 Mwei floor which caused stuck txs.
-  gasPrice: 20000000000n, // 20 Gwei — minimum Arc Testnet gas price floor
+  gasPrice: 10000000n, // Standard 10 Mwei floor
 } as const
 
 export const CONTRACTS = {
