@@ -192,7 +192,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       }
     });
 
-    const withTimeout = <T>(promise: Promise<T>, timeoutMs: number = 2500): Promise<T> => {
+    const withTimeout = <T>(promise: Promise<T>, timeoutMs: number = 8000): Promise<T> => {
       return Promise.race([
         promise,
         new Promise<never>((_, reject) =>
@@ -202,18 +202,17 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     };
 
     try {
-      const provider = await withTimeout(getCachedProvider(), 3000);
+      const provider = await withTimeout(getCachedProvider(), 8000);
 
       const governorAddress = contracts.governor;
       const governorContract = new Contract(governorAddress, GovernorABI, provider);
 
       // Fetch proposal count directly from the contract with timeout
-      const count = await withTimeout(governorContract.proposalCount(), 2500);
+      const count = await withTimeout(governorContract.proposalCount(), 8000);
       const totalCount = Number(count);
 
-      // Optimize: Only fetch on-chain proposals starting from 431 (after historical proposals)
-      // to avoid rate-limiting and hanging RPC requests.
-      const START_INDEX = totalCount > 430 ? 431 : 1;
+      // Fetch all on-chain proposals starting from index 1 up to totalCount
+      const START_INDEX = 1;
       const proposalIndices = Array.from(
         { length: Math.max(0, totalCount - START_INDEX + 1) },
         (_, i) => START_INDEX + i
@@ -223,7 +222,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           const [p, proposalStateNum] = await withTimeout(Promise.all([
             governorContract.getProposal(i),
             governorContract.state(i),
-          ]), 2500);
+          ]), 8000);
           return { i, p, proposalStateNum };
         })
       );
@@ -310,7 +309,11 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           console.error("Failed to parse simulated proposals from localStorage", err);
         }
       }
-      let combinedProposals = [...simulatedProposals, ...loadedProposals];
+      // Filter out simulated proposals that exist in on-chain loadedProposals to avoid duplicates
+      const loadedIds = new Set(loadedProposals.map(p => p.id));
+      const uniqueSimulated = simulatedProposals.filter(p => !loadedIds.has(p.id));
+
+      let combinedProposals = [...loadedProposals, ...uniqueSimulated];
       if (activeDaoId === 'synarc') {
         combinedProposals = [...combinedProposals, ...(historicalProposals as Proposal[])];
       }

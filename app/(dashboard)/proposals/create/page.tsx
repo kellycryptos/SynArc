@@ -238,8 +238,11 @@ export default function CreateProposalPage() {
             try {
               const parsed = iface.parseLog({ topics: [...(log.topics as string[])], data: log.data });
               if (parsed && parsed.name === 'ProposalCreated') {
-                finalProposalId = `SIP-${parsed.args.proposalId?.toString() || parsed.args[0]?.toString()}`;
-                break;
+                const rawId = parsed.args.proposalId?.toString() || parsed.args[0]?.toString();
+                if (rawId) {
+                  finalProposalId = `SIP-${rawId}`;
+                  break;
+                }
               }
             } catch {
               // skip logs that don't match
@@ -248,6 +251,44 @@ export default function CreateProposalPage() {
         }
       } catch (logErr) {
         console.error('Failed to parse ProposalCreated log:', logErr);
+      }
+
+      // Save created proposal to localStorage as immediate backup
+      try {
+        const newProposalObj = {
+          id: finalProposalId,
+          title: formData.title.trim(),
+          description: formData.description.trim(),
+          proposer: address,
+          category: formData.category,
+          status: "Active" as const,
+          forVotes: 0,
+          againstVotes: 0,
+          abstainVotes: 0,
+          totalVotes: 0,
+          participationPercentage: 0,
+          treasuryImpactValue: -Math.abs(formData.treasuryImpactValue),
+          treasuryImpact: formData.treasuryImpactValue !== 0 ? `-${Math.abs(formData.treasuryImpactValue)} USDC` : "None",
+          timeRemaining: `${formData.votingDuration} days left`,
+          createdAt: new Date().toISOString(),
+          votingStarts: new Date().toISOString(),
+          votingEnds: new Date(Date.now() + formData.votingDuration * 86400 * 1000).toISOString(),
+          executionTarget: targetAddress,
+          votingDuration: formData.votingDuration,
+          timeline: [
+            { title: "Proposal Created", timestamp: new Date().toISOString(), status: "Proposed" },
+            { title: "Voting Phase Active", timestamp: new Date().toISOString(), status: "Active" }
+          ]
+        };
+
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem("synarc_simulated_proposals");
+          const list = stored ? JSON.parse(stored) : [];
+          const updated = [newProposalObj, ...list.filter((p: any) => p.id !== finalProposalId)];
+          localStorage.setItem("synarc_simulated_proposals", JSON.stringify(updated));
+        }
+      } catch (backupErr) {
+        console.warn("Could not save proposal to local backup:", backupErr);
       }
 
       // Force-refetch proposal list from chain (bypasses 3-minute staleness cache)
