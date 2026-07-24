@@ -15,9 +15,9 @@ export const ARC_TESTNET_RPC = CANTEEN_RPC;
 
 // Centralized resilient fallbacks — Canteen primary, official publics, Alchemy, QuickNode, dRPC as backups
 export const RPC_URLS = [
-  process.env.NEXT_PUBLIC_ARC_RPC_URL || CANTEEN_RPC,
-  'https://rpc.testnet.arc.network',
+  process.env.NEXT_PUBLIC_ARC_RPC_URL,
   'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev',
+  'https://rpc.testnet.arc.network',
   'https://rpc.quicknode.testnet.arc.network',
   'https://arc-testnet.drpc.org',
 ].filter(Boolean).filter(

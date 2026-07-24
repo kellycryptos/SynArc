@@ -4,9 +4,9 @@ import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 // Primary: Custom Canteen RPC (June 2026 Recommended Setup)
 // Fallbacks: official public, Alchemy, QuickNode, and dRPC endpoints
 export const ARC_RPC_URLS = [
-  process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.network', // primary (public fallback)
-  'https://rpc.testnet.arc.network',
+  process.env.NEXT_PUBLIC_ARC_RPC_URL,
   'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev',
+  'https://rpc.testnet.arc.network',
   'https://arc-testnet.drpc.org',
 ].filter(Boolean) as string[]
 
