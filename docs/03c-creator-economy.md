@@ -50,7 +50,7 @@ Every workspace has a public profile page at `/creator/[slug]` — accessible wi
 - **Cover Image**: Upload a custom banner via the profile editor
 - **Share Button**: Uses the Web Share API (mobile) or clipboard fallback (desktop) — copies `https://synarcdao.xyz/creator/[slug]`
 - **Preset Donation Amounts**: $1, $5, $10, or custom amounts — triggers a real on-chain USDC transfer when wallet is connected
-- **AI Agent Audit**: An automated Llama 3.3-powered audit analyzes campaign feasibility and outputs a legitimacy score
+- **AI Agent Audit**: An automated Groq AI-powered audit analyzes campaign feasibility and outputs a legitimacy score
 - **Social Links**: Twitter / X handle integration
 
 ### Share Your Profile
@@ -113,7 +113,7 @@ To ensure trust, all raised capital is managed under a milestone-based safety me
 3. **Governance Audits**: Community members review progress and cast on-chain votes to approve or veto release of funds for the next milestone.
 4. **Refund Protection**: If a campaign fails to meet goals or milestones are rejected, contributors can reclaim their USDC.
 
-Additionally, every campaign is subjected to an **AI Agent Audit** powered by Llama 3.3. This agent analyzes the validity, feasibility, and legitimacy of the creator's campaign and outputs:
+Additionally, every campaign is subjected to an **AI Agent Audit** powered by Groq AI. This agent analyzes the validity, feasibility, and legitimacy of the creator's campaign and outputs:
 - A **legitimacy score** (0–100)
 - An **impact rating**
 - Automatic **due diligence notes** to guide potential backer decisions

@@ -53,7 +53,7 @@ SynArc contracts are deployed on the Arc Testnet (`chainId: 5042002`) and are ve
 * **Constructor Arguments:**
   - Owner address: `0x35630dFE2592AB19d979ec1B173697aEa554b66b`
   - Executor address: `0x35630dFE2592AB19d979ec1B173697aEa554b66b`
-  - Model identifier: `"Groq Llama 3.3 70B"`
+  - Model identifier: `"Groq AI Engine"`
 
 ---
 
@@ -101,5 +101,5 @@ etherscan: {
 
 4. **Verify SynArcAgent**:
    ```bash
-   npx hardhat verify --network arcTestnet 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D 0x35630dFE2592AB19d979ec1B173697aEa554b66b 0x35630dFE2592AB19d979ec1B173697aEa554b66b "Groq Llama 3.3 70B"
+   npx hardhat verify --network arcTestnet 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D 0x35630dFE2592AB19d979ec1B173697aEa554b66b 0x35630dFE2592AB19d979ec1B173697aEa554b66b "Groq AI Engine"
    ```

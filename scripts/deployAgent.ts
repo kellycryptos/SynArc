@@ -10,7 +10,7 @@ async function main() {
   
   console.log("Submitting deployment transaction...");
   // Use explicit gas overrides to avoid transaction sticking
-  const agent = await SynArcAgent.deploy(deployer.address, deployer.address, "Groq Llama 3.3 70B", {
+  const agent = await SynArcAgent.deploy(deployer.address, deployer.address, "Groq AI Engine", {
     gasPrice: ethers.parseUnits("30", "gwei"),
     gasLimit: 3000000
   });

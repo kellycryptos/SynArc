@@ -52,7 +52,7 @@ describe("Agent Operating Treasury Funding and Rebalancing", function () {
     // Deploy SynArcAgent
     const SynArcAgent = await ethers.getContractFactory("SynArcAgent");
     // constructor args: _owner, _executor, _frameworkModel
-    agent = await SynArcAgent.deploy(owner.address, executor.address, "Groq Llama 3.3 70B");
+    agent = await SynArcAgent.deploy(owner.address, executor.address, "Groq AI Engine");
 
     // Configure treasuryAgent:
     // 1. Set agentAddress to agent contract address
