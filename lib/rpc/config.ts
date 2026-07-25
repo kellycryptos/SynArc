@@ -10,12 +10,12 @@ import { checkRpcHealth } from "./health";
 
 // Primary: Custom Canteen RPC (June 2026 Recommended Setup)
 // Fallbacks: official public, Alchemy, QuickNode, and dRPC endpoints
-export const CANTEEN_RPC = 'https://rpc.testnet.arc.network';
+export const CANTEEN_RPC = process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f';
 export const ARC_TESTNET_RPC = CANTEEN_RPC;
 
-// Centralized resilient fallbacks — Canteen primary, official publics, Alchemy, QuickNode, dRPC as backups
+// Centralized resilient fallbacks — Canteen Swarm primary, Alchemy fallback 1, official public fallback 2
 export const RPC_URLS = [
-  process.env.NEXT_PUBLIC_ARC_RPC_URL,
+  CANTEEN_RPC,
   'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev',
   'https://rpc.testnet.arc.network',
   'https://rpc.quicknode.testnet.arc.network',

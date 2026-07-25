@@ -67,6 +67,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     votingPower: sarcPower,
     sarcBalance,
     usdcBalance: usdcFromToken,
+    nativeUsdcBalance,
     totalDisplayPower,
     needsDelegation,
     refetch: refetchToken
@@ -722,7 +723,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                       <div className="text-sm font-bold text-text-primary">{event.title}</div>
                       <div className="text-xs text-text-tertiary flex items-center gap-2 mt-1">
                         <Calendar className="w-3.5 h-3.5" />
-                        {new Date(event.timestamp).toLocaleString()}
+                        {!isNaN(new Date(event.timestamp).getTime()) ? new Date(event.timestamp).toLocaleString() : "N/A"}
                         {event.txHash && (
                           <>
                             <span>•</span>
@@ -833,9 +834,19 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
               {/* Voting Action Area */}
               <div className="mt-8 pt-6 border-t border-border-subtle space-y-4">
                 {votingError && (
-                  <div className="p-3 bg-danger/10 border border-danger/20 rounded-xl text-xs text-danger flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>{votingError}</span>
+                  <div className="p-4 bg-danger/15 border border-danger/30 rounded-xl text-xs text-danger flex flex-col gap-2 shadow-sm">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span className="leading-relaxed">{votingError}</span>
+                    </div>
+                    {votingError.toLowerCase().includes("faucet") && (
+                      <Link
+                        href="/faucet"
+                        className="self-end px-3 py-1 bg-danger/20 hover:bg-danger/30 text-white font-bold text-xs rounded-lg transition-colors border border-danger/40 flex items-center gap-1 cursor-pointer"
+                      >
+                        🚰 Claim Native Gas from Faucet →
+                      </Link>
+                    )}
                   </div>
                 )}
 
@@ -1082,11 +1093,25 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary">Start Date</span>
-                  <span className="text-text-primary">{new Date(proposal.votingStarts).toLocaleDateString()}</span>
+                  <span className="text-text-primary">
+                    {(() => {
+                      const val = proposal.votingStarts || proposal.createdAt || (proposal as any).startTime || (proposal as any).created_at;
+                      if (!val) return "N/A";
+                      const d = new Date(val);
+                      return isNaN(d.getTime()) ? "N/A" : d.toLocaleDateString();
+                    })()}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary">End Date</span>
-                  <span className="text-text-primary">{new Date(proposal.votingEnds).toLocaleDateString()}</span>
+                  <span className="text-text-primary">
+                    {(() => {
+                      const val = proposal.votingEnds || (proposal as any).endsAt || (proposal as any).endTime || (proposal as any).ends_at;
+                      if (!val) return "N/A";
+                      const d = new Date(val);
+                      return isNaN(d.getTime()) ? "N/A" : d.toLocaleDateString();
+                    })()}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary">Total VP</span>

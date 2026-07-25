@@ -338,7 +338,12 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
       let combinedProposals = [...loadedProposals, ...uniqueSimulated];
       if (activeDaoId === 'synarc') {
-        combinedProposals = [...combinedProposals, ...(historicalProposals as Proposal[])];
+        const normalizedHistorical = (historicalProposals as any[]).map((hp) => ({
+          ...hp,
+          votingStarts: hp.votingStarts || hp.createdAt || (hp.timeline && hp.timeline[0]?.timestamp) || new Date().toISOString(),
+          votingEnds: hp.votingEnds || hp.endsAt || (hp.timeline && hp.timeline[hp.timeline.length - 1]?.timestamp) || new Date().toISOString(),
+        }));
+        combinedProposals = [...combinedProposals, ...normalizedHistorical];
       }
 
       const treasuryAddress = contracts.treasury;

@@ -25,6 +25,8 @@ export interface UseTokenReturn {
   sarcBalance: number;
   /** USDC balance fetched from Arc (6 decimals, displayed as whole units) */
   usdcBalance: number;
+  /** Native USDC gas token balance (eth_getBalance, 6 decimals) */
+  nativeUsdcBalance: number;
   /**
    * Combined display power for UI only.
    * NOTE: On-chain vote weight is sARC (votingPower) only.
@@ -44,7 +46,8 @@ export interface UseTokenReturn {
  * Fetches:
  *  - sARC delegated voting power (getVotes)  — what counts on-chain
  *  - sARC raw balance (balanceOf)
- *  - USDC balance                             — displayed as additional context
+ *  - USDC ERC20 balance                       — displayed as additional context
+ *  - Native USDC gas balance (eth_getBalance) — required for transaction execution
  *
  * totalDisplayPower = votingPower (sARC) + usdcBalance
  * This is shown in the UI to give users a full picture of their holdings.
@@ -54,6 +57,7 @@ export function useToken(userAddress: string | null): UseTokenReturn {
   const [votingPower, setVotingPower] = useState(0);
   const [sarcBalance, setSarcBalance] = useState(0);
   const [usdcBalance, setUsdcBalance] = useState(0);
+  const [nativeUsdcBalance, setNativeUsdcBalance] = useState(0);
   const [needsDelegation, setNeedsDelegation] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -63,6 +67,7 @@ export function useToken(userAddress: string | null): UseTokenReturn {
       setVotingPower(0);
       setSarcBalance(0);
       setUsdcBalance(0);
+      setNativeUsdcBalance(0);
       setNeedsDelegation(false);
       setLoading(false);
       return;
@@ -77,11 +82,12 @@ export function useToken(userAddress: string | null): UseTokenReturn {
       const sarcContract = new Contract(tokenAddress, SARC_ABI, provider);
       const usdcContract = new Contract(USDC_ADDRESS, USDC_ABI, provider);
 
-      // Fetch sARC balance, sARC votes, and USDC balance in parallel
-      const [sarcBalRaw, sarcVotesRaw, usdcBalRaw] = await Promise.all([
+      // Fetch sARC balance, sARC votes, USDC balance, and Native Gas balance in parallel
+      const [sarcBalRaw, sarcVotesRaw, usdcBalRaw, nativeBalRaw] = await Promise.all([
         sarcContract.balanceOf(userAddress),
         sarcContract.getVotes(userAddress),
         usdcContract.balanceOf(userAddress).catch(() => 0n), // USDC fetch is non-critical
+        provider.getBalance(userAddress).catch(() => 0n),    // Native gas balance
       ]);
 
       const sarcBal  = Number(formatUnits(sarcBalRaw, 18));
@@ -89,10 +95,14 @@ export function useToken(userAddress: string | null): UseTokenReturn {
       const usdcBal  = typeof usdcBalRaw === "bigint"
         ? Number(formatUnits(usdcBalRaw, 6))
         : 0;
+      const nativeUsdcBal = typeof nativeBalRaw === "bigint"
+        ? Number(formatUnits(nativeBalRaw, 6))
+        : 0;
 
       setSarcBalance(sarcBal);
       setVotingPower(sarcVotes);
       setUsdcBalance(usdcBal);
+      setNativeUsdcBalance(nativeUsdcBal);
       // Needs delegation: has sARC but no delegated votes
       setNeedsDelegation(sarcBal > 0 && sarcVotes === 0);
     } catch (err) {
@@ -122,6 +132,7 @@ export function useToken(userAddress: string | null): UseTokenReturn {
     votingPower,
     sarcBalance,
     usdcBalance,
+    nativeUsdcBalance,
     totalDisplayPower,
     needsDelegation,
     loading,

@@ -301,8 +301,20 @@ export default function CreateProposalPage() {
         router.push(`/proposals/${finalProposalId}`);
       }, 3000);
     } catch (err: any) {
-      console.error("Proposal submission error details:", err);
-      setError(parseArcError(err));
+      const parsedMsg = parseArcError(err);
+      setError(
+        <div className="flex flex-col gap-2">
+          <span>{parsedMsg}</span>
+          {parsedMsg.toLowerCase().includes("faucet") && (
+            <Link 
+              href="/faucet" 
+              className="self-start text-xs font-bold text-primary hover:underline flex items-center gap-1 mt-1"
+            >
+              🚰 Claim testnet gas tokens from Faucet →
+            </Link>
+          )}
+        </div>
+      );
     } finally {
       setIsSubmitting(false);
     }

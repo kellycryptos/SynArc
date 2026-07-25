@@ -29,9 +29,12 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const [nativeBalance, setNativeBalance] = useState<string>('0.00')
+
   const fetchBalance = useCallback(async () => {
     if (!activeAddress) {
       setBalance('0.00')
+      setNativeBalance('0.00')
       setLoading(false)
       setError(null)
       return
@@ -71,14 +74,19 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
         transport: fallback(ARC_RPC_URLS.map(url => http(url))),
       })
 
-      const raw = await client.readContract({
-        address: USDC_ADDRESS as `0x${string}`,
-        abi: ERC20_ABI,
-        functionName: 'balanceOf',
-        args: [activeAddress as `0x${string}`],
-      })
+      const [raw, nativeRaw] = await Promise.all([
+        client.readContract({
+          address: USDC_ADDRESS as `0x${string}`,
+          abi: ERC20_ABI,
+          functionName: 'balanceOf',
+          args: [activeAddress as `0x${string}`],
+        }).catch(() => 0n),
+        client.getBalance({ address: activeAddress as `0x${string}` }).catch(() => 0n),
+      ])
 
       const formatted = (Number(raw) / 1_000_000).toFixed(2)
+      const nativeFormatted = (Number(nativeRaw) / 1_000_000).toFixed(2)
+      setNativeBalance(nativeFormatted)
       cachedBalance[key] = { balance: formatted, timestamp: Date.now() }
       return formatted
     })()
@@ -113,6 +121,7 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
 
   return {
     balance,
+    nativeBalance,
     loading,
     error,
     // Backward-compatible fields:

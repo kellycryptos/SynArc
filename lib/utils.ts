@@ -11,7 +11,13 @@ export function cn(...inputs: ClassValue[]) {
 export function parseArcError(err: any): string {
   const errMsg = (err?.reason || err?.message || err?.toString() || "").toLowerCase();
   
-  if (errMsg.includes("insufficient funds") || errMsg.includes("intrinsic transaction cost")) {
+  if (
+    errMsg.includes("insufficient funds") ||
+    errMsg.includes("intrinsic transaction cost") ||
+    errMsg.includes("exceeds balance") ||
+    errMsg.includes("insufficient balance") ||
+    errMsg.includes("out of gas")
+  ) {
     return "Insufficient native USDC for gas. Arc is a stablecoin-native network where transaction fees are paid directly in USDC. Please visit the Faucet to claim testnet gas tokens.";
   }
   

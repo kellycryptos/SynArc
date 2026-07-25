@@ -207,30 +207,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'sARC transaction failed on-chain' }, { status: 500 })
     }
 
-    // 2. Send 2 USDC gas (6 decimals)
+    // 2. Send 2 Native USDC gas tokens (6 decimals) directly for EVM transaction fees
     const USDC_ADDRESS = "0x3600000000000000000000000000000000000000"
     let usdcTxHash: string | undefined
     try {
-      // Estimate gas price and limits again or reuse gasParams
-      usdcTxHash = await walletClient.writeContract({
-        address: USDC_ADDRESS,
-        abi: TOKEN_ABI,
-        functionName: 'transfer',
-        args: [walletAddress as `0x${string}`, BigInt(2 * 1e6)],
-        gas: finalGasLimit,
+      // Send Native USDC gas for EVM execution fees
+      usdcTxHash = await walletClient.sendTransaction({
+        to: walletAddress as `0x${string}`,
+        value: BigInt(2 * 1e6),
+        gas: 21000n,
         ...gasParams,
       })
 
-      const usdcReceipt = await publicClient.waitForTransactionReceipt({
+      await publicClient.waitForTransactionReceipt({
         hash: usdcTxHash as `0x${string}`,
         timeout: 60_000
       })
 
-      if (usdcReceipt.status !== 'success') {
-        throw new Error('USDC transaction reverted on-chain')
+      // Also transfer ERC20 USDC for treasury deposits
+      try {
+        await walletClient.writeContract({
+          address: USDC_ADDRESS,
+          abi: TOKEN_ABI,
+          functionName: 'transfer',
+          args: [walletAddress as `0x${string}`, BigInt(2 * 1e6)],
+          gas: finalGasLimit,
+          ...gasParams,
+        })
+      } catch (erc20Err) {
+        console.warn('Faucet ERC20 USDC transfer non-critical warning:', erc20Err)
       }
     } catch (usdcErr: any) {
-      console.error('Faucet USDC gas transfer failed:', usdcErr)
+      console.error('Faucet Native USDC gas transfer failed:', usdcErr)
       return NextResponse.json({
         error: `sARC sent successfully, but USDC gas transfer failed: ${usdcErr?.shortMessage || usdcErr?.message || usdcErr}`
       }, { status: 500 })
