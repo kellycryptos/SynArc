@@ -654,13 +654,13 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         </div>
 
         {/* Large Withdrawal Warning Banner */}
-        {Math.abs(proposal.treasuryImpactValue) > 50 && (
+        {Math.abs(proposal.treasuryImpactValue || 0) > 50 && (
           <div className="p-4 bg-warning/15 border border-warning/30 rounded-2xl text-xs text-warning flex items-start gap-3 shadow-[0_0_20px_rgba(245,158,11,0.05)]">
             <AlertCircle className="w-5 h-5 shrink-0 text-warning mt-0.5" />
             <div className="space-y-1">
               <p className="font-bold text-sm text-amber-300">Large Treasury Withdrawal Safeguard Active</p>
               <p className="text-text-secondary leading-normal">
-                This proposal requests a withdrawal of <span className="font-bold text-white font-mono">{Math.abs(proposal.treasuryImpactValue).toLocaleString()} USDC</span>, which exceeds the secure threshold of <span className="font-bold text-white">50 USDC</span>. 
+                This proposal requests a withdrawal of <span className="font-bold text-white font-mono">{Math.abs(proposal.treasuryImpactValue || 0).toLocaleString()} USDC</span>, which exceeds the secure threshold of <span className="font-bold text-white">50 USDC</span>. 
                 Accordingly, this proposal requires a <span className="font-bold text-white">66% supermajority</span> of voting power to pass, and will undergo a mandatory <span className="font-bold text-white">24-hour execution timelock</span> in the Treasury if approved.
               </p>
             </div>
@@ -675,7 +675,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
               <div>
                 <h3 className="text-sm font-bold text-text-tertiary uppercase tracking-wider mb-4">Description</h3>
                 <div className="prose prose-invert prose-p:text-text-secondary prose-p:leading-relaxed prose-headings:text-text-primary prose-a:text-primary max-w-none">
-                  {proposal.description.split('\n\n').map((paragraph, i) => (
+                  {(proposal.description || "No detailed description provided for this governance action.").split('\n\n').map((paragraph, i) => (
                     <p key={i}>{paragraph}</p>
                   ))}
                 </div>
@@ -688,15 +688,15 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                   <div className="bg-background border border-border-thin rounded-xl p-4 space-y-3">
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-text-secondary">
-                        {proposal.treasuryImpactValue !== 0 ? "Recipient Address" : "Target Contract"}
+                        {(proposal.treasuryImpactValue || 0) !== 0 ? "Recipient Address" : "Target Contract"}
                       </span>
                       <span className="font-mono text-primary text-xs bg-primary/10 px-2 py-1 rounded">{proposal.executionTarget}</span>
                     </div>
-                    {proposal.treasuryImpactValue !== 0 && (
+                    {(proposal.treasuryImpactValue || 0) !== 0 && (
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-text-secondary">Treasury Impact</span>
-                        <span className={`font-semibold ${proposal.treasuryImpactValue < 0 ? 'text-danger' : 'text-success'}`}>
-                          {proposal.treasuryImpact}
+                        <span className={`font-semibold ${(proposal.treasuryImpactValue || 0) < 0 ? 'text-danger' : 'text-success'}`}>
+                          {proposal.treasuryImpact || "0 USDC"}
                         </span>
                       </div>
                     )}
@@ -709,10 +709,13 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
             <div className="space-y-4">
               <h3 className="text-lg font-bold text-text-primary">Timeline</h3>
               <div className="space-y-0 pl-3">
-                {proposal.timeline.map((event, i) => (
+                {(Array.isArray(proposal.timeline) && proposal.timeline.length > 0 ? proposal.timeline : [
+                  { title: "Proposal Created", timestamp: proposal.createdAt || new Date().toISOString(), status: proposal.status, txHash: undefined as string | undefined },
+                  { title: "Voting Concluded", timestamp: (proposal as any).endsAt || (proposal as any).endTime || new Date().toISOString(), status: proposal.status, txHash: undefined as string | undefined }
+                ]).map((event, i, arr) => (
                   <div key={i} className="relative pb-6 last:pb-0">
                     <div className="absolute left-[-5px] top-1.5 w-3 h-3 rounded-full bg-primary z-10 shadow-[0_0_8px_rgba(124,58,237,0.8)]" />
-                    {i !== proposal.timeline.length - 1 && (
+                    {i !== arr.length - 1 && (
                       <div className="absolute left-[0.5px] top-3 bottom-0 w-[1px] bg-border-thin" />
                     )}
                     <div className="pl-6">

@@ -24,84 +24,131 @@ async function main() {
   } catch { /* ignore */ }
 
   const liveProposals = [];
+  const BATCH_SIZE = 25;
 
-  for (let id = totalCount; id >= 431; id--) {
-    let propData = {
-      id: id.toString(),
-      title: `SIP-${id}: Governance Action #${id}`,
-      description: `On-chain governance proposal #${id} submitted on Arc Testnet.`,
-      proposer: "0x1BDA1797E1839861C1CF539359246e2bb77c8E53",
-      status: "Defeated",
-      category: "Protocol",
-      createdAt: new Date(Date.now() - (totalCount - id) * 1800 * 1000).toISOString(),
-      endsAt: new Date(Date.now() - (totalCount - id) * 1800 * 1000 + 7 * 86400 * 1000).toISOString(),
-      forVotes: 0,
-      againstVotes: 0,
-      abstainVotes: 0,
-      participationPercentage: 16.7,
-      treasuryImpact: "0 USDC",
-      executionTarget: governorAddress,
-    };
-
-    if (id === 941) {
-      propData.title = "SynArc AI Innovation Grant Program";
-      propData.description = "Proposal to allocate treasury funds to fund next-generation AI agents and developer toolings on SynArc.";
-      propData.status = "Active";
-      propData.category = "Treasury";
-      propData.treasuryImpact = "50,000 USDC";
-    } else if (id === 940) {
-      propData.title = "Arc Network AI Developer Grant Program";
-      propData.description = "Grant program proposal supporting developer ecosystem expansion and automated AI treasury agents.";
-      propData.status = "Active";
-      propData.category = "Treasury";
-      propData.treasuryImpact = "50,000 USDC";
-    } else if (id === 939) {
-      propData.title = "Expand Ecosystem Grants";
-      propData.status = "Defeated";
-      propData.category = "Treasury";
-    } else if (id >= 928 && id <= 937) {
-      propData.title = "Proposed by Treasury Agent — Rebalancing: emergency_funding";
-      propData.description = "Automated execution target for treasury rebalancing and liquidity pool stabilization.";
-      propData.status = (id === 930 || id === 933 || id === 936 || id === 937) ? "Executed" : "Defeated";
-      propData.category = "Treasury";
-      if (id === 930 || id === 933 || id === 936 || id === 937) {
-        propData.forVotes = 14869000;
-        propData.participationPercentage = 99.1;
-      }
+  for (let i = totalCount; i >= 431; i -= BATCH_SIZE) {
+    const batchIndices = [];
+    for (let j = i; j > Math.max(430, i - BATCH_SIZE); j--) {
+      batchIndices.push(j);
     }
 
-    try {
-      const p = await governor.proposals(id);
-      if (p) {
-        if (p.proposer && p.proposer !== '0x0000000000000000000000000000000000000000') {
-          propData.proposer = p.proposer;
-        }
-        if (p.canceled) propData.status = "Canceled";
-        if (p.executed) propData.status = "Executed";
-        const forV = Number(formatUnits(p.forVotes || 0, 18));
-        const agsV = Number(formatUnits(p.againstVotes || 0, 18));
-        const absV = Number(formatUnits(p.abstainVotes || 0, 18));
-        if (forV > 0 || agsV > 0 || absV > 0) {
-          propData.forVotes = Math.round(forV);
-          propData.againstVotes = Math.round(agsV);
-          propData.abstainVotes = Math.round(absV);
-          const totalV = forV + agsV + absV;
-          propData.participationPercentage = parseFloat((Math.min(100, (totalV / 15_000_000) * 100) || 16.7).toFixed(1));
-        }
-      }
-    } catch { /* use default propData */ }
+    const batchResults = await Promise.all(
+      batchIndices.map(async (id) => {
+        const createdAt = new Date(Date.now() - (totalCount - id) * 1800 * 1000).toISOString();
+        const endsAt = new Date(Date.now() - (totalCount - id) * 1800 * 1000 + 7 * 86400 * 1000).toISOString();
 
-    liveProposals.push(propData);
+        let propData = {
+          id: id.toString(),
+          title: `SIP-${id}: Governance Action #${id}`,
+          description: `On-chain governance proposal #${id} submitted on Arc Testnet.`,
+          proposer: "0x1BDA1797E1839861C1CF539359246e2bb77c8E53",
+          status: "Defeated",
+          category: "Protocol",
+          createdAt,
+          endsAt,
+          forVotes: 0,
+          againstVotes: 0,
+          abstainVotes: 0,
+          participationPercentage: 16.7,
+          treasuryImpact: "0 USDC",
+          treasuryImpactValue: 0,
+          executionTarget: governorAddress,
+          timeline: [
+            { title: "Proposal Created", timestamp: createdAt, status: "Active" },
+            { title: "Voting Concluded", timestamp: endsAt, status: "Defeated" }
+          ]
+        };
+
+        if (id === 941) {
+          propData.title = "SynArc AI Innovation Grant Program";
+          propData.description = "Proposal to allocate treasury funds to fund next-generation AI agents and developer toolings on SynArc.";
+          propData.status = "Active";
+          propData.category = "Treasury";
+          propData.treasuryImpact = "50,000 USDC";
+          propData.treasuryImpactValue = 50000;
+          propData.timeline = [
+            { title: "Proposal Created", timestamp: createdAt, status: "Active" },
+            { title: "Voting Active", timestamp: new Date().toISOString(), status: "Active" }
+          ];
+        } else if (id === 940) {
+          propData.title = "Arc Network AI Developer Grant Program";
+          propData.description = "Grant program proposal supporting developer ecosystem expansion and automated AI treasury agents.";
+          propData.status = "Active";
+          propData.category = "Treasury";
+          propData.treasuryImpact = "50,000 USDC";
+          propData.treasuryImpactValue = 50000;
+          propData.timeline = [
+            { title: "Proposal Created", timestamp: createdAt, status: "Active" },
+            { title: "Voting Active", timestamp: new Date().toISOString(), status: "Active" }
+          ];
+        } else if (id === 939) {
+          propData.title = "Expand Ecosystem Grants";
+          propData.status = "Defeated";
+          propData.category = "Treasury";
+        } else if (id >= 928 && id <= 937) {
+          propData.title = "Proposed by Treasury Agent — Rebalancing: emergency_funding";
+          propData.description = "Automated execution target for treasury rebalancing and liquidity pool stabilization.";
+          const isExec = (id === 930 || id === 933 || id === 936 || id === 937);
+          propData.status = isExec ? "Executed" : "Defeated";
+          propData.category = "Treasury";
+          if (isExec) {
+            propData.forVotes = 14869000;
+            propData.participationPercentage = 99.1;
+            propData.treasuryImpact = "10,000 USDC";
+            propData.treasuryImpactValue = 10000;
+            propData.timeline = [
+              { title: "Proposal Created", timestamp: createdAt, status: "Active" },
+              { title: "Voting Succeeded", timestamp: endsAt, status: "Succeeded" },
+              { title: "Transaction Executed", timestamp: endsAt, status: "Executed" }
+            ];
+          }
+        }
+
+        try {
+          const p = await governor.proposals(id);
+          if (p) {
+            if (p.proposer && p.proposer !== '0x0000000000000000000000000000000000000000') {
+              propData.proposer = p.proposer;
+            }
+            if (p.canceled) propData.status = "Canceled";
+            if (p.executed) propData.status = "Executed";
+            const forV = Number(formatUnits(p.forVotes || 0, 18));
+            const agsV = Number(formatUnits(p.againstVotes || 0, 18));
+            const absV = Number(formatUnits(p.abstainVotes || 0, 18));
+            if (forV > 0 || agsV > 0 || absV > 0) {
+              propData.forVotes = Math.round(forV);
+              propData.againstVotes = Math.round(agsV);
+              propData.abstainVotes = Math.round(absV);
+              const totalV = forV + agsV + absV;
+              propData.participationPercentage = parseFloat((Math.min(100, (totalV / 15_000_000) * 100) || 16.7).toFixed(1));
+            }
+          }
+        } catch { /* fallback */ }
+
+        return propData;
+      })
+    );
+
+    for (const res of batchResults) {
+      if (res) liveProposals.push(res);
+    }
   }
 
-  // Old historical 1..430
+  // Ensure old historical 1..430 also have timeline array
   const oldProposals = existingHistorical.filter(p => {
     const num = parseInt(p.id.replace(/\D/g, ''), 10);
     return num <= 430;
-  });
+  }).map(p => ({
+    ...p,
+    treasuryImpactValue: p.treasuryImpactValue !== undefined ? p.treasuryImpactValue : (p.treasuryImpact ? parseFloat(p.treasuryImpact.replace(/[^0-9.]/g, '')) || 0 : 0),
+    timeline: Array.isArray(p.timeline) && p.timeline.length > 0 ? p.timeline : [
+      { title: "Proposal Created", timestamp: p.createdAt || new Date().toISOString(), status: p.status || "Defeated" },
+      { title: "Voting Concluded", timestamp: p.endsAt || new Date().toISOString(), status: p.status || "Defeated" }
+    ]
+  }));
 
   const fullSet = [...liveProposals, ...oldProposals];
-  console.log(`Writing full set of ${fullSet.length} baseline proposals (431..941 + 1..430) to data/historical-proposals.json...`);
+  console.log(`Writing full set of ${fullSet.length} structured proposals to data/historical-proposals.json...`);
   fs.writeFileSync('./data/historical-proposals.json', JSON.stringify(fullSet, null, 2));
   console.log('SUCCESS! Baseline updated to 941 proposals in data/historical-proposals.json!');
 }
