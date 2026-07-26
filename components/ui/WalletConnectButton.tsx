@@ -43,10 +43,10 @@ export function WalletConnectButton() {
     return (
       <button 
         disabled
-        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-accent-purple/20 text-white/50 font-medium cursor-not-allowed border border-accent-purple/10"
+        className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl bg-surface border border-border-thin text-text-tertiary text-xs font-medium cursor-not-allowed"
       >
-        <Wallet className="w-5 h-5 animate-pulse text-white-keep" />
-        <span className="text-white-keep opacity-60">Initializing...</span>
+        <Wallet className="w-4 h-4 animate-pulse text-muted" />
+        <span className="truncate">Connecting...</span>
       </button>
     );
   }
