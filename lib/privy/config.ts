@@ -1,5 +1,5 @@
 import { PrivyClientConfig } from '@privy-io/react-auth';
-import { arcTestnet } from '@/lib/arc-config';
+import { arcTestnet, arcMainnet } from '@/lib/arc-config';
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains';
 
 // Define a stable version of Arc Testnet for Privy's embedded wallet.
@@ -18,6 +18,19 @@ const privyArcTestnet = {
   },
 };
 
+// Define Arc Mainnet configuration for Privy
+const privyArcMainnet = {
+  ...arcMainnet,
+  rpcUrls: {
+    default: {
+      http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network'],
+    },
+    public: {
+      http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network'],
+    },
+  },
+};
+
 export const privyConfig: PrivyClientConfig = {
   loginMethods: ['email', 'google', 'wallet'],
   appearance: {
@@ -31,8 +44,9 @@ export const privyConfig: PrivyClientConfig = {
     showWalletUIs: false,
     noPromptOnSignature: false,
   } as any,
-  supportedChains: [privyArcTestnet, sepolia, baseSepolia, avalancheFuji],
+  supportedChains: [privyArcTestnet, privyArcMainnet, sepolia, baseSepolia, avalancheFuji],
   defaultChain: privyArcTestnet,
 };
+
 
 

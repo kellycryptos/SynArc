@@ -10,6 +10,11 @@ export const ARC_RPC_URLS = [
   'https://arc-testnet.drpc.org',
 ].filter(Boolean) as string[]
 
+// Arc Mainnet Fallback RPC endpoints
+export const ARC_MAINNET_RPC_URLS = [
+  process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network',
+  'https://arc-mainnet.drpc.org',
+].filter(Boolean) as string[]
 
 export const arcTestnet = defineChain({
   id: 5042002,
@@ -20,6 +25,18 @@ export const arcTestnet = defineChain({
     public: { http: ARC_RPC_URLS }
   },
   blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
+})
+
+// Arc Mainnet Placeholder Chain ID (Expected ~5042 — update when official Public Mainnet opens)
+export const arcMainnet = defineChain({
+  id: 5042,
+  name: 'Arc Mainnet',
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
+  rpcUrls: {
+    default: { http: ARC_MAINNET_RPC_URLS },
+    public: { http: ARC_MAINNET_RPC_URLS }
+  },
+  blockExplorers: { default: { name: 'ArcScan', url: 'https://arcscan.app' } },
 })
 
 export const ARC_CHAIN = arcTestnet;
@@ -33,7 +50,7 @@ export const ARC_GAS = {
   gasPrice: 10000000n, // Standard 10 Mwei floor
 } as const
 
-export const CONTRACTS = {
+export const CONTRACTS_TESTNET = {
   get governor() { return (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || '0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e') as `0x${string}` },
 
   // ── Two-Treasury Architecture ─────────────────────────────────────────────
@@ -50,11 +67,47 @@ export const CONTRACTS = {
 
   get token() { return (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e') as `0x${string}` },
   get eurc() { return (process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS || '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}` },
+  get tokenMessenger() { return (process.env.NEXT_PUBLIC_TOKEN_MESSENGER_ADDRESS || '0xd0C3da4E20F0D24dB1cE8f1fF36814Ea8F60309e') as `0x${string}` },
+  get crowdfund() { return (process.env.NEXT_PUBLIC_CROWDFUND_ADDRESS || '0xd5374DFC4B01F60115A52Df027704062506b3030') as `0x${string}` },
 }
+
+// Arc Mainnet Placeholders — update with deployed contract addresses when Mainnet goes live
+export const CONTRACTS_MAINNET = {
+  get governor() { return (process.env.NEXT_PUBLIC_MAINNET_GOVERNOR_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}` },
+  get treasuryGovernance() { return (process.env.NEXT_PUBLIC_MAINNET_TREASURY_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}` },
+  get treasuryAgent() { return (process.env.NEXT_PUBLIC_MAINNET_TREASURY_AGENT_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}` },
+  get treasury() { return this.treasuryGovernance },
+  get token() { return (process.env.NEXT_PUBLIC_MAINNET_TOKEN_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}` },
+  get eurc() { return (process.env.NEXT_PUBLIC_MAINNET_EURC_CONTRACT_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}` },
+  get tokenMessenger() { return (process.env.NEXT_PUBLIC_MAINNET_TOKEN_MESSENGER_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}` },
+  get crowdfund() { return (process.env.NEXT_PUBLIC_MAINNET_CROWDFUND_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}` },
+}
+
+export const ACTIVE_NETWORK = (process.env.NEXT_PUBLIC_ARC_NETWORK || 'testnet') as 'testnet' | 'mainnet'
+
+export const CONTRACTS = ACTIVE_NETWORK === 'mainnet' ? CONTRACTS_MAINNET : CONTRACTS_TESTNET
+
+export const CCTP_DOMAINS = {
+  testnet: {
+    arc: 5042002,
+    sepolia: 0,
+    baseSepolia: 6,
+    avalancheFuji: 1,
+  },
+  // Arc Mainnet CCTP Domain Placeholder — update once Circle announces official domain ID
+  mainnet: {
+    arc: 5042,
+    ethereum: 0,
+    base: 6,
+    avalanche: 1,
+  }
+} as const
 
 export const EVM_BRIDGE_CHAINS: Record<number, any> = {
   11155111: sepolia,
   84532: baseSepolia,
   43113: avalancheFuji,
-  5042002: ARC_CHAIN
+  5042002: arcTestnet,
+  5042: arcMainnet
 } as const
+

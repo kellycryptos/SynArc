@@ -1,13 +1,16 @@
 /**
  * Arc Governance Configuration
  * 
- * Central configuration for Arc Testnet interaction.
- * This file documents the Arc-native infrastructure setup.
+ * Central configuration for Arc Testnet & Mainnet interaction.
+ * This file documents the Arc-native multi-network infrastructure setup.
  */
 
 import { ARC_RPC_URL } from "@/lib/arc/config";
 
 export const ARC_CONFIG = {
+  // Active Network indicator ('testnet' | 'mainnet')
+  network: process.env.NEXT_PUBLIC_ARC_NETWORK || 'testnet',
+
   // Arc Testnet Chain Information
   chain: {
     id: 5042002,
@@ -15,6 +18,15 @@ export const ARC_CONFIG = {
     currency: 'USDC',
     decimals: 18,
     blockExplorer: 'https://testnet.arcscan.app',
+  },
+
+  // Arc Mainnet Chain Information Placeholder (Expected ~5042 — update when official Public Mainnet opens)
+  mainnetChain: {
+    id: 5042,
+    name: 'Arc Mainnet',
+    currency: 'USDC',
+    decimals: 18,
+    blockExplorer: 'https://arcscan.app',
   },
   
   // RPC Configuration
@@ -24,6 +36,8 @@ export const ARC_CONFIG = {
     primary: process.env.NEXT_PUBLIC_ARC_RPC_URL,
     // Fallback — uses the same centralized URL, no public fallback
     fallback: ARC_RPC_URL,
+    // Mainnet RPC endpoint
+    mainnet: process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network',
     // Health check timeout (ms)
     healthCheckTimeout: 5000,
     // Health check interval (ms)
@@ -67,3 +81,4 @@ export const ARC_CONFIG = {
 
 // Export types for TypeScript
 export type ArcConfig = typeof ARC_CONFIG;
+

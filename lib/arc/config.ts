@@ -56,14 +56,37 @@ export const arcPublicClient = createPublicClient({
   transport: arcTransport,
 });
 
+// Arc Mainnet Chain Definition Placeholder (Expected ~5042 — update when official Public Mainnet opens)
+export const arcMainnet = defineChain({
+  id: 5042,
+  name: "Arc Mainnet",
+  nativeCurrency: { 
+    name: "USD Coin", 
+    symbol: "USDC", 
+    decimals: 6
+  },
+  rpcUrls: {
+    default: { http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network'] },
+    public:  { http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network'] },
+  },
+  blockExplorers: {
+    default: { name: "ArcScan", url: "https://arcscan.app" },
+  },
+});
+
 // Ethers.js provider helper
 export function getArcEthersProvider(): JsonRpcProvider {
   return new JsonRpcProvider(ARC_RPC_URL, undefined, { staticNetwork: true, batchMaxCount: 1 });
 }
 
-// Wallet helper: switch or add Arc Testnet in MetaMask/OKX/etc.
-export async function ensureArcNetwork(ethereumProvider: any): Promise<void> {
-  const chainIdHex = "0x4cef52"; // 5042002 in hex
+// Wallet helper: switch or add Arc Testnet / Mainnet in MetaMask/OKX/etc.
+export async function ensureArcNetwork(ethereumProvider: any, targetChainId: number = 5042002): Promise<void> {
+  const isMainnet = targetChainId === 5042;
+  const chainIdHex = `0x${targetChainId.toString(16)}`;
+  const chainName = isMainnet ? "Arc Mainnet" : "Arc Testnet";
+  const rpcUrls = isMainnet ? [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network'] : ARC_RPC_URLS;
+  const explorerUrl = isMainnet ? "https://arcscan.app" : "https://testnet.arcscan.app";
+
   try {
     await ethereumProvider.request({
       method: "wallet_switchEthereumChain",
@@ -83,14 +106,14 @@ export async function ensureArcNetwork(ethereumProvider: any): Promise<void> {
         params: [
           {
             chainId: chainIdHex,
-            chainName: "Arc Testnet",
-            rpcUrls: ARC_RPC_URLS,
+            chainName: chainName,
+            rpcUrls: rpcUrls,
             nativeCurrency: {
               name: "USDC",
               symbol: "USDC",
               decimals: 6,
             },
-            blockExplorerUrls: ["https://testnet.arcscan.app"],
+            blockExplorerUrls: [explorerUrl],
           },
         ],
       });
@@ -103,3 +126,4 @@ export async function ensureArcNetwork(ethereumProvider: any): Promise<void> {
     }
   }
 }
+

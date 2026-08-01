@@ -1,13 +1,27 @@
 import { createConfig, http, fallback } from 'wagmi'
 import { injected, metaMask } from 'wagmi/connectors'
-import { ARC_CHAIN, ARC_RPC_URLS } from '@/lib/arc-config'
+import { arcTestnet, arcMainnet, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS } from '@/lib/arc-config'
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 
 export const wagmiConfig = createConfig({
-  chains: [ARC_CHAIN, sepolia, baseSepolia, avalancheFuji],
+  // arcTestnet MUST remain the first chain in the list to maintain default chain priority
+  chains: [arcTestnet, arcMainnet, sepolia, baseSepolia, avalancheFuji],
   transports: {
-    [ARC_CHAIN.id]: fallback(
+    [arcTestnet.id]: fallback(
       ARC_RPC_URLS.map(url =>
+        http(url, {
+          timeout: 10000,
+          retryCount: 3,
+          retryDelay: 1000,
+        })
+      ),
+      {
+        retryCount: 3,
+        retryDelay: 1000,
+      }
+    ),
+    [arcMainnet.id]: fallback(
+      ARC_MAINNET_RPC_URLS.map(url =>
         http(url, {
           timeout: 10000,
           retryCount: 3,
@@ -28,4 +42,5 @@ export const wagmiConfig = createConfig({
     metaMask(),
   ]
 })
+
 
