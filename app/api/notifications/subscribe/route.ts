@@ -13,11 +13,11 @@ export async function POST(req: NextRequest) {
   try {
     // Send confirmation email to subscriber
     await resend.emails.send({
-      from: 'SynArc <onboarding@resend.dev>',
+      from: 'Syn DAO <onboarding@resend.dev>',
       to: email,
-      subject: 'You are now subscribed to SynArc governance alerts',
+      subject: 'You are now subscribed to Syn DAO governance alerts',
       html: `
-        <h2>Welcome to SynArc Governance Alerts 🏛</h2>
+        <h2>Welcome to Syn DAO Governance Alerts 🏛</h2>
         <p>You will now receive email notifications when:</p>
         <ul>
           <li>New governance proposals are submitted</li>
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     // Notify you that someone subscribed
     await resend.emails.send({
-      from: 'SynArc <onboarding@resend.dev>',
+      from: 'Syn DAO <onboarding@resend.dev>',
       to: 'devsynarc@gmail.com',
       subject: `New governance alert subscriber — ${email}`,
       html: `

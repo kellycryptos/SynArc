@@ -4,13 +4,13 @@ icon: scale-balanced
 
 # Governance
 
-SynArc makes it simple for creators and decentralized teams to coordinate decisions, vote on community initiatives, and execute treasury changes. This section details how proposals work, how to participate, and how voting weight is determined.
+Syn DAO makes it simple for creators and decentralized teams to coordinate decisions, vote on community initiatives, and execute treasury changes. This section details how proposals work, how to participate, and how voting weight is determined.
 
 ---
 
 ## How Proposals Work
 
-SynArc utilizes an on-chain, decentralized lifecycle modeled after the standard OpenZeppelin Governor contract.
+Syn DAO utilizes an on-chain, decentralized lifecycle modeled after the standard OpenZeppelin Governor contract.
 
 ```
 Submission → Pending → Active → Queued (Timelock) → Executed / Defeated
@@ -62,7 +62,7 @@ Active proposals can be voted on by any member with a balance greater than 0 sAR
 
 ## Voting Power: USDC + SynArcToken
 
-Voting weight in the SynArc DAO ecosystem is governed by two complementary tokens:
+Voting weight in the Syn DAO ecosystem is governed by two complementary tokens:
 
 ### 1. SynArcToken (sARC)
 
@@ -70,7 +70,7 @@ The core governance asset. 1 sARC corresponds to 1 raw vote. sARC tokens are ful
 
 ### 2. USDC Balance Weight
 
-To ensure that active participants have a voice, SynArc uses stable asset balances to calculate voting multipliers, reinforcing stable and reliable decision-making.
+To ensure that active participants have a voice, Syn DAO uses stable asset balances to calculate voting multipliers, reinforcing stable and reliable decision-making.
 
 ---
 
@@ -80,7 +80,7 @@ Delegation lets you assign your voting power to another address (or yourself) wi
 
 ### Why Delegate?
 
-SynArc uses the `ERC20Votes` checkpoint standard. Your voting power is **inactive by default**. You must delegate to activate it — even if delegating to yourself.
+Syn DAO uses the `ERC20Votes` checkpoint standard. Your voting power is **inactive by default**. You must delegate to activate it — even if delegating to yourself.
 
 ### How to Self-Delegate (activate your vote)
 

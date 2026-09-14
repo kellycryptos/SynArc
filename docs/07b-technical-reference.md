@@ -4,13 +4,13 @@ icon: settings
 
 # Technical Reference
 
-This section provides a deep technical reference of the SynArc protocol architecture, transaction flows, security controls, and on-chain specifications.
+This section provides a deep technical reference of the Syn DAO protocol architecture, transaction flows, security controls, and on-chain specifications.
 
 ***
 
 ## Protocol Architecture
 
-SynArc is designed as a modular, stablecoin-native governance layer on the Arc network. It decouples long-term asset management (Timelocked Treasury Vaults) from short-term operations (AI Agent Executors).
+Syn DAO is designed as a modular, stablecoin-native governance layer on the Arc network. It decouples long-term asset management (Timelocked Treasury Vaults) from short-term operations (AI Agent Executors).
 
 ```
    ┌──────────────────────────────────────────────────────────┐
@@ -69,7 +69,7 @@ interface IERC8004 {
 
 ## Treasury Escrow Flow
 
-SynArc's Creator DAO mechanism protects contributors by holding funds in campaign-specific escrows (`SynArcCrowdfund.sol`) that release tokens based on milestone approvals.
+Syn DAO's Creator DAO mechanism protects contributors by holding funds in campaign-specific escrows (`SynArcCrowdfund.sol`) that release tokens based on milestone approvals.
 
 1. **DAO Creation**: Creator deploys a `SynArcCrowdfund` contract.
 2. **Capital Contribution**: Backers deposit USDC or EURC into the escrow.
@@ -81,7 +81,7 @@ SynArc's Creator DAO mechanism protects contributors by holding funds in campaig
 
 ## Network Specifications
 
-SynArc is optimized for the **Arc Testnet**. Here are the official contract parameters and endpoints:
+Syn DAO is optimized for the **Arc Testnet**. Here are the official contract parameters and endpoints:
 
 * **EVM Chain ID:** `5042002`
 * **Official RPC URL:** `https://rpc.testnet.arc.network`

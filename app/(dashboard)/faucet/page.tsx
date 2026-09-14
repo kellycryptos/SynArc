@@ -198,7 +198,7 @@ export default function FaucetPage() {
           Get Testnet Tokens
         </h1>
         <p className="text-muted leading-relaxed max-w-2xl">
-          Fund your wallet with testnet tokens to participate in SynArc governance.
+          Fund your wallet with testnet tokens to participate in Syn DAO governance.
           sARC tokens give you voting power; USDC and EURC let you deposit into the treasury.
         </p>
       </div>
@@ -216,13 +216,13 @@ export default function FaucetPage() {
               ⚡
             </div>
             <div>
-              <h2 className="font-extrabold text-white text-lg leading-tight">SynArc Token</h2>
+              <h2 className="font-extrabold text-white text-lg leading-tight">Syn DAO Token</h2>
               <p className="text-xs text-muted font-mono">sARC · 1000 per claim</p>
             </div>
           </div>
 
           <p className="text-sm text-muted leading-relaxed flex-1">
-            sARC is the governance token for SynArc. Hold sARC to earn voting power on proposals.
+            sARC is the governance token for Syn DAO. Hold sARC to earn voting power on proposals.
           </p>
 
           {/* Status messages */}
@@ -359,7 +359,7 @@ export default function FaucetPage() {
 
           <p className="text-sm text-muted leading-relaxed flex-1">
             Get free testnet USDC from Circle's official faucet. Use it to deposit into the
-            SynArc treasury and participate in treasury governance.
+            Syn DAO treasury and participate in treasury governance.
           </p>
 
           <div className="p-3 rounded-xl bg-surface-elevated border border-border-thin text-xs text-muted space-y-1">
@@ -400,7 +400,7 @@ export default function FaucetPage() {
 
           <p className="text-sm text-muted leading-relaxed flex-1">
             Get free testnet EURC from Circle's official faucet. EURC is the Euro-pegged stablecoin
-            accepted by the SynArc treasury.
+            accepted by the Syn DAO treasury.
           </p>
 
           <div className="p-3 rounded-xl bg-surface-elevated border border-border-thin text-xs text-muted space-y-1">

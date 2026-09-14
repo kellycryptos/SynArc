@@ -357,7 +357,7 @@ export default function CreateProposalPage() {
           </Link>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Create New Proposal</h1>
-            <p className="text-muted mt-1">Submit a binding governance proposal to the SynArc DAO.</p>
+            <p className="text-muted mt-1">Submit a binding governance proposal to Syn DAO.</p>
           </div>
         </div>
 

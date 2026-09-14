@@ -81,7 +81,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#04101C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z"/></svg>
           </div>
           <span className="text-[16px] font-bold font-space tracking-tight text-[#F5F7FA]">
-            SynArc
+            Syn DAO
           </span>
         </button>
       </div>

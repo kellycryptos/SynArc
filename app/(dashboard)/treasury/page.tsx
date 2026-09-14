@@ -1009,7 +1009,7 @@ function TreasuryPageContent() {
                 </div>
                 <div>
                   <h4 className="font-bold text-text-primary text-sm">Deposit Confirmed!</h4>
-                  <p className="text-xs text-muted mt-1">Your assets have been deposited into the SynArc Treasury on-chain.</p>
+                  <p className="text-xs text-muted mt-1">Your assets have been deposited into the Syn DAO Treasury on-chain.</p>
                 </div>
                 {txHash && (
                   <a

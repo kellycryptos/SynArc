@@ -1,7 +1,7 @@
 [
   {
     "id": "agent_gov",
-    "name": "SynArc Governance Agent",
+    "name": "Syn DAO Governance Agent",
     "avatar": "🤖",
     "address": "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e",
     "model": "Groq AI Engine",

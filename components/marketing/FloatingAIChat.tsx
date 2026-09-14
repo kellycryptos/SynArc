@@ -6,7 +6,7 @@ import { X, Send, MessageSquare, Bot, Loader2 } from "lucide-react";
 export function FloatingAIChat() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([
-    { role: 'assistant', content: 'Hi there! 👋 I am your SynArc AI Companion. Ask me anything about Creator DAOs, USDC nanopayments, milestone escrows, or our SDK!' }
+    { role: 'assistant', content: 'Hi there! 👋 I am your Syn DAO AI Companion. Ask me anything about Creator DAOs, USDC nanopayments, milestone escrows, or our SDK!' }
   ]);
   const [chatInput, setChatInput] = useState("");
   const [sendingChat, setSendingChat] = useState(false);
@@ -52,7 +52,7 @@ export function FloatingAIChat() {
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-primary animate-pulse" />
               <div>
-                <h4 className="text-xs font-bold text-white tracking-wide">SynArc AI Companion</h4>
+                <h4 className="text-xs font-bold text-white tracking-wide">Syn DAO AI Companion</h4>
                 <span className="text-[9px] text-muted block">Online · AI Assistant</span>
               </div>
             </div>
@@ -96,7 +96,7 @@ export function FloatingAIChat() {
           <form onSubmit={handleSendChat} className="p-3 border-t border-border-thin flex gap-2">
             <input
               type="text"
-              placeholder="Ask a question about SynArc..."
+              placeholder="Ask a question about Syn DAO..."
               disabled={sendingChat}
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}

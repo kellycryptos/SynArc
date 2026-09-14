@@ -4,7 +4,7 @@ icon: road
 
 # Project Roadmap
 
-This section outlines SynArc's multi-phase roadmap towards providing secure funding, automated treasury protection, and seamless community coordination tools.
+This section outlines Syn DAO's multi-phase roadmap towards providing secure funding, automated treasury protection, and seamless community coordination tools.
 
 ***
 

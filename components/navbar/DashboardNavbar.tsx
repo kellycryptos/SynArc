@@ -57,11 +57,11 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
     <header className="sticky top-0 z-30 glass border-b border-border-thin h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
       {/* Left side */}
       <div className="flex items-center gap-4">
-        {/* SynArc Logo & Name (Mobile Only) */}
+        {/* Syn DAO Logo & Name (Mobile Only) */}
         <div className="flex items-center gap-2.5 md:hidden">
           <SynArcLogo size={28} animated />
           <span className="text-xl font-bold tracking-tight">
-            <span className="gradient-text">SynArc</span>
+            <span className="gradient-text">Syn DAO</span>
           </span>
         </div>
 
@@ -114,7 +114,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
             {/* Logout Button */}
             <button 
               onClick={logout}
-              title="Logout from SynArc"
+              title="Logout from Syn DAO"
               className="p-2 text-muted hover:text-danger hover:bg-danger/10 border border-transparent hover:border-danger/25 transition-all rounded-full cursor-pointer"
             >
               <LogOut className="w-4.5 h-4.5" />

@@ -4,7 +4,7 @@ icon: robot
 
 # Automated Treasury Guard (Treasury Agent)
 
-SynArc introduces the **Automated Treasury Guard**, a specialized autonomous agent designed to protect workspace assets, optimize yield on idle capital, manage payouts, and handle secure rebalancing across multiple networks.
+Syn DAO introduces the **Automated Treasury Guard**, a specialized autonomous agent designed to protect workspace assets, optimize yield on idle capital, manage payouts, and handle secure rebalancing across multiple networks.
 
 ***
 
@@ -64,7 +64,7 @@ Instead of manual collections, this feature sweeps bridged assets across Ethereu
 
 ## Two-Treasury Architecture & Governance Gating
 
-To maximize security while maintaining high operational mobility, SynArc implements a **Two-Treasury Architecture**:
+To maximize security while maintaining high operational mobility, Syn DAO implements a **Two-Treasury Architecture**:
 
 1. **Governance Treasury (Timelocked)**: Holds the bulk of DAO funds. Any withdrawal or allocation from this treasury requires a standard governance proposal, community vote, and a mandatory 24-hour timelock delay.
 2. **Agent Operating Treasury (Fast-Access)**: A dedicated, smaller treasury used by the Treasury Agent to perform swift rebalances and operations. The agent contract holds withdrawal and execution rights here to respond immediately to changing yields or risk parameters.
@@ -97,7 +97,7 @@ Every inference request and transaction analysis run by the guard is paid for us
 
 ## Programmatic Developer API & Cron Scheduling
 
-SynArc’s Treasury Agent is executed programmatically on a **5-minute recurring schedule** via [cron-job.org](https://cron-job.org) rather than native Vercel crons (due to Hobby tier limitations).
+Syn DAO’s Treasury Agent is executed programmatically on a **5-minute recurring schedule** via [cron-job.org](https://cron-job.org) rather than native Vercel crons (due to Hobby tier limitations).
 
 ### 1. Run Agent Scan
 * **Method:** `POST` / `GET`

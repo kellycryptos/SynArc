@@ -4,13 +4,13 @@ icon: rocket
 
 # Getting Started
 
-Welcome to **SynArc** — secure funding and coordination infrastructure for creators, independent teams, and digital organizations. This documentation covers everything from setting up your project workspace to configuring automated treasury rules and coordinating community decisions.
+Welcome to **Syn DAO** — secure funding and coordination infrastructure for humans and agents, built on Arc. This documentation covers everything from setting up your project workspace to configuring automated treasury rules and coordinating community decisions.
 
 ---
 
-## What is SynArc?
+## What is Syn DAO?
 
-SynArc provides the tools you need to pool funds, vote on capital releases, and automate treasury management. It enables creators and decentralized teams to:
+Syn DAO provides the tools you need to pool funds, vote on capital releases, and automate treasury management. It enables creators and decentralized teams to:
 
 - 🎨 **Launch Project Workspaces** — Establish a shared home for your project with built-in milestone escrows that protect backer funds.
 - 💸 **Receive Micro-Funding** — Pool contributions of any size with near-zero transaction fees.
@@ -42,7 +42,7 @@ Below is the official network configuration and deployed smart contract addresse
 
 ## Circle & Agent Integrations
 
-SynArc integrates with the Circle ecosystem and autonomous systems to power its rebalancing, governance, and onboarding systems:
+Syn DAO integrates with the Circle ecosystem and autonomous systems to power its rebalancing, governance, and onboarding systems:
 
 *   **Circle CCTP (Cross-Chain Transfer Protocol)** — *Fully Deployed & Functional*: Handles native burn-and-mint USDC routing between Arc Testnet and Ethereum Sepolia. In `lib/agent/cctp-executor.ts`, the system executes burns, polls Circle's Iris attestation API for validation consensus, and triggers mint receipts on the destination Messenger contract.
 *   **Circle Gateway (x402 Nanopayments)** — *Simulated/Planned*: Tracks AI model execution fees for each inference call in `lib/agent/gateway-payments.ts`. The codebase contains hooks to deduct USDC internally for every Groq API request, awaiting live production endpoints to route actual on-chain fee payments.
@@ -69,7 +69,7 @@ SynArc integrates with the Circle ecosystem and autonomous systems to power its 
 
 ## How to Connect Your Wallet
 
-SynArc leverages Privy authentication to enable frictionless onboarding. You do not need a pre-configured Web3 wallet like MetaMask to participate.
+Syn DAO leverages Privy authentication to enable frictionless onboarding. You do not need a pre-configured Web3 wallet like MetaMask to participate.
 
 1. Click the **Connect Wallet** button in the page header or sidebar.
 2. Sign in using your **Google account**, **Twitter / X**, **Discord**, or standard **Email**.
@@ -82,11 +82,11 @@ SynArc leverages Privy authentication to enable frictionless onboarding. You do 
 
 ## How to Switch to Arc Testnet
 
-SynArc requires your connected wallet to be configured for Arc Testnet to query balances and execute contract operations.
+Syn DAO requires your connected wallet to be configured for Arc Testnet to query balances and execute contract operations.
 
 ### Method 1: Automatic
 
-If you are on another network, SynArc will display a **Switch to Arc** banner on your settings page. Simply click this banner to automatically authorize a network switch in your wallet.
+If you are on another network, Syn DAO will display a **Switch to Arc** banner on your settings page. Simply click this banner to automatically authorize a network switch in your wallet.
 
 ### Method 2: Manual Parameters
 
@@ -116,8 +116,8 @@ Arc is a stablecoin-native network where transaction gas fees are denominated di
 
 ## Light/Dark Mode
 
-SynArc supports a highly polished presentation mode toggleable directly in the interface.
+Syn DAO supports a highly polished presentation mode toggleable directly in the interface.
 
 * **Toggle available in Settings page**: Easily switch between light and dark themes via the Appearance setting.
-* **Dark mode is default**: SynArc defaults to dark mode on first load to optimize readability.
+* **Dark mode is default**: Syn DAO defaults to dark mode on first load to optimize readability.
 * **Preference saved across sessions**: Your selected theme preference is persisted automatically in local storage.

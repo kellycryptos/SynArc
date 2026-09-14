@@ -148,7 +148,7 @@ export default function DAOsPage() {
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">DAO Registry</h1>
           <p className="text-muted leading-relaxed">
-            SynArc hosts governance infrastructure for approved DAOs on Arc Testnet. Each DAO manages its own proposals and treasury.
+            Syn DAO hosts governance infrastructure for approved DAOs on Arc Testnet. Each DAO manages its own proposals and treasury.
           </p>
         </div>
 
@@ -343,7 +343,7 @@ export default function DAOsPage() {
               <div className="flex items-center justify-between pb-4 border-b border-border-thin shrink-0">
                 <div className="flex items-center gap-2">
                   <Grid className="w-5 h-5 text-primary animate-pulse" />
-                  <h3 className="text-lg font-extrabold text-white">Apply to Join SynArc</h3>
+                  <h3 className="text-lg font-extrabold text-white">Apply to Join Syn DAO</h3>
                 </div>
                 <button
                   disabled={submitting}
@@ -466,12 +466,12 @@ export default function DAOsPage() {
 
                     {/* Message / Why */}
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-muted uppercase">Why do you want to join SynArc?</label>
+                      <label className="text-xs font-bold text-muted uppercase">Why do you want to join Syn DAO?</label>
                       <textarea
                         name="message"
                         disabled={submitting}
                         rows={2}
-                        placeholder="Tell us what excites you about building on SynArc infrastructure..."
+                        placeholder="Tell us what excites you about building on Syn DAO infrastructure..."
                         value={formData.message}
                         onChange={handleInputChange}
                         className="w-full px-4 py-2.5 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white resize-none transition-colors"

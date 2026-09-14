@@ -447,12 +447,12 @@ export function WalletFaucetCard() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Option 1 — SynArc Token (SYN) */}
+          {/* Option 1 — Syn DAO Token (sARC) */}
           <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-primary/30 transition-all duration-300">
             <div className="flex items-center gap-3">
               <span className="text-2xl select-none">🪙</span>
               <div>
-                <h4 className="font-bold text-white text-sm">SynArc Token (SYN)</h4>
+                <h4 className="font-bold text-white text-sm">Syn DAO Token</h4>
                 <p className="text-[10px] text-muted font-mono">sARC · 1000 per claim</p>
               </div>
             </div>

@@ -27,7 +27,7 @@ export function MarketingNavbar() {
           <div className="absolute -inset-2 bg-primary/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <SynArcLogo />
           <span className="text-xl font-bold font-heading tracking-tight relative text-foreground">
-            Syn<span className="text-primary">Arc</span>
+            Syn <span className="text-primary">DAO</span>
           </span>
         </Link>
         

@@ -10,32 +10,32 @@ export default function TermsPage() {
     {
       title: "1. Introduction",
       icon: SynArcLogo,
-      content: "SynArc is a decentralized governance infrastructure platform built on the Arc Testnet. It provides DAOs and decentralized protocols with USDC and EURC native treasury capabilities, secure delegator-voter structures, and real-time governance metrics. By accessing or using SynArc, you acknowledge that you are interacting with testnet smart contracts and a decentralized frontend interface."
+      content: "Syn DAO is a decentralized governance infrastructure platform built on the Arc Testnet. It provides DAOs and decentralized protocols with USDC and EURC native treasury capabilities, secure delegator-voter structures, and real-time governance metrics. By accessing or using Syn DAO, you acknowledge that you are interacting with testnet smart contracts and a decentralized frontend interface."
     },
     {
       title: "2. Eligibility",
       icon: Scale,
-      content: "To access or use SynArc, you must be at least 18 years of age and hold the full capacity to enter into a binding agreement. You represent and warrant that your access and use of the platform comply with all applicable local, national, and international laws, regulations, and economic sanctions."
+      content: "To access or use Syn DAO, you must be at least 18 years of age and hold the full capacity to enter into a binding agreement. You represent and warrant that your access and use of the platform comply with all applicable local, national, and international laws, regulations, and economic sanctions."
     },
     {
       title: "3. Wallet Connection",
       icon: Shield,
-      content: "Accessing governance activities requires connecting a non-custodial Web3 wallet (e.g. via Privy). SynArc is a purely decentralized interface. SynArc never holds, accesses, or controls your private keys, seed phrases, or digital assets. You are solely responsible for securing your wallet and authorizing all transactions."
+      content: "Accessing governance activities requires connecting a non-custodial Web3 wallet (e.g. via Privy). Syn DAO is a purely decentralized interface. Syn DAO never holds, accesses, or controls your private keys, seed phrases, or digital assets. You are solely responsible for securing your wallet and authorizing all transactions."
     },
     {
       title: "4. Governance Participation",
       icon: Landmark,
-      content: "All actions performed on SynArc, including submitting proposals, delegating voting power, and casting votes, are recorded directly on the Arc blockchain network. These on-chain transactions are completely public, permanent, and mathematically irreversible. Ensure all parameters are reviewed carefully prior to transaction signing."
+      content: "All actions performed on Syn DAO, including submitting proposals, delegating voting power, and casting votes, are recorded directly on the Arc blockchain network. These on-chain transactions are completely public, permanent, and mathematically irreversible. Ensure all parameters are reviewed carefully prior to transaction signing."
     },
     {
       title: "5. Treasury Management",
       icon: CoinsIcon,
-      content: "USDC and EURC stablecoin deposits, stakings, and DAO-approved allocations are managed programmatically by autonomous, open-source smart contracts deployed on the Arc Testnet. The SynArc team, developers, and contributors have no control over treasury funds, custody of deposits, or transactional interventions."
+      content: "USDC and EURC stablecoin deposits, stakings, and DAO-approved allocations are managed programmatically by autonomous, open-source smart contracts deployed on the Arc Testnet. The Syn DAO team, developers, and contributors have no control over treasury funds, custody of deposits, or transactional interventions."
     },
     {
       title: "6. Risks & Limitations",
       icon: AlertTriangle,
-      content: "You explicitly acknowledge and accept the inherent risks of smart contracts, cryptographic tokens, and experimental blockchain protocols. SynArc operates on the Arc Testnet; all tokens are for testing purposes only and hold no real-world economic value. No content on the platform constitutes financial, legal, or investment advice."
+      content: "You explicitly acknowledge and accept the inherent risks of smart contracts, cryptographic tokens, and experimental blockchain protocols. Syn DAO operates on the Arc Testnet; all tokens are for testing purposes only and hold no real-world economic value. No content on the platform constitutes financial, legal, or investment advice."
     },
     {
       title: "7. Prohibited Use",
@@ -45,7 +45,7 @@ export default function TermsPage() {
     {
       title: "8. Limitation of Liability",
       icon: Scale,
-      content: "SynArc is provided on an 'as-is' and 'as-available' basis, without warranties or guarantees of any kind, either express or implied. Under no circumstances shall the SynArc team, contributors, or developers be liable for any direct, indirect, incidental, or consequential losses, including lost profits or wallet exploits."
+      content: "Syn DAO is provided on an 'as-is' and 'as-available' basis, without warranties or guarantees of any kind, either express or implied. Under no circumstances shall the Syn DAO team, contributors, or developers be liable for any direct, indirect, incidental, or consequential losses, including lost profits or wallet exploits."
     },
     {
       title: "9. Changes to Terms",
@@ -90,7 +90,7 @@ export default function TermsPage() {
             Terms of Service
           </h1>
           <p className="text-muted text-sm leading-relaxed max-w-xl">
-            Please read these terms carefully before interacting with SynArc smart contracts and decentralized systems.
+            Please read these terms carefully before interacting with Syn DAO smart contracts and decentralized systems.
           </p>
         </div>
 

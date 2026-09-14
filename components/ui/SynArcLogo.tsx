@@ -43,7 +43,7 @@ export function SynArcLogo({
       {/* Official SynArc Logo Image */}
       <Image
         src="/official-logo.png"
-        alt="SynArc Logo"
+        alt="Syn DAO Logo"
         width={size}
         height={size}
         className="relative z-10 object-contain drop-shadow-[0_0_12px_rgba(34,211,238,0.5)]"

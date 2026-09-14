@@ -1,6 +1,6 @@
 # Project Funding & Workspaces
  
-SynArc enables creators, independent teams, and digital organizations to launch their own project workspaces, pool community funds, and govern reserves transparently through consensus.
+Syn DAO enables creators, independent teams, and digital organizations to launch their own project workspaces, pool community funds, and govern reserves transparently through consensus.
 
 ---
 
@@ -18,7 +18,7 @@ Key advantages include:
 
 ## Launching a Project Workspace
  
-Launching a workspace on SynArc takes less than 2 minutes.
+Launching a workspace on Syn DAO takes less than 2 minutes.
  
 ### Step 1: Choose Your Template
 Navigate to **Create Workspace** in the sidebar. Select from template types:
@@ -62,7 +62,7 @@ Click the **Share** button on any creator profile to:
 
 ## Micro-Funding ($0.01 and up)
  
-SynArc is optimized for the **micro-funding economy**. With transaction fees on the Arc network near-zero, fans can support creators with amounts as low as **$0.01**.
+Syn DAO is optimized for the **micro-funding economy**. With transaction fees on the Arc network near-zero, fans can support creators with amounts as low as **$0.01**.
 
 ### Preset Donation Buttons
 Each creator profile has preset buttons:
@@ -77,7 +77,7 @@ Each creator profile has preset buttons:
 
 ### How Micro-Funding Works
 1. Connect your wallet (or Privy handles it automatically).
-2. SynArc sends a USDC `transfer()` call to the creator's escrow contract address.
+2. Syn DAO sends a USDC `transfer()` call to the creator's escrow contract address.
 3. The transaction is confirmed on Arc in seconds.
 4. The creator's live metrics update in real-time from the chain.
 

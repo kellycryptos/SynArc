@@ -84,7 +84,7 @@ export function RequestListingModal({ isOpen, onClose }: RequestListingModalProp
           </div>
           <div>
             <h3 className="text-xl font-bold font-heading text-text-primary">Request DAO Listing</h3>
-            <p className="text-xs text-muted">Join the SynArc Creator DAO Directory & Nanopayment Protocol</p>
+            <p className="text-xs text-muted">Join the Syn DAO Creator DAO Directory & Nanopayment Protocol</p>
           </div>
         </div>
 
@@ -183,12 +183,12 @@ export function RequestListingModal({ isOpen, onClose }: RequestListingModalProp
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-muted uppercase">Why do you want to join SynArc?</label>
+              <label className="text-xs font-bold text-muted uppercase">Why do you want to join Syn DAO?</label>
               <textarea
                 name="message"
                 disabled={submitting}
                 rows={2}
-                placeholder="Tell us what excites you about building on SynArc infrastructure..."
+                placeholder="Tell us what excites you about building on Syn DAO infrastructure..."
                 value={formData.message}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2.5 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white resize-none transition-colors"

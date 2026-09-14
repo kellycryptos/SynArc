@@ -17,26 +17,26 @@ const ibmPlexMono = IBM_Plex_Mono({ weight: ["400", "500", "600"], subsets: ["la
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.synarcdao.xyz"),
-  title: "SynArc — Autonomous Treasury Management on Arc",
-  description: "SynArc automates treasury management for Creator DAOs. Schedule payouts, earn yield on idle USDC, rebalance across chains via CCTP, and monitor risk — all governed on-chain.",
+  title: "Syn DAO",
+  description: "On-chain funding, treasury, and governance for humans and agents. Built on Arc.",
   openGraph: {
-    title: "SynArc — Autonomous Treasury Management on Arc",
-    description: "SynArc automates treasury management for Creator DAOs. Schedule payouts, earn yield on idle USDC, rebalance across chains via CCTP, and monitor risk — all governed on-chain.",
+    title: "Syn DAO",
+    description: "On-chain funding, treasury, and governance for humans and agents. Built on Arc.",
     url: "https://www.synarcdao.xyz",
-    siteName: "SynArc",
+    siteName: "Syn DAO",
     images: [
       {
         url: "https://www.synarcdao.xyz/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "SynArc — Autonomous Treasury Management on Arc",
+        alt: "Syn DAO — Built on Arc",
       }
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SynArc — Autonomous Treasury Management on Arc",
-    description: "SynArc automates treasury management for Creator DAOs. Schedule payouts, earn yield on idle USDC, rebalance across chains, and monitor risk — all on-chain.",
+    title: "Syn DAO",
+    description: "On-chain funding, treasury, and governance for humans and agents. Built on Arc.",
     images: ["https://www.synarcdao.xyz/og-image.jpg"],
   },
   icons: {

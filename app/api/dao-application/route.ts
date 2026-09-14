@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     }
 
     const apiKey = process.env.RESEND_API_KEY;
-    const emailFrom = "SynArc <onboarding@resend.dev>";
+    const emailFrom = "Syn DAO <onboarding@resend.dev>";
     const emailTo = "devsynarc@gmail.com";
 
     if (!apiKey) {
@@ -73,13 +73,13 @@ export async function POST(request: Request) {
               </div>
               
               <div class="field">
-                <div class="label">Why Join SynArc</div>
+                <div class="label">Why Join Syn DAO</div>
                 <div class="value">${message || "Not provided"}</div>
               </div>
             </div>
             
             <div class="footer">
-              <p>This application was submitted via SynArc.io</p>
+              <p>This application was submitted via synarcdao.xyz</p>
             </div>
           </div>
         </body>

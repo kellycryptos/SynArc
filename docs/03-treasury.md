@@ -4,11 +4,11 @@ icon: wallet
 
 # Treasury
 
-The SynArc Treasury manages workspace funds, tracks inflows, and handles reserve allocations. Every fund movement is community-approved and fully transparent — there are no admin overrides.
+The Syn DAO Treasury manages workspace funds, tracks inflows, and handles reserve allocations. Every fund movement is community-approved and fully transparent — there are no admin overrides.
 
 ---
 
-The SynArc Treasury is a fully secure workspace vault. The treasury can hold multiple stable digital assets (USDC and EURC), allowing teams to manage reserves across different currencies.
+The Syn DAO Treasury is a fully secure workspace vault. The treasury can hold multiple stable digital assets (USDC and EURC), allowing teams to manage reserves across different currencies.
  
 All capital inflows, allocations, and outflows are tracked inside a transparent ledger, ensuring full accountability.
 
@@ -28,7 +28,7 @@ TimelockController delay
 
 ### Two-Treasury Architecture
 
-SynArc operates a split-treasury design:
+Syn DAO operates a split-treasury design:
 - **Governance Treasury**: Community-visible, fully timelocked vault for primary reserves.
 - **Agent Operating Treasury**: Fast-access, dedicated vault for the Automated Treasury Guard's cross-chain CCTP rebalances.
 
@@ -50,7 +50,7 @@ To fund the DAO operating runway, members can deposit USDC directly using the fr
 
 ## How to Deposit EURC
 
-In addition to USDC, SynArc natively supports EURC stablecoin deposits:
+In addition to USDC, Syn DAO natively supports EURC stablecoin deposits:
 
 1. Toggle the token selector inside the **Deposit Portal** to **EURC**.
 2. Input your desired deposit amount in EURC.
@@ -61,7 +61,7 @@ In addition to USDC, SynArc natively supports EURC stablecoin deposits:
 
 ## Fund Allocation & Management
 
-The SynArc Treasury targets the following capital allocation strategy:
+The Syn DAO Treasury targets the following capital allocation strategy:
 
 | Allocation | Target % | Purpose |
 | :--- | :--- | :--- |
@@ -75,7 +75,7 @@ The SynArc Treasury targets the following capital allocation strategy:
 
 ## Automated Treasury Guard & Rules
 
-The SynArc Treasury is integrated with the **Automated Treasury Guard** (Treasury Agent). While the treasury itself enforces core vault safety and timelocks, the Automated Treasury Guard acts as an automated executor following strict community-approved rules:
+The Syn DAO Treasury is integrated with the **Automated Treasury Guard** (Treasury Agent). While the treasury itself enforces core vault safety and timelocks, the Automated Treasury Guard acts as an automated executor following strict community-approved rules:
 - **Auto Rebalancing**: Relocates stablecoins to higher-yield chains when thresholds are reached via native Circle CCTP. (Live)
 - **Auto Payments**: Processes recurring payroll or scheduled payouts autonomously. (Live)
 - **Risk Alerts & Pause**: Pauses operations automatically if low liquidity or abnormal outflows are detected. (Live)
@@ -88,7 +88,7 @@ For more details, see the [Automated Treasury Guard guide](04-ai-agents.md).
 
 ## How Funds are Released via Governance
 
-SynArc has **no admin keys**. No founder, member, or developer can withdraw assets manually. Release of funds is fully automated through the governance lifecycle:
+Syn DAO has **no admin keys**. No founder, member, or developer can withdraw assets manually. Release of funds is fully automated through the governance lifecycle:
 
 ### Automated Smart Contract Flow
 

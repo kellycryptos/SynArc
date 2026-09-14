@@ -62,7 +62,7 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
         <div className="flex items-center justify-between px-6 pt-6 pb-4">
           <div>
             <h2 className="text-base font-semibold text-text-primary">Connect Wallet</h2>
-            <p className="text-xs text-text-muted mt-0.5">Choose how to join SynArc</p>
+            <p className="text-xs text-text-muted mt-0.5">Choose how to join Syn DAO</p>
           </div>
           <button
             onClick={onClose}

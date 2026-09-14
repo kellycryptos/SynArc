@@ -4,7 +4,7 @@ icon: circle-question
 
 # FAQ
 
-This section answers frequently asked questions about the SynArc ecosystem, token metrics, reserve management, project workspaces, and security.
+This section answers frequently asked questions about the Syn DAO ecosystem, token metrics, reserve management, project workspaces, and security.
 
 ---
 
@@ -16,9 +16,9 @@ Arc is a high-performance EVM-equivalent blockchain tailored for the decentraliz
 
 ### 2. What is USDC?
 
-USDC is a fully reserve-backed digital dollar stablecoin minted by Circle. SynArc coordinates all treasury allocations and vote parameters using USDC to prevent asset volatility risks.
+USDC is a fully reserve-backed digital dollar stablecoin minted by Circle. Syn DAO coordinates all treasury allocations and vote parameters using USDC to prevent asset volatility risks.
 
-### 3. Is SynArc audited?
+### 3. Is Syn DAO audited?
 
 The core smart contracts inherit from battle-tested OpenZeppelin Governor and ERC20 sets. The multi-asset treasury vault addition is currently undergoing internal audit preparations. Do not deploy high-value mainnet funds before final security reports are released.
 
@@ -36,7 +36,7 @@ Visit our Discord server for technical support, or browse our internal documenta
  
 ### 6. What is a Project Workspace?
  
-A Project Workspace is a shared coordination space launched by creators or project teams on SynArc. Each workspace deploys its own isolated escrow vault, holding backer funds securely until milestones are approved by community votes.
+A Project Workspace is a shared coordination space launched by creators or project teams on Syn DAO. Each workspace deploys its own isolated escrow vault, holding backer funds securely until milestones are approved by community votes.
  
 ### 7. How do I launch a Project Workspace?
  
@@ -85,13 +85,13 @@ Yes! Using `client.campaigns.create()` in the SDK, developers can deploy project
 
 ### 15. What is ERC-8004?
 
-ERC-8004 is the on-chain AI Agent identity standard used by SynArc. Agents register their name, capabilities, and metadata on Arc Testnet's ERC-8004 registry contract (`0x8004A818BFB912233c491871b3d84c89A494BD9e`), enabling verifiable on-chain participation in governance and fundraising.
+ERC-8004 is the on-chain AI Agent identity standard used by Syn DAO. Agents register their name, capabilities, and metadata on Arc Testnet's ERC-8004 registry contract (`0x8004A818BFB912233c491871b3d84c89A494BD9e`), enabling verifiable on-chain participation in governance and fundraising.
 
 ---
 
 ## Security
 
-### 16. Who controls the SynArc Treasury?
+### 16. Who controls the Syn DAO Treasury?
 
 No individual controls the treasury. It is owned exclusively by the `TimelockController` smart contract. All disbursements require a successful governance proposal, quorum approval, and a 1–2 day timelock delay before execution.
 

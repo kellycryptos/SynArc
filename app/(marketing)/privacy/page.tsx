@@ -10,17 +10,17 @@ export default function PrivacyPage() {
     {
       title: "1. Data Collected",
       icon: Shield,
-      content: "SynArc is a privacy-first governance platform. We do not require or collect personal data such as names, email addresses, phone numbers, or IP addresses. The only data processed is public, on-chain data (your wallet address, proposal creations, delegations, and votes cast) which is necessary to interact with the Arc blockchain."
+      content: "Syn DAO is a privacy-first governance platform. We do not require or collect personal data such as names, email addresses, phone numbers, or IP addresses. The only data processed is public, on-chain data (your wallet address, proposal creations, delegations, and votes cast) which is necessary to interact with the Arc blockchain."
     },
     {
       title: "2. Wallet Data",
       icon: Key,
-      content: "All interactions with the SynArc DAO require connecting a compatible Web3 wallet. SynArc never holds, reads, or gains access to your wallet's private keys or seed phrases. Any data associated with your wallet is publicly queryable from the distributed blockchain ledger."
+      content: "All interactions with Syn DAO require connecting a compatible Web3 wallet. Syn DAO never holds, reads, or gains access to your wallet's private keys or seed phrases. Any data associated with your wallet is publicly queryable from the distributed blockchain ledger."
     },
     {
       title: "3. Privy Authentication",
       icon: Eye,
-      content: "SynArc uses Privy for wallet authentication and social login integration. Any credentials, social accounts, or embedded wallets created through Privy are managed and secured by Privy in accordance with their official Privacy Policy. SynArc does not store these credentials."
+      content: "Syn DAO uses Privy for wallet authentication and social login integration. Any credentials, social accounts, or embedded wallets created through Privy are managed and secured by Privy in accordance with their official Privacy Policy. Syn DAO does not store these credentials."
     },
     {
       title: "4. Cookies Policy",
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
     {
       title: "5. Third Party Services",
       icon: Server,
-      content: "To maintain frontend hosting, wallet connection triggers, and node interaction channels, SynArc communicates with external infrastructure services including Vercel (hosting), Privy (connection), and Arc Testnet RPC nodes (blockchain state). Each service maintains its own privacy regulations."
+      content: "To maintain frontend hosting, wallet connection triggers, and node interaction channels, Syn DAO communicates with external infrastructure services including Vercel (hosting), Privy (connection), and Arc Testnet RPC nodes (blockchain state). Each service maintains its own privacy regulations."
     },
     {
       title: "6. Data Retention",
@@ -40,7 +40,7 @@ export default function PrivacyPage() {
     {
       title: "7. Your Rights",
       icon: Heart,
-      content: "Under standard digital privacy regulations (including GDPR/CCPA), you retain the right to manage your data. Because SynArc never stores or has custody of your personal data on any server, there are no databases containing your personal records to update, restrict, or delete."
+      content: "Under standard digital privacy regulations (including GDPR/CCPA), you retain the right to manage your data. Because Syn DAO never stores or has custody of your personal data on any server, there are no databases containing your personal records to update, restrict, or delete."
     },
     {
       title: "8. Support & Community Contact",
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="text-muted text-sm leading-relaxed max-w-xl">
-            We value your digital sovereignty. SynArc does not collect, record, or track your personal information.
+            We value your digital sovereignty. Syn DAO does not collect, record, or track your personal information.
           </p>
         </div>
 

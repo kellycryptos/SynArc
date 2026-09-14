@@ -509,7 +509,7 @@ export default function CampaignsPage() {
         <div className="p-6 rounded-2xl border border-border-thin/60 bg-surface/20 space-y-4">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-bold text-text-primary">About SynArc Creator DAOs</h3>
+            <h3 className="text-sm font-bold text-text-primary">About Syn DAO Creator DAOs</h3>
           </div>
           <p className="text-xs text-muted leading-relaxed">
             Creator DAOs feature milestone-based escrow funding and community governance. Funds are safely held in campaign treasuries until milestone proposals are approved by token holders.

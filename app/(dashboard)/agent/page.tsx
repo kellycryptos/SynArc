@@ -978,7 +978,7 @@ export default function AgentPage() {
             </div>
             <div className="space-y-2.5">
               {[
-                { label: "Smart Account", value: "SynArc Guard (Deployed)" },
+                { label: "Smart Account", value: "Syn DAO Guard (Deployed)" },
                 { label: "Signer / Executor", value: "Server Hot-Wallet EOA" },
                 { label: "AI Assistant", value: "Active" },
                 { label: "Network", value: "Arc Testnet (5042002)" },

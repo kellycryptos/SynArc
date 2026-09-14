@@ -4,19 +4,19 @@ icon: database
 
 # DAO Registry
 
-SynArc hosts a unified, multi-DAO coordination layer. Approved communities can integrate our smart contracts to manage custom memberships and treasury pools.
+Syn DAO hosts a unified, multi-DAO coordination layer. Approved communities can integrate our smart contracts to manage custom memberships and treasury pools.
 
 ***
 
 ## What is the DAO Registry?
 
-SynArc hosts governance infrastructure for approved DAOs on Arc. Each registered DAO manages its own proposals, treasury allocation, and active member directory.
+Syn DAO hosts governance infrastructure for approved DAOs on Arc. Each registered DAO manages its own proposals, treasury allocation, and active member directory.
 
 ***
 
 ## How to Join the Registry
 
-Get your community listed on the SynArc DAO Registry:
+Get your community listed on the Syn DAO Registry:
 
 1. Click the **Apply for Your DAO** button on the DAOs page.
 2. Fill in your community and contract details.

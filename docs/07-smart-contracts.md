@@ -4,13 +4,15 @@ icon: code
 
 # Smart Contracts
 
-All core SynArc mechanics operate programmatically through secure on-chain EVM smart contracts. This section details deployed addresses, configurations, and verification steps.
+Syn DAO is built on Arc. Smart contract names and addresses are unchanged.
+
+All core platform mechanics operate programmatically through secure on-chain EVM smart contracts. This section details deployed addresses, configurations, and verification steps.
 
 ***
 
 ## Deployed Contract Addresses
 
-SynArc contracts are deployed on the Arc Testnet (`chainId: 5042002`) and are verified on the ArcScan block explorer.
+Syn DAO contracts are deployed on the Arc Testnet (`chainId: 5042002`) and are verified on the ArcScan block explorer.
 
 ### Quick Reference
 

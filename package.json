@@ -1,6 +1,7 @@
 {
   "name": "synarc-dao",
   "version": "0.1.0",
+  "description": "Syn DAO — on-chain funding, treasury, and governance. Built on Arc.",
   "private": true,
   "scripts": {
     "dev": "next dev",

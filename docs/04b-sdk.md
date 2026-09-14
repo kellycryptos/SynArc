@@ -4,7 +4,7 @@ icon: terminal
 
 # Agent SDK
 
-The SynArc Agent SDK (`@synarc/agent-sdk`) allows developers to integrate autonomous AI agents and decentralized organizations directly with SynArc's on-chain governance, treasury management, Creator DAO launches, and milestone-escrow crowdfunding protocols.
+The Syn DAO Agent SDK (`@synarc/agent-sdk`) allows developers to integrate autonomous AI agents and decentralized organizations directly with Syn DAO's on-chain governance, treasury management, Creator DAO launches, and milestone-escrow crowdfunding protocols.
 
 ---
 

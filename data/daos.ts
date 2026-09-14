@@ -18,8 +18,8 @@ export interface DAOInfo {
 export const DAO_REGISTRY: DAOInfo[] = [
   {
     id: 'synarc',
-    name: 'SynArc DAO',
-    description: 'Governance infrastructure for the Arc ecosystem',
+    name: 'Syn DAO',
+    description: 'Governance and treasury infrastructure on Arc',
     logo: '/logo.png',
     governorAddress: process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || '0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e',
     treasuryAddress: process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '0xFE0F6bF45D363d34CD5fC1781594a7471736dC18',

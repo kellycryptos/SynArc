@@ -1,10 +1,13 @@
+# Syn DAO (formerly SynArc)
+Product name updated for Arc naming compliance. Contracts and addresses are unchanged.
+
 <div align="center">
 
-<img src="./public/logo.png" alt="SynArc Logo" width="100" height="100" />
+<img src="./public/logo.png" alt="Syn DAO Logo" width="100" height="100" />
 
-# SynArc
+# Syn DAO
 
-**SynArc is secure funding and coordination infrastructure for creators, independent teams, and digital organizations. We help communities pool capital, vote on funding releases through milestone-based escrows, and manage shared treasuries transparently without complex overhead.**
+**Syn DAO is secure funding and coordination infrastructure for humans and agents, built on Arc. We help communities pool capital, vote on funding releases through milestone-based escrows, and manage shared treasuries transparently without complex overhead.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)](https://typescriptlang.org)
@@ -24,7 +27,7 @@
 
 For modern creators, independent developers, and digital organizations, managing shared funds and coordinating community decisions is often complex, fragmented, and lacks trust. Backers want to ensure their capital is spent responsibly, while creators need frictionless tools to collect support and coordinate with their team.
 
-SynArc solves this by providing a unified platform for community funding and treasury management:
+Syn DAO solves this by providing a unified platform for community funding and treasury management:
 *   **Milestone-Based Escrow & Backer Protection**: Lock community contributions in secure smart contract vaults that only release funds progressively as milestones are approved by backer votes.
 *   **Frictionless Micro-Funding**: Receive support payments and micro-donations with near-zero transaction fees, making small-scale contributions viable.
 *   **Simple On-Chain Governance**: Propose, vote on, and execute community decisions collectively without needing complex technical setups.
@@ -39,7 +42,7 @@ Proposal Creation ──> Off-Chain Signing ──> On-Chain Queue ──> Treas
 
 ## 2. Vision
 
-Modern online teams and creators deserve coordination tools that are secure, transparent, and simple to use. SynArc is designed to solve the primary challenges of decentralized collaboration:
+Modern online teams and creators deserve coordination tools that are secure, transparent, and simple to use. Syn DAO is designed to solve the primary challenges of decentralized collaboration:
 *   **Capital Protection**: Building backer trust by linking payouts directly to project progress and verified milestones.
 *   **Stablecoin-Native Reserves**: Minimizing price volatility risks by holding and managing treasuries in stable digital assets.
 *   **Rule-Based Automation**: Automating routine treasury sweeps and yield-generating balances based on community-approved rules.
@@ -49,7 +52,7 @@ Modern online teams and creators deserve coordination tools that are secure, tra
 
 ## 2a. How it Works
 
-SynArc simplifies the funding and governance lifecycle:
+Syn DAO simplifies the funding and governance lifecycle:
 1. **Launch a Project Workspace**: A creator or team launches a workspace and configures milestone-locked funding goals.
 2. **Collect Community Support**: Backers fund the project using low-fee digital dollars, directly supporting the project's milestones.
 3. **Release Funds on Progress**: Raised funds are held in escrow. As milestones are completed, community members vote to approve and release the next tranche of capital.
@@ -92,7 +95,7 @@ Creator DAOs are decentralized funding and governance structures that allow buil
 
 ## 3b. Autonomous Treasury Agent
 
-SynArc features a fully autonomous Treasury Agent deployed and verified on Arc Testnet at `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D`.
+Syn DAO features a fully autonomous Treasury Agent deployed and verified on Arc Testnet at `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D`.
 
 To bypass the daily limits of Vercel Hobby tier crons, the Treasury Agent runs on a **5-minute recurring schedule** via [cron-job.org](https://cron-job.org). The `/api/agent/run` endpoint is secured with a shared-secret verification header (`x-cron-secret`) to prevent unauthorized triggers.
 
@@ -156,7 +159,7 @@ await agent.vote(proposalId, 1 /* For */);
 
 ## 3e. Circle & Agent Integrations
 
-SynArc integrates with the Circle ecosystem and autonomous systems to power its rebalancing, governance, and onboarding systems:
+Syn DAO integrates with the Circle ecosystem and autonomous systems to power its rebalancing, governance, and onboarding systems:
 
 *   **Circle CCTP (Cross-Chain Transfer Protocol)** — *Fully Deployed & Functional*: Handles native burn-and-mint USDC routing between Arc Testnet and Ethereum Sepolia. In `lib/agent/cctp-executor.ts`, the system executes burns, polls Circle's Iris attestation API for validation consensus, and triggers mint receipts on the destination Messenger contract.
 *   **Circle Gateway (x402 Nanopayments)** — *Simulated/Planned*: Tracks AI model execution fees for each inference call in `lib/agent/gateway-payments.ts`. The codebase contains hooks to deduct USDC internally for every Groq API request, awaiting live production endpoints to route actual on-chain fee payments.
@@ -168,7 +171,7 @@ SynArc integrates with the Circle ecosystem and autonomous systems to power its 
 
 ## 4. Arc Ecosystem Alignment
 
-SynArc is built natively for **Arc** — a high-performance, EVM-equivalent blockchain engineered to power the agentic economy.
+Syn DAO is built natively for **Arc** — a high-performance, EVM-equivalent blockchain engineered to power the agentic economy.
 
 | Arc Specification | Value |
 | :--- | :--- |
@@ -180,11 +183,11 @@ SynArc is built natively for **Arc** — a high-performance, EVM-equivalent bloc
 | **Fallback RPC 1** | `https://arc-testnet.drpc.org` |
 | **Fallback RPC 2** | `https://5042002.rpc.thirdweb.com` |
 
-Arc's dedicated focus on institutional-grade settlement, native USDC capital, and autonomous agent participation perfectly aligns with SynArc's governance framework.
+Arc's dedicated focus on institutional-grade settlement, native USDC capital, and autonomous agent participation perfectly aligns with Syn DAO's governance framework.
 
 ### Canteen ARC CLI & Resilient RPC Fallbacks
 
-SynArc is integrated with the **Canteen Builder Program**, providing personalized high-performance RPC connections and gasless transaction routing for all critical treasury and governance operations.
+Syn DAO is integrated with the **Canteen Builder Program**, providing personalized high-performance RPC connections and gasless transaction routing for all critical treasury and governance operations.
 
 #### CLI Installation & Commands
 
@@ -205,7 +208,7 @@ Once installed, use the following commands:
 
 #### Centralized 4-Endpoint RPC Resiliency Chain
 
-To ensure uninterrupted uptime for our users and AI agents, the SynArc frontend implements a centralized sequential fallback resolver traversing four RPC nodes in priority order:
+To ensure uninterrupted uptime for our users and AI agents, the Syn DAO frontend implements a centralized sequential fallback resolver traversing four RPC nodes in priority order:
 1.  **Personalized Canteen RPC** (`process.env.NEXT_PUBLIC_ARC_RPC_URL`)
 2.  **Arc Testnet Public RPC** (`https://rpc.testnet.arc.network`)
 3.  **dRPC Arc Testnet Node** (`https://arc-testnet.drpc.org`)
@@ -217,7 +220,7 @@ If the primary endpoint experiences rate limits or downtime, the system transpar
 
 ## 5. Governance Infrastructure
 
-SynArc utilizes a modular, battle-tested governance stack that brings enterprise-level safety to on-chain organizations.
+Syn DAO utilizes a modular, battle-tested governance stack that brings enterprise-level safety to on-chain organizations.
 
 ```
 ┌────────────────────────────────────────────────────────┐
@@ -246,7 +249,7 @@ SynArc utilizes a modular, battle-tested governance stack that brings enterprise
 
 ## 6. Treasury Coordination
 
-SynArc coordinates and reports on DAO treasury assets entirely in **USDC**, ensuring predictable, low-volatility financial runway for organizations.
+Syn DAO coordinates and reports on DAO treasury assets entirely in **USDC**, ensuring predictable, low-volatility financial runway for organizations.
 
 *   **Liquid Reserves**: Operating capital held in secure, highly liquid multisig vaults (Target: 82%).
 *   **Yield Generation**: Capital placed in conservative yield-bearing platforms like Morpho to counter inflation (Target: 15%).
@@ -412,11 +415,11 @@ synarc-dao/
 
 ## 12. Security Philosophy
 
-SynArc is developed with a strict security-first mindset, preparing for institutional integration:
+Syn DAO is developed with a strict security-first mindset, preparing for institutional integration:
 
 *   **Trustless Settlement**: The `TimelockController` acts as a non-bypassable barrier, ensuring all token holders have sufficient warning to withdraw funds if malicious updates pass.
 *   **Decentralized Control**: No admin keys, multi-sigs, or backdoors. The governance smart contract is the sole owner of the treasury and other core protocol components.
-*   **Non-Custodial Integrity**: User private keys are never transmitted, stored, or managed by the SynArc server layer. All cryptographic keys are secured directly via hardware and client-side systems using Privy.
+*   **Non-Custodial Integrity**: User private keys are never transmitted, stored, or managed by the Syn DAO server layer. All cryptographic keys are secured directly via hardware and client-side systems using Privy.
 *   **Mathematical Transparency**: All votes are verified cryptographically via ECDSA signatures on the client side, ensuring full provability of election inputs.
 *   **Isolated Creator Escrows**: Every Creator DAO deploys its own independent `SynArcCrowdfund` escrow contract from the creator's wallet. No single contract holds funds for multiple creators — eliminating shared-contract attack surfaces.
 *   **Permissionless Architecture**: Anyone can verify the escrow source code. Contract addresses are surfaced in the UI after deployment and linkable on [ArcScan](https://testnet.arcscan.app) for full on-chain transparency.
@@ -432,7 +435,7 @@ SynArc is developed with a strict security-first mindset, preparing for institut
 | **Pre-Audit Review** | Internal security review of Governor, Timelock, and Crowdfund contracts | 🔄 In Progress |
 | **ZK Voting** | Encrypted ballots via Zero-Knowledge proofs | 🗓 Planned |
 
-> ⚠️ **Warning**: SynArc's smart contracts are currently undergoing internal pre-audit reviews. Ensure proper testing on Arc Testnet before committing high-value operational reserves.
+> ⚠️ **Warning**: Syn DAO's smart contracts are currently undergoing internal pre-audit reviews. Ensure proper testing on Arc Testnet before committing high-value operational reserves.
 
 ---
 
@@ -459,6 +462,6 @@ This repository is licensed under the **MIT License**. Check [LICENSE](./LICENSE
 
 [Website](https://www.synarcdao.xyz/) · [Twitter](https://x.com/synarc_) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
 
-<sub>© 2026 SynArc. All rights reserved.</sub>
+<sub>© 2026 Syn DAO. All rights reserved.</sub>
 
 </div>

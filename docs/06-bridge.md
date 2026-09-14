@@ -4,13 +4,13 @@ icon: link
 
 # Secure Transfer Bridge
 
-Cross-network fund mobility is essential for active workspaces. SynArc integrates secure, direct bridge protocols to support bidirectional, 1:1 transfers of stable digital dollars (USDC) between Arc Testnet and other major networks, without the risks of intermediary wrapping contracts.
+Cross-network fund mobility is essential for active workspaces. Syn DAO integrates secure, direct bridge protocols to support bidirectional, 1:1 transfers of stable digital dollars (USDC) between Arc Testnet and other major networks, without the risks of intermediary wrapping contracts.
 
 ***
 
 ## Bidirectional Transfer Flows
 
-SynArc supports bridging in both directions:
+Syn DAO supports bridging in both directions:
 1. **Deposit (IN)**: Bridge USDC from Ethereum Sepolia, Base Sepolia, Avalanche Fuji, or Solana Devnet onto Arc Testnet to fund a project workspace, deposit into the Treasury, or back active campaigns.
 2. **Withdraw (OUT)**: Bridge USDC from Arc Testnet back to Ethereum Sepolia, Base Sepolia, Avalanche Fuji, or Solana Devnet to distribute assets to external participant vaults.
 
@@ -55,7 +55,7 @@ To bridge USDC from an external chain into Arc Testnet:
 5. Click **Initiate Cross-Chain Bridge**:
    - **Approve**: Your wallet will prompt you to approve the origin TokenMessenger (`0x8fe6b...`) to spend your USDC.
    - **Burn**: A second transaction will submit the burn instruction.
-   - **Attestation**: The SynArc interface polls Circle's Iris sandbox API for consensus proofs.
+   - **Attestation**: The Syn DAO interface polls Circle's Iris sandbox API for consensus proofs.
    - **Mint**: The app switches your wallet to Arc Testnet (`chainId: 5042002`) and submits the mint transaction to the Arc MessageTransmitter.
 6. Your native USDC is now available on Arc Testnet.
 
@@ -75,7 +75,7 @@ To withdraw your USDC reserves back to an external chain:
 
 ## Official CCTP Deployed Contracts
 
-SynArc coordinates with the following verified Circle contract endpoints:
+Syn DAO coordinates with the following verified Circle contract endpoints:
 
 | Chain | Domain ID | TokenMessenger Address | MessageTransmitter Address | USDC Contract Address |
 | :--- | :---: | :--- | :--- | :--- |

@@ -204,19 +204,19 @@ export function Footer() {
                 <SynArcLogo size={44} animated />
 
                 <span className="text-2xl font-bold tracking-tight text-foreground">
-                  SynArc
+                  Syn DAO
                 </span>
               </div>
  
               <p className="text-[15px] leading-[1.7] text-muted/80 max-w-sm">
-                Simplifying funding, governance, and treasury management for creators, independent teams, and digital organizations.
+                Syn DAO — funding and governance for humans and agents. Built on Arc.
               </p>
  
               {/* Tagline */}
               <div className="mt-6 inline-flex items-center gap-2 bg-background-primary border border-border text-text-secondary px-3 py-1 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-glow animate-pulse" />
                 <span className="text-[11px] font-medium tracking-wide uppercase">
-                  Empowering modern creators and decentralized teams.
+                  Funding and governance for humans and agents. Built on Arc.
                 </span>
               </div>
             </motion.div>
@@ -257,7 +257,7 @@ export function Footer() {
 
             {/* Copyright */}
             <p className="text-xs text-text-secondary/50 tracking-wide mt-1">
-              &copy; 2026 SynArc. All Rights Reserved.
+              &copy; 2026 Syn DAO. All Rights Reserved.
             </p>
           </div>
         </motion.div>

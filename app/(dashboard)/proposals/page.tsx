@@ -223,7 +223,7 @@ export default function ProposalsPage() {
           ) : proposals.length === 0 ? (
             <EmptyState
               title="No proposals yet"
-              description="Be the first to create a governance proposal for SynArc DAO"
+              description="Be the first to create a governance proposal for Syn DAO"
               action={
                 <button
                   onClick={() => {
