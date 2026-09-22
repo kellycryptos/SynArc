@@ -4,16 +4,16 @@ import { ReactNode, useState, useEffect } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { WagmiProvider } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { arcTestnet } from '@/lib/arc-config';
+import { arcTestnet, arcMainnet, ARC_CHAIN } from '@/lib/arc-config';
 import { wagmiConfig } from '@/lib/wagmi';
 import { initializeResilientRpc } from '@/lib/rpc/config';
 import { privyConfig } from '@/lib/privy/config';
 
-export { arcTestnet };
+export { arcTestnet, arcMainnet, ARC_CHAIN };
 
 export function Web3Provider({ children }: { children: ReactNode }) {
   useEffect(() => {
-    initializeResilientRpc(arcTestnet);
+    initializeResilientRpc(ARC_CHAIN);
   }, []);
 
   const [queryClient] = useState(() => new QueryClient({

@@ -56,21 +56,21 @@ export const arcPublicClient = createPublicClient({
   transport: arcTransport,
 });
 
-// Arc Mainnet Chain Definition Placeholder (Expected ~5042 — update when official Public Mainnet opens)
+// Arc Mainnet Chain Definition (Chain ID 5042)
 export const arcMainnet = defineChain({
   id: 5042,
-  name: "Arc Mainnet",
+  name: "Arc",
   nativeCurrency: { 
-    name: "USD Coin", 
+    name: "USDC", 
     symbol: "USDC", 
-    decimals: 6
+    decimals: 18 // Native gas on Arc is USDC at 18 decimals for eth_getBalance
   },
   rpcUrls: {
-    default: { http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network'] },
-    public:  { http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network'] },
+    default: { http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io'] },
+    public:  { http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io'] },
   },
   blockExplorers: {
-    default: { name: "ArcScan", url: "https://arcscan.app" },
+    default: { name: "Arc Explorer", url: "https://explorer.arc.io" },
   },
 });
 
@@ -83,9 +83,9 @@ export function getArcEthersProvider(): JsonRpcProvider {
 export async function ensureArcNetwork(ethereumProvider: any, targetChainId: number = 5042002): Promise<void> {
   const isMainnet = targetChainId === 5042;
   const chainIdHex = `0x${targetChainId.toString(16)}`;
-  const chainName = isMainnet ? "Arc Mainnet" : "Arc Testnet";
-  const rpcUrls = isMainnet ? [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network'] : ARC_RPC_URLS;
-  const explorerUrl = isMainnet ? "https://arcscan.app" : "https://testnet.arcscan.app";
+  const chainName = isMainnet ? "Arc" : "Arc Testnet";
+  const rpcUrls = isMainnet ? [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io'] : ARC_RPC_URLS;
+  const explorerUrl = isMainnet ? "https://explorer.arc.io" : "https://testnet.arcscan.app";
 
   try {
     await ethereumProvider.request({
@@ -111,7 +111,7 @@ export async function ensureArcNetwork(ethereumProvider: any, targetChainId: num
             nativeCurrency: {
               name: "USDC",
               symbol: "USDC",
-              decimals: 6,
+              decimals: isMainnet ? 18 : 6,
             },
             blockExplorerUrls: [explorerUrl],
           },

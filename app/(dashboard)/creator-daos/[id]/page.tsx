@@ -598,7 +598,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
             <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[10.5px] text-purple-300 leading-normal flex items-start gap-2 max-w-sm">
               <span className="shrink-0 text-xs">🔒</span>
               <span>
-                USDC contributed to this Creator DAO is secured directly within decentralized milestone escrow vaults. SynArc DAO treasury cannot arbitrarily drain or redirect these funds — capital release requires cryptographic proof of deliverable approval.
+                USDC contributed to this Creator DAO is secured directly within decentralized milestone escrow vaults. Syn DAO treasury cannot arbitrarily drain or redirect these funds — capital release requires cryptographic proof of deliverable approval.
               </span>
             </div>
           </GlassCard>
@@ -1110,7 +1110,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
               <FundingSourceItem
                 icon="🏛"
                 title="DAO Treasury Allocation"
-                description="SynArc DAO can allocate matching treasury blocks via governor proposals."
+                description="Syn DAO can allocate matching treasury blocks via governor proposals."
                 status="Active"
               />
               <FundingSourceItem

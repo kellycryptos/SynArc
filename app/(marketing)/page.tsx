@@ -38,14 +38,15 @@ export default function LandingPage() {
         
         <div className="max-w-6xl mx-auto relative z-10 text-center">
           <h1 className="text-4xl sm:text-6xl md:text-[58px] font-bold font-space tracking-tight mb-6 leading-[1.12] text-[#F5F7FA] max-w-4xl mx-auto">
-            Coordinate and protect{" "}
+            Fund USDC → Vote →{" "}
             <span className="bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] bg-clip-text text-transparent">
-              your community's funds
+              Release
             </span>
           </h1>
           
           <p className="text-base sm:text-lg md:text-[17px] text-[#9CA6B8] max-w-2xl mx-auto mb-10 leading-relaxed font-space">
-            Keep project funds secure in milestone-based escrows, vote transparently on releases, and automatically prevent funds from sitting idle.
+            Syn DAO — funding and governance for humans and agents. Built on Arc.<br className="hidden sm:inline" />
+            Core loop: fund USDC → vote → release to a human or agent.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

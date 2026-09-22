@@ -1,7 +1,7 @@
 "use client";
 
 import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { useArcNetwork, TARGET_CHAIN_ID } from "@/hooks/auth/useArcNetwork";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useState, useCallback } from "react";
 import { ensureArcNetwork } from "@/lib/arc/config";
@@ -42,7 +42,7 @@ function useActiveSwitchArcNetwork() {
     setIsSwitching(true);
     try {
       const provider = await activeWallet.getEthereumProvider();
-      await ensureArcNetwork(provider);
+      await ensureArcNetwork(provider, TARGET_CHAIN_ID);
 
       setTimeout(() => {
         refetchBalance();

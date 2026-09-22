@@ -12,8 +12,9 @@ export const ARC_RPC_URLS = [
 
 // Arc Mainnet Fallback RPC endpoints
 export const ARC_MAINNET_RPC_URLS = [
-  process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network',
-  'https://arc-mainnet.drpc.org',
+  process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io',
+  'https://rpc.drpc.mainnet.arc.io',
+  'https://rpc.quicknode.mainnet.arc.io',
 ].filter(Boolean) as string[]
 
 export const arcTestnet = defineChain({
@@ -27,19 +28,20 @@ export const arcTestnet = defineChain({
   blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
 })
 
-// Arc Mainnet Placeholder Chain ID (Expected ~5042 — update when official Public Mainnet opens)
+// Arc Mainnet (Chain ID 5042)
 export const arcMainnet = defineChain({
   id: 5042,
-  name: 'Arc Mainnet',
-  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
+  name: 'Arc',
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
   rpcUrls: {
     default: { http: ARC_MAINNET_RPC_URLS },
     public: { http: ARC_MAINNET_RPC_URLS }
   },
-  blockExplorers: { default: { name: 'ArcScan', url: 'https://arcscan.app' } },
+  blockExplorers: { default: { name: 'Arc Explorer', url: 'https://explorer.arc.io' } },
 })
 
-export const ARC_CHAIN = arcTestnet;
+export const ACTIVE_NETWORK = (process.env.NEXT_PUBLIC_ARC_NETWORK || 'testnet') as 'testnet' | 'mainnet'
+export const ARC_CHAIN = ACTIVE_NETWORK === 'mainnet' ? arcMainnet : arcTestnet;
 
 export const ARC_GAS = {
   propose: 600000n,
@@ -82,8 +84,6 @@ export const CONTRACTS_MAINNET = {
   get tokenMessenger() { return (process.env.NEXT_PUBLIC_MAINNET_TOKEN_MESSENGER_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}` },
   get crowdfund() { return (process.env.NEXT_PUBLIC_MAINNET_CROWDFUND_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}` },
 }
-
-export const ACTIVE_NETWORK = (process.env.NEXT_PUBLIC_ARC_NETWORK || 'testnet') as 'testnet' | 'mainnet'
 
 export const CONTRACTS = ACTIVE_NETWORK === 'mainnet' ? CONTRACTS_MAINNET : CONTRACTS_TESTNET
 

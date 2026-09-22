@@ -1,11 +1,15 @@
 import { createConfig, http, fallback } from 'wagmi'
 import { injected, metaMask } from 'wagmi/connectors'
-import { arcTestnet, arcMainnet, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS } from '@/lib/arc-config'
+import { arcTestnet, arcMainnet, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK } from '@/lib/arc-config'
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 
+const defaultChains = ACTIVE_NETWORK === 'mainnet'
+  ? ([arcMainnet, arcTestnet, sepolia, baseSepolia, avalancheFuji] as const)
+  : ([arcTestnet, arcMainnet, sepolia, baseSepolia, avalancheFuji] as const);
+
 export const wagmiConfig = createConfig({
-  // arcTestnet MUST remain the first chain in the list to maintain default chain priority
-  chains: [arcTestnet, arcMainnet, sepolia, baseSepolia, avalancheFuji],
+  // Default chain follows ACTIVE_NETWORK while keeping both 5042 and 5042002 supported
+  chains: defaultChains,
   transports: {
     [arcTestnet.id]: fallback(
       ARC_RPC_URLS.map(url =>

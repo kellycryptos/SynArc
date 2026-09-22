@@ -41,7 +41,7 @@ export function DashboardHeader() {
         <div className="space-y-1">
           <h1 className="text-3xl font-bold font-heading tracking-tight">Overview</h1>
           <p className="text-muted">
-            Autonomous Treasury Management on Arc — monitor, govern, and execute.
+            Syn DAO — funding and governance for humans and agents. Built on Arc. Core loop: fund USDC → vote → release to a human or agent.
           </p>
         </div>
 

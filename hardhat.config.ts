@@ -6,6 +6,7 @@ dotenv.config();
 
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000";
 const ARC_RPC_URL = process.env.ARC_RPC_URL || "https://rpc.testnet.arc.network";
+const ARC_MAINNET_RPC_URL = process.env.ARC_MAINNET_RPC_URL || "https://rpc.mainnet.arc.io";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -20,7 +21,7 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
-    // Primary deployment network
+    // Primary testnet deployment network
     arcTestnet: {
       url: ARC_RPC_URL,
       chainId: 5042002,
@@ -32,11 +33,24 @@ const config: HardhatUserConfig = {
       chainId: 5042002,
       accounts: DEPLOYER_PRIVATE_KEY !== "0x0000000000000000000000000000000000000000000000000000000000000000" ? [DEPLOYER_PRIVATE_KEY] : [],
     },
+    // Arc Mainnet (Chain ID 5042)
+    arcMainnet: {
+      url: ARC_MAINNET_RPC_URL,
+      chainId: 5042,
+      accounts: DEPLOYER_PRIVATE_KEY !== "0x0000000000000000000000000000000000000000000000000000000000000000" ? [DEPLOYER_PRIVATE_KEY] : [],
+    },
+    "arc-mainnet": {
+      url: ARC_MAINNET_RPC_URL,
+      chainId: 5042,
+      accounts: DEPLOYER_PRIVATE_KEY !== "0x0000000000000000000000000000000000000000000000000000000000000000" ? [DEPLOYER_PRIVATE_KEY] : [],
+    },
   },
   etherscan: {
     apiKey: {
       arcTestnet: "placeholder",
       "arc-testnet": "placeholder",
+      arcMainnet: "placeholder",
+      "arc-mainnet": "placeholder",
     },
     customChains: [
       {
@@ -53,6 +67,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://testnet.arcscan.app/api",
           browserURL: "https://testnet.arcscan.app",
+        },
+      },
+      {
+        network: "arcMainnet",
+        chainId: 5042,
+        urls: {
+          apiURL: "https://explorer.arc.io/api",
+          browserURL: "https://explorer.arc.io",
+        },
+      },
+      {
+        network: "arc-mainnet",
+        chainId: 5042,
+        urls: {
+          apiURL: "https://explorer.arc.io/api",
+          browserURL: "https://explorer.arc.io",
         },
       },
     ],

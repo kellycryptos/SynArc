@@ -10,6 +10,7 @@ import { X, AlertTriangle } from "lucide-react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { ARC_CHAIN } from "@/lib/arc-config";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -74,7 +75,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <div className="flex items-center gap-2.5">
                 <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 animate-pulse" />
                 <span>
-                  <strong>Wrong Network:</strong> You are currently connected to an unsupported chain. Please switch to Arc Testnet to continue.
+                  <strong>Wrong Network:</strong> You are currently connected to an unsupported chain. Please switch to {ARC_CHAIN.name} to continue.
                 </span>
               </div>
               <button
@@ -82,7 +83,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 disabled={isSwitching}
                 className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-background font-bold text-xs transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
               >
-                {isSwitching ? "Switching..." : "Switch to Arc Testnet"}
+                {isSwitching ? "Switching..." : `Switch to ${ARC_CHAIN.name}`}
               </button>
             </motion.div>
           )}

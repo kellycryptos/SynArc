@@ -9,13 +9,13 @@ export const arcTestnet: NetworkConfig = {
   blockExplorer: "https://testnet.arcscan.app",
 };
 
-// Arc Mainnet Placeholder Chain ID (Expected ~5042 — update when official Public Mainnet opens)
+// Arc Mainnet (Chain ID 5042)
 export const arcMainnet: NetworkConfig = {
   chainId: 5042,
-  name: "Arc Mainnet",
-  rpcUrl: process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || "https://rpc.arc.network",
+  name: "Arc",
+  rpcUrl: process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || "https://rpc.mainnet.arc.io",
   currencySymbol: "USDC",
-  blockExplorer: "https://arcscan.app",
+  blockExplorer: "https://explorer.arc.io",
 };
 
 export const networks: NetworkConfig[] = [arcTestnet, arcMainnet];

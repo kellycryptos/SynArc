@@ -1069,7 +1069,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
               ) : (
                 <div className="space-y-3.5">
                   <p className="text-xs text-text-tertiary leading-normal">
-                    Let SynArc's autonomous agent analyze the treasury impact and risk profile of this proposal.
+                    Let Syn DAO's autonomous agent analyze the treasury impact and risk profile of this proposal.
                   </p>
                   <button
                     onClick={handleAIAnalysis}

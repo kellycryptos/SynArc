@@ -157,7 +157,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
 
   const handleShare = async () => {
     const shareUrl = `https://synarcdao.xyz/creator/${creator.slug || creator.id}`;
-    const shareText = `Support ${creator.name} on SynArc! They are raising ${creator.goal} USDC on Arc.`;
+    const shareText = `Support ${creator.name} on Syn DAO! They are raising ${creator.goal} USDC on Arc.`;
 
     if (navigator.share) {
       try {

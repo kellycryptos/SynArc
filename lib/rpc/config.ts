@@ -13,8 +13,7 @@ import { checkRpcHealth } from "./health";
 export const CANTEEN_RPC = process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f';
 export const ARC_TESTNET_RPC = CANTEEN_RPC;
 
-// Centralized resilient fallbacks — Canteen Swarm primary, Alchemy fallback 1, official public fallback 2
-export const RPC_URLS = [
+export const TESTNET_RPC_URLS = [
   CANTEEN_RPC,
   'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev',
   'https://rpc.testnet.arc.network',
@@ -23,6 +22,19 @@ export const RPC_URLS = [
 ].filter(Boolean).filter(
   (url, index, arr) => arr.indexOf(url) === index // deduplicate
 ) as string[];
+
+export const MAINNET_RPC_URLS = [
+  process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io',
+  'https://rpc.drpc.mainnet.arc.io',
+  'https://rpc.quicknode.mainnet.arc.io',
+].filter(Boolean).filter(
+  (url, index, arr) => arr.indexOf(url) === index // deduplicate
+) as string[];
+
+const isMainnet = process.env.NEXT_PUBLIC_ARC_NETWORK === 'mainnet';
+
+// Centralized resilient fallbacks based on active network
+export const RPC_URLS = isMainnet ? MAINNET_RPC_URLS : TESTNET_RPC_URLS;
 
 /**
  * Initialize dynamic client-side RPC fallbacks in-place.

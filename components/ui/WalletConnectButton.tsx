@@ -1,12 +1,15 @@
 "use client";
 
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { ARC_CHAIN } from "@/lib/arc-config";
 import { Wallet, LogOut, Copy, ExternalLink, ChevronUp, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { WalletConnectModal } from "@/components/ui/WalletConnectModal";
 
 export function WalletConnectButton() {
   const { isAuthenticated, walletAddress, logout, ready } = useAuth();
+  const { chainId } = useArcNetwork();
   const [isOpen, setIsOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -33,7 +36,8 @@ export function WalletConnectButton() {
 
   const openExplorer = () => {
     if (walletAddress) {
-      window.open(`https://testnet.arcscan.app/address/${walletAddress}`, "_blank");
+      const explorerBase = chainId === 5042 ? "https://explorer.arc.io" : (ARC_CHAIN.blockExplorers?.default.url || "https://testnet.arcscan.app");
+      window.open(`${explorerBase}/address/${walletAddress}`, "_blank");
       setIsOpen(false);
     }
   };

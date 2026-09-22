@@ -1,5 +1,5 @@
 import { PrivyClientConfig } from '@privy-io/react-auth';
-import { arcTestnet, arcMainnet } from '@/lib/arc-config';
+import { arcTestnet, arcMainnet, ACTIVE_NETWORK } from '@/lib/arc-config';
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains';
 
 // Define a stable version of Arc Testnet for Privy's embedded wallet.
@@ -23,10 +23,10 @@ const privyArcMainnet = {
   ...arcMainnet,
   rpcUrls: {
     default: {
-      http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network'],
+      http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io'],
     },
     public: {
-      http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network'],
+      http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io'],
     },
   },
 };
@@ -45,7 +45,7 @@ export const privyConfig: PrivyClientConfig = {
     noPromptOnSignature: false,
   } as any,
   supportedChains: [privyArcTestnet, privyArcMainnet, sepolia, baseSepolia, avalancheFuji],
-  defaultChain: privyArcTestnet,
+  defaultChain: ACTIVE_NETWORK === 'mainnet' ? privyArcMainnet : privyArcTestnet,
 };
 
 
