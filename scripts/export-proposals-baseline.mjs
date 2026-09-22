@@ -1,7 +1,8 @@
 import { JsonRpcProvider, Contract, formatUnits } from 'ethers';
 import fs from 'fs';
 
-const provider = new JsonRpcProvider('https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev', undefined, { staticNetwork: true });
+const rpcUrl = process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC || process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc.io';
+const provider = new JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
 const governorAddress = '0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e';
 
 const GovernorABI = [

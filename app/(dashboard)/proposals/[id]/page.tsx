@@ -1132,7 +1132,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
               <div className="space-y-1.5">
                 <div><span className="text-text-tertiary">Governor Address:</span> <span className="text-white">{process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e"}</span></div>
-                <div><span className="text-text-tertiary">RPC URL:</span> <span className="text-white">{process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.network"}</span></div>
+                <div><span className="text-text-tertiary">RPC URL:</span> <span className="text-white">{process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.io"}</span></div>
                 <div><span className="text-text-tertiary">Current Block:</span> <span className="text-primary font-bold">{currentBlock || "Loading..."}</span></div>
               </div>
               <div className="space-y-1.5">

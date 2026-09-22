@@ -1,20 +1,23 @@
 import { defineChain } from 'viem'
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 
-// Primary: Custom Canteen RPC (June 2026 Recommended Setup)
-// Fallbacks: official public, Alchemy, QuickNode, and dRPC endpoints
-export const ARC_RPC_URLS = [
-  process.env.NEXT_PUBLIC_ARC_RPC_URL || 'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f',
-  'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev',
-  'https://rpc.testnet.arc.network',
-  'https://arc-testnet.drpc.org',
+// Arc Testnet list (chain 5042002)
+// Priority: Canteen → Alchemy → Arc official
+export const ARC_TESTNET_RPC_URLS = [
+  process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || process.env.NEXT_PUBLIC_ARC_RPC_URL,
+  process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC, // https://arc-testnet.g.alchemy.com/v2/KEY
+  'https://rpc.testnet.arc.io',
 ].filter(Boolean) as string[]
 
-// Arc Mainnet Fallback RPC endpoints
+// Backwards-compatible alias for existing imports
+export const ARC_RPC_URLS = ARC_TESTNET_RPC_URLS
+
+// Arc Mainnet list (chain 5042)
+// Priority: Canteen → Alchemy → Arc official
 export const ARC_MAINNET_RPC_URLS = [
-  process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io',
-  'https://rpc.drpc.mainnet.arc.io',
-  'https://rpc.quicknode.mainnet.arc.io',
+  process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC,
+  process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC, // https://arc-mainnet.g.alchemy.com/v2/KEY
+  'https://rpc.mainnet.arc.io',
 ].filter(Boolean) as string[]
 
 export const arcTestnet = defineChain({
@@ -22,8 +25,8 @@ export const arcTestnet = defineChain({
   name: 'Arc Testnet',
   nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
   rpcUrls: {
-    default: { http: ARC_RPC_URLS },
-    public: { http: ARC_RPC_URLS }
+    default: { http: ARC_TESTNET_RPC_URLS },
+    public: { http: ARC_TESTNET_RPC_URLS }
   },
   blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
 })

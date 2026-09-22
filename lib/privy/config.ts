@@ -1,19 +1,16 @@
 import { PrivyClientConfig } from '@privy-io/react-auth';
-import { arcTestnet, arcMainnet, ACTIVE_NETWORK } from '@/lib/arc-config';
+import { arcTestnet, arcMainnet, ACTIVE_NETWORK, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS } from '@/lib/arc-config';
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains';
 
-// Define a stable version of Arc Testnet for Privy's embedded wallet.
-// Privy's backend pings the first RPC in the chain's list to verify network health.
-// Using the official, public, open RPC endpoint avoids "Arc network temporarily unavailable"
-// errors caused by rate-limiting or IP restrictions on the custom Canteen RPC.
+// Define Arc Testnet configuration for Privy
 const privyArcTestnet = {
   ...arcTestnet,
   rpcUrls: {
     default: {
-      http: ['https://rpc.testnet.arc.network', 'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev'],
+      http: ARC_TESTNET_RPC_URLS,
     },
     public: {
-      http: ['https://rpc.testnet.arc.network', 'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev'],
+      http: ARC_TESTNET_RPC_URLS,
     },
   },
 };
@@ -23,10 +20,10 @@ const privyArcMainnet = {
   ...arcMainnet,
   rpcUrls: {
     default: {
-      http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io'],
+      http: ARC_MAINNET_RPC_URLS,
     },
     public: {
-      http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io'],
+      http: ARC_MAINNET_RPC_URLS,
     },
   },
 };

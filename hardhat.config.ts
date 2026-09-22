@@ -5,8 +5,19 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000";
-const ARC_RPC_URL = process.env.ARC_RPC_URL || "https://rpc.testnet.arc.network";
-const ARC_MAINNET_RPC_URL = process.env.ARC_MAINNET_RPC_URL || "https://rpc.mainnet.arc.io";
+
+// RPC priority: Canteen → Alchemy → Arc official
+const ARC_RPC_URL = 
+  process.env.ARC_RPC_URL || 
+  process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || 
+  process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC || 
+  "https://rpc.testnet.arc.io";
+
+const ARC_MAINNET_RPC_URL = 
+  process.env.ARC_MAINNET_RPC_URL || 
+  process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC || 
+  process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC || 
+  "https://rpc.mainnet.arc.io";
 
 const config: HardhatUserConfig = {
   solidity: {

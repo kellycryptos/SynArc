@@ -97,7 +97,7 @@ export function useWalletSafe() {
         }
 
         // Fallback: public contract read
-        const rpcUrl = ARC_RPC_URLS[0] || 'https://rpc.testnet.arc.network';
+        const rpcUrl = ARC_RPC_URLS[0] || 'https://rpc.testnet.arc.io';
         const client = createPublicClient({
           transport: http(rpcUrl)
         });

@@ -213,7 +213,7 @@ export default function BridgePage() {
         chainParams = {
           chainId: "0x4cef52", // 5042002 hex
           chainName: "Arc Testnet",
-          rpcUrls: ["https://rpc.testnet.arc.network"],
+          rpcUrls: ["https://rpc.testnet.arc.io"],
           nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 6 },
           blockExplorerUrls: ["https://testnet.arcscan.app"],
         };

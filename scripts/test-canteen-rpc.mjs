@@ -1,7 +1,7 @@
 import { JsonRpcProvider, Contract } from 'ethers';
 
-const canteenSwarmRpc = "https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_104d24688adcae992878acabfd41b2ed5800817b20d57aa9b17a64d225c0bf8f";
-const canteenPublicRpc = "https://rpc.testnet.arc.network";
+const canteenSwarmRpc = process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.testnet.arc.io";
+const canteenPublicRpc = "https://rpc.testnet.arc.io";
 
 const governorAddress = '0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e';
 const GovernorABI = [

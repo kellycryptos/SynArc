@@ -35,7 +35,7 @@ class CircleEthereumProvider {
     }
 
     // Pass-through other RPC requests
-    const rpcUrl = ARC_RPC_URLS[0] || 'https://rpc.testnet.arc.network';
+    const rpcUrl = ARC_RPC_URLS[0] || 'https://rpc.testnet.arc.io';
     const res = await fetch(rpcUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -180,7 +180,7 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
     if (isArc(chainId)) {
       const rpcUrls = chainId === 5042002 
         ? ARC_RPC_URLS 
-        : ['https://rpc.testnet.arc.network'];
+        : ['https://rpc.testnet.arc.io'];
       const chainName = chainId === 5042002 ? "Arc Testnet" : "Arc Testnet (1303)";
       return {
         chainId: chainIdHex,

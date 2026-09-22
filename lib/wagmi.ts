@@ -1,6 +1,6 @@
 import { createConfig, http, fallback } from 'wagmi'
 import { injected, metaMask } from 'wagmi/connectors'
-import { arcTestnet, arcMainnet, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK } from '@/lib/arc-config'
+import { arcTestnet, arcMainnet, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK } from '@/lib/arc-config'
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 
 const defaultChains = ACTIVE_NETWORK === 'mainnet'
@@ -12,7 +12,7 @@ export const wagmiConfig = createConfig({
   chains: defaultChains,
   transports: {
     [arcTestnet.id]: fallback(
-      ARC_RPC_URLS.map(url =>
+      ARC_TESTNET_RPC_URLS.map(url =>
         http(url, {
           timeout: 10000,
           retryCount: 3,

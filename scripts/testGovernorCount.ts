@@ -1,12 +1,7 @@
 import { createPublicClient, http, parseAbi } from 'viem'
-import { arcTestnet } from '../lib/arc-config'
+import { arcTestnet, ARC_TESTNET_RPC_URLS } from '../lib/arc-config'
 
-const ARC_RPC_URLS = [
-  'https://rpc.testnet.arc.network',
-  'https://rpc.testnet.arc.network',
-  'https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev',
-  'https://arc-testnet.drpc.org'
-]
+const ARC_RPC_URLS = ARC_TESTNET_RPC_URLS;
 
 async function main() {
   const governor = '0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e'

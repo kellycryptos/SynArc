@@ -1,43 +1,20 @@
-import { defineChain, createPublicClient, http, fallback } from "viem";
+import { createPublicClient, http, fallback } from "viem";
 import { JsonRpcProvider } from "ethers";
+import { 
+  ARC_TESTNET_RPC_URLS, 
+  ARC_MAINNET_RPC_URLS, 
+  ARC_RPC_URLS, 
+  arcTestnet, 
+  arcMainnet 
+} from "@/lib/arc-config";
 
-const CANTEEN_RPC = "https://rpc.testnet.arc.network";
-const PUBLIC_ARC_RPC = "https://rpc.testnet.arc.network";
-const ALCHEMY_ARC_RPC = "https://arc-testnet.g.alchemy.com/v2/okKqIdABiZt8WuR2aDvev";
-const QUICKNODE_ARC_RPC = "https://rpc.quicknode.testnet.arc.network";
-const DRPC_ARC_RPC = "https://arc-testnet.drpc.org";
+export { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_RPC_URLS, arcTestnet, arcMainnet };
 
-export const ARC_RPC_URLS = [
-  process.env.NEXT_PUBLIC_ARC_RPC_URL || CANTEEN_RPC, // Canteen Primary
-  PUBLIC_ARC_RPC,
-  ALCHEMY_ARC_RPC,
-  QUICKNODE_ARC_RPC,
-  DRPC_ARC_RPC,
-].filter(Boolean) as string[];
-
-export const ARC_RPC_URL = ARC_RPC_URLS[0];
-
-// Arc Testnet Chain Definition
-export const arcTestnet = defineChain({
-  id: 5042002,
-  name: "Arc Testnet",
-  nativeCurrency: { 
-    name: "USD Coin", 
-    symbol: "USDC", 
-    decimals: 6 // Arc is stablecoin-native: gas fees paid in USDC
-  },
-  rpcUrls: {
-    default: { http: ARC_RPC_URLS },
-    public:  { http: ARC_RPC_URLS },
-  },
-  blockExplorers: {
-    default: { name: "ArcScan", url: "https://testnet.arcscan.app" },
-  },
-});
+export const ARC_RPC_URL = ARC_TESTNET_RPC_URLS[0] || 'https://rpc.testnet.arc.io';
 
 // Stable HTTP transport — fallback through all RPC endpoints with 3 retries and 1s backoff
 export const arcTransport = fallback(
-  ARC_RPC_URLS.map(url =>
+  ARC_TESTNET_RPC_URLS.map(url =>
     http(url, {
       timeout: 10000,
       retryCount: 3,
@@ -56,24 +33,6 @@ export const arcPublicClient = createPublicClient({
   transport: arcTransport,
 });
 
-// Arc Mainnet Chain Definition (Chain ID 5042)
-export const arcMainnet = defineChain({
-  id: 5042,
-  name: "Arc",
-  nativeCurrency: { 
-    name: "USDC", 
-    symbol: "USDC", 
-    decimals: 18 // Native gas on Arc is USDC at 18 decimals for eth_getBalance
-  },
-  rpcUrls: {
-    default: { http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io'] },
-    public:  { http: [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io'] },
-  },
-  blockExplorers: {
-    default: { name: "Arc Explorer", url: "https://explorer.arc.io" },
-  },
-});
-
 // Ethers.js provider helper
 export function getArcEthersProvider(): JsonRpcProvider {
   return new JsonRpcProvider(ARC_RPC_URL, undefined, { staticNetwork: true, batchMaxCount: 1 });
@@ -84,7 +43,7 @@ export async function ensureArcNetwork(ethereumProvider: any, targetChainId: num
   const isMainnet = targetChainId === 5042;
   const chainIdHex = `0x${targetChainId.toString(16)}`;
   const chainName = isMainnet ? "Arc" : "Arc Testnet";
-  const rpcUrls = isMainnet ? [process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io'] : ARC_RPC_URLS;
+  const rpcUrls = isMainnet ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS;
   const explorerUrl = isMainnet ? "https://explorer.arc.io" : "https://testnet.arcscan.app";
 
   try {
