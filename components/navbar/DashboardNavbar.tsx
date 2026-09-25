@@ -6,7 +6,6 @@ import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 import { Bell, Search, Menu, LogOut, Wallet } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
-import { usePrivy } from "@privy-io/react-auth";
 import { WalletConnectModal } from "@/components/ui/WalletConnectModal";
 
 /**
@@ -105,7 +104,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
                   </>
                 ) : (
                   <>
-                    <span>🔒 Privy Wallet ({shortAddress})</span>
+                    <span>⚡ Arc Wallet ({shortAddress})</span>
                   </>
                 )}
               </span>

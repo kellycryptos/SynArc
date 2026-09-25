@@ -1,5 +1,5 @@
-import { createConfig, http, fallback } from 'wagmi'
-import { injected, metaMask } from 'wagmi/connectors'
+import { getDefaultConfig } from '@rainbow-me/rainbowkit'
+import { http, fallback } from 'wagmi'
 import { arcTestnet, arcMainnet, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK } from '@/lib/arc-config'
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 
@@ -7,8 +7,10 @@ const defaultChains = ACTIVE_NETWORK === 'mainnet'
   ? ([arcMainnet, arcTestnet, sepolia, baseSepolia, avalancheFuji] as const)
   : ([arcTestnet, arcMainnet, sepolia, baseSepolia, avalancheFuji] as const);
 
-export const wagmiConfig = createConfig({
-  // Default chain follows ACTIVE_NETWORK while keeping both 5042 and 5042002 supported
+export const wagmiConfig = getDefaultConfig({
+  appName: 'Syn DAO',
+  // Free WalletConnect Project ID for mobile wallet QR support
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'c4f79cc821944d9680842e34466bfbd',
   chains: defaultChains,
   transports: {
     [arcTestnet.id]: fallback(
@@ -41,10 +43,7 @@ export const wagmiConfig = createConfig({
     [baseSepolia.id]: http("https://sepolia.base.org"),
     [avalancheFuji.id]: http("https://api.avax-test.network/ext/bc/C/rpc"),
   },
-  connectors: [
-    injected(),
-    metaMask(),
-  ]
+  ssr: true,
 })
 
 

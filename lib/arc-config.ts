@@ -6,6 +6,7 @@ import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 export const ARC_TESTNET_RPC_URLS = [
   process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || process.env.NEXT_PUBLIC_ARC_RPC_URL,
   process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC, // https://arc-testnet.g.alchemy.com/v2/KEY
+  'https://rpc.testnet.arc.network',
   'https://rpc.testnet.arc.io',
 ].filter(Boolean) as string[]
 
@@ -17,13 +18,14 @@ export const ARC_RPC_URLS = ARC_TESTNET_RPC_URLS
 export const ARC_MAINNET_RPC_URLS = [
   process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC,
   process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC, // https://arc-mainnet.g.alchemy.com/v2/KEY
+  'https://rpc.mainnet.arc.network',
   'https://rpc.mainnet.arc.io',
 ].filter(Boolean) as string[]
 
 export const arcTestnet = defineChain({
   id: 5042002,
   name: 'Arc Testnet',
-  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
   rpcUrls: {
     default: { http: ARC_TESTNET_RPC_URLS },
     public: { http: ARC_TESTNET_RPC_URLS }

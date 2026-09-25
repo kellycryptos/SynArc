@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useSwitchChain, useAccount } from "wagmi";
 import {
   createPublicClient,

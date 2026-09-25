@@ -30,7 +30,7 @@ import {
 import Link from "next/link";
 import { ethers, Contract, formatUnits, parseUnits, BrowserProvider } from "ethers";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, GovernorABI } from "@/lib/governance/contracts";
 import { getResilientProvider } from "@/lib/rpc/config";
 import { enforceChain, selectActiveWallet } from "@/lib/tx-helper";

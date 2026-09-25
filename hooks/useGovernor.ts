@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { ethers, BrowserProvider, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
 import { Proposal } from "@/types/governance";
-import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { getResilientProvider } from "@/lib/rpc/config";
 import { enforceChain, selectActiveWallet } from "@/lib/tx-helper";
 import { useAuth } from "@/hooks/auth/useAuth";

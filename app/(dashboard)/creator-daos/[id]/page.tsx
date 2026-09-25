@@ -6,7 +6,7 @@ import { Milestone } from "@/types";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
-import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { getSigner, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 import { parseAbi } from "viem";

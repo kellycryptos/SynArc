@@ -1,76 +1,68 @@
 /**
  * useConnectedWallet — Unified wallet connection hook
  *
- * Treats both Privy and Circle Wallet as valid "connected" states.
- * Use this instead of usePrivy() directly in pages/components that
- * need to work for ALL wallet types (Privy embedded, external wallets,
- * and Circle Wallet).
- *
- * Circle Wallet does not register with wagmi or Privy, so hooks like
- * useAccount(), useWallets(), and usePrivy().authenticated will return
- * false/empty even when the user is connected via Circle. This hook
- * correctly unifies both states.
+ * Treats both Wagmi (RainbowKit / Injected) and Circle Wallet as valid "connected" states.
+ * Use this instead of useAccount() directly in pages/components that
+ * need to work for ALL wallet types (Circle Wallet and Web3 wallets).
  */
 
 "use client";
 
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useAccount } from "wagmi";
+import { useWallets } from "./useWallets";
 import { useCircleWallet } from "./useCircleWallet";
 
 export function useConnectedWallet() {
-  // Privy authentication state
-  const { authenticated, user, ready: privyReady } = usePrivy();
+  const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
   const { wallets } = useWallets();
 
   // Circle Wallet state (stored in localStorage + React state)
   const { circleAddress, circleConnected, userEmail } = useCircleWallet();
 
-  // Either Privy OR Circle Wallet counts as fully connected
-  const isConnected = authenticated || circleConnected;
-  const isPrivy = authenticated;
+  // Either Web3 Wallet OR Circle Wallet counts as fully connected
+  const isConnected = wagmiConnected || circleConnected;
   const isCircle = circleConnected;
+  const isWagmi = wagmiConnected;
 
   // Resolve wallet address — Circle takes priority if active
   const walletAddress: string =
     circleAddress ||
-    user?.wallet?.address ||
+    wagmiAddress ||
     wallets?.[0]?.address ||
     "";
 
   // Resolve display email
-  const email =
-    userEmail ||
-    user?.email?.address ||
-    user?.google?.email ||
-    "";
+  const email = userEmail || "";
 
   // Auth method label
-  type AuthMethod = "circle" | "privy" | "unknown";
+  type AuthMethod = "circle" | "wallet" | "unknown";
   let authMethod: AuthMethod = "unknown";
   if (circleConnected) {
     authMethod = "circle";
-  } else if (authenticated) {
-    authMethod = "privy";
+  } else if (wagmiConnected) {
+    authMethod = "wallet";
   }
 
   return {
-    /** True when either Privy OR Circle Wallet is connected */
+    /** True when either Web3 Wallet OR Circle Wallet is connected */
     isConnected,
-    /** True when connected via Privy (embedded or external wallet) */
-    isPrivy,
+    /** True when connected via Web3 Wallet */
+    isWagmi,
+    /** Kept for backwards-compatibility */
+    isPrivy: false,
     /** True when connected via Circle Wallet */
     isCircle,
     /** Resolved wallet address from whichever provider is active */
     walletAddress,
-    /** Display email (Circle account email or Privy social email) */
+    /** Display email (Circle account email) */
     email,
     /** Which auth provider is active */
     authMethod,
-    /** Privy user object (null for Circle users) */
-    privyUser: user,
-    /** Privy wallet list (empty for Circle users) */
+    /** Kept for backwards-compatibility */
+    privyUser: null,
+    /** Wallet list */
     wallets,
-    /** Whether Privy SDK has finished initializing */
-    privyReady,
+    /** Ready state */
+    privyReady: true,
   };
 }

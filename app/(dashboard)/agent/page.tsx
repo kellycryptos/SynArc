@@ -18,7 +18,7 @@ import { ProofOfAutonomyTimeline } from "@/components/dashboard/ProofOfAutonomyT
 import toast from "react-hot-toast";
 import { AGENT_CAPABILITIES, AGENT_CONFIG } from "@/lib/agent/smart-account";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { usePrivyWallet } from "@/hooks/auth/usePrivyWallet";
 import { createPublicClient, http, fallback, parseUnits } from "viem";
 import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";

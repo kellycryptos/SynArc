@@ -15,13 +15,13 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
   const { connectCircleWallet, loading, loadingStep } = useCircleWallet();
   const [emailInput, setEmailInput] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [tab, setTab] = useState<'privy' | 'circle'>('privy');
+  const [tab, setTab] = useState<'wallet' | 'circle'>('wallet');
 
   useEffect(() => {
     if (isOpen) {
       setErrorMessage(null);
       setEmailInput('');
-      setTab('privy');
+      setTab('wallet');
     }
   }, [isOpen]);
 
@@ -62,7 +62,7 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
         <div className="flex items-center justify-between px-6 pt-6 pb-4">
           <div>
             <h2 className="text-base font-semibold text-text-primary">Connect Wallet</h2>
-            <p className="text-xs text-text-muted mt-0.5">Choose how to join Syn DAO</p>
+            <p className="text-xs text-text-muted mt-0.5">Choose how to connect to Syn DAO</p>
           </div>
           <button
             onClick={onClose}
@@ -76,14 +76,14 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
         <div className="px-6 pb-4">
           <div className="flex rounded-lg bg-background-primary p-0.5 gap-0.5 border border-border-thin/40">
             <button
-              onClick={() => setTab('privy')}
+              onClick={() => setTab('wallet')}
               className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-all ${
-                tab === 'privy'
+                tab === 'wallet'
                   ? 'bg-accent-purple text-white shadow text-white-keep'
                   : 'text-text-secondary hover:text-text-primary'
               }`}
             >
-              Privy
+              Web3 Wallet
             </button>
             <button
               onClick={() => setTab('circle')}
@@ -100,13 +100,13 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
 
         {/* Content */}
         <div className="px-6 pb-6">
-          {tab === 'privy' ? (
+          {tab === 'wallet' ? (
             <div className="space-y-4">
               <p className="text-xs text-text-secondary leading-relaxed">
-                Sign in with email, Google, Twitter, Discord, or an existing wallet. Fast and secure.
+                Connect using MetaMask, Rabby, Coinbase Wallet, Rainbow, or any WalletConnect-supported mobile wallet.
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {['Email', 'Google', 'MetaMask', 'WalletConnect', 'Discord'].map((m) => (
+                {['MetaMask', 'Rabby', 'Coinbase', 'Rainbow', 'WalletConnect'].map((m) => (
                   <span
                     key={m}
                     className="px-2 py-0.5 rounded-full bg-foreground/5 border border-border-thin text-[10px] text-text-secondary font-medium"
@@ -117,9 +117,9 @@ export function WalletConnectModal({ isOpen, onClose }: WalletConnectModalProps)
               </div>
               <button
                 onClick={() => { login(); onClose(); }}
-                className="w-full py-2.5 rounded-xl bg-[#7C3AED] hover:bg-[#6d2fe0] text-white text-sm font-semibold transition-colors shadow-lg shadow-purple-900/30"
+                className="w-full py-2.5 rounded-xl bg-[#7C3AED] hover:bg-[#6d2fe0] text-white text-sm font-semibold transition-colors shadow-lg shadow-purple-900/30 cursor-pointer"
               >
-                Continue with Privy
+                Connect Web3 Wallet
               </button>
             </div>
           ) : (

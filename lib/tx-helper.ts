@@ -1,5 +1,5 @@
 import { createWalletClient, createPublicClient, http, custom, fallback, getAddress } from 'viem'
-import { ARC_CHAIN, ARC_RPC_URLS, ARC_GAS } from './arc-config'
+import { ARC_CHAIN, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_GAS } from './arc-config'
 import { BrowserProvider, Contract, ZeroAddress } from 'ethers'
 import { getCircleClient } from './circle/client'
 
@@ -169,7 +169,7 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
   
   console.log(`[enforceChain] Target chain ID: ${targetChainId}. Wallet Privy state is currently on: ${walletChainId}`);
 
-  const isArc = (id: number) => id === 5042002 || id === 1303;
+  const isArc = (id: number) => id === 5042002 || id === 5042 || id === 1303;
   const chainsCompatible = (id1: number, id2: number) => {
     if (id1 === id2) return true;
     if (isArc(id1) && isArc(id2)) return true;
@@ -178,16 +178,16 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = 50
 
   const getChainParams = (chainId: number, chainIdHex: string) => {
     if (isArc(chainId)) {
-      const rpcUrls = chainId === 5042002 
-        ? ARC_RPC_URLS 
-        : ['https://rpc.testnet.arc.io'];
-      const chainName = chainId === 5042002 ? "Arc Testnet" : "Arc Testnet (1303)";
+      const isMainnet = chainId === 5042;
+      const rpcUrls = isMainnet ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS;
+      const chainName = isMainnet ? "Arc" : (chainId === 5042002 ? "Arc Testnet" : "Arc Testnet (1303)");
+      const explorer = isMainnet ? "https://explorer.arc.io" : "https://testnet.arcscan.app";
       return {
         chainId: chainIdHex,
         chainName: chainName,
         rpcUrls: rpcUrls,
-        nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
-        blockExplorerUrls: ["https://testnet.arcscan.app"],
+        nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
+        blockExplorerUrls: [explorer],
       };
     } else if (chainId === 11155111) {
       return {

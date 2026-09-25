@@ -1,13 +1,13 @@
 "use client";
 
 import { ReactNode, useState, useEffect } from 'react';
-import { PrivyProvider } from '@privy-io/react-auth';
-import { WagmiProvider } from '@privy-io/wagmi';
+import { WagmiProvider } from 'wagmi';
+import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
+import '@rainbow-me/rainbowkit/styles.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { arcTestnet, arcMainnet, ARC_CHAIN } from '@/lib/arc-config';
 import { wagmiConfig } from '@/lib/wagmi';
 import { initializeResilientRpc } from '@/lib/rpc/config';
-import { privyConfig } from '@/lib/privy/config';
 
 export { arcTestnet, arcMainnet, ARC_CHAIN };
 
@@ -31,29 +31,22 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     },
   }));
 
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "clt57262n00ldmp0fhz113qep"; 
-
   return (
-    <PrivyProvider
-      appId={appId}
-      config={{
-        // Spread shared privyConfig first — includes loginMethods, stable defaultChain/supportedChains
-        ...privyConfig,
-        // Merge appearance so showWalletLoginFirst: false is preserved from privyConfig
-        appearance: {
-          ...privyConfig.appearance,
-          theme: 'dark',
-          accentColor: '#7C3AED',
-          showWalletLoginFirst: false,
-        },
-      }}
-    >
+    <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={wagmiConfig}>
+        <RainbowKitProvider
+          theme={darkTheme({
+            accentColor: '#7C3AED',
+            accentColorForeground: 'white',
+            borderRadius: 'medium',
+            fontStack: 'system',
+          })}
+          initialChain={ARC_CHAIN}
+        >
           {children}
-        </WagmiProvider>
+        </RainbowKitProvider>
       </QueryClientProvider>
-    </PrivyProvider>
+    </WagmiProvider>
   );
 }
 

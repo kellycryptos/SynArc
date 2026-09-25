@@ -1,18 +1,18 @@
 "use client";
 
-import { useWallets as usePrivyWallets } from '@privy-io/react-auth';
+import { useWallets as usePrivyWallets } from '@/hooks/useWallets';
 import { useMemo } from 'react';
 import { createWalletClient, custom } from 'viem';
 import { arcTestnet } from '@/lib/chains/arc';
 
 export function usePrivyWallet() {
-  // Safe: returns empty list when Circle is the only connected wallet
+  // Safe: returns active wallet from Wagmi or Circle
   const { wallets: rawWallets, ready } = usePrivyWallets();
   const wallets = rawWallets ?? [];
 
-  // Find the Privy embedded wallet among all active connections
+  // Find the active wallet among all active connections
   const embeddedWallet = useMemo(() => {
-    return wallets.find((w) => w.walletClientType === 'privy');
+    return wallets[0] || null;
   }, [wallets]);
 
   const address = embeddedWallet?.address || "";

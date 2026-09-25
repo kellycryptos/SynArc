@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
-import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useState, useEffect } from "react";
 import { createPublicClient, http, parseAbi } from "viem";
 import { ARC_RPC_URLS } from "@/lib/arc-config";

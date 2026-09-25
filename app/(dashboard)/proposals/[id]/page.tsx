@@ -23,7 +23,7 @@ const GOVERNOR_ABI = GovernorABI;
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { BrowserProvider, Contract } from "ethers";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
 import { useArcRpcHealth } from "@/hooks/useArcRpcHealth";

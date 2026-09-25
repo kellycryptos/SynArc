@@ -9,7 +9,7 @@ import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets } from "@/hooks/useWallets";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Heart, 

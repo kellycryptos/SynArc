@@ -1,6 +1,6 @@
 "use client";
 
-import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useArcNetwork, TARGET_CHAIN_ID } from "@/hooks/auth/useArcNetwork";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useState, useCallback } from "react";

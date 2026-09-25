@@ -6,7 +6,7 @@ import { useTreasuryBalances } from "@/hooks/useTreasuryBalances";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useEURCBalance } from "@/hooks/useEURCBalance";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useWallets as usePrivyWallets } from "@privy-io/react-auth";
+import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { ErrorBoundary, SectionErrorBoundary } from "@/components/ErrorBoundary";
 import { Contract, parseUnits, BrowserProvider } from "ethers";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, TreasuryABI } from "@/lib/governance/contracts";

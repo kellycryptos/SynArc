@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { useAccount } from 'wagmi';
+import { useAccount, useDisconnect } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useCircleWallet } from '@/hooks/useCircleWallet';
 import { useDeferredWeb3 } from '@/providers/DeferredWeb3Provider';
 
@@ -16,12 +16,12 @@ export function useAuth() {
     return {
       ready: true,
       isAuthenticated: false,
-      user: null,
+      user: null as any,
       login: deferred.mountWeb3AndLogin,
       logout: () => {},
       email: "",
       walletAddress: "",
-      authMethod: "unknown" as const,
+      authMethod: "unknown" as "email" | "google" | "twitter" | "discord" | "wallet" | "circle" | "unknown",
       linkWallet: () => {},
       unlinkWallet: () => {},
       isCircle: false,
@@ -35,21 +35,13 @@ export function useAuth() {
  * Inner hook called only when Web3Provider is mounted in the React tree.
  */
 function useActiveAuth() {
-  const { 
-    ready: privyReady, 
-    authenticated: privyAuthenticated, 
-    user: privyUser, 
-    login: privyLogin, 
-    logout: privyLogout,
-    linkWallet,
-    unlinkWallet,
-  } = usePrivy();
-
-  const { address: wagmiAddress } = useAccount();
+  const { openConnectModal } = useConnectModal();
+  const { disconnect } = useDisconnect();
+  const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
   const { circleConnected, circleAddress, disconnectCircleWallet, userEmail } = useCircleWallet();
 
-  const ready = privyReady;
-  const isAuthenticated = privyAuthenticated || circleConnected;
+  const ready = true;
+  const isAuthenticated = wagmiConnected || circleConnected;
 
   // Sync session cookie with server whenever auth state changes
   useEffect(() => {
@@ -61,44 +53,48 @@ function useActiveAuth() {
     }
   }, [ready, isAuthenticated]);
 
-  // Get the primary connected wallet address (Circle, Privy embedded, external, or Wagmi fallback)
-  const walletAddress = circleAddress || privyUser?.wallet?.address || wagmiAddress || "";
+  // Get the primary connected wallet address (Circle or Wagmi fallback)
+  const walletAddress = circleAddress || wagmiAddress || "";
 
-  // Extract email address if user authenticated using social, email, or Circle
-  const email = userEmail || privyUser?.email?.address || privyUser?.google?.email || "";
+  // Extract email address if user authenticated using Circle
+  const email = userEmail || "";
 
-  // Determine primary authentication method
-  let authMethod: "email" | "google" | "twitter" | "discord" | "wallet" | "circle" | "unknown" = "unknown";
+  type AuthMethod = "email" | "google" | "twitter" | "discord" | "wallet" | "circle" | "unknown";
+  let authMethod: AuthMethod = "unknown";
   if (circleConnected) {
     authMethod = "circle";
-  } else if (privyUser) {
-    if (privyUser.google) authMethod = "google";
-    else if (privyUser.twitter) authMethod = "twitter";
-    else if (privyUser.discord) authMethod = "discord";
-    else if (privyUser.email) authMethod = "email";
-    else if (privyUser.wallet) authMethod = "wallet";
+  } else if (wagmiConnected) {
+    authMethod = "wallet";
   }
+
+  const login = () => {
+    if (openConnectModal) {
+      openConnectModal();
+    }
+  };
 
   const logout = () => {
     fetch('/api/auth/session-cookie', { method: 'DELETE' }).catch(() => {});
     if (circleConnected) {
       disconnectCircleWallet();
-    } else {
-      privyLogout();
+    }
+    if (wagmiConnected) {
+      disconnect();
     }
   };
 
   return {
     ready,
     isAuthenticated,
-    user: privyUser,
-    login: privyLogin,
+    user: null as any,
+    login,
     logout,
     email,
     walletAddress,
     authMethod,
-    linkWallet,
-    unlinkWallet,
+    linkWallet: () => {},
+    unlinkWallet: () => {},
     isCircle: circleConnected,
   };
 }
+
