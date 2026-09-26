@@ -4,9 +4,9 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 import { Bell, Search, Menu, LogOut, Wallet } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
-import { WalletConnectModal } from "@/components/ui/WalletConnectModal";
+import { ConnectKitButton } from 'connectkit';
 
 /**
  * DashboardNavbar Component
@@ -20,7 +20,6 @@ import { WalletConnectModal } from "@/components/ui/WalletConnectModal";
  */
 export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { isAuthenticated, walletAddress, email, user, logout, isCircle } = useAuth();
-  const [modalOpen, setModalOpen] = useState(false);
   const activeWalletAddress = walletAddress;
   const { balance, loading, error } = useUSDCBalance(activeWalletAddress);
 
@@ -125,13 +124,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
               Browsing as Guest
             </span>
-            <button
-              onClick={() => setModalOpen(true)}
-              className="group px-4 py-1.5 rounded-full bg-accent-purple hover:bg-accent-purple/90 text-white font-medium text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] flex items-center gap-2 cursor-pointer"
-            >
-              <Wallet className="w-4 h-4 group-hover:scale-110 transition-transform text-white-keep" />
-              <span className="text-white-keep">Connect Wallet</span>
-            </button>
+            <ConnectKitButton />
           </div>
         )}
 
@@ -139,8 +132,6 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-accent-purple rounded-full border-2 border-background" />
         </button>
-
-        <WalletConnectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
       </div>
 
       {/* Hamburger Menu (Mobile Only) */}

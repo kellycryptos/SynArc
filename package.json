@@ -22,6 +22,7 @@
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "clsx": "^2.1.1",
+    "connectkit": "^1.9.2",
     "ethers": "^6.16.0",
     "framer-motion": "^11.18.0",
     "groq-sdk": "^1.2.1",

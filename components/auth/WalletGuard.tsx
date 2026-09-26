@@ -5,14 +5,13 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { usePathname } from "next/navigation";
 import { ShieldAlert, Wallet, Sparkles, RefreshCw } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { WalletConnectModal } from "@/components/ui/WalletConnectModal";
+import { ConnectKitButton } from 'connectkit';
 
 const PROTECTED_ROUTES = ['/settings'];
 
 export function WalletGuard({ children }: { children: ReactNode }) {
   const { isAuthenticated, ready } = useAuth();
   const pathname = usePathname();
-  const [modalOpen, setModalOpen] = useState(false);
 
   const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
   const [timedOut, setTimedOut] = useState(false);
@@ -86,16 +85,18 @@ export function WalletGuard({ children }: { children: ReactNode }) {
             </p>
           </div>
 
-          <button 
-            onClick={() => setModalOpen(true)}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-deep via-primary to-arc-blue text-white font-bold hover:shadow-[0_0_25px_rgba(124,58,237,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-purple-900/35"
-          >
-            <Wallet className="w-5 h-5" />
-            Connect Wallet to Participate
-          </button>
+          <ConnectKitButton.Custom>
+            {({ show }) => (
+              <button 
+                onClick={show}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-deep via-primary to-arc-blue text-white font-bold hover:shadow-[0_0_25px_rgba(124,58,237,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-purple-900/35"
+              >
+                <Wallet className="w-5 h-5" />
+                Connect Wallet to Participate
+              </button>
+            )}
+          </ConnectKitButton.Custom>
         </GlassCard>
-
-        <WalletConnectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
       </div>
     );
   }

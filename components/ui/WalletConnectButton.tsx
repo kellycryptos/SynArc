@@ -5,13 +5,12 @@ import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { ARC_CHAIN } from "@/lib/arc-config";
 import { Wallet, LogOut, Copy, ExternalLink, ChevronUp, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { WalletConnectModal } from "@/components/ui/WalletConnectModal";
+import { ConnectKitButton } from 'connectkit';
 
 export function WalletConnectButton() {
   const { isAuthenticated, walletAddress, logout, ready } = useAuth();
   const { chainId } = useArcNetwork();
   const [isOpen, setIsOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -55,25 +54,17 @@ export function WalletConnectButton() {
     );
   }
 
-  // If disconnected, trigger our custom hybrid WalletConnectModal
+  // If disconnected, render ConnectKit button natively
   if (!isAuthenticated || !walletAddress) {
     return (
-      <div className="space-y-3 w-full">
-        <button 
-          onClick={() => setModalOpen(true)}
-          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-accent-purple text-white font-medium hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] cursor-pointer"
-        >
-          <Wallet className="w-5 h-5 text-white-keep" />
-          <span className="text-white-keep">Connect to Participate</span>
-        </button>
+      <div className="space-y-3 w-full flex flex-col items-center">
+        <ConnectKitButton />
         <p className="text-[10px] text-center text-muted px-2 leading-relaxed">
           Wallet required for governance actions.{" "}
           <a href="/terms" className="text-accent-purple hover:underline transition-all">Terms</a>
           {" "}&amp;{" "}
           <a href="/privacy" className="text-accent-purple hover:underline transition-all">Privacy</a>
         </p>
-
-        <WalletConnectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
       </div>
     );
   }

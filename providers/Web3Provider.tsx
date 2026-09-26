@@ -3,6 +3,7 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { WagmiProvider } from 'wagmi';
 import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
+import { ConnectKitProvider } from 'connectkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { arcTestnet, arcMainnet, ARC_CHAIN } from '@/lib/arc-config';
@@ -34,17 +35,25 @@ export function Web3Provider({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider
-          theme={darkTheme({
-            accentColor: '#7C3AED',
-            accentColorForeground: 'white',
-            borderRadius: 'medium',
-            fontStack: 'system',
-          })}
-          initialChain={ARC_CHAIN}
+        <ConnectKitProvider
+          theme="midnight"
+          mode="dark"
+          options={{
+            embedGoogleFonts: false,
+          }}
         >
-          {children}
-        </RainbowKitProvider>
+          <RainbowKitProvider
+            theme={darkTheme({
+              accentColor: '#7C3AED',
+              accentColorForeground: 'white',
+              borderRadius: 'medium',
+              fontStack: 'system',
+            })}
+            initialChain={ARC_CHAIN}
+          >
+            {children}
+          </RainbowKitProvider>
+        </ConnectKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );
