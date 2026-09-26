@@ -1,7 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createPublicClient, http, fallback, parseAbi } from 'viem';
-import { arcTestnet, ARC_RPC_URLS } from '@/lib/arc-config';
+import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS } from '@/lib/arc-config';
 import { TreasuryActivity } from '@/types';
+
+// Active-network RPC list — Canteen primary → Alchemy → Arc official fallback
+const ACTIVE_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS;
 
 const ERC20_ABI = [
   {
@@ -195,8 +198,8 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
     setError(null);
 
     const publicClient = createPublicClient({
-      chain: arcTestnet,
-      transport: fallback(ARC_RPC_URLS.map((url) => http(url, { timeout: 5000 }))),
+      chain: ARC_CHAIN,
+      transport: fallback(ACTIVE_RPC_URLS.map((url) => http(url, { timeout: 5000 }))),
     });
 
     try {

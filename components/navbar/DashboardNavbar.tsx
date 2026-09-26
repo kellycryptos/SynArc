@@ -120,11 +120,21 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-elevated border border-border-thin text-xs font-semibold text-muted">
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+            <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0B111C] border border-[#1B2536] text-xs font-mono text-[#6B7385]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
               Browsing as Guest
             </span>
-            <ConnectKitButton />
+            <ConnectKitButton.Custom>
+              {({ show, isConnecting }) => (
+                <button
+                  onClick={show}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] text-[#04101C] font-space font-semibold text-xs tracking-wide shadow-sm hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
+                >
+                  <Wallet className="w-3.5 h-3.5 shrink-0" />
+                  <span>{isConnecting ? "Connecting..." : "Connect Wallet"}</span>
+                </button>
+              )}
+            </ConnectKitButton.Custom>
           </div>
         )}
 

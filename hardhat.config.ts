@@ -6,17 +6,18 @@ dotenv.config();
 
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000";
 
-// RPC priority: Canteen → Alchemy → Arc official
-const ARC_RPC_URL = 
-  process.env.ARC_RPC_URL || 
-  process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || 
-  process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC || 
+// RPC priority: Canteen (primary) → Alchemy → NEXT_PUBLIC override → Arc official
+const ARC_RPC_URL =
+  process.env.ARC_RPC_URL ||
+  process.env.NEXT_PUBLIC_ARC_RPC_URL ||
+  process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC ||
+  process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC ||
   "https://rpc.testnet.arc.io";
 
-const ARC_MAINNET_RPC_URL = 
-  process.env.ARC_MAINNET_RPC_URL || 
-  process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC || 
-  process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC || 
+const ARC_MAINNET_RPC_URL =
+  process.env.ARC_MAINNET_RPC_URL ||
+  process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL ||
+  process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC ||
   "https://rpc.mainnet.arc.io";
 
 const config: HardhatUserConfig = {

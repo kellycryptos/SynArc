@@ -44,7 +44,7 @@ To fund the DAO operating runway, members can deposit USDC directly using the fr
 2. Locate the **Deposit Portal** on the right side of the dashboard.
 3. Ensure the **USDC** tab is selected.
 4. Enter the deposit amount or click **MAX** to fetch your current wallet balance.
-5. Click **Deposit USDC** and authorize the ERC20 approval and deposit transactions inside your Privy wallet.
+5. Click **Deposit USDC** and authorize the ERC20 approval and deposit transactions inside your connected wallet.
 
 ---
 

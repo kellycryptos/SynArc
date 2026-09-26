@@ -1,7 +1,10 @@
 import { createPublicClient, http, fallback } from 'viem'
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from "@/hooks/auth/useAuth"
-import { arcTestnet, ARC_RPC_URLS } from '@/lib/arc-config'
+import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS } from '@/lib/arc-config'
+
+// Active-network RPC list — Canteen primary → Alchemy → Arc official fallback
+const ACTIVE_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS
 
 // Arc Testnet USDC contract address
 const USDC_ADDRESS = '0x3600000000000000000000000000000000000000'
@@ -70,8 +73,8 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
     
     const fetchPromise = (async () => {
       const client = createPublicClient({
-        chain: arcTestnet,
-        transport: fallback(ARC_RPC_URLS.map(url => http(url))),
+        chain: ARC_CHAIN,
+        transport: fallback(ACTIVE_RPC_URLS.map(url => http(url))),
       })
 
       const [raw, nativeRaw] = await Promise.all([

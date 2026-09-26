@@ -5,16 +5,21 @@ import {
   ARC_MAINNET_RPC_URLS, 
   ARC_RPC_URLS, 
   arcTestnet, 
-  arcMainnet 
+  arcMainnet,
+  ARC_CHAIN,
+  ACTIVE_NETWORK,
 } from "@/lib/arc-config";
 
-export { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_RPC_URLS, arcTestnet, arcMainnet };
+export { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_RPC_URLS, arcTestnet, arcMainnet, ARC_CHAIN };
 
-export const ARC_RPC_URL = ARC_TESTNET_RPC_URLS[0] || 'https://rpc.testnet.arc.io';
+// Primary RPC URL — always the Canteen node (first in priority array)
+export const ARC_RPC_URL = ARC_RPC_URLS[0] || 'https://rpc.testnet.arc.network';
+// Active-network RPC array (respects ACTIVE_NETWORK: mainnet or testnet)
+const ACTIVE_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS;
 
-// Stable HTTP transport — fallback through all RPC endpoints with 3 retries and 1s backoff
+// Stable HTTP transport — Canteen (primary) → Alchemy → Arc official, 3 retries / 1s backoff
 export const arcTransport = fallback(
-  ARC_TESTNET_RPC_URLS.map(url =>
+  ACTIVE_RPC_URLS.map(url =>
     http(url, {
       timeout: 10000,
       retryCount: 3,
@@ -27,15 +32,16 @@ export const arcTransport = fallback(
   }
 );
 
-// Centralized Viem Public Client
+// Centralized Viem Public Client — always targets the active chain (mainnet or testnet)
 export const arcPublicClient = createPublicClient({
-  chain: arcTestnet,
+  chain: ARC_CHAIN,
   transport: arcTransport,
 });
 
-// Ethers.js provider helper
+// Ethers.js provider helper — uses Canteen as primary (ACTIVE_RPC_URLS[0])
 export function getArcEthersProvider(): JsonRpcProvider {
-  return new JsonRpcProvider(ARC_RPC_URL, undefined, { staticNetwork: true, batchMaxCount: 1 });
+  const primaryUrl = ACTIVE_RPC_URLS[0] || ARC_RPC_URL;
+  return new JsonRpcProvider(primaryUrl, undefined, { staticNetwork: true, batchMaxCount: 1 });
 }
 
 // Wallet helper: switch or add Arc Testnet / Mainnet in MetaMask/OKX/etc.

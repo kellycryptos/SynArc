@@ -46,7 +46,7 @@ Syn DAO integrates with the Circle ecosystem and autonomous systems to power its
 
 *   **Circle CCTP (Cross-Chain Transfer Protocol)** — *Fully Deployed & Functional*: Handles native burn-and-mint USDC routing between Arc Testnet and Ethereum Sepolia. In `lib/agent/cctp-executor.ts`, the system executes burns, polls Circle's Iris attestation API for validation consensus, and triggers mint receipts on the destination Messenger contract.
 *   **Circle Gateway (x402 Nanopayments)** — *Simulated/Planned*: Tracks AI model execution fees for each inference call in `lib/agent/gateway-payments.ts`. The codebase contains hooks to deduct USDC internally for every Groq API request, awaiting live production endpoints to route actual on-chain fee payments.
-*   **Modular Wallets (ERC-4337 & Social Auth)** — *Fully Deployed & Functional*: Provisioned dynamically for users using Privy social logins and Circle's Web3 Services (W3S). In `lib/tx-helper.ts`, transactions submitted by Circle embedded wallets are routed via custom EIP-1193 providers and sponsored gaslessly via paymasters.
+*   **Web3 & Modular Wallets (WalletConnect & Circle W3S)** — *Fully Deployed & Functional*: Flexible wallet connectivity powered by WalletConnect / Reown Cloud, ConnectKit, and RainbowKit for 300+ mobile and browser wallets, alongside Circle's Web3 Services (W3S) user-controlled smart accounts. In `lib/tx-helper.ts`, transactions submitted by Circle embedded wallets are routed via custom EIP-1193 providers and sponsored gaslessly via paymasters.
 *   **Groq AI** — *Fully Deployed & Functional*: Powers the agent's real-time treasury analysis engine in `lib/agent/treasury-agent.ts`. The agent script calls the Groq SDK using the Groq AI Engine to evaluate current balances and autonomously execute or queue rebalancing decisions.
 *   **ERC-8004 Identity Registry** — *Fully Deployed & Functional*: The `SynArcAgent.sol` contract implements the `IERC8004Registry` interface. Upon deployment, the agent calls the registry contract at `0x8004A818BFB912233c491871b3d84c89A494BD9e` to register its identity, capabilities, and IPFS metadata on-chain.
 
@@ -69,12 +69,16 @@ Syn DAO integrates with the Circle ecosystem and autonomous systems to power its
 
 ## How to Connect Your Wallet
 
-Syn DAO leverages Privy authentication to enable frictionless onboarding. You do not need a pre-configured Web3 wallet like MetaMask to participate.
+Syn DAO features a unified Web3 connection modal powered by **ConnectKit**, **RainbowKit**, and **WalletConnect (Reown)**, with support for Circle User-Controlled Smart Accounts.
 
 1. Click the **Connect Wallet** button in the page header or sidebar.
-2. Sign in using your **Google account**, **Twitter / X**, **Discord**, or standard **Email**.
-3. Alternatively, click **Detect Wallets** to connect external hardware or browser extension accounts like MetaMask or Coinbase Wallet.
-4. Once connected, Privy automatically provisions a secure, non-custodial embedded wallet key secured directly via your device hardware.
+2. Choose your preferred connection method:
+   * **Mobile Wallets (QR Code)**: Select **WalletConnect** to scan the QR code using any compatible mobile wallet app (MetaMask Mobile, Rainbow, Trust Wallet, Zerion, Coinbase Wallet, etc.).
+   * **Browser Extension Wallets**: Click on detected extensions like MetaMask, Rabby, Coinbase Wallet, or OKX Wallet.
+   * **Circle Smart Account**: Log in via Circle User-Controlled Wallets for secure, PIN-protected embedded accounts.
+3. If prompted, approve the connection and network configuration for **Arc Testnet** (`chainId: 5042002`).
+
+> 💡 **Developer Note**: Ensure `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` is defined in your `.env.local` or environment settings. You can obtain a free project ID at [cloud.reown.com](https://cloud.reown.com).
 
 > 💡 **Read-only access**: You can browse creator profiles, leaderboards, and proposals without connecting a wallet. A wallet is only required to support creators, vote, or launch your own DAO.
 

@@ -30,7 +30,7 @@ If your voting power meets or exceeds the proposal threshold, you can author a p
 1. Navigate to the **Proposals** tab and click **New Proposal**.
 2. Fill in the **Title**, **Description**, **Category**, and **Execution Duration** parameters.
 3. Under **Treasury Impact**, define the disbursement value in USDC, and assign the destination **Target EVM address**.
-4. Confirm the transaction inside your Privy embedded wallet. Once mined, your proposal enters the **Pending** phase.
+4. Confirm the transaction inside your connected Web3 or Circle wallet. Once mined, your proposal enters the **Pending** phase.
 
 > ⚠️ You need a minimum sARC balance (above the `proposalThreshold`) to submit proposals. If you don't have enough, consider requesting delegation from another member.
 

@@ -796,3 +796,96 @@ a:focus-visible, button:focus-visible {
 .light .text-\[\#6B7385\] {
   color: #64748B !important;
 }
+
+/* ==========================================================================
+   ConnectKit & RainbowKit / WalletConnect SynArc UI Integration
+   ========================================================================== */
+
+:root,
+html,
+body,
+.dark,
+[data-theme='dark'],
+div[data-connectkit] {
+  --ck-font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  --ck-border-radius: 14px !important;
+  --ck-background: #0B111C !important;
+  --ck-body-background: #0B111C !important;
+  --ck-body-background-secondary: #0F1620 !important;
+  --ck-body-background-tertiary: #151C29 !important;
+  --ck-body-background-transparent: transparent !important;
+  --ck-body-color: #F5F7FA !important;
+  --ck-body-color-muted: #9CA6B8 !important;
+  --ck-body-color-muted-hover: #FFFFFF !important;
+  --ck-body-divider: #1B2536 !important;
+  --ck-body-divider-secondary: #151C29 !important;
+  --ck-focus-color: #22D3EE !important;
+  --ck-accent-color: #22D3EE !important;
+  --ck-accent-text-color: #04101C !important;
+  --ck-primary-button-background: linear-gradient(90deg, #2F6FFF, #22D3EE) !important;
+  --ck-primary-button-color: #04101C !important;
+  --ck-primary-button-hover-background: linear-gradient(90deg, #3B79FF, #38BDF8) !important;
+  --ck-primary-button-box-shadow: 0 0 20px rgba(34, 211, 238, 0.25) !important;
+  --ck-primary-button-border-radius: 12px !important;
+  --ck-secondary-button-background: #0F1620 !important;
+  --ck-secondary-button-hover-background: #1B2536 !important;
+  --ck-secondary-button-color: #F5F7FA !important;
+  --ck-secondary-button-border: 1px solid #1B2536 !important;
+  --ck-secondary-button-border-radius: 12px !important;
+  --ck-modal-box-shadow: 0 0 50px rgba(47, 111, 255, 0.25), 0 25px 50px -12px rgba(0, 0, 0, 0.9) !important;
+  --ck-overlay-background: rgba(5, 8, 15, 0.85) !important;
+  --ck-overlay-backdrop-filter: blur(8px) !important;
+  --ck-qr-border-color: #1B2536 !important;
+  --ck-qr-background: #FFFFFF !important;
+  --ck-qr-dot-color: #05080F !important;
+  --ck-tooltip-background: #0F1620 !important;
+  --ck-tooltip-color: #F5F7FA !important;
+  --ck-tooltip-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+  --ck-spinner-color: #22D3EE !important;
+  --ck-copytoclipboard-stroke: #22D3EE !important;
+}
+
+/* Force ConnectKit Modal Dialog container to match SynArc card borders */
+div[data-connectkit] {
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+div[data-connectkit] > div:first-child {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* ConnectKit inner modal box */
+div[data-connectkit] [role="dialog"],
+div[data-connectkit] > div > div {
+  background-color: #0B111C !important;
+  border: 1px solid #1B2536 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 0 50px rgba(47, 111, 255, 0.25), 0 25px 50px -12px rgba(0, 0, 0, 0.9) !important;
+}
+
+/* ConnectKit buttons & list items */
+div[data-connectkit] button {
+  font-family: 'Space Grotesk', sans-serif !important;
+  transition: all 0.2s ease !important;
+}
+
+div[data-connectkit] button:hover {
+  border-color: rgba(34, 211, 238, 0.4) !important;
+}
+
+/* RainbowKit modal theme alignment */
+[data-rk] {
+  --rk-colors-modalBackground: #0B111C !important;
+  --rk-colors-modalBorder: #1B2536 !important;
+  --rk-colors-modalText: #F5F7FA !important;
+  --rk-colors-modalTextSecondary: #9CA6B8 !important;
+  --rk-colors-actionButtonSecondaryBackground: #0F1620 !important;
+  --rk-colors-profileForeground: #0B111C !important;
+  --rk-colors-connectButtonBackground: #0B111C !important;
+  --rk-colors-connectButtonInnerBackground: #0F1620 !important;
+  --rk-colors-connectButtonText: #F5F7FA !important;
+  --rk-radii-modal: 14px !important;
+  --rk-fonts-body: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+

@@ -32,11 +32,11 @@ pnpm add @synarc/agent-sdk ethers
 
 ## Getting Started
 
-The SDK is EVM-agnostic and connects seamlessly with Privy, Circle Programmable Wallets, MetaMask, and generic EIP-1193 providers.
+The SDK is EVM-agnostic and connects seamlessly with WalletConnect, Circle Programmable Wallets, MetaMask, Rabby, and generic EIP-1193 providers.
 
 ### Initialization
 
-Initialize the `SynArcAgentClient` using a private key (for autonomous agent hot-wallets) or a provider from Privy/MetaMask (for organization dApps).
+Initialize the `SynArcAgentClient` using a private key (for autonomous agent hot-wallets) or a browser provider from WalletConnect/MetaMask/Circle (for organization dApps).
 
 ```javascript
 import { SynArcAgentClient } from '@synarc/agent-sdk';

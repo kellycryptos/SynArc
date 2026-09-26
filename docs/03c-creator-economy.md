@@ -31,7 +31,7 @@ Navigate to **Create Workspace** in the sidebar. Select from template types:
 Set your campaign name, target goal (in USDC), duration, and social tags. Crucially, specify the **milestones** that represent your deliverables. An AI assistant can auto-draft your campaign description from your title.
  
 ### Step 3: Deploy to Arc Testnet
-Authenticate with your wallet (via Privy/MetaMask/Coinbase). Click **Launch Project Workspace**. This deploys a fresh, independent `SynArcCrowdfund` escrow contract from **your wallet** directly to Arc Testnet.
+Authenticate with your wallet (via WalletConnect / MetaMask / Coinbase / Circle). Click **Launch Project Workspace**. This deploys a fresh, independent `SynArcCrowdfund` escrow contract from **your wallet** directly to Arc Testnet.
 
 ### Step 4: Share Your DAO
 After deployment, a success screen shows:
@@ -76,7 +76,7 @@ Each creator profile has preset buttons:
 | Custom | Any amount |
 
 ### How Micro-Funding Works
-1. Connect your wallet (or Privy handles it automatically).
+1. Connect your wallet (via WalletConnect, browser extension, or Circle account).
 2. Syn DAO sends a USDC `transfer()` call to the creator's escrow contract address.
 3. The transaction is confirmed on Arc in seconds.
 4. The creator's live metrics update in real-time from the chain.

@@ -14,7 +14,7 @@ class CircleEthereumProvider {
   private address: string;
   private chainId: number;
 
-  constructor(address: string, chainId: number = 5042002) {
+  constructor(address: string, chainId: number = ARC_CHAIN.id) {
     this.address = address;
     this.chainId = chainId;
   }
@@ -136,7 +136,7 @@ export function selectActiveWallet(wallets?: any[], activeAddress?: string | nul
     return {
       address,
       walletClientType: 'circle',
-      chainId: 'eip155:5042002',
+      chainId: `eip155:${ARC_CHAIN.id}`,
       getEthereumProvider: async () => provider,
       getEip1193Provider: async () => provider,
       getProvider: async () => provider,
@@ -158,7 +158,7 @@ export function selectActiveWallet(wallets?: any[], activeAddress?: string | nul
   return wallets[0];
 }
 
-export const enforceChain = async (activeWallet: any, targetChainId: number = 5042002): Promise<any> => {
+export const enforceChain = async (activeWallet: any, targetChainId: number = ARC_CHAIN.id): Promise<any> => {
   if (!activeWallet) throw new Error("No active wallet provided for chain enforcement");
 
   const targetHex = `0x${targetChainId.toString(16)}`;
@@ -503,7 +503,7 @@ let globalPublicClientInstance: any = null;
  */
 export const getAuthenticatedClient = async (
   wallets?: any[],
-  targetChainId: number = 5042002,
+  targetChainId: number = ARC_CHAIN.id,
   activeAddress?: string
 ) => {
   console.log(`[getAuthenticatedClient] Initializing client for chain ${targetChainId}`);
@@ -704,10 +704,10 @@ export const checkAndDelegate = async (wallets: any[], activeAddress?: string) =
   if (!activeWallet) return;
 
   try {
-    const provider = await enforceChain(activeWallet, 5042002);
+    const provider = await enforceChain(activeWallet, ARC_CHAIN.id);
     const browserProvider = new BrowserProvider(provider, {
-      chainId: 5042002,
-      name: "Arc Testnet"
+      chainId: ARC_CHAIN.id,
+      name: ARC_CHAIN.name
     });
     const signer = await browserProvider.getSigner(activeWallet.address);
     const address = activeWallet.address;

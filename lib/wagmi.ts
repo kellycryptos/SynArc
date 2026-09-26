@@ -10,7 +10,7 @@ const defaultChains = ACTIVE_NETWORK === 'mainnet'
 export const wagmiConfig = getDefaultConfig({
   appName: 'Syn DAO',
   // Free WalletConnect Project ID for mobile wallet QR support
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'c4f79cc821944d9680842e34466bfbd',
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '4d95e30a7e3788a66e1c27b26698f0ff',
   chains: defaultChains,
   transports: {
     [arcTestnet.id]: fallback(

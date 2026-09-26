@@ -9,7 +9,7 @@ import { ARC_RPC_URL } from "@/lib/arc/config";
 
 export const ARC_CONFIG = {
   // Active Network indicator ('testnet' | 'mainnet')
-  network: process.env.NEXT_PUBLIC_ARC_NETWORK || 'testnet',
+  network: process.env.NEXT_PUBLIC_ARC_NETWORK || 'mainnet',
 
   // Arc Testnet Chain Information
   chain: {
@@ -31,13 +31,12 @@ export const ARC_CONFIG = {
   
   // RPC Configuration
   rpc: {
-    // Personalized RPC endpoint (from ARC CLI: arc-canteen rpc-url)
-    // Set NEXT_PUBLIC_ARC_RPC_URL in .env.local
-    primary: process.env.NEXT_PUBLIC_ARC_RPC_URL,
-    // Fallback — uses the same centralized URL, no public fallback
+    // Primary testnet RPC endpoint
+    primary: process.env.NEXT_PUBLIC_ARC_RPC_URL || process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || 'https://rpc.testnet.arc.io',
+    // Fallback — uses the same centralized URL
     fallback: ARC_RPC_URL,
-    // Mainnet RPC endpoint
-    mainnet: process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.arc.network',
+    // Mainnet RPC endpoint — official Arc Mainnet endpoint
+    mainnet: process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io',
     // Health check timeout (ms)
     healthCheckTimeout: 5000,
     // Health check interval (ms)

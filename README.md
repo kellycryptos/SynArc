@@ -13,7 +13,8 @@ Product name updated for Arc naming compliance. Contracts and addresses are unch
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)](https://typescriptlang.org)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com)
 [![Arc Testnet](https://img.shields.io/badge/Arc_Testnet-5042002-7C3AED?style=for-the-badge)](https://arc.network)
-[![Privy](https://img.shields.io/badge/Privy-Auth-FF6B6B?style=for-the-badge)](https://privy.io)
+[![WalletConnect](https://img.shields.io/badge/WalletConnect-Reown-3B99FC?style=for-the-badge&logo=walletconnect)](https://cloud.reown.com)
+[![Wagmi](https://img.shields.io/badge/Wagmi-3.6-black?style=for-the-badge)](https://wagmi.sh)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-Governor-4E5EE4?style=for-the-badge)](https://openzeppelin.com)
 [![npm version](https://img.shields.io/npm/v/@synarc/agent-sdk?color=emerald&style=for-the-badge)](https://www.npmjs.com/package/@synarc/agent-sdk)
 
@@ -163,7 +164,7 @@ Syn DAO integrates with the Circle ecosystem and autonomous systems to power its
 
 *   **Circle CCTP (Cross-Chain Transfer Protocol)** — *Fully Deployed & Functional*: Handles native burn-and-mint USDC routing between Arc Testnet and Ethereum Sepolia. In `lib/agent/cctp-executor.ts`, the system executes burns, polls Circle's Iris attestation API for validation consensus, and triggers mint receipts on the destination Messenger contract.
 *   **Circle Gateway (x402 Nanopayments)** — *Simulated/Planned*: Tracks AI model execution fees for each inference call in `lib/agent/gateway-payments.ts`. The codebase contains hooks to deduct USDC internally for every Groq API request, awaiting live production endpoints to route actual on-chain fee payments.
-*   **Modular Wallets (ERC-4337 & Social Auth)** — *Fully Deployed & Functional*: Provisioned dynamically for users using Privy social logins and Circle's Web3 Services (W3S). In `lib/tx-helper.ts`, transactions submitted by Circle embedded wallets are routed via custom EIP-1193 providers and sponsored gaslessly via paymasters.
+*   **Web3 & Modular Wallets (WalletConnect & Circle W3S)** — *Fully Deployed & Functional*: Seamless wallet connectivity powered by WalletConnect / Reown Cloud, ConnectKit, and RainbowKit supporting 300+ mobile and browser wallets, alongside Circle's Web3 Services (W3S) user-controlled smart accounts. In `lib/tx-helper.ts`, transactions submitted by Circle embedded wallets are routed via custom EIP-1193 providers and sponsored gaslessly via paymasters.
 *   **Groq AI** — *Fully Deployed & Functional*: Powers the agent's real-time treasury analysis engine in `lib/agent/treasury-agent.ts`. The agent script calls the Groq SDK using the Groq AI Engine to evaluate current balances and autonomously execute or queue rebalancing decisions.
 *   **ERC-8004 Identity Registry** — *Fully Deployed & Functional*: The `SynArcAgent.sol` contract implements the `IERC8004Registry` interface. Upon deployment, the agent calls the registry contract at `0x8004A818BFB912233c491871b3d84c89A494BD9e` to register its identity, capabilities, and IPFS metadata on-chain.
 
@@ -173,48 +174,41 @@ Syn DAO integrates with the Circle ecosystem and autonomous systems to power its
 
 Syn DAO is built natively for **Arc** — a high-performance, EVM-equivalent blockchain engineered to power the agentic economy.
 
-| Arc Specification | Value |
-| :--- | :--- |
-| **Network Name** | Arc Testnet |
-| **Chain ID** | `5042002` |
-| **RPC URL** | `https://rpc.testnet.arc.network` |
-| **Currency** | USDC |
-| **Block Explorer** | [testnet.arcscan.app](https://testnet.arcscan.app) |
-| **Fallback RPC 1** | `https://arc-testnet.drpc.org` |
-| **Fallback RPC 2** | `https://5042002.rpc.thirdweb.com` |
+### Arc Networks Supported
 
-Arc's dedicated focus on institutional-grade settlement, native USDC capital, and autonomous agent participation perfectly aligns with Syn DAO's governance framework.
+Syn DAO operates natively on **Arc** (Circle's Layer 1 blockchain where gas is paid in USDC):
 
-### Canteen ARC CLI & Resilient RPC Fallbacks
+| Network | Chain ID | Primary RPC URL | Block Explorer | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **Arc Mainnet** (Default) | `5042` | `https://rpc.mainnet.arc.io` | [explorer.arc.io](https://explorer.arc.io) | Production |
+| **Arc Testnet** | `5042002` | `https://rpc.testnet.arc.io` | [testnet.arcscan.app](https://testnet.arcscan.app) | Developer Sandbox |
 
-Syn DAO is integrated with the **Canteen Builder Program**, providing personalized high-performance RPC connections and gasless transaction routing for all critical treasury and governance operations.
+Arc's dedicated focus on deterministic finality, native USDC gas fees, and autonomous agent participation perfectly aligns with Syn DAO's governance and treasury coordination.
 
-#### CLI Installation & Commands
+### RPC Infrastructure & Resilient Fallbacks
 
-To manage and retrieve your personalized Canteen RPC endpoints, install the Canteen ARC CLI tool:
+Syn DAO employs an automated, multi-tiered fallback transport that races and fails over between RPC endpoints to prevent downtime:
 
+#### Arc Mainnet Fallback Chain (Chain ID `5042`)
+1. **Official Primary**: `https://rpc.mainnet.arc.io`
+2. **Arc Official Fallback 1**: `https://rpc.arc.network`
+3. **Arc Official Fallback 2**: `https://rpc.mainnet.arc.network`
+4. **Alchemy Arc Mainnet**: `process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC` (Optional)
+
+#### Arc Testnet Fallback Chain (Chain ID `5042002`)
+1. **Official Primary**: `https://rpc.testnet.arc.io`
+2. **Canteen Personalized Node**: `https://rpc.testnet.arc-node.thecanteenapp.com/v1/<key>` (via `arc-canteen rpc-url`)
+3. **Arc Testnet Public**: `https://rpc.testnet.arc.network`
+4. **Alchemy Arc Testnet**: `process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC` (Optional)
+
+#### Canteen ARC CLI (Testnet Development)
+
+For local development and testnet faucets, install the Canteen ARC CLI:
 ```bash
-# Install uv tool suite (if not present)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Install the Canteen ARC CLI
 uv tool install git+https://github.com/the-canteen-dev/ARC-cli
+arc-canteen login
+arc-canteen rpc-url
 ```
-
-Once installed, use the following commands:
-*   `arc-canteen login` - Log into your Canteen developer account.
-*   `arc-canteen rpc-url` - Fetch your personalized, high-performance Arc RPC endpoint.
-*   `arc-canteen update product` - Sync your latest product status with the Canteen registry.
-
-#### Centralized 4-Endpoint RPC Resiliency Chain
-
-To ensure uninterrupted uptime for our users and AI agents, the Syn DAO frontend implements a centralized sequential fallback resolver traversing four RPC nodes in priority order:
-1.  **Personalized Canteen RPC** (`process.env.NEXT_PUBLIC_ARC_RPC_URL`)
-2.  **Arc Testnet Public RPC** (`https://rpc.testnet.arc.network`)
-3.  **dRPC Arc Testnet Node** (`https://arc-testnet.drpc.org`)
-4.  **Thirdweb Arc Testnet Node** (`https://5042002.rpc.thirdweb.com`)
-
-If the primary endpoint experiences rate limits or downtime, the system transparently loops through the fallback nodes to maintain client connectivity.
 
 ---
 
@@ -270,8 +264,9 @@ All treasury interactions are authorized strictly via successful governance outc
 *   **State Management**: [Zustand](https://zustand-demo.pmnd.rs)
 
 ### Web3 Integration
-*   **Authentication & Embedded Wallets**: [Privy](https://privy.io)
-*   **Ethereum Provider Interface**: [Wagmi 2](https://wagmi.sh)
+*   **Wallet Modals & QR Protocol**: [WalletConnect / Reown](https://cloud.reown.com), [ConnectKit](https://docs.family.co/connectkit), [RainbowKit](https://rainbowkit.com)
+*   **User-Controlled Smart Accounts**: [Circle Web3 Services (W3S)](https://www.circle.com/en/programmable-wallets)
+*   **Ethereum Provider Interface**: [Wagmi 3](https://wagmi.sh)
 *   **Low-Level Client Library**: [Viem 2](https://viem.sh)
 
 ### Smart Contracts
@@ -291,14 +286,15 @@ All treasury interactions are authorized strictly via successful governance outc
 ## 7a. Complete Tech Stack
 
 **Frontend & Styling**:
-- Next.js 15 - React framework with App Router
+- Next.js 16/15 - React framework with App Router
 - TailwindCSS 4 - Utility-first CSS framework
 - Framer Motion - Animation library
 
 **Web3 Integration**:
-- Privy - Authentication and embedded wallets
-- ethers.js - Ethereum library (via Viem compatibility)
-- Wagmi / Viem - Low-level web3 client
+- WalletConnect / Reown - Multi-wallet QR and connection protocol
+- ConnectKit & RainbowKit - Web3 wallet UI & modal integration
+- Circle W3S - User-controlled smart accounts
+- Wagmi / Viem - React hooks and low-level Web3 client
 
 **Deployment**:
 - Vercel - Hosting and deployment platform
@@ -359,13 +355,13 @@ https://www.synarcdao.xyz/
     vercel --prod
     ```
 3.  In the Vercel project settings page, add the corresponding environment variables:
-    *   `NEXT_PUBLIC_PRIVY_APP_ID`
-    *   `NEXT_PUBLIC_RPC_URL`
-
-### Privy Production Settings
-1.  Log into your dashboard at [privy.io](https://privy.io).
-2.  Add your production URL to the **Allowed Origins** whitelist.
-3.  Ensure the "Embedded Wallets" toggle is set to `Enabled` under login methods.
+    *   `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` (WalletConnect Project ID for mobile QR / ConnectKit)
+    *   `NEXT_PUBLIC_ARC_RPC_URL` (Primary Arc RPC endpoint)
+    *   `NEXT_PUBLIC_SITE_URL` (Production domain URL)
+    *   `NEXT_PUBLIC_CIRCLE_APP_ID` (Circle User-Controlled Wallet App ID)
+    *   `CIRCLE_API_KEY` (Circle API Key for server operations)
+    *   `GROQ_API_KEY` (Groq API Key for AI Agent Governance)
+    *   `CRON_SECRET` (Shared secret for agent cron jobs)
 
 ---
 
@@ -419,7 +415,7 @@ Syn DAO is developed with a strict security-first mindset, preparing for institu
 
 *   **Trustless Settlement**: The `TimelockController` acts as a non-bypassable barrier, ensuring all token holders have sufficient warning to withdraw funds if malicious updates pass.
 *   **Decentralized Control**: No admin keys, multi-sigs, or backdoors. The governance smart contract is the sole owner of the treasury and other core protocol components.
-*   **Non-Custodial Integrity**: User private keys are never transmitted, stored, or managed by the Syn DAO server layer. All cryptographic keys are secured directly via hardware and client-side systems using Privy.
+*   **Non-Custodial Integrity**: User private keys are never transmitted, stored, or managed by the Syn DAO server layer. All cryptographic keys remain secured directly on user hardware, browser extension wallets, or mobile wallets via WalletConnect / EIP-1193, and non-custodial Circle user-controlled smart accounts.
 *   **Mathematical Transparency**: All votes are verified cryptographically via ECDSA signatures on the client side, ensuring full provability of election inputs.
 *   **Isolated Creator Escrows**: Every Creator DAO deploys its own independent `SynArcCrowdfund` escrow contract from the creator's wallet. No single contract holds funds for multiple creators — eliminating shared-contract attack surfaces.
 *   **Permissionless Architecture**: Anyone can verify the escrow source code. Contract addresses are surfaced in the UI after deployment and linkable on [ArcScan](https://testnet.arcscan.app) for full on-chain transparency.

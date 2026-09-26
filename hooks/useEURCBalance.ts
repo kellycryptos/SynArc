@@ -1,7 +1,10 @@
 import { createPublicClient, http, fallback } from 'viem'
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from "@/hooks/auth/useAuth"
-import { arcTestnet, ARC_RPC_URLS } from '@/lib/arc-config'
+import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS } from '@/lib/arc-config'
+
+// Active-network RPC list — Canteen primary → Alchemy → Arc official fallback
+const ACTIVE_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS
 
 // Arc Testnet EURC contract address
 const EURC_ADDRESS = (process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS ||
@@ -68,8 +71,8 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
     
     const fetchPromise = (async () => {
       const client = createPublicClient({
-        chain: arcTestnet,
-        transport: fallback(ARC_RPC_URLS.map(url => http(url))),
+        chain: ARC_CHAIN,
+        transport: fallback(ACTIVE_RPC_URLS.map(url => http(url))),
       })
 
       const raw = await client.readContract({

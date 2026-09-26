@@ -981,7 +981,7 @@ export default function AgentPage() {
                 { label: "Smart Account", value: "Syn DAO Guard (Deployed)" },
                 { label: "Signer / Executor", value: "Server Hot-Wallet EOA" },
                 { label: "AI Assistant", value: "Active" },
-                { label: "Network", value: "Arc Testnet (5042002)" },
+                { label: "Network", value: `${ARC_CHAIN.name} (${ARC_CHAIN.id})` },
                 { label: "Registry", value: "ERC-8004 Registry" },
               ].map((row) => (
                 <div key={row.label} className="flex items-center justify-between text-xs">
