@@ -1,4 +1,10 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
+import {
+  rainbowWallet,
+  base,
+  metaMaskWallet,
+  walletConnectWallet,
+} from '@rainbow-me/rainbowkit/wallets'
 import { http, fallback } from 'wagmi'
 import { arcTestnet, arcMainnet, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK } from '@/lib/arc-config'
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
@@ -12,6 +18,17 @@ export const wagmiConfig = getDefaultConfig({
   // Free WalletConnect Project ID for mobile wallet QR support
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '4d95e30a7e3788a66e1c27b26698f0ff',
   chains: defaultChains,
+  wallets: [
+    {
+      groupName: 'Popular',
+      wallets: [
+        rainbowWallet,
+        base,
+        metaMaskWallet,
+        walletConnectWallet,
+      ],
+    },
+  ],
   transports: {
     [arcTestnet.id]: fallback(
       ARC_TESTNET_RPC_URLS.map(url =>

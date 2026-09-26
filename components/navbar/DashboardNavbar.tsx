@@ -6,7 +6,7 @@ import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 import { Bell, Search, Menu, LogOut, Wallet } from "lucide-react";
 import { useMemo } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
-import { ConnectKitButton } from 'connectkit';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 /**
  * DashboardNavbar Component
@@ -124,17 +124,17 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
               <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
               Browsing as Guest
             </span>
-            <ConnectKitButton.Custom>
-              {({ show, isConnecting }) => (
+            <ConnectButton.Custom>
+              {({ openConnectModal, connectModalOpen }) => (
                 <button
-                  onClick={show}
+                  onClick={openConnectModal}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] text-[#04101C] font-space font-semibold text-xs tracking-wide shadow-sm hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   <Wallet className="w-3.5 h-3.5 shrink-0" />
-                  <span>{isConnecting ? "Connecting..." : "Connect Wallet"}</span>
+                  <span>{connectModalOpen ? "Connecting..." : "Connect Wallet"}</span>
                 </button>
               )}
-            </ConnectKitButton.Custom>
+            </ConnectButton.Custom>
           </div>
         )}
 
