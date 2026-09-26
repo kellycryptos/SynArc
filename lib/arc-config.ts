@@ -1,5 +1,5 @@
 import { defineChain } from 'viem'
-import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
+import { sepolia, baseSepolia, avalancheFuji, mainnet, base, avalanche } from 'viem/chains'
 
 // Arc Testnet list (chain 5042002)
 // Priority: Canteen → Alchemy → Arc official
@@ -94,14 +94,13 @@ export const CONTRACTS = ACTIVE_NETWORK === 'mainnet' ? CONTRACTS_MAINNET : CONT
 
 export const CCTP_DOMAINS = {
   testnet: {
-    arc: 5042002,
+    arc: 26,
     sepolia: 0,
     baseSepolia: 6,
     avalancheFuji: 1,
   },
-  // Arc Mainnet CCTP Domain Placeholder — update once Circle announces official domain ID
   mainnet: {
-    arc: 5042,
+    arc: 26,
     ethereum: 0,
     base: 6,
     avalanche: 1,
@@ -109,6 +108,9 @@ export const CCTP_DOMAINS = {
 } as const
 
 export const EVM_BRIDGE_CHAINS: Record<number, any> = {
+  1: mainnet,
+  8453: base,
+  43114: avalanche,
   11155111: sepolia,
   84532: baseSepolia,
   43113: avalancheFuji,

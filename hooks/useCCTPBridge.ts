@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
+import { useWallets } from "@/hooks/useWallets";
 import { useSwitchChain, useAccount } from "wagmi";
 import {
   createPublicClient,
@@ -19,24 +19,33 @@ import {
 
 import { ARC_RPC_URL, ARC_RPC_URLS } from "@/lib/arc/config";
 import { getSigner, selectActiveWallet } from "@/lib/tx-helper";
-import { EVM_BRIDGE_CHAINS } from "@/lib/arc-config";
+import { EVM_BRIDGE_CHAINS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS } from "@/lib/arc-config";
 import { useAuth } from "@/hooks/auth/useAuth";
 
-// ============================================================
-// CCTP V2 Contract Addresses (Circle Official — June 2026)
-// Same deterministic CREATE2 address across all supported chains
-// Source: https://developers.circle.com/stablecoins/docs/evm-smart-contracts
-// ============================================================
-const CCTP_TOKEN_MESSENGER_V2  = "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA";
-const CCTP_MSG_TRANSMITTER_V2  = "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275";
+const IS_MAINNET = ACTIVE_NETWORK === 'mainnet';
+
+// Iris API
+const IRIS_API_URL = IS_MAINNET
+  ? 'https://iris-api.circle.com/v1/attestations'
+  : 'https://iris-api-sandbox.circle.com/v1/attestations';
+
+const IRIS_FEE_URL = IS_MAINNET
+  ? 'https://iris-api.circle.com/v2/burn/USDC/fees'
+  : 'https://iris-api-sandbox.circle.com/v2/burn/USDC/fees';
+
+// CCTP V2 contract addresses differ between testnet and mainnet
+const CCTP_TOKEN_MESSENGER_V2 = IS_MAINNET
+  ? '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d'
+  : '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA';
+
+const CCTP_MSG_TRANSMITTER_V2 = IS_MAINNET
+  ? '0x81D40F21F12A8F0E3252Bccb954D722a4c464B64'
+  : '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275';
 
 // CCTP V2 finality thresholds
 // 1000 = Fast Transfer (fees apply — use fetchMinFee to get the required maxFee)
 // 2000 = Standard Transfer (free, ~20 min on mainnet, ~1–3 min on testnet)
-const FINALITY_STANDARD = 2000; // always free, reliable on testnet
-
-// Iris fee API — get minimum fee for a route before fast-transfer attempt
-const IRIS_FEE_URL = "https://iris-api-sandbox.circle.com/v2/burn/USDC/fees";
+const FINALITY_STANDARD = 2000;
 
 async function fetchMinFeeForRoute(
   sourceDomain: number,
@@ -60,6 +69,51 @@ async function fetchMinFeeForRoute(
 }
 
 export const SOURCE_CHAINS = {
+  // Mainnet chains
+  ETHEREUM: {
+    id: 1,
+    name: "Ethereum",
+    bridgeKitId: "Ethereum" as const,
+    domain: 0,
+    usdcAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
+    messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
+    rpcUrls: [
+      "https://ethereum.reth.rs/rpc",
+      "https://rpc.ankr.com/eth",
+      "https://eth.llamarpc.com",
+    ],
+    icon: "🪙"
+  },
+  BASE: {
+    id: 8453,
+    name: "Base",
+    bridgeKitId: "Base" as const,
+    domain: 6,
+    usdcAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
+    messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
+    rpcUrls: [
+      "https://mainnet.base.org",
+      "https://base.llamarpc.com",
+    ],
+    icon: "🔵"
+  },
+  AVALANCHE: {
+    id: 43114,
+    name: "Avalanche",
+    bridgeKitId: "Avalanche" as const,
+    domain: 1,
+    usdcAddress: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+    tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
+    messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
+    rpcUrls: [
+      "https://api.avax.network/ext/bc/C/rpc",
+      "https://avalanche.public-rpc.com",
+    ],
+    icon: "🔺"
+  },
+  // Testnet chains
   ETH_SEPOLIA: {
     id: 11155111,
     name: "Ethereum Sepolia",
@@ -116,7 +170,24 @@ export const SOURCE_CHAINS = {
   }
 } as const;
 
-const ARC_CHAIN_CONFIG = {
+export const ARC_CHAIN_CONFIG = IS_MAINNET ? {
+  id: 5042,
+  name: "Arc",
+  bridgeKitId: "Arc" as const,
+  domain: 26,
+  usdcAddress: "0x3600000000000000000000000000000000000000" as `0x${string}`,
+  tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
+  messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
+  rpcUrl: process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC || 'https://rpc.mainnet.arc.io',
+  rpcUrls: [
+    process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC,
+    process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC,
+    'https://rpc.mainnet.arc.network',
+    'https://rpc.mainnet.arc.io',
+    'https://rpc.drpc.mainnet.arc.io',
+  ].filter(Boolean) as string[],
+  icon: "⚡"
+} : {
   id: 5042002,
   name: "Arc Testnet",
   bridgeKitId: "Arc_Testnet" as const,
@@ -147,7 +218,6 @@ const messageTransmitterAbi = parseAbi([
 ] as const);
 
 const MESSAGE_SENT_TOPIC = "0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036";
-const IRIS_SANDBOX_URL = "https://iris-api-sandbox.circle.com/v1/attestations";
 
 // ============================================================
 // Types
@@ -265,7 +335,7 @@ async function pollAttestation(
   messageHash: string,
   onElapsed: (s: number) => void
 ): Promise<{ attestation: string; messageBytes: string | null }> {
-  const url = `${IRIS_SANDBOX_URL}/${messageHash}`;
+  const url = `${IRIS_API_URL}/${messageHash}`;
   let elapsed = 0;
   let delayMs = 3000; // Start polling faster (3s vs old 5s)
   const MAX_WAIT_MS = 20 * 60 * 1000; // 20 minutes max
@@ -401,8 +471,8 @@ async function sendBridgeTx(
 // ============================================================
 export function useCCTPBridge() {
   const { walletAddress } = useAuth();
-  const { wallets: privyWallets } = usePrivyWallets();
-  const wallets = privyWallets ?? [];
+  const { connector } = useAccount();
+  const { wallets } = useWallets();
   const switchChainResult = useSwitchChain();
   const switchChainAsync = switchChainResult?.switchChainAsync;
 
@@ -514,9 +584,11 @@ export function useCCTPBridge() {
     }
 
     const provider = await (
+      connector?.getProvider?.() ||
       activeWallet.getEthereumProvider?.() ||
       (activeWallet as any).getProvider?.() ||
-      (activeWallet as any).getEip1193Provider?.()
+      (activeWallet as any).getEip1193Provider?.() ||
+      (typeof window !== "undefined" ? (window as any).ethereum : null)
     );
 
     if (!provider) throw new Error("Could not get EIP-1193 provider from wallet");
@@ -529,8 +601,8 @@ export function useCCTPBridge() {
 
     const kit = new BridgeKit();
 
-    const fromChainId = direction === "in" ? chainConfig.bridgeKitId : "Arc_Testnet";
-    const toChainId   = direction === "in" ? "Arc_Testnet" : chainConfig.bridgeKitId;
+    const fromChainId = direction === "in" ? chainConfig.bridgeKitId : ARC_CHAIN_CONFIG.bridgeKitId;
+    const toChainId   = direction === "in" ? ARC_CHAIN_CONFIG.bridgeKitId : chainConfig.bridgeKitId;
 
     // Wire up Kit events → bridge state
     setState({ ...INITIAL_STATE, status: "approving", progress: 5, stepDetail: "Requesting USDC approval…" });
@@ -562,7 +634,7 @@ export function useCCTPBridge() {
         ...prev,
         status: "waiting-attestation",
         progress: 65,
-        stepDetail: "Circle attestation received — switching to Arc…"
+        stepDetail: `Circle attestation received — switching to ${ARC_CHAIN_CONFIG.name}…`
       }));
       // Stop elapsed timer since we have the attestation
       if (timerRef.current) {
@@ -577,7 +649,7 @@ export function useCCTPBridge() {
         ...prev,
         status: "minting",
         progress: 85,
-        stepDetail: `Minting USDC on Arc Testnet…`
+        stepDetail: `Minting USDC on ${ARC_CHAIN_CONFIG.name}…`
       }));
     });
 
@@ -619,7 +691,7 @@ export function useCCTPBridge() {
       progress: 100,
       txHash: mintStep?.txHash || "",
       burnTxHash: burnStep?.txHash || prev.burnTxHash,
-      stepDetail: "Bridge complete! Funds arrived on Arc Testnet."
+      stepDetail: `Bridge complete! Funds arrived on ${ARC_CHAIN_CONFIG.name}.`
     }));
 
     console.log("[Kit] Bridge complete:", result);
@@ -923,7 +995,7 @@ export function useCCTPBridge() {
         account: destAddress,
         chain: destChainObj
       };
-      if ((destChainConfig as any).id === 5042002) {
+      if ((destChainConfig as any).id === 5042002 || (destChainConfig as any).id === 5042) {
         mintParams.gas = 400000n;
         mintParams.gasPrice = 10000000n;
       }
@@ -931,7 +1003,7 @@ export function useCCTPBridge() {
       setState(prev => ({
         ...prev,
         progress: 88,
-        stepDetail: `Broadcasting mint transaction on Arc…`
+        stepDetail: `Broadcasting mint transaction on ${destChainConfig.name}…`
       }));
 
       let mintTxHash: string;
@@ -964,7 +1036,7 @@ export function useCCTPBridge() {
         status: "success",
         progress: 100,
         txHash: mintTxHash,
-        stepDetail: "Bridge complete! USDC has arrived on Arc Testnet."
+        stepDetail: `Bridge complete! USDC has arrived on ${destChainConfig.name}.`
       }));
 
       console.log("[CCTP] Bridge complete! Mint tx:", mintTxHash);
@@ -1019,7 +1091,7 @@ export function useCCTPBridge() {
         timerRef.current = null;
       }
 
-      setState(prev => ({ ...prev, status: "minting", progress: 85, stepDetail: "Minting USDC on Arc Testnet…" }));
+      setState(prev => ({ ...prev, status: "minting", progress: 85, stepDetail: `Minting USDC on ${ARC_CHAIN_CONFIG.name}…` }));
       await new Promise(r => setTimeout(r, 2000));
 
       const mockHash = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
@@ -1073,21 +1145,37 @@ async function switchToChain(
       console.log(`[CCTP Bridge] Direct switching to chain ${chainIdHex} on provider...`);
 
       // Try adding if it might not be registered
-      if (chainConfig.id === 5042002) {
+      if (chainConfig.id === 5042 || chainConfig.id === 5042002) {
+        const isMainnet = chainConfig.id === 5042;
         try {
           await provider.request({
             method: "wallet_addEthereumChain",
             params: [
               {
-                chainId: "0x4cef52",
-                chainName: "Arc Testnet",
-                rpcUrls: ARC_RPC_URLS,
+                chainId: `0x${chainConfig.id.toString(16)}`,
+                chainName: isMainnet ? "Arc" : "Arc Testnet",
+                rpcUrls: (chainConfig as any).rpcUrls || [(chainConfig as any).rpcUrl],
                 nativeCurrency: {
-                  name: "USD Coin",
+                  name: "USDC",
                   symbol: "USDC",
-                  decimals: 6
+                  decimals: 18
                 },
-                blockExplorerUrls: ["https://testnet.arcscan.app"]
+                blockExplorerUrls: [isMainnet ? "https://explorer.arc.io" : "https://testnet.arcscan.app"]
+              }
+            ]
+          });
+        } catch (_) {}
+      } else if (chainConfig.id === 1) {
+        try {
+          await provider.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: "0x1",
+                chainName: "Ethereum",
+                rpcUrls: ["https://ethereum.reth.rs/rpc"],
+                nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+                blockExplorerUrls: ["https://etherscan.io"]
               }
             ]
           });
@@ -1107,6 +1195,21 @@ async function switchToChain(
             ]
           });
         } catch (_) {}
+      } else if (chainConfig.id === 8453) {
+        try {
+          await provider.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: "0x2105",
+                chainName: "Base",
+                rpcUrls: ["https://mainnet.base.org"],
+                nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+                blockExplorerUrls: ["https://basescan.org"]
+              }
+            ]
+          });
+        } catch (_) {}
       } else if (chainConfig.id === 84532) {
         try {
           await provider.request({
@@ -1118,6 +1221,21 @@ async function switchToChain(
                 rpcUrls: ["https://sepolia.base.org"],
                 nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
                 blockExplorerUrls: ["https://sepolia.basescan.org"]
+              }
+            ]
+          });
+        } catch (_) {}
+      } else if (chainConfig.id === 43114) {
+        try {
+          await provider.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: "0xa86a",
+                chainName: "Avalanche",
+                rpcUrls: ["https://api.avax.network/ext/bc/C/rpc"],
+                nativeCurrency: { name: "Avalanche", symbol: "AVAX", decimals: 18 },
+                blockExplorerUrls: ["https://snowtrace.io"]
               }
             ]
           });
