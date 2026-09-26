@@ -5,7 +5,7 @@ import { sepolia, baseSepolia, avalancheFuji, mainnet, base, avalanche } from 'v
 export const ACTIVE_NETWORK = (process.env.NEXT_PUBLIC_ARC_NETWORK || 'mainnet') as 'testnet' | 'mainnet'
 
 // Arc Testnet list (chain 5042002)
-// Priority: Official Arc Testnet RPC (https://rpc.testnet.arc.io) → Canteen / Custom → Fallbacks
+// Priority: NEXT_PUBLIC_ARC_RPC_URL (override) → Arc official (https://rpc.testnet.arc.io) → Canteen CLI testnet node (optional) → Alchemy
 export const ARC_TESTNET_RPC_URLS = Array.from(new Set([
   process.env.NEXT_PUBLIC_ARC_RPC_URL,
   'https://rpc.testnet.arc.io',

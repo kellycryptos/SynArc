@@ -6,7 +6,9 @@ dotenv.config();
 
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000";
 
-// RPC priority: Canteen (primary) → Alchemy → NEXT_PUBLIC override → Arc official
+// RPC priority (testnet): Arc official → Canteen CLI testnet node (optional) → Alchemy → hardcoded fallback
+// Note: Canteen's RPC is bundled into their ARC CLI and targets their hosted testnet node.
+// There is no public Canteen mainnet RPC — do not use NEXT_PUBLIC_CANTEEN_MAINNET_RPC for mainnet deploys.
 const ARC_RPC_URL =
   process.env.ARC_RPC_URL ||
   process.env.NEXT_PUBLIC_ARC_RPC_URL ||

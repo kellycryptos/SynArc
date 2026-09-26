@@ -5,9 +5,11 @@ import { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK } from "@/li
 
 /**
  * Arc RPC Configuration
- * 
+ *
  * Centralized management of Arc RPC endpoints with fallback support.
- * Priority: Canteen → Alchemy → Arc official
+ * Priority (mainnet): Arc official (https://rpc.mainnet.arc.io) → Alchemy → additional fallbacks
+ * Priority (testnet): Arc official (https://rpc.testnet.arc.io) → Canteen CLI testnet node → Alchemy
+ * Note: Canteen's RPC is CLI-bundled for their hosted testnet — no public Canteen mainnet RPC exists.
  */
 
 export const TESTNET_RPC_URLS = ARC_TESTNET_RPC_URLS;
@@ -18,6 +20,7 @@ const isMainnet = ACTIVE_NETWORK === 'mainnet';
 // Centralized resilient fallbacks based on active network
 export const RPC_URLS = isMainnet ? MAINNET_RPC_URLS : TESTNET_RPC_URLS;
 export const ARC_TESTNET_RPC = TESTNET_RPC_URLS[0] || 'https://rpc.testnet.arc.io';
+/** @deprecated Use ARC_TESTNET_RPC. Canteen's RPC is CLI-bundled for their testnet only — not a public mainnet endpoint. */
 export const CANTEEN_RPC = ARC_TESTNET_RPC;
 
 /**
@@ -63,7 +66,7 @@ export async function initializeResilientRpc(chain: any) {
  * Get resilient provider by racing all RPC URLs with a per-endpoint timeout.
  *
  * Uses getBlockNumber() instead of getNetwork() — lighter call, faster fail.
- * A 3-second per-URL timeout ensures a hanging Canteen endpoint doesn't stall
+ * A 3-second per-URL timeout ensures a hung RPC endpoint doesn't stall
  * the entire app while it waits for a TCP response.
  */
 export async function getResilientProvider(): Promise<JsonRpcProvider> {

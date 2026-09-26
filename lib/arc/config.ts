@@ -12,12 +12,12 @@ import {
 
 export { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_RPC_URLS, arcTestnet, arcMainnet, ARC_CHAIN };
 
-// Primary RPC URL — always the Canteen node (first in priority array)
+// Primary RPC URL — first in the ACTIVE_RPC_URLS priority array (Arc official on mainnet)
 export const ARC_RPC_URL = ARC_RPC_URLS[0] || 'https://rpc.testnet.arc.network';
 // Active-network RPC array (respects ACTIVE_NETWORK: mainnet or testnet)
 const ACTIVE_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS;
 
-// Stable HTTP transport — Canteen (primary) → Alchemy → Arc official, 3 retries / 1s backoff
+// Stable HTTP transport — Arc official (primary) → Alchemy → additional fallbacks, 3 retries / 1s backoff
 export const arcTransport = fallback(
   ACTIVE_RPC_URLS.map(url =>
     http(url, {
