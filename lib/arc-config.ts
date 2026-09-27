@@ -97,6 +97,32 @@ export const CONTRACTS_MAINNET = {
 
 export const CONTRACTS = ACTIVE_NETWORK === 'mainnet' ? CONTRACTS_MAINNET : CONTRACTS_TESTNET
 
+export const IS_MAINNET = ACTIVE_NETWORK === 'mainnet';
+
+export const CIRCLE_IRIS_API_URL = IS_MAINNET
+  ? 'https://iris-api.circle.com/v1/attestations'
+  : 'https://iris-api-sandbox.circle.com/v1/attestations';
+
+export const CIRCLE_ETH_CONFIG = IS_MAINNET
+  ? {
+      name: 'Ethereum',
+      domain: 0,
+      tokenMessenger: '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d' as `0x${string}`,
+      messageTransmitter: '0x81D40F21F12A8F0E3252Bccb954D722a4c464B64' as `0x${string}`,
+      usdc: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' as `0x${string}`,
+      explorer: 'https://etherscan.io',
+      transmitterUrl: 'https://etherscan.io/address/0x81D40F21F12A8F0E3252Bccb954D722a4c464B64',
+    }
+  : {
+      name: 'Ethereum Sepolia',
+      domain: 0,
+      tokenMessenger: '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA' as `0x${string}`,
+      messageTransmitter: '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275' as `0x${string}`,
+      usdc: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' as `0x${string}`,
+      explorer: 'https://sepolia.etherscan.io',
+      transmitterUrl: 'https://sepolia.etherscan.io/address/0xe737e5cebeeba77efe34d4aa090756590b1ce275',
+    };
+
 export const CCTP_DOMAINS = {
   testnet: {
     arc: 26,

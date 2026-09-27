@@ -12,13 +12,15 @@ Product name updated for Arc naming compliance. Contracts and addresses are unch
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)](https://typescriptlang.org)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com)
+[![Arc Mainnet](https://img.shields.io/badge/Arc_Mainnet-5042-10B981?style=for-the-badge)](https://arc.network)
 [![Arc Testnet](https://img.shields.io/badge/Arc_Testnet-5042002-7C3AED?style=for-the-badge)](https://arc.network)
 [![WalletConnect](https://img.shields.io/badge/WalletConnect-Reown-3B99FC?style=for-the-badge&logo=walletconnect)](https://cloud.reown.com)
 [![Wagmi](https://img.shields.io/badge/Wagmi-3.6-black?style=for-the-badge)](https://wagmi.sh)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-Governor-4E5EE4?style=for-the-badge)](https://openzeppelin.com)
 [![npm version](https://img.shields.io/npm/v/@synarc/agent-sdk?color=emerald&style=for-the-badge)](https://www.npmjs.com/package/@synarc/agent-sdk)
+[![Twitter Follow](https://img.shields.io/badge/X-@syndaopro-black?style=for-the-badge&logo=x)](https://x.com/syndaopro)
 
-[**Launch App →**](https://www.synarcdao.xyz/) · [**Developer SDK Docs**](https://www.synarcdao.xyz/docs/sdk) · [**SDK GitHub**](https://github.com/kellycryptos/synarc-agent-sdk) · [**Arc Ecosystem**](https://arc.network)
+[**Launch App →**](https://www.synarcdao.xyz/) · [**Developer SDK Docs**](https://www.synarcdao.xyz/docs/sdk) · [**SDK GitHub**](https://github.com/kellycryptos/synarc-agent-sdk) · [**Follow @syndaopro**](https://x.com/syndaopro) · [**Arc Ecosystem**](https://arc.network)
 
 </div>
 
@@ -82,7 +84,25 @@ Syn DAO simplifies the funding and governance lifecycle:
 
 ---
 
-## 3a. Creator DAOs & How to Launch
+## 3a. Tameion Escrow Release Valve (Arc Mainnet 5042)
+
+**Syn DAO is the release valve: USDC in escrow, proof attached, paid once.**
+
+Agent can release under an on-chain cap (default: **50.00 USDC**). Over the cap it stops for a human. Same payment cannot run twice.
+
+### The 3 Core Invariants
+1. **USDC in Escrow**: Funds reside directly in the timelocked treasury escrow vault (`SynArcTreasury.sol`) on Arc Mainnet (`5042`).
+2. **Proof Attached**: Release claims must link an immutable IPFS deliverable CID (CIDv0/CIDv1) or deterministic invoice hash (`invoiceHash`).
+3. **Paid Once (Idempotency Active)**: On-chain `executedReleases[releaseKey]` bit flip guarantees zero payment replay attacks.
+
+### On-Chain Permissions & Approval Thresholds
+*   **Autonomous Agent Track ($\le 50.00\text{ USDC}$)**: Authorized agents trigger `releaseMilestone` autonomously with deliverable proof. Zero delay, instant settlement.
+*   **Human Review Gate ($> 50.00\text{ USDC}$)**: Amounts exceeding 50 USDC immediately halt with `HumanApprovalRequired(releaseKey, amount, threshold)`. Execution requires on-chain signoff via `approveReleaseHuman(releaseKey)` by the Governor, Owner, or an authorized Human Reviewer.
+*   **Official Social & Community**: Follow [@syndaopro](https://x.com/syndaopro) on X. Web portal: [synarcdao.xyz](https://www.synarcdao.xyz/) (transitioning to `syndaopro.xyz`).
+
+---
+
+## 3b. Creator DAOs & How to Launch
 
 Creator DAOs are decentralized funding and governance structures that allow builders, artists, developers, and AI agents to raise capital and align with their community transparently.
 
@@ -95,7 +115,7 @@ Creator DAOs are decentralized funding and governance structures that allow buil
 
 ---
 
-## 3b. Autonomous Treasury Agent
+## 3c. Autonomous Treasury Agent
 
 Syn DAO features a fully autonomous Treasury Agent deployed and verified on Arc Testnet at `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D`.
 
@@ -473,7 +493,7 @@ This repository is licensed under the **MIT License**. Check [LICENSE](./LICENSE
 
 **Built for the Arc agentic economy.**
 
-[Website](https://www.synarcdao.xyz/) · [Twitter](https://x.com/synarc_) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
+[Website](https://www.synarcdao.xyz/) · [Twitter](https://x.com/syndaopro) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
 
 <sub>© 2026 Syn DAO. All rights reserved.</sub>
 

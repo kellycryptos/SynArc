@@ -45,7 +45,7 @@ export function getArcEthersProvider(): JsonRpcProvider {
 }
 
 // Wallet helper: switch or add Arc Testnet / Mainnet in MetaMask/OKX/etc.
-export async function ensureArcNetwork(ethereumProvider: any, targetChainId: number = 5042002): Promise<void> {
+export async function ensureArcNetwork(ethereumProvider: any, targetChainId: number = ARC_CHAIN.id): Promise<void> {
   const isMainnet = targetChainId === 5042;
   const chainIdHex = `0x${targetChainId.toString(16)}`;
   const chainName = isMainnet ? "Arc" : "Arc Testnet";

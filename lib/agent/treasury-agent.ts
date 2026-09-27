@@ -6,7 +6,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') })
 import Groq from 'groq-sdk'
 import { createPublicClient, createWalletClient, http, fallback, parseAbi, parseUnits, keccak256, toHex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS, ARC_GAS } from '@/lib/arc-config'
+import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS, ARC_GAS, IS_MAINNET, CIRCLE_ETH_CONFIG, CIRCLE_IRIS_API_URL } from '@/lib/arc-config'
 import { CCTPExecutor } from '@/lib/agent/cctp-executor'
 import { pinJSONToIPFS } from '@/lib/attestation'
 import fs from 'fs'
@@ -226,7 +226,7 @@ Respond in JSON format:
       
       // Local rules fallback if AI fully failed
       if (treasury.usdc > 100) {
-        return { shouldAct: true, action: 'bridge_to_ethereum', reasoning: `[Rule-based: AI rate-limited/unavailable] Treasury holds ${treasury.usdc} USDC — above 100 threshold. Proposing CCTP bridge to Ethereum Sepolia.`, proposedAmount: Math.floor(treasury.usdc * 0.3) }
+        return { shouldAct: true, action: 'bridge_to_ethereum', reasoning: `[Rule-based: AI rate-limited/unavailable] Treasury holds ${treasury.usdc} USDC — above 100 threshold. Proposing CCTP bridge to ${CIRCLE_ETH_CONFIG.name}.`, proposedAmount: Math.floor(treasury.usdc * 0.3) }
       }
       if (treasury.usdc < 10) {
         return { shouldAct: true, action: 'emergency_funding', reasoning: `[Rule-based: AI rate-limited/unavailable] Treasury holds ${treasury.usdc} USDC — below 10 threshold. Proposing emergency funding request.`, proposedAmount: 50 }
@@ -240,7 +240,7 @@ Respond in JSON format:
 
   async createRebalancingProposal(decision: { action: string; reasoning: string; proposedAmount?: number }): Promise<string> {
     const title = decision.action === 'bridge_to_ethereum'
-      ? `Proposed by Treasury Agent — Bridge ${decision.proposedAmount} USDC`
+      ? `Proposed by Treasury Agent — Bridge ${decision.proposedAmount} USDC to ${CIRCLE_ETH_CONFIG.name}`
       : `Proposed by Treasury Agent — Rebalancing: ${decision.action}`
     const description = `Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: ${decision.action}\nAmount: ${decision.proposedAmount || 0} USDC\nAgent: ${this.getAgentAddress()}\nTimestamp: ${new Date().toISOString()}\n\nAI Reasoning:\n${decision.reasoning}\n\nThis proposal was created autonomously by the SynArc Treasury Agent.`
     
@@ -284,24 +284,25 @@ Respond in JSON format:
 
   async proposeReturnFunds(): Promise<string> {
     const cctp = new CCTPExecutor(this.privateKey)
-    const balance = await cctp.getSepoliaUSDCBalance()
+    const balance = await cctp.getEthereumUSDCBalance()
     if (balance <= 0) {
-      throw new Error('No USDC funds on Ethereum Sepolia to return.')
+      throw new Error(`No USDC funds on ${CIRCLE_ETH_CONFIG.name} to return.`)
     }
 
-    const title = `Proposed by Treasury Agent — Return ${balance.toFixed(2)} USDC from Sepolia`
-    const description = `Proposed by Treasury Agent\n\nAUTONOMOUS RETURN PROPOSAL\nAction: return_funds\nAmount: ${balance.toFixed(2)} USDC\nDestination: Agent Operating Treasury (${CONTRACTS.treasuryAgent})\nAgent: ${this.getAgentAddress()}\nTimestamp: ${new Date().toISOString()}\n\nThis proposal was created to return bridged stablecoin reserves back to the agent operating treasury on Arc Testnet via CCTP.`
+    const arcNetworkName = IS_MAINNET ? 'Arc Mainnet' : 'Arc Testnet'
+    const title = `Proposed by Treasury Agent — Return ${balance.toFixed(2)} USDC from ${CIRCLE_ETH_CONFIG.name}`
+    const description = `Proposed by Treasury Agent\n\nAUTONOMOUS RETURN PROPOSAL\nAction: return_funds\nAmount: ${balance.toFixed(2)} USDC\nDestination: Agent Operating Treasury (${CONTRACTS.treasuryAgent})\nAgent: ${this.getAgentAddress()}\nTimestamp: ${new Date().toISOString()}\n\nThis proposal was created to return bridged stablecoin reserves back to the agent operating treasury on ${arcNetworkName} via CCTP.`
 
-    // Pin return specification to IPFS, falling back to official Circle Sepolia MessageTransmitter reference
-    let deliverableURI = 'https://sepolia.etherscan.io/address/0xe737e5cebeeba77efe34d4aa090756590b1ce275'
+    // Pin return specification to IPFS, falling back to official Circle MessageTransmitter reference on target chain
+    let deliverableURI = CIRCLE_ETH_CONFIG.transmitterUrl
     try {
       const pinRes = await pinJSONToIPFS({
         title,
         action: 'return_funds',
         balance: balance.toFixed(2),
         currency: 'USDC',
-        sourceChain: 'Ethereum Sepolia',
-        destinationChain: 'Arc Testnet',
+        sourceChain: CIRCLE_ETH_CONFIG.name,
+        destinationChain: arcNetworkName,
         destinationTreasury: CONTRACTS.treasuryAgent,
         agentAddress: this.getAgentAddress(),
         timestamp: new Date().toISOString(),
@@ -311,7 +312,7 @@ Respond in JSON format:
         deliverableURI = pinRes
       }
     } catch (pinErr) {
-      console.warn('[TreasuryAgent] Dynamic IPFS pin fallback to Sepolia CCTP transmitter:', pinErr)
+      console.warn(`[TreasuryAgent] Dynamic IPFS pin fallback to ${CIRCLE_ETH_CONFIG.name} CCTP transmitter:`, pinErr)
     }
 
     const txHash = await this.walletClient.writeContract({
@@ -333,7 +334,7 @@ Respond in JSON format:
     this.logAction({
       timestamp: new Date().toISOString(),
       action: 'return_funds',
-      reasoning: `ADMIN INITIATED: Proposed return of ${balance.toFixed(2)} USDC from Ethereum Sepolia back to main Treasury. Governance Proposal created. Attestation: ${deliverableURI}. Tx: ${txHash}`,
+      reasoning: `ADMIN INITIATED: Proposed return of ${balance.toFixed(2)} USDC from ${CIRCLE_ETH_CONFIG.name} back to main Treasury. Governance Proposal created. Attestation: ${deliverableURI}. Tx: ${txHash}`,
       txHash,
       deliverableURI,
       status: 'pending',
@@ -401,13 +402,16 @@ Respond in JSON format:
               const description = prop[3] || ""
               const isReturn = title.toLowerCase().includes('return') || description.toLowerCase().includes('return_funds')
 
+              const ethNetworkName = CIRCLE_ETH_CONFIG.name
+              const arcNetworkName = IS_MAINNET ? 'Arc Mainnet' : 'Arc Testnet'
+
               if (isReturn) {
                 console.log(`[TreasuryAgent] Initiating reverse CCTP bridge to return funds to main Treasury...`)
 
                 const liveAction: AgentAction = {
                   timestamp: new Date().toISOString(),
                   action: 'return_funds',
-                  reasoning: `[CCTP Step 1/3] Succeeded return proposal #${i} executed on governor. Initializing Sepolia -> Arc transfer...`,
+                  reasoning: `[CCTP Step 1/3] Succeeded return proposal #${i} executed on governor. Initializing ${ethNetworkName} -> ${arcNetworkName} transfer...`,
                   status: 'pending'
                 }
                 this.logAction(liveAction)
@@ -421,10 +425,10 @@ Respond in JSON format:
                 }
 
                 try {
-                  // Query Sepolia USDC balance to return
-                  const balance = await cctp.getSepoliaUSDCBalance()
+                  // Query Ethereum USDC balance to return
+                  const balance = await cctp.getEthereumUSDCBalance()
                   if (balance <= 0) {
-                    throw new Error('No USDC funds available on Ethereum Sepolia to return.')
+                    throw new Error(`No USDC funds available on ${ethNetworkName} to return.`)
                   }
 
                   liveAction.usdcAmount = balance
@@ -448,13 +452,13 @@ Respond in JSON format:
                 }
               } else {
                 const amountUsdc = Number(impact) / 1_000_000
-                console.log(`[TreasuryAgent] Initiating CCTP bridge for ${amountUsdc} USDC to Ethereum Sepolia...`)
+                console.log(`[TreasuryAgent] Initiating CCTP bridge for ${amountUsdc} USDC to ${ethNetworkName}...`)
 
                 // Log starting of CCTP
                 const liveAction: AgentAction = {
                   timestamp: new Date().toISOString(),
                   action: 'bridge_to_ethereum',
-                  reasoning: `[CCTP Step 1/3] Succeeded proposal #${i} executed on governor. Initializing CCTP transfer...`,
+                  reasoning: `[CCTP Step 1/3] Succeeded proposal #${i} executed on governor. Initializing CCTP transfer to ${ethNetworkName}...`,
                   status: 'pending',
                   usdcAmount: amountUsdc
                 }
@@ -475,7 +479,7 @@ Respond in JSON format:
                   liveAction.status = 'executed'
                   liveAction.txHash = bridgeRes.burnTxHash
                   liveAction.deliverableURI = bridgeRes.attestationUrl
-                  liveAction.reasoning = `AUTONOMOUS EXECUTION SUCCESSFUL: Succeeded rebalancing proposal #${i} executed on-chain. CCTP bridged ${amountUsdc} USDC to Ethereum Sepolia. Circle Witness: ${bridgeRes.attestationUrl}. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
+                  liveAction.reasoning = `AUTONOMOUS EXECUTION SUCCESSFUL: Succeeded rebalancing proposal #${i} executed on-chain. CCTP bridged ${amountUsdc} USDC to ${ethNetworkName}. Circle Witness: ${bridgeRes.attestationUrl}. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
                   this.logAction(liveAction)
 
                   executedTxHashes.push(bridgeRes.burnTxHash)
@@ -687,23 +691,30 @@ Respond in JSON format:
     }
   }
 
-  async getSepoliaBalance(): Promise<number> {
+  async getEthereumBalance(): Promise<number> {
     try {
       const cctp = new CCTPExecutor(this.privateKey)
-      const bal = await cctp.getSepoliaUSDCBalance()
+      const bal = await cctp.getEthereumUSDCBalance()
       return bal > 0 ? bal : 42.50
     } catch (err) {
-      console.error('[TreasuryAgent] Failed to check Sepolia USDC balance:', err)
+      console.error(`[TreasuryAgent] Failed to check ${CIRCLE_ETH_CONFIG.name} USDC balance:`, err)
       return 42.50
     }
   }
 
+  // Alias for backward compatibility
+  async getSepoliaBalance(): Promise<number> {
+    return this.getEthereumBalance()
+  }
+
   async triggerReturnFunds(): Promise<void> {
     const startTime = new Date().toISOString()
+    const ethNetworkName = CIRCLE_ETH_CONFIG.name
+    const arcNetworkName = IS_MAINNET ? 'Arc Mainnet' : 'Arc Testnet'
     const returnAction: AgentAction = {
       timestamp: startTime,
       action: 'return_funds',
-      reasoning: '[CCTP Step 1/3] Return funds process triggered by administrator. Initializing Sepolia -> Arc transfer...',
+      reasoning: `[CCTP Step 1/3] Return funds process triggered by administrator. Initializing ${ethNetworkName} -> ${arcNetworkName} transfer...`,
       status: 'pending'
     }
     this.logAction(returnAction)
@@ -711,10 +722,10 @@ Respond in JSON format:
     try {
       const cctp = new CCTPExecutor(this.privateKey)
       
-      // 1. Get Sepolia USDC Balance
-      const balance = await cctp.getSepoliaUSDCBalance()
+      // 1. Get Ethereum USDC Balance
+      const balance = await cctp.getEthereumUSDCBalance()
       if (balance <= 0) {
-        throw new Error('No USDC funds available on Ethereum Sepolia for the Treasury Agent.')
+        throw new Error(`No USDC funds available on ${ethNetworkName} for the Treasury Agent.`)
       }
 
       returnAction.usdcAmount = balance
@@ -734,7 +745,8 @@ Respond in JSON format:
       
       returnAction.status = 'executed'
       returnAction.txHash = bridgeRes.burnTxHash
-      returnAction.reasoning = `RETURN SUCCESSFUL: Successfully returned ${balance} USDC from Ethereum Sepolia back to the main Treasury contract on Arc Testnet via CCTP. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
+      returnAction.deliverableURI = bridgeRes.attestationUrl
+      returnAction.reasoning = `RETURN SUCCESSFUL: Successfully returned ${balance} USDC from ${ethNetworkName} back to the main Treasury contract on ${arcNetworkName} via CCTP. Circle Witness: ${bridgeRes.attestationUrl}. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
       this.logAction(returnAction)
     } catch (err: any) {
       console.error('[TreasuryAgent] returnFunds failed:', err)

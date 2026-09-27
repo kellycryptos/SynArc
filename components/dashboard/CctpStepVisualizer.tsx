@@ -13,6 +13,7 @@ import {
   Clock
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { IS_MAINNET } from "@/lib/arc-config";
 
 export interface CctpTxState {
   isActive: boolean;
@@ -81,13 +82,22 @@ export function CctpStepVisualizer({ txState }: { txState: CctpTxState }) {
     if (lower.includes("sepolia") && lower.includes("ethereum")) {
       return `https://sepolia.etherscan.io/tx/${txHash}`;
     }
+    if (lower.includes("ethereum") || lower === "mainnet") {
+      return `https://etherscan.io/tx/${txHash}`;
+    }
     if (lower.includes("sepolia") && lower.includes("base")) {
       return `https://sepolia.basescan.org/tx/${txHash}`;
     }
-    if (lower.includes("fuji") || lower.includes("avalanche")) {
+    if (lower.includes("base")) {
+      return `https://basescan.org/tx/${txHash}`;
+    }
+    if (lower.includes("fuji")) {
       return `https://testnet.snowtrace.io/tx/${txHash}`;
     }
-    return `https://testnet.arcscan.app/tx/${txHash}`;
+    if (lower.includes("avalanche")) {
+      return `https://snowtrace.io/tx/${txHash}`;
+    }
+    return IS_MAINNET ? `https://arcscan.app/tx/${txHash}` : `https://testnet.arcscan.app/tx/${txHash}`;
   };
 
   const steps = [
@@ -102,7 +112,7 @@ export function CctpStepVisualizer({ txState }: { txState: CctpTxState }) {
     },
     {
       title: "Circle Consensus Attestation",
-      description: "Polling Circle Sandbox Iris API",
+      description: IS_MAINNET ? "Polling Circle Iris API" : "Polling Circle Sandbox Iris API",
       icon: Search,
       color: "text-purple-400",
       activeColor: "bg-purple-500/10 border-purple-500/30 text-purple-400",

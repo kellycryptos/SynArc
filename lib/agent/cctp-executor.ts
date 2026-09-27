@@ -1,21 +1,28 @@
 import { createWalletClient, createPublicClient, http, fallback, parseUnits, parseAbi, decodeEventLog, keccak256, decodeAbiParameters, encodeFunctionData } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { ARC_CHAIN, ARC_GAS, ARC_RPC_URLS } from '@/lib/arc-config'
-import { sepolia } from 'viem/chains'
+import { ARC_CHAIN, ARC_GAS, ARC_RPC_URLS, IS_MAINNET, CIRCLE_IRIS_API_URL, CIRCLE_ETH_CONFIG, ACTIVE_NETWORK } from '@/lib/arc-config'
+import { mainnet, sepolia } from 'viem/chains'
 
-// Circle CCTP contract addresses
+// Circle CCTP contract addresses (dynamically resolved for Mainnet or Testnet)
 export const CCTP_CONTRACTS = {
-  arcTestnet: {
-    tokenMessenger: (process.env.NEXT_PUBLIC_CCTP_TOKEN_MESSENGER_ARC || '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA') as `0x${string}`,
-    messageTransmitter: (process.env.NEXT_PUBLIC_CCTP_MESSAGE_TRANSMITTER_ARC || '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275') as `0x${string}`,
+  arc: {
+    tokenMessenger: (process.env.NEXT_PUBLIC_CCTP_TOKEN_MESSENGER_ARC || (IS_MAINNET ? '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d' : '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA')) as `0x${string}`,
+    messageTransmitter: (process.env.NEXT_PUBLIC_CCTP_MESSAGE_TRANSMITTER_ARC || (IS_MAINNET ? '0x81D40F21F12A8F0E3252Bccb954D722a4c464B64' : '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275')) as `0x${string}`,
     usdc: (process.env.NEXT_PUBLIC_USDC_CONTRACT_ADDRESS || '0x3600000000000000000000000000000000000000') as `0x${string}`,
   },
-  ethSepolia: {
-    messageTransmitter: '0xe737e5cebeeba77efe34d4aa090756590b1ce275' as `0x${string}`,
-    tokenMessenger: '0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa' as `0x${string}`,
-    usdc: '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238' as `0x${string}`,
+  ethereum: {
+    messageTransmitter: CIRCLE_ETH_CONFIG.messageTransmitter,
+    tokenMessenger: CIRCLE_ETH_CONFIG.tokenMessenger,
+    usdc: CIRCLE_ETH_CONFIG.usdc,
     domain: 0,
   },
+  // Backward compatibility aliases
+  get arcTestnet() {
+    return this.arc
+  },
+  get ethSepolia() {
+    return this.ethereum
+  }
 }
 
 const TOKEN_MESSENGER_ABI = parseAbi([
@@ -35,9 +42,13 @@ const ERC20_ABI = parseAbi([
 export class CCTPExecutor {
   private arcWalletClient: any
   private arcPublicClient: any
-  private sepoliaWalletClient: any
-  private sepoliaPublicClient: any
+  private ethWalletClient: any
+  private ethPublicClient: any
   private account: any
+
+  // Backward compatibility aliases
+  public get sepoliaWalletClient() { return this.ethWalletClient }
+  public get sepoliaPublicClient() { return this.ethPublicClient }
 
   constructor(privateKey: `0x${string}`) {
     this.account = privateKeyToAccount(privateKey)
@@ -54,20 +65,30 @@ export class CCTPExecutor {
       transport: arcTransport,
     })
 
-    // Sepolia clients with robust fallback RPCs (avoiding unauthorized Ankr)
-    const sepoliaRpcUrls = [
-      'https://ethereum-sepolia-rpc.publicnode.com',
-      'https://sepolia.gateway.tenderly.co'
-    ]
-    const sepoliaTransport = fallback(sepoliaRpcUrls.map(url => http(url, { timeout: 10000 })))
-    this.sepoliaPublicClient = createPublicClient({
-      chain: sepolia,
-      transport: sepoliaTransport
+    // Ethereum network (Mainnet or Sepolia) configuration
+    const ethChain = IS_MAINNET ? mainnet : sepolia
+    const ethRpcUrls = IS_MAINNET
+      ? Array.from(new Set([
+          process.env.NEXT_PUBLIC_ETH_MAINNET_RPC,
+          'https://eth.llamarpc.com',
+          'https://ethereum-rpc.publicnode.com',
+          'https://cloudflare-eth.com'
+        ].filter(Boolean) as string[]))
+      : Array.from(new Set([
+          process.env.NEXT_PUBLIC_SEPOLIA_RPC,
+          'https://ethereum-sepolia-rpc.publicnode.com',
+          'https://sepolia.gateway.tenderly.co'
+        ].filter(Boolean) as string[]))
+
+    const ethTransport = fallback(ethRpcUrls.map(url => http(url, { timeout: 10000 })))
+    this.ethPublicClient = createPublicClient({
+      chain: ethChain,
+      transport: ethTransport
     })
-    this.sepoliaWalletClient = createWalletClient({
+    this.ethWalletClient = createWalletClient({
       account: this.account,
-      chain: sepolia,
-      transport: sepoliaTransport
+      chain: ethChain,
+      transport: ethTransport
     })
   }
 
@@ -220,12 +241,14 @@ export class CCTPExecutor {
     const messageHash = keccak256(messageBytes)
     console.log(`[CCTPExecutor] CCTP message hash: ${messageHash}`)
 
+    const targetChainName = CIRCLE_ETH_CONFIG.name
+
     // Step 3 — Poll Circle Attestation API
-    const msgText3 = `[CCTP Step 2/3] Burn transaction confirmed: ${burnTx}. Polling Circle Sandbox Iris API for attestation...`
+    const msgText3 = `[CCTP Step 2/3] Burn transaction confirmed: ${burnTx}. Polling Circle Iris API (${IS_MAINNET ? 'Production' : 'Sandbox'}) for attestation...`
     console.log(`[CCTPExecutor] ${msgText3}`)
     if (onProgress) onProgress(msgText3)
 
-    const attestationUrl = `https://iris-api-sandbox.circle.com/v1/attestations/${messageHash}`
+    const attestationUrl = `${CIRCLE_IRIS_API_URL}/${messageHash}`
     let attestation: string | null = null
 
     // Poll up to 30 times (2.5 minutes)
@@ -249,22 +272,22 @@ export class CCTPExecutor {
       throw new Error('Circle attestation polling timed out or failed.')
     }
     
-    const msgText4 = `[CCTP Step 3/3] Circle attestation acquired! Minting USDC on Ethereum Sepolia...`
+    const msgText4 = `[CCTP Step 3/3] Circle attestation acquired! Minting USDC on ${targetChainName}...`
     console.log(`[CCTPExecutor] ${msgText4}`)
     if (onProgress) onProgress(msgText4)
 
-    // Step 4 — Mint USDC on Ethereum Sepolia
-    const mintTx = await this.sepoliaWalletClient.writeContract({
-      address: CCTP_CONTRACTS.ethSepolia.messageTransmitter,
+    // Step 4 — Mint USDC on Ethereum (Mainnet or Sepolia)
+    const mintTx = await this.ethWalletClient.writeContract({
+      address: CCTP_CONTRACTS.ethereum.messageTransmitter,
       abi: MESSAGE_TRANSMITTER_ABI,
       functionName: 'receiveMessage',
       args: [messageBytes, attestation as `0x${string}`]
     })
 
     console.log(`[CCTPExecutor] Mint tx submitted: ${mintTx}. Waiting for confirmation...`)
-    await this.sepoliaPublicClient.waitForTransactionReceipt({ hash: mintTx, timeout: 120_000 })
+    await this.ethPublicClient.waitForTransactionReceipt({ hash: mintTx, timeout: 120_000 })
     
-    const msgText5 = `[CCTP Success] Rebalance complete! Bridged ${amountUSDC} USDC to Ethereum Sepolia. Burn Tx: ${burnTx}, Mint Tx: ${mintTx}`
+    const msgText5 = `[CCTP Success] Rebalance complete! Bridged ${amountUSDC} USDC to ${targetChainName}. Burn Tx: ${burnTx}, Mint Tx: ${mintTx}`
     console.log(`[CCTPExecutor] ${msgText5}`)
     if (onProgress) onProgress(msgText5)
 
@@ -276,31 +299,36 @@ export class CCTPExecutor {
       attestationSignature: attestation,
       status: 'success',
       amount: amountUSDC,
-      destinationChain: 'Ethereum Sepolia',
+      destinationChain: targetChainName,
     }
   }
 
   /**
-   * Get the executor account's USDC balance on Ethereum Sepolia
+   * Get the executor account's USDC balance on Ethereum (Mainnet or Sepolia)
    */
-  async getSepoliaUSDCBalance(): Promise<number> {
+  async getEthereumUSDCBalance(): Promise<number> {
     try {
-      const balance = await this.sepoliaPublicClient.readContract({
-        address: CCTP_CONTRACTS.ethSepolia.usdc,
+      const balance = await this.ethPublicClient.readContract({
+        address: CCTP_CONTRACTS.ethereum.usdc,
         abi: ERC20_ABI,
         functionName: 'balanceOf',
         args: [this.account.address],
       })
       return Number(balance) / 1_000_000
     } catch (err) {
-      console.error('[CCTPExecutor] Failed to check Sepolia USDC balance:', err)
+      console.error(`[CCTPExecutor] Failed to check ${CIRCLE_ETH_CONFIG.name} USDC balance:`, err)
       return 0
     }
   }
 
+  // Backward compatibility alias
+  async getSepoliaUSDCBalance(): Promise<number> {
+    return this.getEthereumUSDCBalance()
+  }
+
   /**
-   * Execute CCTP bridge — Ethereum Sepolia → Arc Testnet
-   * Burns USDC on Sepolia, polls attestation, and mints USDC on Arc Testnet
+   * Execute CCTP bridge — Ethereum → Arc
+   * Burns USDC on Ethereum, polls attestation, and mints USDC on Arc
    */
   async bridgeToArc(
     amountUSDC: number,
@@ -319,42 +347,44 @@ export class CCTPExecutor {
     const amountRaw = parseUnits(amountUSDC.toString(), 6)
     const zeroBytes32 = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`
     const mintRecipient = `0x000000000000000000000000${recipientAddress.slice(2)}` as `0x${string}`
+    const sourceChainName = CIRCLE_ETH_CONFIG.name
+    const destChainName = IS_MAINNET ? 'Arc' : 'Arc Testnet'
 
-    const msgText = `[CCTP Step 1/3] Approving TokenMessenger to spend ${amountUSDC} USDC on Ethereum Sepolia...`
+    const msgText = `[CCTP Step 1/3] Approving TokenMessenger to spend ${amountUSDC} USDC on ${sourceChainName}...`
     console.log(`[CCTPExecutor] ${msgText}`)
     if (onProgress) onProgress(msgText)
 
-    // 1. Approve TokenMessenger to spend Sepolia USDC
-    const approveTx = await this.sepoliaWalletClient.writeContract({
-      address: CCTP_CONTRACTS.ethSepolia.usdc,
+    // 1. Approve TokenMessenger to spend Ethereum USDC
+    const approveTx = await this.ethWalletClient.writeContract({
+      address: CCTP_CONTRACTS.ethereum.usdc,
       abi: ERC20_ABI,
       functionName: 'approve',
-      args: [CCTP_CONTRACTS.ethSepolia.tokenMessenger, amountRaw],
+      args: [CCTP_CONTRACTS.ethereum.tokenMessenger, amountRaw],
     })
-    await this.sepoliaPublicClient.waitForTransactionReceipt({ hash: approveTx, timeout: 120_000 })
+    await this.ethPublicClient.waitForTransactionReceipt({ hash: approveTx, timeout: 120_000 })
 
-    const msgText2 = `[CCTP Step 1/3] Approval tx confirmed: ${approveTx}. Depositing for burn on Ethereum Sepolia...`
+    const msgText2 = `[CCTP Step 1/3] Approval tx confirmed: ${approveTx}. Depositing for burn on ${sourceChainName}...`
     console.log(`[CCTPExecutor] ${msgText2}`)
     if (onProgress) onProgress(msgText2)
 
-    // 2. Deposit for Burn on Sepolia (destinationDomain = 26 for Arc Testnet)
-    const burnTx = await this.sepoliaWalletClient.writeContract({
-      address: CCTP_CONTRACTS.ethSepolia.tokenMessenger,
+    // 2. Deposit for Burn on Ethereum (destinationDomain = 26 for Arc)
+    const burnTx = await this.ethWalletClient.writeContract({
+      address: CCTP_CONTRACTS.ethereum.tokenMessenger,
       abi: TOKEN_MESSENGER_ABI,
       functionName: 'depositForBurn',
       args: [
         amountRaw,
-        26, // Arc Testnet domain ID
+        26, // Arc domain ID
         mintRecipient,
-        CCTP_CONTRACTS.ethSepolia.usdc,
+        CCTP_CONTRACTS.ethereum.usdc,
         zeroBytes32,
         0n,
-        2000 // Standard finality threshold
+        IS_MAINNET ? 1000 : 2000 // Fast or Standard finality
       ],
     })
 
     console.log(`[CCTPExecutor] Burn tx submitted: ${burnTx}. Waiting for confirmation...`)
-    const burnReceipt = await this.sepoliaPublicClient.waitForTransactionReceipt({ hash: burnTx, timeout: 120_000 })
+    const burnReceipt = await this.ethPublicClient.waitForTransactionReceipt({ hash: burnTx, timeout: 120_000 })
     console.log(`[CCTPExecutor] Burn tx confirmed! Parsing logs for CCTP message...`)
 
     // Extract messageBytes from logs
@@ -396,11 +426,11 @@ export class CCTPExecutor {
     console.log(`[CCTPExecutor] CCTP message hash: ${messageHash}`)
 
     // 3. Poll Circle Attestation API
-    const msgText3 = `[CCTP Step 2/3] Burn transaction confirmed: ${burnTx}. Polling Circle Sandbox Iris API for attestation...`
+    const msgText3 = `[CCTP Step 2/3] Burn transaction confirmed: ${burnTx}. Polling Circle Iris API (${IS_MAINNET ? 'Production' : 'Sandbox'}) for attestation...`
     console.log(`[CCTPExecutor] ${msgText3}`)
     if (onProgress) onProgress(msgText3)
 
-    const attestationUrl = `https://iris-api-sandbox.circle.com/v1/attestations/${messageHash}`
+    const attestationUrl = `${CIRCLE_IRIS_API_URL}/${messageHash}`
     let attestation: string | null = null
 
     // Poll up to 30 times (2.5 minutes)
@@ -424,13 +454,13 @@ export class CCTPExecutor {
       throw new Error('Circle attestation polling timed out or failed.')
     }
     
-    const msgText4 = `[CCTP Step 3/3] Circle attestation acquired! Minting USDC on Arc Testnet...`
+    const msgText4 = `[CCTP Step 3/3] Circle attestation acquired! Minting USDC on ${destChainName}...`
     console.log(`[CCTPExecutor] ${msgText4}`)
     if (onProgress) onProgress(msgText4)
 
-    // 4. Mint USDC on Arc Testnet
+    // 4. Mint USDC on Arc
     const mintTx = await this.arcWalletClient.writeContract({
-      address: CCTP_CONTRACTS.arcTestnet.messageTransmitter,
+      address: CCTP_CONTRACTS.arc.messageTransmitter,
       abi: MESSAGE_TRANSMITTER_ABI,
       functionName: 'receiveMessage',
       args: [messageBytes, attestation as `0x${string}`],
@@ -441,7 +471,7 @@ export class CCTPExecutor {
     console.log(`[CCTPExecutor] Mint tx submitted: ${mintTx}. Waiting for confirmation...`)
     await this.arcPublicClient.waitForTransactionReceipt({ hash: mintTx, timeout: 120_000 })
     
-    const msgText5 = `[CCTP Success] Return complete! Bridged ${amountUSDC} USDC to Arc Testnet. Burn Tx: ${burnTx}, Mint Tx: ${mintTx}`
+    const msgText5 = `[CCTP Success] Return complete! Bridged ${amountUSDC} USDC to ${destChainName}. Burn Tx: ${burnTx}, Mint Tx: ${mintTx}`
     console.log(`[CCTPExecutor] ${msgText5}`)
     if (onProgress) onProgress(msgText5)
 
@@ -453,7 +483,7 @@ export class CCTPExecutor {
       attestationSignature: attestation,
       status: 'success',
       amount: amountUSDC,
-      destinationChain: 'Arc Testnet',
+      destinationChain: destChainName,
     }
   }
 }

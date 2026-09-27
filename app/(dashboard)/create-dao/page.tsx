@@ -67,7 +67,7 @@ export default function CreateDaoPage() {
   useEffect(() => {
     if (step === 3 && isAuthenticated) {
       console.log("[CreateDaoPage] Pre-warming authenticated client on confirmation screen...");
-      getAuthenticatedClient(wallets, 5042002, walletAddress).catch((err) => {
+      getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress).catch((err) => {
         console.warn("[CreateDaoPage] Client pre-warming failed (will retry on launch click):", err);
       });
     }
@@ -249,7 +249,7 @@ export default function CreateDaoPage() {
           setLaunching(false);
           return;
         }
-        const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, resolvedAddress);
+        const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, resolvedAddress);
         const cleanAddress = getAddress(address) as `0x${string}`;
 
         // USDC precompiled contract address on Arc Testnet

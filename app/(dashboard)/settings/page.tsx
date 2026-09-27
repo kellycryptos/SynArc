@@ -24,6 +24,7 @@ import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 import { useTheme } from "@/providers/ThemeProvider";
 import { Contract, formatUnits } from "ethers";
 import { getResilientProvider } from "@/lib/rpc/config";
+import { ARC_CHAIN } from "@/lib/arc-config";
 
 export default function SettingsPage() {
   const { walletAddress, isAuthenticated, isCircle } = useAuth();
@@ -167,7 +168,7 @@ export default function SettingsPage() {
                     {isArcTestnet && !isUnsupported ? (
                       <div className="flex items-center gap-2 text-success font-semibold text-sm">
                         <CheckCircle className="w-4 h-4 text-success animate-pulse" />
-                        <span>Arc Testnet ✅</span>
+                        <span>{ARC_CHAIN.name} ✅</span>
                       </div>
                     ) : (
                       <div className="flex flex-1 items-center justify-between gap-3">
@@ -329,7 +330,7 @@ export default function SettingsPage() {
                       {copiedContract === contract.id ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
                     </button>
                     <a
-                      href={`https://testnet.arcscan.app/address/${contract.address}`}
+                      href={`${ARC_CHAIN.blockExplorers?.default.url || 'https://testnet.arcscan.app'}/address/${contract.address}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 bg-surface hover:bg-surface-elevated rounded-lg border border-border-thin text-muted hover:text-white transition-colors flex items-center justify-center"
@@ -346,22 +347,22 @@ export default function SettingsPage() {
             <div className="mt-6 pt-4 border-t border-border-thin grid grid-cols-2 gap-4 text-xs">
               <div className="space-y-1">
                 <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Network</span>
-                <span className="text-white font-medium">Arc Testnet</span>
+                <span className="text-white font-medium">{ARC_CHAIN.name}</span>
               </div>
               <div className="space-y-1">
                 <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Chain ID</span>
-                <span className="text-white font-medium">5042002</span>
+                <span className="text-white font-medium">{ARC_CHAIN.id}</span>
               </div>
 
               <div className="space-y-1 col-span-2">
                 <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Block Explorer</span>
                 <a 
-                  href="https://testnet.arcscan.app" 
+                  href={ARC_CHAIN.blockExplorers?.default.url || "https://testnet.arcscan.app"} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="text-primary hover:underline font-medium flex items-center gap-1"
                 >
-                  testnet.arcscan.app
+                  {ARC_CHAIN.blockExplorers?.default.name || "ArcScan"} ({ARC_CHAIN.blockExplorers?.default.url?.replace('https://', '') || 'testnet.arcscan.app'})
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>

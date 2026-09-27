@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useAccount, useSwitchChain } from 'wagmi';
 import { useCircleWallet } from '@/hooks/useCircleWallet';
+import { ARC_CHAIN } from '@/lib/arc-config';
 
 export interface SynArcConnectedWallet {
   address: string;
@@ -32,7 +33,7 @@ export function useWallets() {
     if (circleConnected && circleAddress) {
       list.push({
         address: circleAddress,
-        chainId: 'eip155:5042002',
+        chainId: `eip155:${ARC_CHAIN.id}`,
         walletClientType: 'circle',
         getEthereumProvider: async () => null,
         getEip1193Provider: async () => null,
@@ -60,7 +61,7 @@ export function useWallets() {
 
       list.push({
         address,
-        chainId: `eip155:${chainId || 5042002}`,
+        chainId: `eip155:${chainId || ARC_CHAIN.id}`,
         walletClientType: connector?.name?.toLowerCase() || 'injected',
         getEthereumProvider: getProvider,
         getEip1193Provider: getProvider,

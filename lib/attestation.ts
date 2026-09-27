@@ -6,6 +6,7 @@
  * - Real IPFS CID pinning (via Pinata) for milestone/funding deliverables
  * - Strict URI schema validation matching SynArcGovernor and SynArcAgent smart contracts
  */
+import { CIRCLE_IRIS_API_URL } from '@/lib/arc-config';
 
 export interface AttestationValidationResult {
   valid: boolean;
@@ -102,7 +103,7 @@ export function validateAttestationURI(uri: string): AttestationValidationResult
 /**
  * Resolves an on-chain attestation reference into a publicly viewable HTTPS link:
  * - ipfs://... -> https://gateway.pinata.cloud/ipfs/...
- * - cctp:0x... -> https://iris-api-sandbox.circle.com/v1/attestations/0x...
+ * - cctp:0x... -> https://iris-api.circle.com/v1/attestations/0x... (or sandbox on testnet)
  * - https://... -> returns unmodified
  */
 export function resolveAttestationLink(uri: string): string {
@@ -117,7 +118,7 @@ export function resolveAttestationLink(uri: string): string {
 
   if (trimmed.startsWith('cctp:0x')) {
     const hash = trimmed.slice(5);
-    return `https://iris-api-sandbox.circle.com/v1/attestations/${hash}`;
+    return `${CIRCLE_IRIS_API_URL}/${hash}`;
   }
 
   return trimmed;

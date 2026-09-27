@@ -286,7 +286,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     if (!userAddress) return;
     setDelegating(true);
     try {
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
       const SARC_DELEGATE_ABI = [{
         name: "delegate",
         type: "function",
@@ -414,7 +414,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       setStatus('Confirming vote on Arc blockchain...');
 
       // Get provider and client — Privy wallet, Circle wallet OR external wallet
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
 
       // Dynamically estimate fees using low-latency and aggressive parameters
       const gasParams = await getAggressiveGasParams(publicClient);
@@ -597,11 +597,11 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         throw new Error("Active wallet not found");
       }
 
-      // Force Arc Testnet before transaction with robust switching
-      const ethereumProvider = await enforceChain(activeWallet, 5042002);
+      // Enforce active Arc chain before transaction with robust switching
+      const ethereumProvider = await enforceChain(activeWallet, ARC_CHAIN.id);
       const browserProvider = new BrowserProvider(ethereumProvider, {
-        chainId: 5042002,
-        name: "Arc Testnet"
+        chainId: ARC_CHAIN.id,
+        name: ARC_CHAIN.name
       });
       const signer = await browserProvider.getSigner(activeWallet.address);
 

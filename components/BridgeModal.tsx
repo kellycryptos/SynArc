@@ -8,6 +8,7 @@ import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useSwitchChain } from "wagmi";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
 import { selectActiveWallet } from "@/lib/tx-helper";
+import { IS_MAINNET } from "@/lib/arc-config";
 import {
   X,
   Coins,
@@ -641,7 +642,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                             </span>
                             {isActive && step.key === "waiting-attestation" && (
                               <span className="text-[10px] text-primary/70 font-mono">
-                                {bridgeState.elapsedSeconds}s · querying iris-api-sandbox.circle.com
+                                {bridgeState.elapsedSeconds}s · querying {IS_MAINNET ? "iris-api.circle.com" : "iris-api-sandbox.circle.com"}
                               </span>
                             )}
                             {isDone && step.key === "burning" && bridgeState.burnTxHash && (

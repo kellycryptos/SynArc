@@ -10,6 +10,7 @@ import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useSwitchChain, useAccount } from "wagmi";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
 import { selectActiveWallet } from "@/lib/tx-helper";
+import { IS_MAINNET } from "@/lib/arc-config";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowDown, 
@@ -40,7 +41,7 @@ const erc20Abi = parseAbi([
   "function decimals() view returns (uint8)",
 ]);
 
-const SOURCE_CHAINS = [
+const TESTNET_SOURCE_CHAINS = [
   { 
     id: "ETH_SEPOLIA", 
     name: "Ethereum Sepolia", 
@@ -91,16 +92,80 @@ const SOURCE_CHAINS = [
   },
 ];
 
-const ARC_CHAIN = {
-  id: "ARC_TESTNET",
-  name: "Arc Testnet",
-  icon: "⚡",
-  color: "bg-amber-500/10 border-amber-500/20 text-amber-500",
-  chainId: 5042002,
-  bgClass: "from-amber-500/20 to-transparent",
-  borderClass: "border-amber-500/30",
-  blockExplorerUrl: "https://testnet.arcscan.app"
-};
+const MAINNET_SOURCE_CHAINS = [
+  { 
+    id: "ETH_MAINNET", 
+    name: "Ethereum", 
+    tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 
+    rpcUrl: "https://eth.llamarpc.com",
+    icon: "🪙",
+    color: "bg-blue-500/10 border-blue-500/20 text-blue-400",
+    chainId: 1,
+    bgClass: "from-blue-500/20 to-transparent",
+    borderClass: "border-blue-500/30",
+    blockExplorerUrl: "https://etherscan.io"
+  },
+  { 
+    id: "BASE_MAINNET", 
+    name: "Base", 
+    tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", 
+    rpcUrl: "https://mainnet.base.org",
+    icon: "🔵",
+    color: "bg-blue-600/10 border-blue-600/20 text-blue-500",
+    chainId: 8453,
+    bgClass: "from-blue-600/20 to-transparent",
+    borderClass: "border-blue-600/30",
+    blockExplorerUrl: "https://basescan.org"
+  },
+  { 
+    id: "AVAX_MAINNET", 
+    name: "Avalanche", 
+    tokenAddress: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E", 
+    rpcUrl: "https://api.avax.network/ext/bc/C/rpc",
+    icon: "🔺",
+    color: "bg-red-500/10 border-red-500/20 text-red-500",
+    chainId: 43114,
+    bgClass: "from-red-500/20 to-transparent",
+    borderClass: "border-red-500/30",
+    blockExplorerUrl: "https://snowtrace.io"
+  },
+  { 
+    id: "SOL_MAINNET", 
+    name: "Solana", 
+    tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", 
+    rpcUrl: "https://api.mainnet-beta.solana.com",
+    icon: "☀️",
+    color: "bg-purple-500/10 border-purple-500/20 text-purple-400",
+    chainId: 101,
+    bgClass: "from-purple-500/20 to-transparent",
+    borderClass: "border-purple-500/30",
+    blockExplorerUrl: "https://explorer.solana.com"
+  },
+];
+
+const SOURCE_CHAINS = IS_MAINNET ? MAINNET_SOURCE_CHAINS : TESTNET_SOURCE_CHAINS;
+
+const ARC_CHAIN = IS_MAINNET
+  ? {
+      id: "ARC_MAINNET",
+      name: "Arc Mainnet",
+      icon: "⚡",
+      color: "bg-amber-500/10 border-amber-500/20 text-amber-500",
+      chainId: 5042,
+      bgClass: "from-amber-500/20 to-transparent",
+      borderClass: "border-amber-500/30",
+      blockExplorerUrl: "https://arcscan.app"
+    }
+  : {
+      id: "ARC_TESTNET",
+      name: "Arc Testnet",
+      icon: "⚡",
+      color: "bg-amber-500/10 border-amber-500/20 text-amber-500",
+      chainId: 5042002,
+      bgClass: "from-amber-500/20 to-transparent",
+      borderClass: "border-amber-500/30",
+      blockExplorerUrl: "https://testnet.arcscan.app"
+    };
 
 interface BridgeTx {
   id: string;
@@ -852,7 +917,7 @@ export default function BridgePage() {
                                 Mint Transaction (Dest)
                               </span>
                               <a
-                                href={direction === "in" ? `https://testnet.arcscan.app/tx/${activeTxHash}` : `${selectedChain.blockExplorerUrl}/tx/${activeTxHash}`}
+                                href={direction === "in" ? `${ARC_CHAIN.blockExplorerUrl}/tx/${activeTxHash}` : `${selectedChain.blockExplorerUrl}/tx/${activeTxHash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-primary hover:underline font-mono font-bold flex items-center gap-1"
@@ -954,7 +1019,7 @@ export default function BridgePage() {
                           <div className="flex items-center gap-1.5 font-medium">
                             <span>{tx.sourceChain}</span>
                             <ArrowRight className="w-3.5 h-3.5 text-text-tertiary" />
-                            <span className="text-primary font-bold">{tx.destChain || "Arc Testnet"}</span>
+                            <span className="text-primary font-bold">{tx.destChain || ARC_CHAIN.name}</span>
                           </div>
                         </td>
                         <td className="py-3.5 font-mono font-bold text-white">
@@ -971,7 +1036,7 @@ export default function BridgePage() {
                         </td>
                         <td className="py-3.5 text-right pr-2">
                           <a 
-                            href={tx.explorerUrl || (tx.sourceChain === "Arc Testnet" ? `https://testnet.arcscan.app/tx/${tx.txHash}` : `https://sepolia.etherscan.io/tx/${tx.txHash}`)}
+                            href={tx.explorerUrl || (tx.sourceChain.toLowerCase().includes("arc") ? `${ARC_CHAIN.blockExplorerUrl}/tx/${tx.txHash}` : (IS_MAINNET ? `https://etherscan.io/tx/${tx.txHash}` : `https://sepolia.etherscan.io/tx/${tx.txHash}`))}
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="text-primary hover:underline font-mono text-[11px] inline-flex items-center gap-1"

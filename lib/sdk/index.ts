@@ -1,7 +1,7 @@
 import { createPublicClient, createWalletClient, http, fallback, parseAbi, parseUnits, formatUnits, decodeEventLog, keccak256, decodeAbiParameters } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { arcTestnet, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
-import { sepolia } from "viem/chains";
+import { arcTestnet, arcMainnet, ARC_RPC_URLS, CONTRACTS, IS_MAINNET, CIRCLE_IRIS_API_URL, CIRCLE_ETH_CONFIG } from "@/lib/arc-config";
+import { mainnet, sepolia } from "viem/chains";
 
 export interface SDKConfig {
   network: "arc-testnet" | "arc-mainnet";
@@ -18,9 +18,10 @@ export class SynArcClient {
   constructor(config: SDKConfig) {
     const rpcUrls = config.rpcUrl ? [config.rpcUrl] : ARC_RPC_URLS;
     const transport = fallback(rpcUrls.map((url) => http(url)));
+    const targetChain = (config.network === "arc-mainnet" || IS_MAINNET) ? arcMainnet : arcTestnet;
 
     this.publicClient = createPublicClient({
-      chain: arcTestnet,
+      chain: targetChain,
       transport,
     });
 
@@ -31,7 +32,7 @@ export class SynArcClient {
       this.account = privateKeyToAccount(formattedKey);
       this.walletClient = createWalletClient({
         account: this.account,
-        chain: arcTestnet,
+        chain: targetChain,
         transport,
       });
     } else if (config.signer) {
@@ -303,10 +304,10 @@ export class SynArcClient {
           "function approve(address spender, uint256 amount) returns (bool)"
         ]);
 
-        const usdcAddress = "0x3600000000000000000000000000000000000000"; // Arc Testnet USDC
-        const messengerAddress = "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA"; // Arc TokenMessenger
-        const ethSepoliaDomain = 0;
-        const ethSepoliaTransmitter = "0xe737e5cebeeba77efe34d4aa090756590b1ce275";
+        const usdcAddress = (process.env.NEXT_PUBLIC_USDC_CONTRACT_ADDRESS || CONTRACTS.token || "0x3600000000000000000000000000000000000000") as `0x${string}`;
+        const messengerAddress = (process.env.NEXT_PUBLIC_CCTP_TOKEN_MESSENGER_ARC || (IS_MAINNET ? "0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d" : "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA")) as `0x${string}`;
+        const ethDomain = CIRCLE_ETH_CONFIG.domain;
+        const ethTransmitter = CIRCLE_ETH_CONFIG.messageTransmitter;
 
         if (!this.walletClient) throw new Error("Signer/Private key required to write to contract");
 
@@ -336,7 +337,7 @@ export class SynArcClient {
           address: messengerAddress,
           abi: CCTP_MESSENGER_ABI,
           functionName: "depositForBurn",
-          args: [amountRaw, ethSepoliaDomain, mintRecipient, usdcAddress, zeroBytes32, 0n, 0],
+          args: [amountRaw, ethDomain, mintRecipient, usdcAddress, zeroBytes32, 0n, 0],
         });
         const burnReceipt = await this.publicClient.waitForTransactionReceipt({ hash: burnTx });
 
@@ -379,7 +380,7 @@ export class SynArcClient {
         console.log(`[SynArc SDK] CCTP message hash: ${messageHash}`);
 
         // 5. Poll Circle Attestation API
-        const attestationUrl = `https://iris-api-sandbox.circle.com/v1/attestations/${messageHash}`;
+        const attestationUrl = `${CIRCLE_IRIS_API_URL}/${messageHash}`;
         let attestation: string | null = null;
 
         // Poll up to 30 times (2.5 minutes)
@@ -403,41 +404,48 @@ export class SynArcClient {
           throw new Error("Circle attestation polling timed out or failed.");
         }
 
-        // 6. Submit receiveMessage on destination chain (Ethereum Sepolia) if account is available
+        // 6. Submit receiveMessage on destination chain (Ethereum / Sepolia) if account is available
         let mintTx: `0x${string}` | undefined;
         if (this.account) {
           try {
-            const sepoliaRpcUrls = [
-              "https://rpc.ankr.com/eth_sepolia",
-              "https://ethereum-sepolia-rpc.publicnode.com",
-              "https://sepolia.gateway.tenderly.co"
-            ];
-            const sepoliaTransport = fallback(sepoliaRpcUrls.map(url => http(url)));
-            const sepoliaPublicClient = createPublicClient({
-              chain: sepolia,
-              transport: sepoliaTransport
+            const ethRpcUrls = IS_MAINNET
+              ? [
+                  "https://eth.llamarpc.com",
+                  "https://rpc.ankr.com/eth",
+                  "https://ethereum-rpc.publicnode.com"
+                ]
+              : [
+                  "https://rpc.ankr.com/eth_sepolia",
+                  "https://ethereum-sepolia-rpc.publicnode.com",
+                  "https://sepolia.gateway.tenderly.co"
+                ];
+            const ethTransport = fallback(ethRpcUrls.map(url => http(url)));
+            const ethChain = IS_MAINNET ? mainnet : sepolia;
+            const ethPublicClient = createPublicClient({
+              chain: ethChain,
+              transport: ethTransport
             });
-            const sepoliaWalletClient = createWalletClient({
+            const ethWalletClient = createWalletClient({
               account: this.account,
-              chain: sepolia,
-              transport: sepoliaTransport
+              chain: ethChain,
+              transport: ethTransport
             });
 
-            console.log("[SynArc SDK] Submitting CCTP mint transaction on Ethereum Sepolia...");
-            mintTx = await sepoliaWalletClient.writeContract({
-              address: ethSepoliaTransmitter as `0x${string}`,
+            console.log(`[SynArc SDK] Submitting CCTP mint transaction on ${CIRCLE_ETH_CONFIG.name}...`);
+            mintTx = await ethWalletClient.writeContract({
+              address: ethTransmitter as `0x${string}`,
               abi: MESSAGE_TRANSMITTER_ABI,
               functionName: "receiveMessage",
               args: [messageBytes as `0x${string}`, attestation as `0x${string}`],
               account: this.account
             });
-            await sepoliaPublicClient.waitForTransactionReceipt({ hash: mintTx });
+            await ethPublicClient.waitForTransactionReceipt({ hash: mintTx });
             console.log(`[SynArc SDK] CCTP Mint transaction confirmed: ${mintTx}`);
           } catch (mintErr) {
-            console.error("[SynArc SDK] Failed to execute mint on Ethereum Sepolia:", mintErr);
+            console.error(`[SynArc SDK] Failed to execute mint on ${CIRCLE_ETH_CONFIG.name}:`, mintErr);
           }
         } else {
-          console.warn("[SynArc SDK] No private key/account available to sign mint transaction on Ethereum Sepolia. Bridge transfer must be completed manually.");
+          console.warn(`[SynArc SDK] No private key/account available to sign mint transaction on ${CIRCLE_ETH_CONFIG.name}. Bridge transfer must be completed manually.`);
         }
 
         return { executeHash: execTx, burnHash: burnTx, mintHash: mintTx };

@@ -16,7 +16,7 @@ import { parseArcError } from "@/lib/utils";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
 import { toast } from "react-hot-toast";
 import { writeWithRetry, enforceChain, getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
-import { CONTRACTS } from "@/lib/arc-config";
+import { CONTRACTS, ARC_CHAIN } from "@/lib/arc-config";
 import { GovernorABI } from "@/lib/governance/contracts";
 import { createWalletClient, createPublicClient, custom, fallback, http } from "viem";
 import { validateAttestationURI } from "@/lib/attestation";
@@ -229,7 +229,7 @@ export default function CreateProposalPage() {
 
     try {
       // Get provider and client — Privy wallet, Circle wallet OR external wallet
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
       const targetAddress = (formData.executionTarget && formData.executionTarget.startsWith('0x'))
         ? (formData.executionTarget as `0x${string}`)
         : '0x0000000000000000000000000000000000000000';

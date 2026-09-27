@@ -59,6 +59,14 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
     uint8 public minConfidenceScore = 80;             // 80% default minimum AI attestation confidence
     uint256 public payeeChangeCooldown = 2 days;       // 48h cooldown on payout recipient updates
 
+    // Role authorizations for release valve
+    mapping(address => bool) public authorizedAgents;
+    mapping(address => bool) public authorizedHumanReviewers;
+
+    event AgentAuthorizationUpdated(address indexed agent, bool authorized);
+    event HumanReviewerUpdated(address indexed reviewer, bool authorized);
+    event AgentReleaseCapUpdated(uint256 oldCap, uint256 newCap);
+
     // --- Data Structures ---
     struct OrderTerms {
         uint256 proposalId;
@@ -231,6 +239,40 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
 
     function setAgentAddress(address _agentAddress) external onlyOwner {
         agentAddress = _agentAddress;
+        if (_agentAddress != address(0)) {
+            authorizedAgents[_agentAddress] = true;
+            emit AgentAuthorizationUpdated(_agentAddress, true);
+        }
+    }
+
+    function setAuthorizedAgent(address agent, bool authorized) external onlyGovernorOrOwner {
+        require(agent != address(0), "Invalid agent address");
+        authorizedAgents[agent] = authorized;
+        emit AgentAuthorizationUpdated(agent, authorized);
+    }
+
+    function setAuthorizedHumanReviewer(address reviewer, bool authorized) external onlyGovernorOrOwner {
+        require(reviewer != address(0), "Invalid reviewer address");
+        authorizedHumanReviewers[reviewer] = authorized;
+        emit HumanReviewerUpdated(reviewer, authorized);
+    }
+
+    function isAuthorizedAgent(address account) public view returns (bool) {
+        return account == agentAddress || authorizedAgents[account];
+    }
+
+    function isAuthorizedReviewer(address account) public view returns (bool) {
+        return account == governor || account == owner() || authorizedHumanReviewers[account];
+    }
+
+    function agentReleaseCap() external view returns (uint256) {
+        return humanReviewThreshold;
+    }
+
+    function setAgentReleaseCap(uint256 newCap) external onlyGovernorOrOwner {
+        emit HumanReviewThresholdUpdated(humanReviewThreshold, newCap);
+        emit AgentReleaseCapUpdated(humanReviewThreshold, newCap);
+        humanReviewThreshold = newCap;
     }
 
     function setWithdrawalDelay(uint256 newDelay) external onlyGovernorOrOwner {
@@ -241,6 +283,7 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
 
     function setHumanReviewThreshold(uint256 newThreshold) external onlyGovernorOrOwner {
         emit HumanReviewThresholdUpdated(humanReviewThreshold, newThreshold);
+        emit AgentReleaseCapUpdated(humanReviewThreshold, newThreshold);
         humanReviewThreshold = newThreshold;
     }
 
@@ -362,9 +405,32 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
     }
 
     // --- Human Review Gate for Model Verdicts ---
-    function approveReleaseHuman(bytes32 releaseKey) external onlyGovernorOrOwner {
+    function approveReleaseHuman(bytes32 releaseKey) external {
+        require(isAuthorizedReviewer(msg.sender), "Only governor, owner, or authorized reviewer can approve");
         humanApproved[releaseKey] = true;
         emit HumanApprovalGranted(releaseKey, msg.sender);
+    }
+
+    function getReleaseAuthorization(
+        address caller,
+        uint256 amount,
+        bytes32 releaseKey
+    ) external view returns (
+        bool canReleaseDirectly,
+        bool requiresHumanApproval,
+        string memory releaseRole
+    ) {
+        bool isHuman = isAuthorizedReviewer(caller);
+        bool isAgent = isAuthorizedAgent(caller);
+        bool isApproved = humanApproved[releaseKey];
+        bool overCap = (amount > humanReviewThreshold);
+
+        if (overCap && !isApproved && !isHuman) {
+            return (false, true, isAgent ? "AGENT_STOPPED_AT_CAP" : "HUMAN_APPROVAL_REQUIRED");
+        }
+
+        string memory role = isHuman ? "HUMAN_OPERATOR" : (isAgent ? "AUTONOMOUS_AGENT" : "BENEFICIARY");
+        return (true, overCap && !isApproved, role);
     }
 
     // --- Deposits ---
@@ -548,8 +614,8 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         if (!ctx.amountMatched) revert AmountMismatch(ctx.orderAmount, amount);
         if (!ctx.confidenceOk) revert LowConfidenceScore(aiConfidenceScore, minConfidenceScore);
 
-        bool isGovOrOwner = (msg.sender == governor || msg.sender == owner());
-        if (ctx.humanRequired && !isGovOrOwner) {
+        bool isHumanReviewer = isAuthorizedReviewer(msg.sender);
+        if (ctx.humanRequired && !isHumanReviewer) {
             revert HumanApprovalRequired(ctx.releaseKey, amount, humanReviewThreshold);
         }
         if (!ctx.balanceOk) revert InsufficientTreasuryBalance(usdcBalance, amount);

@@ -77,7 +77,7 @@ const campaign = await client.campaigns.create({ title: 'My Workspace', goal: 10
 - SynArcToken (sARC): 0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e
 - EURC Token: 0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a
 - ERC-8004 Registry: 0x8004A818BFB912233c491871b3d84c89A494BD9e
-- Links: App (https://www.synarcdao.xyz/), Docs (https://www.synarcdao.xyz/docs), ArcScan (https://testnet.arcscan.app), Twitter (https://x.com/synarc_)`;
+- Links: App (https://www.synarcdao.xyz/), Docs (https://www.synarcdao.xyz/docs), ArcScan (https://testnet.arcscan.app), Twitter (https://x.com/syndaopro)`;
 
 export async function POST(req: NextRequest) {
   try {

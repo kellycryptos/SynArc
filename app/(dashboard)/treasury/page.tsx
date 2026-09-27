@@ -63,6 +63,7 @@ import {
   ArrowUpRight, ArrowDownRight, Activity, Wallet, Shield, PieChart, Coins, Info, PlusCircle, X, Check, Clock
 } from "lucide-react";
 import { BridgeModal } from "@/components/BridgeModal";
+import { TameionReleaseValve } from "@/components/dashboard/TameionReleaseValve";
 
 
 function TreasuryPageContent() {
@@ -112,7 +113,7 @@ function TreasuryPageContent() {
     try {
 
       
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
       const gasParams = await getAggressiveGasParams(publicClient);
       
       const hash = await walletClient.writeContract({
@@ -149,7 +150,7 @@ function TreasuryPageContent() {
     try {
 
       
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
       const gasParams = await getAggressiveGasParams(publicClient);
       
       const hash = await walletClient.writeContract({
@@ -328,7 +329,7 @@ function TreasuryPageContent() {
 
       if (isEmbedded && activeWallet) {
         setDepositStatus('Preparing...');
-        const eip1193Provider = await enforceChain(activeWallet, 5042002);
+        const eip1193Provider = await enforceChain(activeWallet, ARC_CHAIN.id);
         const provider = new BrowserProvider(eip1193Provider);
         const signer = await provider.getSigner();
 
@@ -413,7 +414,7 @@ function TreasuryPageContent() {
       }
 
       // Get provider and client — Privy wallet, Circle wallet OR external wallet
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
 
       const tokenAddress = token === 'USDC' ? USDC_ADDRESS : EURC_ADDRESS;
       const amountRaw = BigInt(Math.floor(amount * 1_000_000));
@@ -670,6 +671,11 @@ function TreasuryPageContent() {
           </GlassCard>
         </div>
       </SectionErrorBoundary>
+
+        {/* Tameion Escrow Release Valve */}
+        <SectionErrorBoundary sectionName="Tameion Escrow Release Valve">
+          <TameionReleaseValve treasuryUsdcBalance={usdcBalance} />
+        </SectionErrorBoundary>
 
         {/* Charts Row */}
         <SectionErrorBoundary sectionName="Treasury Valuation & Composition Charts">

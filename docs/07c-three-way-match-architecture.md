@@ -212,3 +212,39 @@ console.log(`Milestone released: ${txHash}`);
 | **Error Handling** | Silent / Generic Reverts | Loud Custom Errors with auditable parameters |
 | **Dry-Run Mode** | None | Idempotent `simulateRelease` preview (Ghostfolio) |
 | **Replay Protection** | Timestamp stored but never read | Idempotent release key mapping |
+| **Release Valve Track** | Not supported | Tameion on Arc Mainnet 5042 |
+
+---
+
+## 7. Tameion Escrow Release Valve on Arc Mainnet (Chain ID 5042)
+
+**Syn DAO is the release valve: USDC in escrow, proof attached, paid once.**
+
+Agent can release under an on-chain cap. Over the cap it stops for a human. Same payment cannot run twice.
+
+### The 3 Non-Negotiable Invariants
+
+1. **USDC in Escrow**:
+   - Liquid USDC resides natively within `SynArcTreasury.sol` on Arc Mainnet (`5042`).
+   - Escrow is fully funded and backed; no uncollateralized promises or credit lines.
+
+2. **Proof Attached**:
+   - Deliverable proofs must be attached via content-addressed IPFS CIDs (CIDv0 or CIDv1) or deterministic cryptographic invoice hashes (`invoiceHash`).
+   - The contract verifies the document anchor before releasing a single micro-USDC.
+
+3. **Paid Once (Idempotency Active)**:
+   - Every payout is protected by `executedReleases[releaseKey] = true` where `releaseKey = keccak256(abi.encodePacked(proposalId, milestoneId, invoiceHash))`.
+   - Replaying the same claim immediately reverts with `DuplicateRelease(proposalId, milestoneId)`.
+
+### On-Chain Threshold & Who Can Release
+
+| Participant | Release Threshold | Permission Requirement | Revert on Breach |
+| :--- | :--- | :--- | :--- |
+| **Autonomous Agent** | $\le 50.00\text{ USDC}$ | `isAuthorizedAgent(caller) == true` | Reverts with `HumanApprovalRequired` if amount $> 50\text{ USDC}$ |
+| **Human Reviewer / Multisig** | Unlimited ($> 50.00\text{ USDC}$) | `isAuthorizedReviewer(caller) == true` or `humanApproved[releaseKey] == true` | Reverts with `HumanApprovalRequired` if unauthorized |
+
+### Rebrand & Official Channels
+- **Official X (Twitter)**: [@syndaopro](https://x.com/syndaopro)
+- **Live Domain**: [synarcdao.xyz](https://www.synarcdao.xyz/) (transitioning to `syndaopro.xyz`)
+- **Arc Mainnet Explorer**: [explorer.arc.io](https://explorer.arc.io)
+

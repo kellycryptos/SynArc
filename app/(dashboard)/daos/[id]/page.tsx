@@ -34,6 +34,7 @@ import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, GovernorABI } from "@/lib/governance/contracts";
 import { getResilientProvider } from "@/lib/rpc/config";
 import { enforceChain, selectActiveWallet } from "@/lib/tx-helper";
+import { ARC_CHAIN } from "@/lib/arc-config";
 
 interface Member {
   id: string;
@@ -251,11 +252,11 @@ export default function DAODetailsPage() {
         throw new Error("Active wallet not found");
       }
 
-      // Force Arc Testnet before transaction with robust switching
-      const ethereumProvider = await enforceChain(activeWallet, 5042002);
+      // Enforce active Arc network before transaction with robust switching
+      const ethereumProvider = await enforceChain(activeWallet, ARC_CHAIN.id);
       const provider = new BrowserProvider(ethereumProvider, {
-        chainId: 5042002,
-        name: "Arc Testnet"
+        chainId: ARC_CHAIN.id,
+        name: ARC_CHAIN.name
       });
       const signer = await provider.getSigner(activeWallet.address);
 
@@ -302,11 +303,11 @@ export default function DAODetailsPage() {
         throw new Error("Active wallet not found");
       }
 
-      // Force Arc Testnet before transaction with robust switching
-      const ethereumProvider = await enforceChain(activeWallet, 5042002);
+      // Enforce active Arc network before transaction with robust switching
+      const ethereumProvider = await enforceChain(activeWallet, ARC_CHAIN.id);
       const provider = new BrowserProvider(ethereumProvider, {
-        chainId: 5042002,
-        name: "Arc Testnet"
+        chainId: ARC_CHAIN.id,
+        name: ARC_CHAIN.name
       });
       const signer = await provider.getSigner(activeWallet.address);
 

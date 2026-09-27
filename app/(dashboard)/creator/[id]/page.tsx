@@ -9,6 +9,7 @@ import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
+import { ARC_CHAIN } from "@/lib/arc-config";
 import { useWallets } from "@/hooks/useWallets";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -253,7 +254,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
 
     // 2. Real on-chain transaction on Arc Testnet
     try {
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
       
       const usdcAddress = "0x3600000000000000000000000000000000000000";
       const amountBigInt = BigInt(Math.round(amountVal * 1_000_000)); // USDC has 6 decimals

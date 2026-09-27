@@ -5,7 +5,7 @@ import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useState, useEffect } from "react";
 import { createPublicClient, http, parseAbi } from "viem";
-import { ARC_RPC_URLS } from "@/lib/arc-config";
+import { ARC_RPC_URLS, ARC_CHAIN } from "@/lib/arc-config";
 import { selectActiveWallet, enforceChain } from "@/lib/tx-helper";
 import { toast } from "react-hot-toast";
 
@@ -38,7 +38,7 @@ export function useWalletSafe() {
 
   const switchToArc = async () => {
     if (walletType === 'circle') {
-      toast.success("Circle Wallet accounts are auto-routed to Arc Testnet.", {
+      toast.success(`Circle Wallet accounts are auto-routed to ${ARC_CHAIN.name}.`, {
         icon: "⭕",
         duration: 4000,
       });
@@ -46,9 +46,9 @@ export function useWalletSafe() {
     }
     if (walletType === 'embedded' && activeWallet) {
       try {
-        await enforceChain(activeWallet, 5042002);
+        await enforceChain(activeWallet, ARC_CHAIN.id);
       } catch (err: any) {
-        toast.error(err?.message || "Failed to switch embedded wallet to Arc Testnet.");
+        toast.error(err?.message || `Failed to switch embedded wallet to ${ARC_CHAIN.name}.`);
       }
       return;
     }

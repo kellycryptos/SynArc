@@ -213,7 +213,7 @@ export default function AgentPage() {
                         process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
                         "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D") as `0x${string}`;
 
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
       const gasParams = await getAggressiveGasParams(publicClient);
       
       const hash = await walletClient.writeContract({
@@ -254,7 +254,7 @@ export default function AgentPage() {
                         process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
                         "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D") as `0x${string}`;
 
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
       const gasParams = await getAggressiveGasParams(publicClient);
       
       const limitInUnits = parseUnits(newLimit.toString(), 6);
@@ -298,7 +298,7 @@ export default function AgentPage() {
                         process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
                         "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D") as `0x${string}`;
 
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
       const gasParams = await getAggressiveGasParams(publicClient);
       
       const hash = await walletClient.writeContract({
@@ -339,7 +339,7 @@ export default function AgentPage() {
                         process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
                         "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D") as `0x${string}`;
 
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
       const gasParams = await getAggressiveGasParams(publicClient);
       
       const hash = await walletClient.writeContract({
@@ -384,7 +384,7 @@ export default function AgentPage() {
                         process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
                         "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D") as `0x${string}`;
 
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
       const gasParams = await getAggressiveGasParams(publicClient);
       
       const decimals = withdrawalToken.toLowerCase() === "0x3600000000000000000000000000000000000000" || 

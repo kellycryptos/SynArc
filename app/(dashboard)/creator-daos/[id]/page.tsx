@@ -9,6 +9,7 @@ import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { getSigner, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
+import { ARC_CHAIN } from "@/lib/arc-config";
 import { parseAbi } from "viem";
 import { 
   ArrowLeft, 
@@ -289,7 +290,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
     try {
       // 1. Get signer & public client
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
 
       const usdcAddress = "0x3600000000000000000000000000000000000000";
       const amountBigInt = BigInt(Math.round(contributionAmount * 1_000_000));
@@ -432,7 +433,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
       }
 
       // 1. Get signer
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
 
       const gasParams = await getAggressiveGasParams(publicClient);
 

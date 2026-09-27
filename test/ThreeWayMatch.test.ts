@@ -479,4 +479,168 @@ describe("Three-Way Match, Payee Substitution Defense & Adversarial Verification
         .withArgs(releaseKey);
     });
   });
+
+  describe("6. Tameion Release Valve: Agent On-Chain Cap & Human Review Gate (Arc Mainnet 5042)", function () {
+    const proposalId = 6n;
+    const milestoneId = 1n;
+    const capAmount = 50n * 10n ** 6n; // 50 USDC cap
+    const overCapAmount = 150n * 10n ** 6n; // 150 USDC (> cap)
+
+    let autonomousAgent: any;
+    let complianceReviewer: any;
+
+    beforeEach(async function () {
+      [, , , autonomousAgent, complianceReviewer] = await ethers.getSigners();
+
+      // Configure agent and reviewer on Treasury
+      await treasury.setAgentAddress(autonomousAgent.address);
+      await treasury.setAuthorizedHumanReviewer(complianceReviewer.address, true);
+
+      // Register an order with over-cap amount
+      await treasury.registerOrder(
+        proposalId,
+        milestoneId,
+        payeeVendor.address,
+        overCapAmount,
+        EXPECTED_DOC_HASH,
+        DELIVERABLE_CID
+      );
+    });
+
+    it("should report the active on-chain agent release cap (50 USDC default)", async function () {
+      expect(await treasury.agentReleaseCap()).to.equal(50n * 10n ** 6n);
+      expect(await treasury.humanReviewThreshold()).to.equal(50n * 10n ** 6n);
+      expect(await treasury.isAuthorizedAgent(autonomousAgent.address)).to.be.true;
+      expect(await treasury.isAuthorizedReviewer(complianceReviewer.address)).to.be.true;
+    });
+
+    it("should allow owner to update agent release cap with loud event emission", async function () {
+      const newCap = 100n * 10n ** 6n;
+      await expect(treasury.setAgentReleaseCap(newCap))
+        .to.emit(treasury, "AgentReleaseCapUpdated")
+        .withArgs(capAmount, newCap);
+      expect(await treasury.agentReleaseCap()).to.equal(newCap);
+
+      // Reset cap
+      await treasury.setAgentReleaseCap(capAmount);
+    });
+
+    it("should stop autonomous agent at the on-chain cap and require human approval", async function () {
+      const releaseKey = ethers.keccak256(
+        ethers.solidityPacked(["uint256", "uint256", "bytes32"], [proposalId, milestoneId, INVOICE_REF])
+      );
+
+      // Check permission pre-flight: agent is stopped at cap
+      const authPre = await treasury.getReleaseAuthorization(autonomousAgent.address, overCapAmount, releaseKey);
+      expect(authPre.canReleaseDirectly).to.be.false;
+      expect(authPre.requiresHumanApproval).to.be.true;
+      expect(authPre.releaseRole).to.equal("AGENT_STOPPED_AT_CAP");
+
+      // Agent attempts release over cap: reverts loudly
+      await expect(
+        treasury.connect(autonomousAgent).releaseMilestone(
+          proposalId,
+          milestoneId,
+          EXPECTED_DOC_HASH,
+          INVOICE_REF,
+          payeeVendor.address,
+          overCapAmount,
+          95
+        )
+      )
+        .to.be.revertedWithCustomError(treasury, "HumanApprovalRequired")
+        .withArgs(releaseKey, overCapAmount, capAmount);
+
+      // Designated compliance reviewer grants human approval
+      await expect(treasury.connect(complianceReviewer).approveReleaseHuman(releaseKey))
+        .to.emit(treasury, "HumanApprovalGranted")
+        .withArgs(releaseKey, complianceReviewer.address);
+
+      // Post-approval: authorization is now cleared
+      const authPost = await treasury.getReleaseAuthorization(autonomousAgent.address, overCapAmount, releaseKey);
+      expect(authPost.canReleaseDirectly).to.be.true;
+      expect(authPost.requiresHumanApproval).to.be.false;
+
+      // Agent can now release funds cleanly!
+      await expect(
+        treasury.connect(autonomousAgent).releaseMilestone(
+          proposalId,
+          milestoneId,
+          EXPECTED_DOC_HASH,
+          INVOICE_REF,
+          payeeVendor.address,
+          overCapAmount,
+          95
+        )
+      ).to.emit(treasury, "ThreeWayMatchSuccess");
+
+      // Exact disbursement delivered to payee
+      expect(await mockUSDC.balanceOf(payeeVendor.address)).to.equal(overCapAmount);
+
+      // Same payment cannot run twice
+      await expect(
+        treasury.connect(autonomousAgent).releaseMilestone(
+          proposalId,
+          milestoneId,
+          EXPECTED_DOC_HASH,
+          INVOICE_REF,
+          payeeVendor.address,
+          overCapAmount,
+          95
+        )
+      )
+        .to.be.revertedWithCustomError(treasury, "DuplicateRelease")
+        .withArgs(releaseKey);
+    });
+
+    it("should allow autonomous agent to release directly when under cap with valid proof", async function () {
+      const underCapPropId = 7n;
+      const underCapAmount = 45n * 10n ** 6n; // 45 USDC <= 50 USDC cap
+
+      await treasury.registerOrder(
+        underCapPropId,
+        milestoneId,
+        payeeVendor.address,
+        underCapAmount,
+        EXPECTED_DOC_HASH,
+        DELIVERABLE_CID
+      );
+
+      const releaseKey = ethers.keccak256(
+        ethers.solidityPacked(["uint256", "uint256", "bytes32"], [underCapPropId, milestoneId, INVOICE_REF])
+      );
+
+      // Check pre-flight authorization
+      const auth = await treasury.getReleaseAuthorization(autonomousAgent.address, underCapAmount, releaseKey);
+      expect(auth.canReleaseDirectly).to.be.true;
+      expect(auth.requiresHumanApproval).to.be.false;
+      expect(auth.releaseRole).to.equal("AUTONOMOUS_AGENT");
+
+      // Direct release under cap by autonomous agent succeeds without stopping for human
+      await expect(
+        treasury.connect(autonomousAgent).releaseMilestone(
+          underCapPropId,
+          milestoneId,
+          EXPECTED_DOC_HASH,
+          INVOICE_REF,
+          payeeVendor.address,
+          underCapAmount,
+          90
+        )
+      ).to.emit(treasury, "ThreeWayMatchSuccess");
+
+      // Attempting to run same payment twice reverts
+      await expect(
+        treasury.connect(autonomousAgent).releaseMilestone(
+          underCapPropId,
+          milestoneId,
+          EXPECTED_DOC_HASH,
+          INVOICE_REF,
+          payeeVendor.address,
+          underCapAmount,
+          90
+        )
+      ).to.be.revertedWithCustomError(treasury, "DuplicateRelease");
+    });
+  });
 });

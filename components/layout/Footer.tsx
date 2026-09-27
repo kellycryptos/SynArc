@@ -24,7 +24,7 @@ const developerLinks = [
 ];
 
 const socialLinks = [
-  { label: "Twitter / X", href: "https://x.com/synarc_", external: true },
+  { label: "Twitter / X", href: "https://x.com/syndaopro", external: true },
   { label: "Discord", href: "#", comingSoon: true },
 ];
 

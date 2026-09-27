@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useToken } from "@/hooks/useToken";
 import { useWallets } from "@/hooks/useWallets";
 import { getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
+import { ARC_CHAIN } from "@/lib/arc-config";
 import { toast } from "react-hot-toast";
 
 
@@ -73,7 +74,7 @@ export default function FaucetPage() {
     if (!walletAddress) return;
     setDelegating(true);
     try {
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, 5042002, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
       
       const SARC_DELEGATE_ABI = [{
         name: "delegate",

@@ -38,6 +38,8 @@ export const metadata: Metadata = {
     title: "Syn DAO",
     description: "On-chain funding, treasury, and governance for humans and agents. Built on Arc.",
     images: ["https://www.synarcdao.xyz/og-image.jpg"],
+    creator: "@syndaopro",
+    site: "@syndaopro",
   },
   icons: {
     icon: [

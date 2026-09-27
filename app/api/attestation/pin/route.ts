@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pinJSONToIPFS, validateAttestationURI } from "@/lib/attestation";
+import { ARC_CHAIN } from "@/lib/arc-config";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
 
     const manifestPayload = {
       specVersion: "1.0.0",
-      protocol: "SynArc DAO / Tameion Financial Control",
+      protocol: "Syn DAO / Tameion Financial Control",
       documentType: "Governance Proposal Deliverable Attestation",
       title,
       category: category || "General",
@@ -23,8 +24,8 @@ export async function POST(req: NextRequest) {
       recipientTarget: target || "",
       details: details || {},
       timestamp: new Date().toISOString(),
-      network: "Arc Testnet (Chain ID 5042002)",
-      sourceWitness: "SynArc Pinned Attestation Document",
+      network: `${ARC_CHAIN.name} (Chain ID ${ARC_CHAIN.id})`,
+      sourceWitness: "Syn DAO Pinned Attestation Document",
     };
 
     const fileName = documentName || `proposal-${Date.now()}.json`;
