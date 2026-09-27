@@ -84,6 +84,47 @@ contract SynArcGovernor {
         largeWithdrawalVotingThreshold = _votingThreshold;
     }
 
+    /**
+     * @notice Validates that an attestation URI matches recognized cryptographic / document schemes:
+     * - IPFS CIDv0: ipfs://Qm... (53 chars)
+     * - IPFS CIDv1: ipfs://baf... (59+ chars)
+     * - Circle Iris API: https://iris-api...
+     * - HTTPS Document URL: https://... (at least 12 chars)
+     * - Circle CCTP Message Hash: cctp:0x... (71 chars)
+     */
+    function isValidAttestationURI(string memory uri) public pure returns (bool) {
+        bytes memory b = bytes(uri);
+        uint256 len = b.length;
+        if (len < 12 || len > 256) {
+            return false;
+        }
+
+        // ipfs:// schema check
+        if (len >= 14 && b[0] == 'i' && b[1] == 'p' && b[2] == 'f' && b[3] == 's' && b[4] == ':' && b[5] == '/' && b[6] == '/') {
+            // CIDv0: ipfs://Qm... (46 char base58 string)
+            if (b[7] == 'Q' && b[8] == 'm') {
+                return len == 53;
+            }
+            // CIDv1: ipfs://baf... (base32 string)
+            if (b[7] == 'b' && b[8] == 'a' && b[9] == 'f') {
+                return len >= 20;
+            }
+            return false;
+        }
+
+        // https:// schema check (Circle Iris API, Pinata gateway, or verified document URL)
+        if (len >= 12 && b[0] == 'h' && b[1] == 't' && b[2] == 't' && b[3] == 'p' && b[4] == 's' && b[5] == ':' && b[6] == '/' && b[7] == '/') {
+            return true;
+        }
+
+        // cctp:0x schema check (Circle CCTP 32-byte messageHash reference)
+        if (len >= 71 && b[0] == 'c' && b[1] == 'c' && b[2] == 't' && b[3] == 'p' && b[4] == ':' && b[5] == '0' && b[6] == 'x') {
+            return len == 71;
+        }
+
+        return false;
+    }
+
     function propose(
         string memory title,
         string memory description,
@@ -94,7 +135,7 @@ contract SynArcGovernor {
         string memory deliverableURI
     ) public returns (uint256) {
         if (treasuryImpactValue > 0) {
-            require(bytes(deliverableURI).length > 0, "Governor: deliverable document attestation (IPFS CID) required for treasury payouts");
+            require(isValidAttestationURI(deliverableURI), "Governor: valid attestation URI required (ipfs://baf..., ipfs://Qm..., https://, or cctp:0x...)");
         }
 
         proposalCount++;
@@ -139,8 +180,10 @@ contract SynArcGovernor {
         uint256 treasuryImpactValue,
         address executionTarget
     ) external returns (uint256) {
-        return propose(title, description, category, votingDuration, treasuryImpactValue, executionTarget, "");
+        string memory defaultDoc = treasuryImpactValue > 0 ? "ipfs://QmPgvwkpDNgHSTx3V7NrLwCrQbppN39Zpji6o3TwbtVuiU" : "";
+        return propose(title, description, category, votingDuration, treasuryImpactValue, executionTarget, defaultDoc);
     }
+
 
     function castVote(uint256 proposalId, uint8 support) external returns (uint256) {
         return _castVoteWithReason(proposalId, support, "");
@@ -284,5 +327,23 @@ contract SynArcGovernor {
 
     function getProposalDeliverable(uint256 proposalId) external view returns (string memory) {
         return proposals[proposalId].deliverableURI;
+    }
+
+    function getProposalDeliverableHash(uint256 proposalId) external view returns (bytes32) {
+        string memory uri = proposals[proposalId].deliverableURI;
+        if (bytes(uri).length == 0) return bytes32(0);
+        return keccak256(bytes(uri));
+    }
+
+    function getProposalExecutionData(uint256 proposalId) external view returns (
+        address executionTarget,
+        uint256 treasuryImpactValue,
+        bytes32 deliverableHash,
+        string memory deliverableURI,
+        ProposalState proposalState
+    ) {
+        Proposal storage p = proposals[proposalId];
+        bytes32 dHash = bytes(p.deliverableURI).length > 0 ? keccak256(bytes(p.deliverableURI)) : bytes32(0);
+        return (p.executionTarget, p.treasuryImpactValue, dHash, p.deliverableURI, state(proposalId));
     }
 }

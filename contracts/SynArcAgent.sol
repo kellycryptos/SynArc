@@ -177,6 +177,47 @@ contract SynArcAgent is Ownable, ReentrancyGuard, Pausable {
     /**
      * @notice Submits a governance proposal autonomously on the SynArc Governor contract with document attestation and idempotency
      */
+    /**
+     * @notice Validates that an attestation URI matches recognized cryptographic / document schemes:
+     * - IPFS CIDv0: ipfs://Qm... (53 chars)
+     * - IPFS CIDv1: ipfs://baf... (59+ chars)
+     * - Circle Iris API: https://iris-api...
+     * - HTTPS Document URL: https://... (at least 12 chars)
+     * - Circle CCTP Message Hash: cctp:0x... (71 chars)
+     */
+    function isValidAttestationURI(string memory uri) public pure returns (bool) {
+        bytes memory b = bytes(uri);
+        uint256 len = b.length;
+        if (len < 12 || len > 256) {
+            return false;
+        }
+
+        // ipfs:// schema check
+        if (len >= 53 && b[0] == 'i' && b[1] == 'p' && b[2] == 'f' && b[3] == 's' && b[4] == ':' && b[5] == '/' && b[6] == '/') {
+            // CIDv0: ipfs://Qm... (46 char base58 string)
+            if (b[7] == 'Q' && b[8] == 'm') {
+                return len == 53;
+            }
+            // CIDv1: ipfs://baf... (base32 string)
+            if (b[7] == 'b' && b[8] == 'a' && b[9] == 'f') {
+                return len >= 59;
+            }
+            return false;
+        }
+
+        // https:// schema check (Circle Iris API, Pinata gateway, or verified document URL)
+        if (len >= 12 && b[0] == 'h' && b[1] == 't' && b[2] == 't' && b[3] == 'p' && b[4] == 's' && b[5] == ':' && b[6] == '/' && b[7] == '/') {
+            return true;
+        }
+
+        // cctp:0x schema check (Circle CCTP 32-byte messageHash reference)
+        if (len >= 71 && b[0] == 'c' && b[1] == 'c' && b[2] == 't' && b[3] == 'p' && b[4] == ':' && b[5] == '0' && b[6] == 'x') {
+            return len == 71;
+        }
+
+        return false;
+    }
+
     function submitDAOProposal(
         address governor,
         string memory title,
@@ -196,7 +237,7 @@ contract SynArcAgent is Ownable, ReentrancyGuard, Pausable {
         // Enforce rebalance limit if it is a funding proposal submitted by the agent
         if (treasuryImpactValue > 0) {
             require(treasuryImpactValue <= maxRebalanceAmount, "Amount exceeds limit per rebalance");
-            require(bytes(deliverableURI).length > 0, "Agent: deliverable attestation required");
+            require(isValidAttestationURI(deliverableURI), "Agent: valid deliverable attestation URI required");
         }
 
         uint256 propId = ISynArcGovernor(governor).propose(
@@ -263,6 +304,10 @@ contract SynArcAgent is Ownable, ReentrancyGuard, Pausable {
         if (actionId != bytes32(0)) {
             require(!processedActionKeys[actionId], "Agent: action already processed (idempotency guard)");
             processedActionKeys[actionId] = true;
+        }
+
+        if (bytes(deliverableURI).length > 0) {
+            require(isValidAttestationURI(deliverableURI), "Agent: invalid deliverable attestation format");
         }
 
         emit AgentAction(

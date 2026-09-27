@@ -82,6 +82,9 @@ export class CCTPExecutor {
   ): Promise<{
     burnTxHash: string
     mintTxHash: string
+    messageHash: string
+    attestationUrl: string
+    attestationSignature: string
     status: string
     amount: number
     destinationChain: string
@@ -268,6 +271,9 @@ export class CCTPExecutor {
     return {
       burnTxHash: burnTx,
       mintTxHash: mintTx,
+      messageHash,
+      attestationUrl,
+      attestationSignature: attestation,
       status: 'success',
       amount: amountUSDC,
       destinationChain: 'Ethereum Sepolia',
@@ -303,6 +309,9 @@ export class CCTPExecutor {
   ): Promise<{
     burnTxHash: string
     mintTxHash: string
+    messageHash: string
+    attestationUrl: string
+    attestationSignature: string
     status: string
     amount: number
     destinationChain: string
@@ -439,6 +448,9 @@ export class CCTPExecutor {
     return {
       burnTxHash: burnTx,
       mintTxHash: mintTx,
+      messageHash,
+      attestationUrl,
+      attestationSignature: attestation,
       status: 'success',
       amount: amountUSDC,
       destinationChain: 'Arc Testnet',

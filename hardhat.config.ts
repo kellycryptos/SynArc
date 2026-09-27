@@ -35,6 +35,9 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
+    hardhat: {
+      allowUnlimitedContractSize: true,
+    },
     // Primary testnet deployment network
     arcTestnet: {
       url: ARC_RPC_URL,

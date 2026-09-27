@@ -17,6 +17,7 @@ import { GovernorABI, ERC20ABI } from "@/lib/governance/contracts";
 import { ARC_GAS_CONFIG } from "@/lib/constants";
 import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams, selectActiveWallet } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
+import { resolveAttestationLink } from "@/lib/attestation";
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
 const SARC_ADDRESS = (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e") as `0x${string}`;
 const GOVERNOR_ABI = GovernorABI;
@@ -1126,14 +1127,13 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                       </span>
                     </div>
                     <Link
-                      href={proposal.deliverableURI.startsWith("ipfs://") 
-                        ? `https://ipfs.io/ipfs/${proposal.deliverableURI.replace("ipfs://", "")}` 
-                        : proposal.deliverableURI}
+                      href={resolveAttestationLink(proposal.deliverableURI)}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-primary hover:underline font-mono text-xs break-all"
+                      className="text-primary hover:underline font-mono text-xs break-all flex items-center gap-1"
                     >
-                      {proposal.deliverableURI}
+                      <span>{proposal.deliverableURI}</span>
+                      <span className="text-[10px] text-text-tertiary font-sans">↗</span>
                     </Link>
                   </div>
                 )}

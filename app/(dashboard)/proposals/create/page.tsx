@@ -16,9 +16,10 @@ import { parseArcError } from "@/lib/utils";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
 import { toast } from "react-hot-toast";
 import { writeWithRetry, enforceChain, getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
-import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
+import { CONTRACTS } from "@/lib/arc-config";
 import { GovernorABI } from "@/lib/governance/contracts";
 import { createWalletClient, createPublicClient, custom, fallback, http } from "viem";
+import { validateAttestationURI } from "@/lib/attestation";
 
 export default function CreateProposalPage() {
   const router = useRouter();
@@ -102,6 +103,43 @@ export default function CreateProposalPage() {
 
   const [proposalType, setProposalType] = useState<"standard" | "fund_agent">("standard");
   const [fundingAmount, setFundingAmount] = useState<string>("");
+  const [isPinningAttestation, setIsPinningAttestation] = useState(false);
+
+  const handleAutoPinSpec = async () => {
+    if (!formData.title) {
+      toast.error("Please enter a proposal title first.");
+      return;
+    }
+    setIsPinningAttestation(true);
+    try {
+      const res = await fetch("/api/attestation/pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formData.title,
+          category: formData.category,
+          description: formData.description,
+          amount: Math.abs(formData.treasuryImpactValue),
+          target: formData.executionTarget,
+          details: {
+            votingDurationDays: formData.votingDuration,
+            creator: walletAddress,
+          }
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to pin specification.");
+      }
+      setFormData(prev => ({ ...prev, deliverableURI: data.ipfsUri }));
+      toast.success("Proposal specification pinned to IPFS! 📌");
+    } catch (err: any) {
+      console.error("Auto pin error:", err);
+      toast.error(err?.message || "Failed to pin specification to IPFS.");
+    } finally {
+      setIsPinningAttestation(false);
+    }
+  };
 
   React.useEffect(() => {
     if (proposalType === "fund_agent") {
@@ -112,7 +150,7 @@ export default function CreateProposalPage() {
         category: "Treasury Allocation",
         executionTarget: CONTRACTS.treasuryAgent,
         treasuryImpactValue: -amountNum,
-        deliverableURI: "ipfs://bafkreiautonomousagentoperatingfundrebalance",
+        deliverableURI: "ipfs://QmPgvwkpDNgHSTx3V7NrLwCrQbppN39Zpji6o3TwbtVuiU",
         description: `This governance proposal approves the transfer of ${amountNum} USDC from the primary community-controlled treasury (treasuryGovernance) to the dedicated agent operating treasury (treasuryAgent) to fund autonomous CCTP rebalances. This proposal will go through the standard 24-hour timelock upon approval.`
       }));
     }
@@ -173,9 +211,17 @@ export default function CreateProposalPage() {
       return;
     }
 
-    if (formData.treasuryImpactValue !== 0 && !formData.deliverableURI.trim()) {
-      setError("Treasury payout proposals strictly require a Deliverable Attestation (IPFS CID or receipt URL) to satisfy document matching controls.");
-      return;
+    if (formData.treasuryImpactValue !== 0) {
+      const uri = formData.deliverableURI.trim();
+      if (!uri) {
+        setError("Treasury payout proposals strictly require a Deliverable Attestation (IPFS CID or receipt URL) to satisfy document matching controls.");
+        return;
+      }
+      const validation = validateAttestationURI(uri);
+      if (!validation.valid) {
+        setError(`Invalid Deliverable Attestation: ${validation.reason}. Must be a valid IPFS CIDv0 (ipfs://Qm...), CIDv1 (ipfs://baf...), or verified https:// document URL.`);
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -602,16 +648,35 @@ export default function CreateProposalPage() {
                         <label htmlFor="deliverableURI" className="block text-sm font-bold text-text-primary">
                           Deliverable Attestation (IPFS CID / Document Proof) *
                         </label>
-                        <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">
-                          Tameion Control
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={handleAutoPinSpec}
+                            disabled={isPinningAttestation}
+                            className="text-xs px-2.5 py-1 rounded-md bg-accent-purple/20 border border-accent-purple/30 text-accent-purple hover:bg-accent-purple/30 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            {isPinningAttestation ? (
+                              <>
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                                Pinning...
+                              </>
+                            ) : (
+                              <>
+                                📌 Pin Spec to IPFS
+                              </>
+                            )}
+                          </button>
+                          <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">
+                            Tameion Control
+                          </span>
+                        </div>
                       </div>
                       <input
                         id="deliverableURI"
                         type="text"
                         value={formData.deliverableURI}
                         onChange={(e) => setFormData({ ...formData, deliverableURI: e.target.value })}
-                        placeholder="ipfs://bafy... or https://... (Invoice, receipt, or deliverable)"
+                        placeholder="ipfs://Qm... or ipfs://bafy... or https://... (Invoice, receipt, or deliverable)"
                         className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
                         required
                       />

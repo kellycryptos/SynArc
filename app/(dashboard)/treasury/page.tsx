@@ -20,6 +20,7 @@ import { toast } from "react-hot-toast";
 import { parseArcError } from "@/lib/utils";
 import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams, selectActiveWallet } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
+import { resolveAttestationLink } from "@/lib/attestation";
 
 const ERC20_ABI = [
   {
@@ -774,9 +775,7 @@ function TreasuryPageContent() {
                           {q.deliverableURI && (
                             <div className="mt-1">
                               <a
-                                href={q.deliverableURI.startsWith("ipfs://") 
-                                  ? `https://ipfs.io/ipfs/${q.deliverableURI.replace("ipfs://", "")}` 
-                                  : q.deliverableURI}
+                                href={resolveAttestationLink(q.deliverableURI)}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-mono"
@@ -893,9 +892,7 @@ function TreasuryPageContent() {
                       <td className="py-4">
                         {tx.deliverableURI ? (
                           <a
-                            href={tx.deliverableURI.startsWith("ipfs://") 
-                              ? `https://ipfs.io/ipfs/${tx.deliverableURI.replace("ipfs://", "")}` 
-                              : tx.deliverableURI}
+                            href={resolveAttestationLink(tx.deliverableURI)}
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-primary/10 border border-primary/25 text-primary text-xs font-mono hover:bg-primary/20 transition-colors"

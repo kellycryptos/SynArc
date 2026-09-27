@@ -136,7 +136,7 @@ describe("Agent Operating Treasury Funding and Rebalancing", function () {
     // First, agent contract withdraws from treasuryAgent to itself.
     // The executor EOA triggers this by calling executeYieldStrategy on the agent smart contract.
     // The data is the encoded call to treasuryAgent.withdraw(agentAddress, amount)
-    const withdrawCalldata = treasuryAgent.interface.encodeFunctionData("withdraw", [
+    const withdrawCalldata = treasuryAgent.interface.encodeFunctionData("withdraw(address,uint256)", [
       await agent.getAddress(),
       fundingAmount
     ]);

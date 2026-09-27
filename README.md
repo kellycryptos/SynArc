@@ -74,6 +74,7 @@ Syn DAO simplifies the funding and governance lifecycle:
 *   **Proposals & Voting**: Secure on-chain proposals and cryptographic voting signatures.
 *   **Multi-Asset Treasury**: Vault management supporting both USDC and EURC stablecoins.
 *   **Autonomous Rebalancing**: Real-time monitoring and rebalancing of treasury allocations via an AI agent.
+*   **Adversarial Three-Way Match**: Contract-level Three-Way Match (Order == Receipt == Invoice), document-anchored entries (Odoo model), 48h payee timelocked cooldown, AI model score gating (input only, never direct trigger), dual-key multisig human review (>50 USDC), loud custom errors, and zero-gas dry-run simulation (Ghostfolio pattern).
 
 ### 🌉 Circle CCTP Bridge
 *   **Bidirectional Routing**: Slippage-free stablecoin bridging between Arc Testnet and external chains (Ethereum Sepolia, Base Sepolia, Avalanche Fuji, Solana Devnet).
@@ -119,7 +120,23 @@ A fully bidirectional stablecoin routing pipeline built natively with Circle CCT
 
 ---
 
-## 3d. Developer Agent SDK
+## 3d. Adversarial Verification: Contract-Level Three-Way Match
+
+Circle's own `arc-escrow` reference sample—recommended by Canteen to RFB 3 builders—releases real treasury reserves based on an unverified GPT-4o output string (`isValid = parsedPromptAnswerContent.valid && confidence === "HIGH"`), with no document checks, dead timestamps, and vulnerable beneficiary addresses.
+
+Syn DAO does the **exact opposite by design**:
+1. **Document-Anchored Entries (Odoo vs. ERPNext)**: Every release requires an explicit on-chain document reference (`proposalId`, `milestoneId`, `documentHash`, `invoiceHash`). The document *is* the entry.
+2. **Contract-Level Three-Way Match**: Solidity deterministically verifies that Purchase Order (Governor proposal / `OrderTerms`), Receiving Report (Deliverable hash / IPFS CID), and Vendor Invoice (payment claim) match. A 1-micro-USDC discrepancy causes an immediate revert.
+3. **Payee Substitution Defense**: Payout address updates trigger an unskippable 48-hour timelocked cooldown (`requestPayeeChange` -> `confirmPayeeChange`), emitting `PayeeChangeRequested` to defend against vendor bank detail spoofing.
+4. **Model Verdict as Input, Never Release Trigger**: AI model confidence score is strictly an input to deterministic gates (`score >= 70`). High-value disbursements (>50 USDC) strictly require dual-key human multisig signoff (`approveReleaseHuman`).
+5. **Make Failure Loud**: Reverts with auditable custom errors (`DocumentReceiptMismatch`, `AmountMismatch`, `PayeeMismatch`, `PayeeCooldownActive`, `DuplicateRelease`, `LowConfidenceScore`, `HumanApprovalRequired`). Discrepancies are never silently swallowed or rounded off.
+6. **Idempotency Guard & Dry-Run Simulation (Ghostfolio Pattern)**: Pre-flight view function `simulateRelease(...)` provides zero-gas release validation returning granular booleans and return codes (200, 201, 400+) to test releases before committing state.
+
+For complete architectural details, see the [Three-Way Match Architecture Guide](docs/07c-three-way-match-architecture.md).
+
+---
+
+## 3e. Developer Agent SDK
 
 Integrate autonomous agents and decentralized organizations programmatically using the `@synarc/agent-sdk` npm package.
 
