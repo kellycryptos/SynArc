@@ -19,9 +19,19 @@ interface IERC8004Registry {
 
 interface ISynArcGovernor {
     function propose(
-        string calldata title,
-        string calldata description,
-        string calldata category,
+        string memory title,
+        string memory description,
+        string memory category,
+        uint256 votingDuration,
+        uint256 treasuryImpactValue,
+        address executionTarget,
+        string memory deliverableURI
+    ) external returns (uint256);
+
+    function propose(
+        string memory title,
+        string memory description,
+        string memory category,
         uint256 votingDuration,
         uint256 treasuryImpactValue,
         address executionTarget
@@ -66,12 +76,27 @@ contract SynArcAgent is Ownable, ReentrancyGuard, Pausable {
     uint256 public withdrawalCount;
     uint256 public constant WITHDRAWAL_DELAY = 86400; // 24-hour timelock
 
+    // Idempotency registry for autonomous agent actions
+    mapping(bytes32 => bool) public processedActionKeys;
+
     event ExecutorUpdated(address indexed oldExecutor, address indexed newExecutor);
     event RegisteredOnERC8004(address indexed registry, string name, string metadataURI);
     event DAOProposalCreated(address indexed governor, uint256 indexed proposalId, string title);
     event CampaignFunded(address indexed campaign, uint256 amount);
     event StrategyExecuted(address indexed targetContract, uint256 amount);
     event MaxRebalanceAmountUpdated(uint256 oldLimit, uint256 newLimit);
+    
+    // Structured reconciliation event for off-chain accounting auditors
+    event AgentAction(
+        bytes32 indexed actionId,
+        uint256 indexed proposalId,
+        address indexed recipient,
+        uint256 amount,
+        string actionType,
+        string deliverableURI,
+        string reason,
+        uint256 timestamp
+    );
     
     event WithdrawalQueued(uint256 indexed id, address indexed token, address indexed recipient, uint256 amount, uint256 executionTime);
     event WithdrawalExecuted(uint256 indexed id, address indexed token, address indexed recipient, uint256 amount);
@@ -150,20 +175,28 @@ contract SynArcAgent is Ownable, ReentrancyGuard, Pausable {
     }
 
     /**
-     * @notice Submits a governance proposal autonomously on the SynArc Governor contract
+     * @notice Submits a governance proposal autonomously on the SynArc Governor contract with document attestation and idempotency
      */
     function submitDAOProposal(
         address governor,
-        string calldata title,
-        string calldata description,
-        string calldata category,
+        string memory title,
+        string memory description,
+        string memory category,
         uint256 votingDuration,
         uint256 treasuryImpactValue,
-        address executionTarget
-    ) external onlyExecutorOrOwner whenNotPaused returns (uint256) {
+        address executionTarget,
+        string memory deliverableURI,
+        bytes32 actionId
+    ) public onlyExecutorOrOwner whenNotPaused returns (uint256) {
+        if (actionId != bytes32(0)) {
+            require(!processedActionKeys[actionId], "Agent: action already processed (idempotency guard)");
+            processedActionKeys[actionId] = true;
+        }
+
         // Enforce rebalance limit if it is a funding proposal submitted by the agent
         if (treasuryImpactValue > 0) {
             require(treasuryImpactValue <= maxRebalanceAmount, "Amount exceeds limit per rebalance");
+            require(bytes(deliverableURI).length > 0, "Agent: deliverable attestation required");
         }
 
         uint256 propId = ISynArcGovernor(governor).propose(
@@ -172,10 +205,76 @@ contract SynArcAgent is Ownable, ReentrancyGuard, Pausable {
             category,
             votingDuration,
             treasuryImpactValue,
-            executionTarget
+            executionTarget,
+            deliverableURI
         );
+
         emit DAOProposalCreated(governor, propId, title);
+
+        emit AgentAction(
+            actionId != bytes32(0) ? actionId : keccak256(abi.encodePacked(governor, propId, block.timestamp)),
+            propId,
+            executionTarget,
+            treasuryImpactValue,
+            "PROPOSAL_SUBMITTED",
+            deliverableURI,
+            description,
+            block.timestamp
+        );
+
         return propId;
+    }
+
+    // Backward-compatible 7-argument overload
+    function submitDAOProposal(
+        address governor,
+        string memory title,
+        string memory description,
+        string memory category,
+        uint256 votingDuration,
+        uint256 treasuryImpactValue,
+        address executionTarget
+    ) external onlyExecutorOrOwner whenNotPaused returns (uint256) {
+        return submitDAOProposal(
+            governor,
+            title,
+            description,
+            category,
+            votingDuration,
+            treasuryImpactValue,
+            executionTarget,
+            "",
+            bytes32(0)
+        );
+    }
+
+    /**
+     * @notice Records an arbitrary structured agent decision / audit entry for reconciliation
+     */
+    function recordAgentAction(
+        bytes32 actionId,
+        uint256 proposalId,
+        address recipient,
+        uint256 amount,
+        string calldata actionType,
+        string calldata deliverableURI,
+        string calldata reason
+    ) external onlyExecutorOrOwner whenNotPaused {
+        if (actionId != bytes32(0)) {
+            require(!processedActionKeys[actionId], "Agent: action already processed (idempotency guard)");
+            processedActionKeys[actionId] = true;
+        }
+
+        emit AgentAction(
+            actionId,
+            proposalId,
+            recipient,
+            amount,
+            actionType,
+            deliverableURI,
+            reason,
+            block.timestamp
+        );
     }
 
     /**

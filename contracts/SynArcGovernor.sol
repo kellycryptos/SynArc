@@ -23,6 +23,7 @@ contract SynArcGovernor {
         bool executed;
         uint256 treasuryImpactValue;
         address executionTarget;
+        string deliverableURI;
         uint256 snapshotBlock;
     }
 
@@ -47,7 +48,8 @@ contract SynArcGovernor {
         uint256 startTime,
         uint256 endTime,
         uint256 treasuryImpactValue,
-        address executionTarget
+        address executionTarget,
+        string deliverableURI
     );
 
     event VoteCast(
@@ -88,8 +90,13 @@ contract SynArcGovernor {
         string memory category,
         uint256 votingDuration,
         uint256 treasuryImpactValue,
-        address executionTarget
-    ) external returns (uint256) {
+        address executionTarget,
+        string memory deliverableURI
+    ) public returns (uint256) {
+        if (treasuryImpactValue > 0) {
+            require(bytes(deliverableURI).length > 0, "Governor: deliverable document attestation (IPFS CID) required for treasury payouts");
+        }
+
         proposalCount++;
         uint256 proposalId = proposalCount;
 
@@ -104,6 +111,7 @@ contract SynArcGovernor {
         newProposal.endTime = block.timestamp + votingDuration;
         newProposal.treasuryImpactValue = treasuryImpactValue;
         newProposal.executionTarget = executionTarget;
+        newProposal.deliverableURI = deliverableURI;
         newProposal.snapshotBlock = block.number - 1;
 
         emit ProposalCreated(
@@ -115,10 +123,23 @@ contract SynArcGovernor {
             newProposal.startTime,
             newProposal.endTime,
             treasuryImpactValue,
-            executionTarget
+            executionTarget,
+            deliverableURI
         );
 
         return proposalId;
+    }
+
+    // Backward compatible 6-argument overload for non-treasury proposals
+    function propose(
+        string memory title,
+        string memory description,
+        string memory category,
+        uint256 votingDuration,
+        uint256 treasuryImpactValue,
+        address executionTarget
+    ) external returns (uint256) {
+        return propose(title, description, category, votingDuration, treasuryImpactValue, executionTarget, "");
     }
 
     function castVote(uint256 proposalId, uint8 support) external returns (uint256) {
@@ -167,9 +188,9 @@ contract SynArcGovernor {
         
         p.executed = true;
 
-        // If treasury impact exists, execute it
+        // If treasury impact exists, execute it with proposal idempotency guard and deliverable attestation
         if (p.treasuryImpactValue > 0 && p.executionTarget != address(0)) {
-            treasury.withdraw(p.executionTarget, p.treasuryImpactValue);
+            treasury.withdraw(proposalId, p.executionTarget, p.treasuryImpactValue, p.deliverableURI);
         }
 
         emit ProposalExecuted(proposalId);

@@ -25,6 +25,7 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         string tokenSymbol; // "USDC" or "EURC"
         string description;
         uint256 timestamp;
+        string deliverableURI;
     }
 
     struct QueuedWithdrawal {
@@ -37,10 +38,14 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         uint256 executionTime;
         bool executed;
         bool canceled;
+        string deliverableURI;
     }
 
     Transaction[] public transactions;
     
+    // Idempotency guard: prevents replaying released proposals
+    mapping(uint256 => bool) public proposalReleased;
+
     // Withdrawal Queue mapping and counter
     mapping(uint256 => QueuedWithdrawal) public queuedWithdrawals;
     uint256 public withdrawalCount;
@@ -52,7 +57,7 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
     event WithdrawalEURC(address indexed recipient, uint256 amount, uint256 timestamp);
 
     event Inflow(address indexed sender, uint256 amount, string tokenSymbol, string description, uint256 timestamp);
-    event Outflow(address indexed recipient, uint256 amount, string tokenSymbol, string description, uint256 timestamp);
+    event Outflow(address indexed recipient, uint256 amount, string tokenSymbol, string description, uint256 timestamp, string deliverableURI);
 
     event WithdrawalQueued(
         uint256 indexed id,
@@ -112,7 +117,7 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         IERC20(usdcToken).safeTransferFrom(msg.sender, address(this), amount);
         usdcBalance += amount;
         
-        transactions.push(Transaction("Inflow", msg.sender, amount, "USDC", "USDC Deposit", block.timestamp));
+        transactions.push(Transaction("Inflow", msg.sender, amount, "USDC", "USDC Deposit", block.timestamp, ""));
         emit DepositUSDC(msg.sender, amount, block.timestamp);
         emit Inflow(msg.sender, amount, "USDC", "USDC Deposit", block.timestamp);
     }
@@ -123,7 +128,7 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         IERC20(eurcToken).safeTransferFrom(msg.sender, address(this), amount);
         eurcBalance += amount;
         
-        transactions.push(Transaction("Inflow", msg.sender, amount, "EURC", "EURC Deposit", block.timestamp));
+        transactions.push(Transaction("Inflow", msg.sender, amount, "EURC", "EURC Deposit", block.timestamp, ""));
         emit DepositEURC(msg.sender, amount, block.timestamp);
         emit Inflow(msg.sender, amount, "EURC", "EURC Deposit", block.timestamp);
     }
@@ -144,7 +149,8 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
             description: "Governance approved USDC withdraw",
             executionTime: block.timestamp + withdrawalDelay,
             executed: false,
-            canceled: false
+            canceled: false,
+            deliverableURI: ""
         });
 
         emit WithdrawalQueued(withdrawalCount, recipient, amount, usdcToken, "USDC", block.timestamp + withdrawalDelay);
@@ -165,23 +171,33 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
             description: "Governance approved EURC withdraw",
             executionTime: block.timestamp + withdrawalDelay,
             executed: false,
-            canceled: false
+            canceled: false,
+            deliverableURI: ""
         });
 
         emit WithdrawalQueued(withdrawalCount, recipient, amount, eurcToken, "EURC", block.timestamp + withdrawalDelay);
     }
 
-    // Legacy withdrawal compatibility for Governor contract calls
-    function withdraw(address recipient, uint256 amount) external onlyGovernor nonReentrant whenNotPaused {
+    // Governed withdrawal with proposal idempotency guard and deliverable attestation
+    function withdraw(
+        uint256 proposalId,
+        address recipient,
+        uint256 amount,
+        string memory deliverableURI
+    ) public onlyGovernor nonReentrant whenNotPaused {
         require(amount > 0, "Amount must be greater than 0");
+        if (proposalId > 0) {
+            require(!proposalReleased[proposalId], "Treasury: duplicate execution prevented by idempotency guard");
+            proposalReleased[proposalId] = true;
+        }
         require(usdcBalance >= amount, "Insufficient USDC balance");
         usdcBalance -= amount; // Reserved immediately
         
         if (recipient == agentAddress || recipient == owner()) {
             // Bypass 24h timelock for authorized rebalance agents or owner withdrawals
             IERC20(usdcToken).safeTransfer(recipient, amount);
-            transactions.push(Transaction("Outflow", recipient, amount, "USDC", "Governance approved instant withdraw", block.timestamp));
-            emit Outflow(recipient, amount, "USDC", "Governance approved instant withdraw", block.timestamp);
+            transactions.push(Transaction("Outflow", recipient, amount, "USDC", "Governance approved instant withdraw", block.timestamp, deliverableURI));
+            emit Outflow(recipient, amount, "USDC", "Governance approved instant withdraw", block.timestamp, deliverableURI);
         } else {
             withdrawalCount++;
             queuedWithdrawals[withdrawalCount] = QueuedWithdrawal({
@@ -190,13 +206,19 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
                 amount: amount,
                 token: usdcToken,
                 tokenSymbol: "USDC",
-                description: "Governance approved withdraw",
+                description: "Governance approved withdraw with attestation",
                 executionTime: block.timestamp + withdrawalDelay,
                 executed: false,
-                canceled: false
+                canceled: false,
+                deliverableURI: deliverableURI
             });
             emit WithdrawalQueued(withdrawalCount, recipient, amount, usdcToken, "USDC", block.timestamp + withdrawalDelay);
         }
+    }
+
+    // Legacy withdrawal compatibility for Governor contract calls
+    function withdraw(address recipient, uint256 amount) external onlyGovernor nonReentrant whenNotPaused {
+        withdraw(0, recipient, amount, "");
     }
 
     // Execute a queued withdrawal after the delay (anyone can trigger execution when ready)
@@ -210,7 +232,7 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         q.executed = true;
         IERC20(q.token).safeTransfer(q.recipient, q.amount);
 
-        transactions.push(Transaction("Outflow", q.recipient, q.amount, q.tokenSymbol, q.description, block.timestamp));
+        transactions.push(Transaction("Outflow", q.recipient, q.amount, q.tokenSymbol, q.description, block.timestamp, q.deliverableURI));
         
         if (q.token == usdcToken) {
             emit WithdrawalUSDC(q.recipient, q.amount, block.timestamp);
@@ -218,7 +240,7 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
             emit WithdrawalEURC(q.recipient, q.amount, block.timestamp);
         }
         
-        emit Outflow(q.recipient, q.amount, q.tokenSymbol, q.description, block.timestamp);
+        emit Outflow(q.recipient, q.amount, q.tokenSymbol, q.description, block.timestamp, q.deliverableURI);
         emit WithdrawalExecuted(id, q.recipient, q.amount, q.token);
     }
 
