@@ -28,11 +28,11 @@ const TREASURY_ABI = parseAbi([
 ])
 
 const GOVERNOR_ABI = parseAbi([
-  'function propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget) returns (uint256)',
+  'function propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget, string deliverableURI) returns (uint256)',
   'function execute(uint256 proposalId) external payable',
   'function state(uint256 proposalId) view returns (uint8)',
   'function proposalCount() view returns (uint256)',
-  'function getProposal(uint256 proposalId) view returns (uint256 id, address proposer, string title, string description, string category, uint256 votingDuration, uint256 startTime, uint256 endTime, uint256 forVotes, uint256 againstVotes, uint256 abstainVotes, bool canceled, bool executed, uint256 treasuryImpactValue, address executionTarget)',
+  'function getProposal(uint256 proposalId) view returns (uint256 id, address proposer, string title, string description, string category, uint256 votingDuration, uint256 startTime, uint256 endTime, uint256 forVotes, uint256 againstVotes, uint256 abstainVotes, bool canceled, bool executed, uint256 treasuryImpactValue, address executionTarget, string deliverableURI)',
   'function hasVoted(uint256 proposalId, address voter) view returns (bool)'
 ])
 
@@ -253,7 +253,8 @@ Respond in JSON format:
         'TREASURY_REBALANCE', 
         300n, 
         BigInt(Math.floor((decision.proposedAmount || 0) * 1_000_000)), 
-        this.getAgentAddress() as `0x${string}`
+        this.getAgentAddress() as `0x${string}`,
+        'ipfs://bafkreiautonomousagentoperatingfundrebalance'
       ],
     })
     await this.publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 })
@@ -280,7 +281,8 @@ Respond in JSON format:
         'TREASURY_REBALANCE',
         300n,
         0n,
-        this.getAgentAddress() as `0x${string}`
+        this.getAgentAddress() as `0x${string}`,
+        'ipfs://bafkreicctpreturnfundsepoliaarc'
       ],
     })
     await this.publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 })
