@@ -769,7 +769,23 @@ function TreasuryPageContent() {
                         <td className="py-4 font-mono font-bold text-text-primary">
                           -{q.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {q.tokenSymbol}
                         </td>
-                        <td className="py-4 text-text-secondary">{q.description}</td>
+                        <td className="py-4 text-text-secondary">
+                          <div>{q.description}</div>
+                          {q.deliverableURI && (
+                            <div className="mt-1">
+                              <a
+                                href={q.deliverableURI.startsWith("ipfs://") 
+                                  ? `https://ipfs.io/ipfs/${q.deliverableURI.replace("ipfs://", "")}` 
+                                  : q.deliverableURI}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-mono"
+                              >
+                                📄 Attestation Doc ↗
+                              </a>
+                            </div>
+                          )}
+                        </td>
                         <td className="py-4">
                           <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold ${
                             isReady 
@@ -827,6 +843,7 @@ function TreasuryPageContent() {
                   <th className="pb-4 font-bold pl-2">Type</th>
                   <th className="pb-4 font-bold">Description</th>
                   <th className="pb-4 font-bold">Amount</th>
+                  <th className="pb-4 font-bold">Document Proof</th>
                   <th className="pb-4 font-bold">Date</th>
                   <th className="pb-4 font-bold text-right pr-2">Tx</th>
                 </tr>
@@ -842,6 +859,9 @@ function TreasuryPageContent() {
                         <div className="h-4 w-32 bg-white/5 animate-pulse rounded" />
                       </td>
                       <td className="py-4 font-mono font-bold">
+                        <div className="h-4 w-20 bg-white/5 animate-pulse rounded" />
+                      </td>
+                      <td className="py-4">
                         <div className="h-4 w-20 bg-white/5 animate-pulse rounded" />
                       </td>
                       <td className="py-4">
@@ -870,6 +890,22 @@ function TreasuryPageContent() {
                         {tx.type === 'Outflow' ? '-' : '+'}
                         {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {tx.token}
                       </td>
+                      <td className="py-4">
+                        {tx.deliverableURI ? (
+                          <a
+                            href={tx.deliverableURI.startsWith("ipfs://") 
+                              ? `https://ipfs.io/ipfs/${tx.deliverableURI.replace("ipfs://", "")}` 
+                              : tx.deliverableURI}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-primary/10 border border-primary/25 text-primary text-xs font-mono hover:bg-primary/20 transition-colors"
+                          >
+                            <span>Verified Doc ↗</span>
+                          </a>
+                        ) : (
+                          <span className="text-text-tertiary text-xs font-mono">—</span>
+                        )}
+                      </td>
                       <td className="py-4 text-text-tertiary">
                         {new Date(tx.timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                       </td>
@@ -887,7 +923,7 @@ function TreasuryPageContent() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-text-tertiary">No recent activities found.</td>
+                    <td colSpan={6} className="py-8 text-center text-text-tertiary">No recent activities found.</td>
                   </tr>
                 )}
               </tbody>

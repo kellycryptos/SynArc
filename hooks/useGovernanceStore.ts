@@ -89,6 +89,7 @@ interface GovernanceState {
     executionTarget: string;
     votingDuration: number;
     proposer: string;
+    deliverableURI?: string;
   }, signer: ethers.Signer) => Promise<string>;
   castVote: (proposalId: string, option: "For" | "Against" | "Abstain", weight: number, signature: string, signer: ethers.Signer) => Promise<void>;
   executeProposal: (proposalId: string, signer: ethers.Signer) => Promise<void>;
@@ -314,6 +315,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
             votingEnds: new Date(endTimeSecs * 1000).toISOString(),
             executionTarget: p.executionTarget || ethers.ZeroAddress,
             votingDuration: p.votingDuration ? Number(p.votingDuration) / 86400 : 7,
+            deliverableURI: p.deliverableURI || "",
             timeline
           });
       }
@@ -459,7 +461,8 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         proposalData.category.trim(),
         votingDurationSecs,
         absoluteImpactValue,
-        targetAddress
+        targetAddress,
+        proposalData.deliverableURI || ""
       );
 
       const receipt = await tx.wait();

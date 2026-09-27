@@ -19,7 +19,7 @@ interface UseGovernorReturn {
   error: Error | null;
   refetch: () => Promise<void>;
   castVote: (proposalId: number, support: 0 | 1 | 2, reason?: string) => Promise<string>;
-  createProposal: (title: string, description: string, category: string, duration: number, treasuryImpact: number, target: string) => Promise<string>;
+  createProposal: (title: string, description: string, category: string, duration: number, treasuryImpact: number, target: string, deliverableURI?: string) => Promise<string>;
 }
 
 /**
@@ -119,6 +119,7 @@ export function useGovernor(): UseGovernorReturn {
           votingEnds: new Date(Number(p.endTime) * 1000).toISOString(),
           executionTarget: p.executionTarget,
           votingDuration: Number(p.votingDuration) / 86400,
+          deliverableURI: p.deliverableURI || "",
           timeline: [
             { title: "Proposal Created", timestamp: new Date(Number(p.startTime) * 1000).toISOString(), status: "Proposed" }
           ]
@@ -199,7 +200,8 @@ export function useGovernor(): UseGovernorReturn {
     category: string,
     duration: number,
     treasuryImpact: number,
-    target: string
+    target: string,
+    deliverableURI: string = ""
   ): Promise<string> => {
     try {
       if (!wallets || wallets.length === 0) {
@@ -225,6 +227,11 @@ export function useGovernor(): UseGovernorReturn {
       const votingDurationSecs = BigInt(duration) * 86400n;
       const absoluteImpactValue = BigInt(Math.abs(treasuryImpact)) * 1000000n;
       const targetAddress = target && target.startsWith('0x') ? target : ethers.ZeroAddress;
+      const deliverableDoc = deliverableURI?.trim() || "";
+
+      if (absoluteImpactValue > 0n && !deliverableDoc) {
+        throw new Error("Treasury payout proposals strictly require a deliverable attestation (IPFS CID or receipt URL).");
+      }
 
       const tx = await governorContract.propose(
         title.trim(),
@@ -233,6 +240,7 @@ export function useGovernor(): UseGovernorReturn {
         votingDurationSecs,
         absoluteImpactValue,
         targetAddress,
+        deliverableDoc,
         { 
           gasLimit: 550000n, 
           maxFeePerGas: 30000000n, 

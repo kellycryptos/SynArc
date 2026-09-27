@@ -1117,6 +1117,26 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                   <span className="text-text-secondary">Total VP</span>
                   <span className="text-text-primary font-mono">{totalVotesDisplay.toLocaleString()}</span>
                 </div>
+                {proposal.deliverableURI && (
+                  <div className="flex flex-col gap-1 border-t border-border-thin pt-3 mt-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-text-secondary text-xs">Deliverable Attestation</span>
+                      <span className="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">
+                        Tameion Verified
+                      </span>
+                    </div>
+                    <Link
+                      href={proposal.deliverableURI.startsWith("ipfs://") 
+                        ? `https://ipfs.io/ipfs/${proposal.deliverableURI.replace("ipfs://", "")}` 
+                        : proposal.deliverableURI}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-primary hover:underline font-mono text-xs break-all"
+                    >
+                      {proposal.deliverableURI}
+                    </Link>
+                  </div>
+                )}
               </div>
             </GlassCard>
           </div>

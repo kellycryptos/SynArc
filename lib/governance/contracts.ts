@@ -35,6 +35,7 @@ export const GovernorABI = [
       { name: 'votingDuration', type: 'uint256' },
       { name: 'treasuryImpactValue', type: 'uint256' },
       { name: 'executionTarget', type: 'address' },
+      { name: 'deliverableURI', type: 'string' },
     ],
     outputs: [{ name: '', type: 'uint256' }],
     stateMutability: 'nonpayable',
@@ -107,7 +108,15 @@ export const GovernorABI = [
       { name: 'executed', type: 'bool' },
       { name: 'treasuryImpactValue', type: 'uint256' },
       { name: 'executionTarget', type: 'address' },
+      { name: 'deliverableURI', type: 'string' },
     ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'getProposalDeliverable',
+    inputs: [{ name: 'proposalId', type: 'uint256' }],
+    outputs: [{ type: 'string' }],
     stateMutability: 'view',
   },
   {
@@ -325,6 +334,13 @@ export const TreasuryABI = [
   },
   {
     type: 'function',
+    name: 'proposalReleased',
+    inputs: [{ name: 'proposalId', type: 'uint256' }],
+    outputs: [{ type: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     name: 'queuedWithdrawals',
     inputs: [{ name: 'id', type: 'uint256' }],
     outputs: [
@@ -336,7 +352,8 @@ export const TreasuryABI = [
       { name: 'description', type: 'string' },
       { name: 'executionTime', type: 'uint256' },
       { name: 'executed', type: 'bool' },
-      { name: 'canceled', type: 'bool' }
+      { name: 'canceled', type: 'bool' },
+      { name: 'deliverableURI', type: 'string' }
     ],
     stateMutability: 'view',
   },
@@ -357,7 +374,8 @@ export const TreasuryABI = [
           { name: 'description', type: 'string' },
           { name: 'executionTime', type: 'uint256' },
           { name: 'executed', type: 'bool' },
-          { name: 'canceled', type: 'bool' }
+          { name: 'canceled', type: 'bool' },
+          { name: 'deliverableURI', type: 'string' }
         ]
       }
     ],
@@ -383,6 +401,18 @@ export const TreasuryABI = [
     inputs: [
       { name: 'recipient', type: 'address', indexed: true },
       { name: 'amount', type: 'uint256', indexed: false },
+    ],
+  },
+  {
+    type: 'event',
+    name: 'Outflow',
+    inputs: [
+      { name: 'recipient', type: 'address', indexed: true },
+      { name: 'amount', type: 'uint256', indexed: false },
+      { name: 'tokenSymbol', type: 'string', indexed: false },
+      { name: 'description', type: 'string', indexed: false },
+      { name: 'timestamp', type: 'uint256', indexed: false },
+      { name: 'deliverableURI', type: 'string', indexed: false },
     ],
   },
 ] as const satisfies Abi;

@@ -33,6 +33,7 @@ const TREASURY_ABI = [
           { name: 'tokenSymbol', type: 'string' },
           { name: 'description', type: 'string' },
           { name: 'timestamp', type: 'uint256' },
+          { name: 'deliverableURI', type: 'string' },
         ],
       },
     ],
@@ -56,6 +57,7 @@ const TREASURY_ABI = [
           { name: 'executionTime', type: 'uint256' },
           { name: 'executed', type: 'bool' },
           { name: 'canceled', type: 'bool' },
+          { name: 'deliverableURI', type: 'string' },
         ],
       },
     ],
@@ -64,6 +66,7 @@ const TREASURY_ABI = [
 
 const TREASURY_EVENTS_ABI = parseAbi([
   'event Inflow(address indexed sender, uint256 amount, string tokenSymbol, string description, uint256 timestamp)',
+  'event Outflow(address indexed recipient, uint256 amount, string tokenSymbol, string description, uint256 timestamp, string deliverableURI)',
   'event Outflow(address indexed recipient, uint256 amount, string tokenSymbol, string description, uint256 timestamp)'
 ]);
 
@@ -81,6 +84,7 @@ export interface QueuedWithdrawal {
   executionTime: number;
   executed: boolean;
   canceled: boolean;
+  deliverableURI?: string;
 }
 
 const DEPLOYMENT_BLOCK = 45973599n;
@@ -153,6 +157,7 @@ const formatLogsToActivities = (logs: any[]): TreasuryActivity[] => {
       timestamp: new Date(Number(args.timestamp || 0n) * 1000).toISOString(),
       description: args.description || "",
       party: party || "",
+      deliverableURI: args.deliverableURI || "",
       txHash: log.transactionHash
     };
   });
@@ -239,6 +244,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
         executionTime: Number(q.executionTime),
         executed: q.executed,
         canceled: q.canceled,
+        deliverableURI: q.deliverableURI || "",
       }));
 
       setQueuedWithdrawals(formattedQueued);

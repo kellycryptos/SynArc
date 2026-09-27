@@ -27,6 +27,7 @@ export interface Proposal {
   votingEnds: string;
   executionTarget?: string;
   votingDuration?: number; // in days
+  deliverableURI?: string; // IPFS CID / proof of deliverable for treasury payout proposals
   timeline: TimelineEvent[];
 }
 

@@ -258,7 +258,8 @@ contract SynArcGovernor {
         bool canceled,
         bool executed,
         uint256 treasuryImpactValue,
-        address executionTarget
+        address executionTarget,
+        string memory deliverableURI
     ) {
         Proposal storage p = proposals[proposalId];
         return (
@@ -276,7 +277,12 @@ contract SynArcGovernor {
             p.canceled,
             p.executed,
             p.treasuryImpactValue,
-            p.executionTarget
+            p.executionTarget,
+            p.deliverableURI
         );
+    }
+
+    function getProposalDeliverable(uint256 proposalId) external view returns (string memory) {
+        return proposals[proposalId].deliverableURI;
     }
 }

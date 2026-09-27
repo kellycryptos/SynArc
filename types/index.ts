@@ -41,6 +41,7 @@ export interface TreasuryActivity {
   description: string;
   txHash: string;
   party?: string;
+  deliverableURI?: string;
 }
 
 export interface GovernanceMetric {

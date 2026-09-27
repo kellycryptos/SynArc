@@ -185,14 +185,15 @@ export function useCreateProposal() {
     category: string,
     votingDuration: bigint,
     treasuryImpactValue: bigint,
-    executionTarget: `0x${string}`
+    executionTarget: `0x${string}`,
+    deliverableURI: string = ""
   ) => {
     writeContract({
       chainId: arcTestnet.id,
       address: GOVERNANCE_CONTRACTS.governor,
       abi: GovernorABI,
       functionName: 'propose',
-      args: [title, description, category, votingDuration, treasuryImpactValue, executionTarget],
+      args: [title, description, category, votingDuration, treasuryImpactValue, executionTarget, deliverableURI],
       gas: 550000n,                         // Sets a predictable manual execution ceiling
       maxFeePerGas: 30000000n,              // 6-Decimal max base fee parameter
       maxPriorityFeePerGas: 2000000n,       // 6-Decimal priority tip setting

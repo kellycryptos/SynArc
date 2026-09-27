@@ -73,7 +73,8 @@ export default function CreateProposalPage() {
         description: generated.description || "",
         treasuryImpactValue: generated.treasuryImpact === "high" ? -100000 : generated.treasuryImpact === "medium" ? -25000 : generated.treasuryImpact === "low" ? -5000 : 0,
         executionTarget: formData.executionTarget,
-        votingDuration: generated.votingDuration || 7
+        votingDuration: generated.votingDuration || 7,
+        deliverableURI: formData.deliverableURI,
       });
 
       setIsAssistantOpen(false); // Collapse helper box
@@ -96,6 +97,7 @@ export default function CreateProposalPage() {
     treasuryImpactValue: 0,
     executionTarget: "",
     votingDuration: 7,
+    deliverableURI: "",
   });
 
   const [proposalType, setProposalType] = useState<"standard" | "fund_agent">("standard");
@@ -110,6 +112,7 @@ export default function CreateProposalPage() {
         category: "Treasury Allocation",
         executionTarget: CONTRACTS.treasuryAgent,
         treasuryImpactValue: -amountNum,
+        deliverableURI: "ipfs://bafkreiautonomousagentoperatingfundrebalance",
         description: `This governance proposal approves the transfer of ${amountNum} USDC from the primary community-controlled treasury (treasuryGovernance) to the dedicated agent operating treasury (treasuryAgent) to fund autonomous CCTP rebalances. This proposal will go through the standard 24-hour timelock upon approval.`
       }));
     }
@@ -125,6 +128,7 @@ export default function CreateProposalPage() {
         treasuryImpactValue: 0,
         executionTarget: "",
         votingDuration: 7,
+        deliverableURI: "",
       });
       setFundingAmount("");
     }
@@ -169,10 +173,13 @@ export default function CreateProposalPage() {
       return;
     }
 
+    if (formData.treasuryImpactValue !== 0 && !formData.deliverableURI.trim()) {
+      setError("Treasury payout proposals strictly require a Deliverable Attestation (IPFS CID or receipt URL) to satisfy document matching controls.");
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
-
-
 
     try {
       // Get provider and client — Privy wallet, Circle wallet OR external wallet
@@ -184,9 +191,20 @@ export default function CreateProposalPage() {
       const votingDurationSecs = BigInt(formData.votingDuration) * 86400n;
       const absoluteImpactValue = BigInt(Math.abs(formData.treasuryImpactValue)) * 1000000n;
       const governorAddress = (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e") as `0x${string}`;
+      const deliverableDoc = formData.deliverableURI.trim();
 
       // Dynamically estimate fees using low-latency and aggressive parameters
       const gasParams = await getAggressiveGasParams(publicClient);
+
+      const proposeArgs = [
+        formData.title,
+        formData.description,
+        formData.category,
+        votingDurationSecs,
+        absoluteImpactValue,
+        targetAddress,
+        deliverableDoc
+      ] as const;
 
       let estimatedProposeGas = 600000n; // Slightly higher gas limit floor
       try {
@@ -194,14 +212,7 @@ export default function CreateProposalPage() {
           address: governorAddress,
           abi: GovernorABI,
           functionName: 'propose',
-          args: [
-            formData.title,
-            formData.description,
-            formData.category,
-            votingDurationSecs,
-            absoluteImpactValue,
-            targetAddress
-          ],
+          args: proposeArgs,
           account: address,
         })
         estimatedProposeGas = (est * 150n) / 100n;
@@ -214,14 +225,7 @@ export default function CreateProposalPage() {
         address: governorAddress,
         abi: GovernorABI,
         functionName: 'propose',
-        args: [
-          formData.title,
-          formData.description,
-          formData.category,
-          votingDurationSecs,
-          absoluteImpactValue,
-          targetAddress
-        ],
+        args: proposeArgs,
         account: address,
         gas: estimatedProposeGas,
         ...gasParams,
@@ -591,6 +595,31 @@ export default function CreateProposalPage() {
                       className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
                     />
                   </div>
+
+                  {formData.treasuryImpactValue !== 0 && (
+                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label htmlFor="deliverableURI" className="block text-sm font-bold text-text-primary">
+                          Deliverable Attestation (IPFS CID / Document Proof) *
+                        </label>
+                        <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">
+                          Tameion Control
+                        </span>
+                      </div>
+                      <input
+                        id="deliverableURI"
+                        type="text"
+                        value={formData.deliverableURI}
+                        onChange={(e) => setFormData({ ...formData, deliverableURI: e.target.value })}
+                        placeholder="ipfs://bafy... or https://... (Invoice, receipt, or deliverable)"
+                        className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
+                        required
+                      />
+                      <p className="text-xs text-text-tertiary leading-relaxed">
+                        To protect the treasury against unbacked agent disbursements, proposals with financial payouts strictly require an immutable deliverable reference before the Governor will allow creation or execution.
+                      </p>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
@@ -664,6 +693,16 @@ export default function CreateProposalPage() {
                         className="w-full bg-surface border border-border-thin rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-text-primary placeholder:text-text-tertiary transition-colors"
                       />
                     </div>
+                  </div>
+
+                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-text-primary">Deliverable Attestation Reference</span>
+                      <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">
+                        Auto-Attached
+                      </span>
+                    </div>
+                    <p className="text-xs font-mono text-muted break-all">{formData.deliverableURI}</p>
                   </div>
 
                   <div className="p-4 bg-amber-500/5 border border-amber-500/15 rounded-xl flex items-start gap-3 text-xs text-amber-300 leading-normal">
