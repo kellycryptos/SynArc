@@ -24,12 +24,12 @@ import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 import { useTheme } from "@/providers/ThemeProvider";
 import { Contract, formatUnits } from "ethers";
 import { getResilientProvider } from "@/lib/rpc/config";
-import { ARC_CHAIN } from "@/lib/arc-config";
+import { ARC_CHAIN, CONTRACTS } from "@/lib/arc-config";
 
 export default function SettingsPage() {
   const { walletAddress, isAuthenticated, isCircle } = useAuth();
   const { balance: usdcBalance, isLoading: usdcLoading } = useUSDCBalance();
-  const { isArcTestnet, isUnsupported } = useArcNetwork();
+  const { isArcTestnet, isArc, isUnsupported, networkName, explorerUrl, currentChainId } = useArcNetwork();
   const { switchToArc, isSwitching } = useSwitchArcNetwork();
   const { theme, setTheme } = useTheme();
   
@@ -165,10 +165,10 @@ export default function SettingsPage() {
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-muted uppercase tracking-wider">Network Status</p>
                   <div className="flex items-center justify-between bg-surface-elevated px-3 py-2 rounded-lg border border-border-thin min-h-[46px]">
-                    {isArcTestnet && !isUnsupported ? (
+                    {isArc && !isUnsupported ? (
                       <div className="flex items-center gap-2 text-success font-semibold text-sm">
                         <CheckCircle className="w-4 h-4 text-success animate-pulse" />
-                        <span>{ARC_CHAIN.name} ✅</span>
+                        <span>{networkName} ✅</span>
                       </div>
                     ) : (
                       <div className="flex flex-1 items-center justify-between gap-3">
@@ -307,11 +307,11 @@ export default function SettingsPage() {
             
             <div className="grid grid-cols-1 gap-3">
               {[
-                { name: "Syn DAO Governor", address: process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e", id: "gov" },
-                { name: "Syn DAO Treasury", address: process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18", id: "treasury" },
-                { name: "sARC Token (Voting Power)", address: process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e", id: "token" },
-                { name: "EURC Token", address: process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS || "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a", id: "eurc" },
-                { name: "Syn DAO Treasury Agent", address: process.env.NEXT_PUBLIC_AGENT_ADDRESS || "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D", id: "agent" },
+                { name: "Syn DAO Governor", address: CONTRACTS.governor, id: "gov" },
+                { name: "Syn DAO Treasury", address: CONTRACTS.treasury, id: "treasury" },
+                { name: "sARC Token (Voting Power)", address: CONTRACTS.token, id: "token" },
+                { name: "EURC Token", address: CONTRACTS.eurc, id: "eurc" },
+                { name: "Syn DAO Treasury Agent", address: CONTRACTS.treasuryAgent, id: "agent" },
                 { name: "ERC-8004 Identity Registry", address: "0x8004A818BFB912233c491871b3d84c89A494BD9e", id: "registry" },
               ].map((contract) => (
                 <div key={contract.id} className="flex items-center justify-between gap-3 p-4 bg-surface-elevated rounded-xl border border-border-thin w-full">
@@ -330,7 +330,7 @@ export default function SettingsPage() {
                       {copiedContract === contract.id ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
                     </button>
                     <a
-                      href={`${ARC_CHAIN.blockExplorers?.default.url || 'https://testnet.arcscan.app'}/address/${contract.address}`}
+                      href={`${explorerUrl}/address/${contract.address}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 bg-surface hover:bg-surface-elevated rounded-lg border border-border-thin text-muted hover:text-white transition-colors flex items-center justify-center"
@@ -347,22 +347,22 @@ export default function SettingsPage() {
             <div className="mt-6 pt-4 border-t border-border-thin grid grid-cols-2 gap-4 text-xs">
               <div className="space-y-1">
                 <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Network</span>
-                <span className="text-white font-medium">{ARC_CHAIN.name}</span>
+                <span className="text-white font-medium">{networkName}</span>
               </div>
               <div className="space-y-1">
                 <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Chain ID</span>
-                <span className="text-white font-medium">{ARC_CHAIN.id}</span>
+                <span className="text-white font-medium">{currentChainId}</span>
               </div>
 
               <div className="space-y-1 col-span-2">
                 <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Block Explorer</span>
                 <a 
-                  href={ARC_CHAIN.blockExplorers?.default.url || "https://testnet.arcscan.app"} 
+                  href={explorerUrl} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="text-primary hover:underline font-medium flex items-center gap-1"
                 >
-                  {ARC_CHAIN.blockExplorers?.default.name || "ArcScan"} ({ARC_CHAIN.blockExplorers?.default.url?.replace('https://', '') || 'testnet.arcscan.app'})
+                  {isArcTestnet ? "ArcScan" : "Arc Explorer"} ({explorerUrl.replace('https://', '')})
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>

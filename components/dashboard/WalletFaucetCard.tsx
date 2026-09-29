@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { BridgeModal } from "@/components/BridgeModal";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 
 interface FaucetTx {
@@ -67,6 +68,7 @@ function CooldownTimer({ nextClaimAt }: { nextClaimAt: string }) {
 
 export function WalletFaucetCard() {
   const { isAuthenticated, walletAddress, email, authMethod, login } = useAuth();
+  const { isArcTestnet, networkName, explorerUrl } = useArcNetwork();
   const [copied, setCopied] = useState(false);
   const [showBridge, setShowBridge] = useState(false);
   const [faucetStatus, setFaucetStatus] = useState<"idle" | "requesting" | "success" | "error" | "cooldown">("idle");
@@ -300,13 +302,13 @@ export function WalletFaucetCard() {
                   Connected
                 </span>
                 <a 
-                  href={`https://testnet.arcscan.app/address/${walletAddress}`} 
+                  href={`${explorerUrl}/address/${walletAddress}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="p-1.5 bg-surface-elevated border border-border-thin rounded-xl text-text-tertiary hover:text-foreground transition-all flex items-center gap-1 text-xs"
-                  title="View on ArcScan Explorer"
+                  title={`View on ${isArcTestnet ? "ArcScan" : "Arc"} Explorer`}
                 >
-                  ArcScan
+                  {isArcTestnet ? "ArcScan" : "Explorer"}
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </>
@@ -325,7 +327,7 @@ export function WalletFaucetCard() {
           {/* Balance Display Section */}
           <div className="flex flex-col gap-3 py-4">
             <p className="text-xs font-semibold tracking-wider text-text-tertiary uppercase flex items-center gap-1">
-              Arc Testnet Wallet Balance
+              {isArcTestnet ? "Arc Testnet Wallet Balance" : "Arc Wallet Balance"}
               {tokenLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin text-brand" />}
             </p>
 
@@ -410,7 +412,7 @@ export function WalletFaucetCard() {
                     <span className="font-mono text-[9px] text-text-tertiary group-hover/item:text-text-secondary select-all">{tx.hash.substring(0, 10)}...{tx.hash.substring(tx.hash.length - 8)}</span>
                   </div>
                   <a 
-                    href={`https://testnet.arcscan.app/tx/${tx.hash}`}
+                    href={`${explorerUrl}/tx/${tx.hash}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-1.5 bg-surface-elevated hover:bg-brand/20 border border-border-thin hover:border-brand/30 rounded-lg text-text-tertiary hover:text-brand-light transition-all cursor-pointer"
@@ -425,12 +427,14 @@ export function WalletFaucetCard() {
         </div>
 
         {/* Informational Hint footer */}
-        <div className="pt-4 mt-4 border-t border-border-subtle text-[11px] text-text-tertiary flex items-start gap-2">
-          <Clock className="w-3.5 h-3.5 text-brand shrink-0 mt-0.5" />
-          <span>
-            Faucet transactions are mock-simulated on top of Privy keys for offline usability, using active JSON-RPC channels on network nodes.
-          </span>
-        </div>
+        {isArcTestnet && (
+          <div className="pt-4 mt-4 border-t border-border-subtle text-[11px] text-text-tertiary flex items-start gap-2">
+            <Clock className="w-3.5 h-3.5 text-brand shrink-0 mt-0.5" />
+            <span>
+              Faucet transactions are mock-simulated on top of Privy keys for offline usability, using active JSON-RPC channels on network nodes.
+            </span>
+          </div>
+        )}
       </GlassCard>
 
       {/* Get Testnet Tokens Faucet Section */}
@@ -564,7 +568,7 @@ export function WalletFaucetCard() {
             </div>
             
             <p className="text-xs text-text-tertiary leading-relaxed flex-grow">
-              Already have USDC on another chain? Bridge it to Arc Testnet instantly.
+              Already have USDC on another chain? Bridge it to {networkName} instantly.
             </p>
 
             <button
@@ -593,12 +597,12 @@ export function WalletFaucetCard() {
                 <span className="font-mono opacity-80 select-all block sm:inline">{currentTxHash}</span>
               </div>
               <a
-                href={`https://testnet.arcscan.app/tx/${currentTxHash}`}
+                href={`${explorerUrl}/tx/${currentTxHash}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-xs text-brand-light font-bold hover:underline shrink-0 self-start sm:self-auto"
               >
-                Inspect Transaction on ArcScan
+                Inspect Transaction on {isArcTestnet ? "ArcScan" : "Arc Explorer"}
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </motion.div>

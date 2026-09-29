@@ -3,10 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 // Documented public fallback constant for Arc Testnet RPC
 const PUBLIC_BACKUP_RPC = "https://rpc.testnet.arc.network";
 
-// Rate limiting in-memory storage (IP -> timestamps[])
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_SECONDS = 60; // 1 minute
+const RATE_LIMIT_WINDOW_MS = RATE_LIMIT_WINDOW_SECONDS * 1000;
 const MAX_REQUESTS_PER_WINDOW = 120; // 120 requests / min per IP
+
+// In-memory fallback storage (IP -> timestamps[])
+const rateLimitMap = new Map<string, number[]>();
 
 function getClientIp(req: NextRequest): string {
   if ((req as any).ip) return (req as any).ip;
@@ -19,17 +22,17 @@ function getClientIp(req: NextRequest): string {
   return "127.0.0.1";
 }
 
-function checkRateLimit(ip: string): boolean {
+function checkInMemoryRateLimit(ip: string): boolean {
   const now = Date.now();
   const timestamps = rateLimitMap.get(ip) || [];
-  
+
   // Filter out timestamps older than the window
   const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-  
+
   if (recent.length >= MAX_REQUESTS_PER_WINDOW) {
     return false;
   }
-  
+
   recent.push(now);
   rateLimitMap.set(ip, recent);
 
@@ -45,64 +48,113 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
+/**
+ * Checks rate limit for client IP.
+ * If Upstash Redis or Vercel KV REST API is configured (KV_REST_API_URL or UPSTASH_REDIS_REST_URL),
+ * uses an atomic distributed sliding window across all serverless function instances.
+ * Otherwise, falls back to the in-memory sliding window map.
+ */
+async function checkRateLimit(ip: string): Promise<boolean> {
+  const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!kvUrl || !kvToken) {
+    return checkInMemoryRateLimit(ip);
+  }
+
+  try {
+    const currentWindow = Math.floor(Date.now() / RATE_LIMIT_WINDOW_MS);
+    const key = `synarc:ratelimit:rpc:${ip}:${currentWindow}`;
+
+    // Upstash / Vercel KV REST API pipeline: INCR counter & set TTL
+    const res = await fetch(`${kvUrl.replace(/\/$/, "")}/pipeline`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${kvToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([
+        ["INCR", key],
+        ["EXPIRE", key, RATE_LIMIT_WINDOW_SECONDS * 2],
+      ]),
+      // 1.5s timeout prevents external KV latency from blocking RPC throughput
+      signal: AbortSignal.timeout(1500),
+    });
+
+    if (!res.ok) {
+      return checkInMemoryRateLimit(ip);
+    }
+
+    const data = await res.json();
+    const count = data?.[0]?.result;
+    if (typeof count === "number") {
+      return count <= MAX_REQUESTS_PER_WINDOW;
+    }
+
+    return checkInMemoryRateLimit(ip);
+  } catch {
+    // Fail gracefully to in-memory check if external store encounters an issue
+    return checkInMemoryRateLimit(ip);
+  }
+}
+
+function isAllowedUrl(urlString: string, host: string): boolean {
+  try {
+    const parsed = new URL(urlString);
+    if (parsed.host === host) return true;
+    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") return true;
+    if (parsed.hostname.endsWith(".vercel.app")) return true;
+    if (process.env.NEXT_PUBLIC_SITE_URL) {
+      let rawSite = process.env.NEXT_PUBLIC_SITE_URL;
+      if (!/^https?:\/\//i.test(rawSite)) rawSite = `https://${rawSite}`;
+      const siteUrl = new URL(rawSite);
+      if (parsed.host === siteUrl.host) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function isOriginAllowed(req: NextRequest): boolean {
-  // Explicit cross-site fetch rejected immediately
+  // 1. Explicit cross-site fetch rejected immediately by browser-enforced header
   const secFetchSite = req.headers.get("sec-fetch-site");
   if (secFetchSite === "cross-site") {
     return false;
   }
 
-  // Trusted internal app header sent by our wagmi/viem transport
-  const appSource = req.headers.get("x-synarc-source");
-  if (appSource === "app-client") {
-    return true;
-  }
-
+  const host = req.headers.get("host") || "";
   const origin = req.headers.get("origin");
   const referer = req.headers.get("referer");
-  const host = req.headers.get("host") || "";
 
-  // 1. Validate Origin header if present
-  if (origin) {
-    try {
-      const originUrl = new URL(origin);
-      if (originUrl.host === host) return true;
-      if (originUrl.hostname === "localhost" || originUrl.hostname === "127.0.0.1") return true;
-      if (process.env.NEXT_PUBLIC_SITE_URL) {
-        const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL);
-        if (originUrl.host === siteUrl.host) return true;
-      }
-      if (originUrl.hostname.endsWith(".vercel.app")) return true;
-      return false;
-    } catch {
-      return false;
-    }
+  // 2. Validate Origin header if present — must be allowed
+  if (origin && !isAllowedUrl(origin, host)) {
+    return false;
   }
 
-  // 2. Validate Referer header if present
-  if (referer) {
-    try {
-      const refererUrl = new URL(referer);
-      if (refererUrl.host === host) return true;
-      if (refererUrl.hostname === "localhost" || refererUrl.hostname === "127.0.0.1") return true;
-      if (process.env.NEXT_PUBLIC_SITE_URL) {
-        const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL);
-        if (refererUrl.host === siteUrl.host) return true;
-      }
-      if (refererUrl.hostname.endsWith(".vercel.app")) return true;
-      return false;
-    } catch {
-      return false;
-    }
+  // 3. Validate Referer header if present — must be allowed
+  if (referer && !isAllowedUrl(referer, host)) {
+    return false;
   }
 
-  // 3. In non-production environments, allow local test tools/curl without origin
+  // 4. In development / non-production, allow local test tools & scripts
   if (process.env.NODE_ENV !== "production") {
     return true;
   }
 
-  // Allow server-to-server calls where host is matched or sec-fetch-site is same-origin
-  if (secFetchSite === "same-origin" || secFetchSite === "none") {
+  // 5. Allow browser same-origin or same-site requests
+  if (secFetchSite === "same-origin" || secFetchSite === "same-site" || secFetchSite === "none") {
+    return true;
+  }
+
+  // 6. If origin or referer was present and passed validation, allow
+  if (origin || referer) {
+    return true;
+  }
+
+  // 7. SSR / app transport marker (raises bar past blind bots; rate limiter is primary boundary)
+  const appSource = req.headers.get("x-synarc-source");
+  if (appSource === "app-client") {
     return true;
   }
 
@@ -130,9 +182,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 2. Rate Limiting: Prevent quota abuse
+  // 2. Rate Limiting: Prevent quota abuse (distributed across Vercel lambdas when KV is set)
   const clientIp = getClientIp(req);
-  if (!checkRateLimit(clientIp)) {
+  const isAllowed = await checkRateLimit(clientIp);
+  if (!isAllowed) {
     return NextResponse.json(
       {
         jsonrpc: "2.0",

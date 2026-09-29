@@ -26,6 +26,7 @@ import { WalletConnectButton } from "@/components/ui/WalletConnectButton";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 interface ActiveLink {
   href: string;
@@ -53,6 +54,15 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
   const router = useRouter();
   const { isAuthenticated, walletAddress, isCircle } = useAuth();
   const { balance, isLoading, isError } = useUSDCBalance(walletAddress);
+  const { isArcTestnet, networkName } = useArcNetwork();
+
+  // On mainnet, hide testnet-only nav items (Faucet, Docs). Settings stays per exception.
+  const visibleLinks = activeLinks.filter((link) => {
+    if (link.href === "/faucet" || link.href === "/docs") {
+      return isArcTestnet;
+    }
+    return true;
+  });
 
   // Navigate first, then close the mobile drawer so the drawer unmount
   // doesn't cancel the in-flight route change.
@@ -130,7 +140,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
         </p>
 
         {/* Active navigation links */}
-        {activeLinks.map((link) => {
+        {visibleLinks.map((link) => {
           const active =
             pathname === link.href ||
             (link.href !== "/dashboard" && pathname.startsWith(link.href + "/")) ||
@@ -281,7 +291,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
       {/* Non-custodial Note Card */}
       <div className="mx-3.5 mb-3 rounded-xl border border-[#1B2536] bg-[#0B111C]/90 p-3 text-[11px] text-[#8A948E] font-space leading-relaxed">
         <span className="font-bold text-[#F5F7FA] block mb-0.5">Non-custodial.</span>
-        Your active proposals, voting streak, and agent rules are secured on Arc Testnet.
+        Your active proposals, voting streak, and agent rules are secured on {networkName}.
       </div>
 
       {/* Connect Button */}

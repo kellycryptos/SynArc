@@ -13,8 +13,11 @@ export function getTestnetProxyUrl(): string {
   if (typeof window !== 'undefined') {
     return '/api/rpc/testnet';
   }
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+  let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+  if (!/^https?:\/\//i.test(siteUrl)) {
+    siteUrl = `https://${siteUrl}`;
+  }
   return `${siteUrl.replace(/\/$/, '')}/api/rpc/testnet`;
 }
 
