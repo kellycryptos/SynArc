@@ -4,9 +4,23 @@ import { sepolia, baseSepolia, avalancheFuji, mainnet, base, avalanche } from 'v
 // Documented public fallback constant for Arc Testnet
 export const ARC_TESTNET_FALLBACK_RPC = 'https://rpc.testnet.arc.network';
 
+/**
+ * Resolves the proxy URL safely across both browser and server (SSR/Node) contexts.
+ * In the browser, returns '/api/rpc/testnet'.
+ * In Node.js/SSR, returns the absolute URL to prevent 'Failed to parse URL' errors.
+ */
+export function getTestnetProxyUrl(): string {
+  if (typeof window !== 'undefined') {
+    return '/api/rpc/testnet';
+  }
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+  return `${siteUrl.replace(/\/$/, '')}/api/rpc/testnet`;
+}
+
 // Arc Testnet list (chain 5042002) - uses same-origin proxy with public fallback
 export const ARC_TESTNET_RPC_URLS = [
-  '/api/rpc/testnet',
+  getTestnetProxyUrl(),
   ARC_TESTNET_FALLBACK_RPC,
   'https://rpc.testnet.arc.io',
 ];
@@ -48,7 +62,7 @@ export const arcTestnet = defineChain({
   name: 'Arc Testnet',
   nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
   rpcUrls: {
-    default: { http: ['/api/rpc/testnet', ARC_TESTNET_FALLBACK_RPC] },
+    default: { http: [getTestnetProxyUrl(), ARC_TESTNET_FALLBACK_RPC] },
     public: { http: [ARC_TESTNET_FALLBACK_RPC] }
   },
   blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
