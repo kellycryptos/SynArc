@@ -79,8 +79,8 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         {isAuthenticated ? (
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Streak Flame Pill */}
-            <div className="tabular flex h-8 items-center gap-1.5 rounded-full border border-[#1B2536] bg-[#0B111C] px-2.5 text-xs font-medium text-[#8A948E] hover:border-[#22D3EE]/40 transition-colors">
-              <Flame className="w-3.5 h-3.5 text-[#22D3EE]" />
+            <div className="tabular flex h-8 items-center gap-1.5 rounded-full border border-[#1B2536] bg-[#0B111C] px-2.5 text-xs font-medium text-[#8A948E] hover:border-[#2F6FFF]/40 transition-colors">
+              <Flame className="w-3.5 h-3.5 text-[#4F8BFF]" />
               <span className="text-[#F5F7FA] font-bold">3</span>
             </div>
 
@@ -91,7 +91,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
             {loading ? (
               <div className="h-8 w-24 bg-[#0B111C] animate-pulse rounded-lg border border-[#1B2536] shrink-0" />
             ) : error ? (
-              <span className="hidden xs:inline-flex items-center px-3 py-2 rounded-lg text-xs font-mono bg-danger/10 border border-danger/20 text-danger shrink-0">
+              <span className="hidden xs:inline-flex items-center px-3 py-2 rounded-lg text-xs font-mono bg-negative/10 border border-negative/20 text-negative shrink-0">
                 -- USDC
               </span>
             ) : balance !== null ? (
@@ -101,7 +101,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
             ) : null}
 
             {/* User Profile Card */}
-            <div className="flex items-center gap-2 bg-[#0B111C] border border-[#1B2536] rounded-lg px-3 py-2 text-[#22D3EE] font-mono">
+            <div className="flex items-center gap-2 bg-[#0B111C] border border-[#1B2536] rounded-lg px-3 py-2 text-[#4F8BFF] font-mono">
               <span className="text-xs font-mono flex items-center gap-1.5">
                 {isCircle ? (
                   <>
@@ -127,14 +127,14 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         ) : (
           <div className="flex items-center gap-2">
             <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0B111C] border border-[#1B2536] text-xs font-mono text-[#6B7385]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4F8BFF] animate-pulse" />
               Browsing as Guest
             </span>
             <ConnectButton.Custom>
               {({ openConnectModal, connectModalOpen }) => (
                 <button
                   onClick={openConnectModal}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] text-[#04101C] font-space font-semibold text-xs tracking-wide shadow-sm hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-sm hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   <Wallet className="w-3.5 h-3.5 shrink-0" />
                   <span>{connectModalOpen ? "Connecting..." : "Connect Wallet"}</span>

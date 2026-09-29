@@ -89,16 +89,16 @@ export default function DashboardOverview() {
 
       {/* ⚡ Agent Status Banner */}
       <Link href="/agent" className="block">
-        <div className="relative overflow-hidden flex items-center justify-between gap-4 px-5 py-4 rounded-lg border border-[#1B2536] bg-[#0B111C] hover:border-[#22D3EE]/40 transition-all group cursor-pointer">
-          <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-[#2F6FFF] to-[#22D3EE]" />
+        <div className="relative overflow-hidden flex items-center justify-between gap-4 px-5 py-4 rounded-lg border border-[#1B2536] bg-[#0B111C] hover:border-[#2F6FFF]/40 transition-all group cursor-pointer">
+          <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-[#2F6FFF] to-[#4F8BFF]" />
           <div className="flex items-center gap-3.5 pl-1">
-            <span className="text-lg text-[#22D3EE]">🛡</span>
+            <span className="text-lg text-[#4F8BFF]">🛡</span>
             <div>
               <div className="text-sm font-medium text-[#F5F7FA] font-space">Treasury guard active</div>
               <div className="text-xs text-[#6B7385] font-mono mt-0.5">monitoring treasury · automated rules active</div>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-[#22D3EE] text-xs font-medium font-space group-hover:gap-2.5 transition-all">
+          <div className="flex items-center gap-1.5 text-[#4F8BFF] text-xs font-medium font-space group-hover:gap-2.5 transition-all">
             View agent &rarr;
           </div>
         </div>
@@ -116,13 +116,13 @@ export default function DashboardOverview() {
 
       {/* ⚡ Creator DAOs Section */}
       <SectionErrorBoundary sectionName="Creator DAOs">
-        <GlassCard className="p-6 border border-primary/20 bg-primary/[0.01] space-y-6" hover={false}>
+        <GlassCard className="p-6 border border-brand/20 bg-brand/[0.01] space-y-6" hover={false}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Rocket className="w-5 h-5 text-primary" />
+              <Rocket className="w-5 h-5 text-brand" />
               <h2 className="text-lg sm:text-xl font-bold font-heading text-text-primary">⚡ Creator DAOs</h2>
             </div>
-            <Link href="/creator-daos" className="text-xs font-bold text-primary hover:text-primary-glow flex items-center gap-1 transition-all">
+            <Link href="/creator-daos" className="text-xs font-bold text-brand hover:text-brand-light flex items-center gap-1 transition-all">
               View All Creator DAOs <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -131,15 +131,15 @@ export default function DashboardOverview() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
             <div className="px-4 py-3 rounded-xl bg-surface/30 border border-border-thin/60">
               <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Active DAOs</span>
-              <span className="text-lg font-bold text-success mt-1 block">{activeCampaigns}</span>
+              <span className="text-lg font-bold text-positive mt-1 block">{activeCampaigns}</span>
             </div>
             <div className="px-4 py-3 rounded-xl bg-surface/30 border border-border-thin/60">
               <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Total USDC Raised</span>
-              <span className="text-lg font-bold text-purple-300 mt-1 block">{totalRaised.toLocaleString()} USDC</span>
+              <span className="text-lg font-bold text-[#4F8BFF] mt-1 block">{totalRaised.toLocaleString()} USDC</span>
             </div>
             <div className="px-4 py-3 rounded-xl bg-surface/30 border border-border-thin/60">
               <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">DAOs Funded</span>
-              <span className="text-lg font-bold text-arc-blue mt-1 block">{fundedCount}</span>
+              <span className="text-lg font-bold text-[#4F8BFF] mt-1 block">{fundedCount}</span>
             </div>
           </div>
 
@@ -156,29 +156,29 @@ export default function DashboardOverview() {
                 const progress = Math.min(100, (c.raised / c.goal) * 100);
                 return (
                   <Link href={`/creator-daos/${c.id}`} key={c.id} className="block group">
-                    <div className="p-4 rounded-xl border border-border-thin/80 bg-surface/20 group-hover:border-primary/20 group-hover:bg-primary/[0.01] transition-all flex flex-col justify-between h-full gap-3">
+                    <div className="p-4 rounded-xl border border-border-thin/80 bg-surface/20 group-hover:border-brand/20 group-hover:bg-brand/[0.01] transition-all flex flex-col justify-between h-full gap-3">
                       <div className="space-y-1">
                         <div className="flex justify-between items-center">
                           <span className={`text-[9px] px-2 py-0.2 rounded font-extrabold tracking-wide uppercase ${
                             c.isAgent 
-                              ? "bg-purple-500/10 border border-purple-400/20 text-purple-300" 
-                              : "bg-blue-500/10 border border-blue-400/20 text-blue-300"
+                              ? "bg-[#2F6FFF]/10 border border-[#2F6FFF]/20 text-[#4F8BFF]" 
+                              : "bg-white/5 border border-white/10 text-[#F5F7FA]"
                           }`}>
                             {c.isAgent ? "🤖 Agent" : "👤 Human"}
                           </span>
                           <span className="text-[9px] text-muted uppercase font-bold">{c.state}</span>
                         </div>
-                        <h4 className="text-sm font-bold text-text-primary group-hover:text-primary transition-colors">{c.title}</h4>
+                        <h4 className="text-sm font-bold text-text-primary group-hover:text-brand transition-colors">{c.title}</h4>
                         <p className="text-xs text-muted leading-relaxed line-clamp-1">{c.description}</p>
                       </div>
 
                       <div className="space-y-1.5 pt-1">
                         <div className="w-full h-1 bg-surface rounded-full overflow-hidden">
-                          <div className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-300" style={{ width: `${progress}%` }} />
+                          <div className="h-full bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] transition-all duration-300" style={{ width: `${progress}%` }} />
                         </div>
                         <div className="flex items-center justify-between text-[10px] text-text-tertiary">
                           <span className="flex items-center gap-1 font-semibold text-text-secondary">
-                            <Coins className="w-3 h-3 text-primary" />
+                            <Coins className="w-3 h-3 text-brand" />
                             {c.raised.toLocaleString()} / {c.goal.toLocaleString()} USDC
                           </span>
                           <span className="flex items-center gap-1">
@@ -197,7 +197,7 @@ export default function DashboardOverview() {
           {/* CTA Launch shortcut */}
           <div className="flex justify-end pt-2">
             <Link href="/create-dao">
-              <button className="px-4 py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer">
+              <button className="px-4 py-2.5 rounded-xl bg-brand hover:bg-brand-light text-white font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(47,111,255,0.2)] cursor-pointer">
                 <Plus className="w-4 h-4" />
                 🚀 Launch Creator DAO
               </button>
@@ -236,13 +236,13 @@ export default function DashboardOverview() {
             const topCreators = [...creators].sort((a, b) => b.raised - a.raised).slice(0, 3);
 
             return (
-              <GlassCard className="p-6 border border-primary/20 bg-primary/[0.01] space-y-6 mt-6" hover={false}>
+              <GlassCard className="p-6 border border-brand/20 bg-brand/[0.01] space-y-6 mt-6" hover={false}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-amber-400" />
+                    <Trophy className="w-5 h-5 text-brand" />
                     <h3 className="text-sm font-extrabold font-heading text-text-primary uppercase tracking-wider">⚡ Creator Economy</h3>
                   </div>
-                  <Link href="/leaderboard" className="text-xs font-bold text-primary hover:text-primary/80 transition-colors flex items-center gap-0.5">
+                  <Link href="/leaderboard" className="text-xs font-bold text-brand hover:text-brand-light transition-colors flex items-center gap-0.5">
                     View All <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -255,11 +255,11 @@ export default function DashboardOverview() {
                   </div>
                   <div className="px-1.5 py-3 rounded-xl bg-surface/30 border border-border-thin">
                     <span className="text-[8px] uppercase font-bold text-muted tracking-wider block">Total Raised</span>
-                    <span className="text-sm font-extrabold text-success mt-1 block">{totalCreatorFunds.toLocaleString()} USDC</span>
+                    <span className="text-sm font-extrabold text-brand-light mt-1 block">{totalCreatorFunds.toLocaleString()} USDC</span>
                   </div>
                   <div className="px-1.5 py-3 rounded-xl bg-surface/30 border border-border-thin">
                     <span className="text-[8px] uppercase font-bold text-muted tracking-wider block">Avg Support</span>
-                    <span className="text-xs font-extrabold text-purple-300 mt-1.5 block">{avgSupport.toFixed(2)} USDC</span>
+                    <span className="text-xs font-extrabold text-brand-light mt-1.5 block">{avgSupport.toFixed(2)} USDC</span>
                   </div>
                 </div>
 
@@ -273,12 +273,12 @@ export default function DashboardOverview() {
                   ) : (
                     topCreators.map((creator, i) => (
                       <Link href={`/creator/${creator.id}`} key={creator.id} className="block group">
-                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-surface/25 border border-border-subtle hover:border-primary/20 group-hover:bg-primary/[0.01] transition-all duration-300">
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-surface/25 border border-border-subtle hover:border-brand/20 group-hover:bg-brand/[0.01] transition-all duration-300">
                           <div className="flex items-center gap-2">
                             <span className="text-xs select-none">{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
-                            <span className="text-xs font-bold text-text-primary group-hover:text-primary transition-colors">{creator.name}</span>
+                            <span className="text-xs font-bold text-text-primary group-hover:text-brand-light transition-colors">{creator.name}</span>
                           </div>
-                          <span className="text-xs font-bold text-purple-300">{creator.raised.toLocaleString()} USDC</span>
+                          <span className="text-xs font-bold text-brand-light">{creator.raised.toLocaleString()} USDC</span>
                         </div>
                       </Link>
                     ))
@@ -286,7 +286,7 @@ export default function DashboardOverview() {
                 </div>
 
                 <Link href="/create-dao" className="block">
-                  <button className="w-full py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.45)] cursor-pointer">
+                  <button className="w-full py-2.5 rounded-xl bg-brand hover:bg-brand-light text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_0_15px_rgba(47,111,255,0.2)] hover:shadow-[0_0_20px_rgba(47,111,255,0.45)] cursor-pointer">
                     <Plus className="w-4 h-4" />
                     Launch Creator DAO
                   </button>

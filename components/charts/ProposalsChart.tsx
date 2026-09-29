@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { VotingTrend } from "@/types";
+import { TOKENS } from "@/lib/theme-tokens";
 
 interface Props {
   data: VotingTrend[];
@@ -42,7 +43,7 @@ export function ProposalsChart({ data }: Props) {
         />
         <Bar
           dataKey="proposals"
-          fill="#8b5cf6"
+          fill={TOKENS.brand}
           radius={[6, 6, 0, 0]}
           name="Proposals"
         />

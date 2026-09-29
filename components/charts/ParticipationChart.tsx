@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { VotingTrend } from "@/types";
+import { TOKENS } from "@/lib/theme-tokens";
 
 interface Props {
   data: VotingTrend[];
@@ -21,12 +22,12 @@ export function ParticipationChart({ data }: Props) {
       <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
         <defs>
           <linearGradient id="participationGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+            <stop offset="5%" stopColor={TOKENS.brand} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={TOKENS.brand} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="turnoutGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+            <stop offset="5%" stopColor={TOKENS.brandLight} stopOpacity={0.2} />
+            <stop offset="95%" stopColor={TOKENS.brandLight} stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
@@ -54,7 +55,7 @@ export function ParticipationChart({ data }: Props) {
         <Area
           type="monotone"
           dataKey="participation"
-          stroke="#8b5cf6"
+          stroke={TOKENS.brand}
           strokeWidth={2}
           fill="url(#participationGrad)"
           name="Participation %"
@@ -62,7 +63,7 @@ export function ParticipationChart({ data }: Props) {
         <Area
           type="monotone"
           dataKey="averageTurnout"
-          stroke="#06b6d4"
+          stroke={TOKENS.brandLight}
           strokeWidth={2}
           fill="url(#turnoutGrad)"
           name="Avg Turnout %"

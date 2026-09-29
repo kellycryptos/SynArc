@@ -16,7 +16,7 @@ export function CreateProposalCTA() {
     return (
       <Link
         href="/proposals/create"
-        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] text-[#04101C] text-xs font-bold font-space rounded-xl hover:opacity-95 transition-all shadow-[0_0_15px_rgba(34,211,238,0.25)]"
+        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white text-xs font-bold font-space rounded-xl hover:opacity-95 transition-all shadow-[0_0_15px_rgba(47,111,255,0.25)]"
       >
         <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
         Create proposal
@@ -27,7 +27,7 @@ export function CreateProposalCTA() {
   return (
     <button
       onClick={login}
-      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] text-[#04101C] text-xs font-bold font-space rounded-xl hover:opacity-95 transition-all shadow-[0_0_15px_rgba(34,211,238,0.25)] cursor-pointer"
+      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white text-xs font-bold font-space rounded-xl hover:opacity-95 transition-all shadow-[0_0_15px_rgba(47,111,255,0.25)] cursor-pointer"
     >
       <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
       Create proposal

@@ -69,15 +69,15 @@ export function ProofOfAutonomyTimeline({ limit = 10 }: { limit?: number }) {
     <div className="space-y-4 text-left">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-            <Bot className="w-4 h-4 text-purple-400" />
+          <div className="w-8 h-8 rounded-lg bg-brand/10 border border-brand/20 flex items-center justify-center">
+            <Bot className="w-4 h-4 text-brand-light" />
           </div>
           <div>
             <h3 className="font-bold text-sm text-text-primary">Proof of Autonomy</h3>
             <p className="text-[10px] text-text-tertiary">Real-time chronological feed of autonomous agent actions</p>
           </div>
         </div>
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-success/10 border border-success/20 text-success uppercase tracking-widest animate-pulse">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-brand/10 border border-brand/20 text-brand-light uppercase tracking-widest animate-pulse">
           Active Monitor
         </span>
       </div>
@@ -119,9 +119,9 @@ export function ProofOfAutonomyTimeline({ limit = 10 }: { limit?: number }) {
                 {/* Dot indicator */}
                 <div className={`absolute -left-[31px] top-1.5 w-3.5 h-3.5 rounded-full border transition-all duration-300 ${
                   action.status === "Executed" 
-                    ? "bg-purple-500 border-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.5)]" 
+                    ? "bg-positive border-positive shadow-[0_0_8px_rgba(34,197,94,0.5)]" 
                     : action.status === "Active"
-                    ? "bg-success border-success animate-pulse"
+                    ? "bg-brand border-brand animate-pulse"
                     : "bg-surface-elevated border-border-thin"
                 }`} />
 
@@ -130,20 +130,20 @@ export function ProofOfAutonomyTimeline({ limit = 10 }: { limit?: number }) {
                     <span className="text-[10px] font-mono text-text-tertiary font-medium">
                       {formattedTime}
                     </span>
-                    <span className="text-[9px] px-2 py-0.5 rounded-full font-bold bg-purple-500/10 border border-purple-500/25 text-purple-300 flex items-center gap-1 select-none">
+                    <span className="text-[9px] px-2 py-0.5 rounded-full font-bold bg-brand/10 border border-brand/20 text-brand-light flex items-center gap-1 select-none">
                       <Zap className="w-2.5 h-2.5" />
                       Autonomous — no human trigger
                     </span>
                     <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
-                      action.status === "Executed" ? "bg-purple-900/40 border border-purple-500/30 text-purple-300" :
-                      action.status === "Active" ? "bg-success/15 border border-success/30 text-success" :
+                      action.status === "Executed" ? "bg-positive/10 border border-positive/20 text-positive" :
+                      action.status === "Active" ? "bg-brand/10 border border-brand/20 text-brand-light" :
                       "bg-surface-elevated border border-border-thin text-muted"
                     }`}>
                       {action.status}
                     </span>
                   </div>
 
-                  <GlassCard className="p-3.5 space-y-2.5 border-border-thin hover:border-purple-500/30 hover:shadow-[0_0_20px_rgba(168,85,247,0.05)] transition-all duration-300">
+                  <GlassCard className="p-3.5 space-y-2.5 border-border-thin hover:border-brand/30 hover:shadow-[0_0_20px_rgba(47,111,255,0.05)] transition-all duration-300">
                     <div className="space-y-1">
                       <p className="text-[10px] text-text-tertiary font-bold uppercase tracking-wider">Trigger Source</p>
                       <p className="text-xs text-text-secondary font-medium">{trigger}</p>
@@ -163,7 +163,7 @@ export function ProofOfAutonomyTimeline({ limit = 10 }: { limit?: number }) {
                     <div className="flex gap-2.5 pt-1.5">
                       <Link 
                         href={`/proposals/${action.id}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[10px] font-bold hover:bg-purple-500/20 transition-all cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand/10 border border-brand/20 text-brand-light text-[10px] font-bold hover:bg-brand/20 transition-all cursor-pointer"
                       >
                         <FileText className="w-3 h-3" />
                         <span>Inspect Proposal</span>

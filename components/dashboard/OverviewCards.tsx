@@ -91,15 +91,21 @@ export function OverviewCards() {
     >
       {cards.map((card) => {
         const Icon = card.icon;
-        const isUp = card.trend.includes("+") || card.trend === "High";
+        const isPositive = card.trend.startsWith("+");
+        const isNegative = card.trend.startsWith("-");
+        const isLive = card.trend === "Live" || card.trend === "Active";
         return (
           <motion.div key={card.title} variants={itemVariants} className="bg-[#080C14] p-5.5 flex flex-col justify-between">
             <div className="flex items-center justify-between mb-5">
               <Icon className="w-4.5 h-4.5 text-[#6B7385]" />
               <span className={cn(
                 "font-mono text-xs px-2 py-0.5 rounded-[5px] border",
-                isUp 
-                  ? "text-[#22D3EE] bg-[#08161C] border-[#163241]" 
+                isPositive 
+                  ? "text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/20"
+                  : isNegative
+                  ? "text-[#EF4444] bg-[#EF4444]/10 border-[#EF4444]/20"
+                  : isLive
+                  ? "text-[#4F8BFF] bg-[#2F6FFF]/10 border-[#2F6FFF]/20"
                   : "text-[#8B93A5] bg-[#10151F] border-[#1B2536]"
               )}>
                 {card.trend}

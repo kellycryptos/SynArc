@@ -50,9 +50,9 @@ export function AuthPromptBanner({ action = "vote or create proposals" }: AuthPr
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={login}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] text-[#04101C] text-xs font-semibold font-space hover:opacity-95 active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(47,111,255,0.25)] cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white text-xs font-semibold font-space hover:opacity-95 active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(47,111,255,0.25)] cursor-pointer"
           >
-            <Wallet className="w-3.5 h-3.5 text-[#04101C]" />
+            <Wallet className="w-3.5 h-3.5 text-white" />
             <span>Connect to Participate</span>
           </button>
           <button

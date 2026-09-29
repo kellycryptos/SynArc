@@ -18,12 +18,12 @@ export function NetworkStatusBadge() {
   const networkName = ARC_CHAIN.name;
 
   const statusColor = isHealthy
-    ? "bg-[#0B111C] border-[#1B2536] text-[#22D3EE]"
-    : "bg-[#170F09] border-[#3A2A1E] text-[#E2A66B]";
+    ? "bg-[#0B111C] border-[#1B2536] text-[#F5F7FA]"
+    : "bg-[#0B111C] border-negative/30 text-negative";
 
   const indicatorColor = isHealthy
-    ? "bg-[#22D3EE]"
-    : "bg-[#E2A66B]";
+    ? "bg-[#22C55E]"
+    : "bg-[#EF4444]";
 
   const animationClass = isHealthy ? "animate-pulse" : "animate-none";
 

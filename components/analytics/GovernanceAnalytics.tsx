@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
+import { TOKENS } from "@/lib/theme-tokens";
 
 export function GovernanceAnalytics() {
   const { proposals, initialized, initializeStore } = useGovernanceStore();
@@ -88,15 +89,15 @@ export function GovernanceAnalytics() {
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorParticipation" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#7C3AED" stopOpacity={0}/>
+                  <stop offset="5%" stopColor={TOKENS.brand} stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor={TOKENS.brand} stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}%`} />
               <Tooltip />
-              <Area type="monotone" dataKey="participation" stroke="#7C3AED" strokeWidth={2} fillOpacity={1} fill="url(#colorParticipation)" />
+              <Area type="monotone" dataKey="participation" stroke={TOKENS.brand} strokeWidth={2} fillOpacity={1} fill="url(#colorParticipation)" />
             </AreaChart>
           </ResponsiveContainer>
         ) : (
@@ -107,7 +108,7 @@ export function GovernanceAnalytics() {
               <div key={i} className="w-full h-px bg-white/[0.04]" />
             ))}
             {/* Fake area fill block */}
-            <div className="absolute inset-x-6 bottom-10 h-24 rounded-lg bg-gradient-to-t from-[#7C3AED]/10 to-transparent pointer-events-none" />
+            <div className="absolute inset-x-6 bottom-10 h-24 rounded-lg bg-gradient-to-t from-brand/10 to-transparent pointer-events-none" />
             {/* Fake X-axis labels */}
             <div className="flex justify-between pt-2">
               {['Jan', 'Feb', 'Mar', 'Apr', 'May'].map((m) => (

@@ -50,7 +50,7 @@ export function GovernanceHeroSection() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* CARD 1: CURRENT STREAK */}
-      <div className="rounded-2xl border border-[#1B2536] bg-[#0B111C]/90 p-5 sm:p-6 flex flex-col justify-between hover:border-[#22D3EE]/30 transition-all duration-200">
+      <div className="rounded-2xl border border-[#1B2536] bg-[#0B111C]/90 p-5 sm:p-6 flex flex-col justify-between hover:border-[#2F6FFF]/30 transition-all duration-200">
         <div>
           <div className="flex items-start justify-between">
             <span className="text-[11px] font-mono font-medium tracking-[0.12em] text-[#8A948E] uppercase">
@@ -58,10 +58,10 @@ export function GovernanceHeroSection() {
             </span>
             <div className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
               streakDays > 0 
-                ? "bg-[#22D3EE]/10 text-[#22D3EE] border border-[#22D3EE]/30 shadow-[0_0_12px_rgba(34,211,238,0.25)]" 
-                : "bg-[#151C29] text-[#6B7385] border border-[#1E2622]"
+                ? "bg-[#2F6FFF]/10 text-[#4F8BFF] border border-[#2F6FFF]/30 shadow-[0_0_12px_rgba(47,111,255,0.2)]" 
+                : "bg-[#151C29] text-[#6B7385] border border-[#1B2536]"
             }`}>
-              <Flame className={`w-5 h-5 ${streakDays > 0 ? "fill-[#22D3EE]/30 animate-pulse text-[#22D3EE]" : "text-[#6B7385]"}`} />
+              <Flame className={`w-5 h-5 ${streakDays > 0 ? "fill-[#2F6FFF]/30 animate-pulse text-[#4F8BFF]" : "text-[#6B7385]"}`} />
             </div>
           </div>
 
@@ -94,7 +94,7 @@ export function GovernanceHeroSection() {
             <span className="text-[9px] uppercase tracking-wider font-mono text-[#6B7385] block">
               Today
             </span>
-            <span className={`text-xs font-bold font-mono mt-0.5 block ${hasVotedToday ? "text-[#10b981]" : "text-[#E2A66B]"}`}>
+            <span className={`text-xs font-bold font-mono mt-0.5 block ${hasVotedToday ? "text-[#22C55E]" : "text-[#8A948E]"}`}>
               {hasVotedToday ? "Verified ✓" : "Pending"}
             </span>
           </div>
@@ -102,36 +102,36 @@ export function GovernanceHeroSection() {
       </div>
 
       {/* CARD 2: PROPOSAL OF THE DAY */}
-      <div className="rounded-2xl border border-[#1B2536] bg-[#0B111C]/90 p-5 sm:p-6 flex flex-col justify-between hover:border-[#22D3EE]/30 transition-all duration-200 group">
+      <div className="rounded-2xl border border-[#1B2536] bg-[#0B111C]/90 p-5 sm:p-6 flex flex-col justify-between hover:border-[#2F6FFF]/30 transition-all duration-200 group">
         <div>
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-1.5 text-[11px] font-mono font-medium tracking-[0.12em] text-[#22D3EE] uppercase">
+            <div className="flex items-center gap-1.5 text-[11px] font-mono font-medium tracking-[0.12em] text-[#4F8BFF] uppercase">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Proposal of the day</span>
             </div>
-            <span className="w-2.5 h-2.5 rounded-full bg-[#22D3EE]/30 border border-[#22D3EE]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#2F6FFF]/30 border border-[#4F8BFF]" />
           </div>
 
           {/* Badges row */}
           <div className="flex items-center gap-2 flex-wrap mb-2.5">
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-[#151C29] text-[#8A948E] border border-[#1E2622]">
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-[#151C29] text-[#8A948E] border border-[#1B2536]">
               #104
             </span>
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30">
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-[#2F6FFF]/10 text-[#4F8BFF] border border-[#2F6FFF]/30">
               Active
             </span>
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-[#22D3EE]/10 text-[#22D3EE] border border-[#22D3EE]/25">
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-[#2F6FFF]/10 text-[#4F8BFF] border border-[#2F6FFF]/25">
               Autonomous Agent
             </span>
           </div>
 
-          <h3 className="text-base sm:text-lg font-bold font-space text-[#F5F7FA] group-hover:text-[#22D3EE] transition-colors line-clamp-2 leading-snug">
+          <h3 className="text-base sm:text-lg font-bold font-space text-[#F5F7FA] group-hover:text-[#4F8BFF] transition-colors line-clamp-2 leading-snug">
             {featuredProposal.title}
           </h3>
 
           <div className="flex items-center gap-2 mt-3 text-xs text-[#8A948E]">
             <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#22D3EE]" />
+              <ShieldCheck className="w-3.5 h-3.5 text-[#4F8BFF]" />
               Arc Treasury
             </span>
             <span>·</span>
@@ -144,7 +144,7 @@ export function GovernanceHeroSection() {
         <div className="mt-5 pt-4 border-t border-[#151C29] flex items-center justify-between">
           <Link
             href="/proposals"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#22D3EE] group-hover:gap-2.5 transition-all cursor-pointer font-space"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4F8BFF] group-hover:gap-2.5 transition-all cursor-pointer font-space"
           >
             Review & Vote <ArrowRight className="w-3.5 h-3.5" />
           </Link>
@@ -155,7 +155,7 @@ export function GovernanceHeroSection() {
       </div>
 
       {/* CARD 3: CONTINUE WHERE YOU LEFT OFF */}
-      <div className="rounded-2xl border border-[#1B2536] bg-[#0B111C]/90 p-5 sm:p-6 flex flex-col justify-between hover:border-[#22D3EE]/30 transition-all duration-200">
+      <div className="rounded-2xl border border-[#1B2536] bg-[#0B111C]/90 p-5 sm:p-6 flex flex-col justify-between hover:border-[#2F6FFF]/30 transition-all duration-200">
         <div>
           <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] font-mono font-medium tracking-[0.12em] text-[#8A948E] uppercase">
@@ -171,7 +171,7 @@ export function GovernanceHeroSection() {
           <div className="mt-4 p-3 rounded-xl bg-[#05080F] border border-[#151C29] space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-[#8A948E] font-medium">Quick Target</span>
-              <span className="font-mono text-[10px] text-[#22D3EE] bg-[#22D3EE]/10 px-1.5 py-0.5 rounded">
+              <span className="font-mono text-[10px] text-[#4F8BFF] bg-[#2F6FFF]/10 px-1.5 py-0.5 rounded border border-[#2F6FFF]/20">
                 Arc Mainnet
               </span>
             </div>
@@ -184,7 +184,7 @@ export function GovernanceHeroSection() {
         <div className="mt-5 pt-4 border-t border-[#151C29]">
           <Link
             href="/proposals"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#22D3EE] hover:gap-2.5 transition-all cursor-pointer font-space"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4F8BFF] hover:gap-2.5 transition-all cursor-pointer font-space"
           >
             Browse all proposals <ArrowRight className="w-3.5 h-3.5" />
           </Link>

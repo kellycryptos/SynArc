@@ -78,8 +78,8 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
           onClick={() => handleNavClick("/")}
           className="flex items-center gap-2.5 group cursor-pointer"
         >
-          <div className="w-[30px] h-[30px] rounded-[7px] bg-gradient-to-br from-[#2F6FFF] to-[#22D3EE] flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#04101C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z"/></svg>
+          <div className="w-[30px] h-[30px] rounded-[7px] bg-gradient-to-br from-[#2F6FFF] to-[#4F8BFF] flex items-center justify-center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z"/></svg>
           </div>
           <span className="text-[16px] font-bold font-space tracking-tight text-[#F5F7FA]">
             Syn DAO
@@ -89,7 +89,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
 
       {/* Quick Search Pill */}
       <div className="px-3.5 pt-3 pb-1">
-        <div className="flex h-9 w-full items-center gap-2 rounded-xl border border-[#1B2536] bg-[#0B111C] text-xs text-[#8A948E] transition-colors hover:border-[#22D3EE]/40 hover:text-[#F5F7FA] px-2.5">
+        <div className="flex h-9 w-full items-center gap-2 rounded-xl border border-[#1B2536] bg-[#0B111C] text-xs text-[#8A948E] transition-colors hover:border-[#2F6FFF]/40 hover:text-[#F5F7FA] px-2.5">
           <Search className="w-3.5 h-3.5 text-[#6B7385]" />
           <input
             type="text"
@@ -110,14 +110,14 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
               onClick={() => handleNavClick(href)}
               className={cn(
                 "w-full flex items-center justify-between border border-[#1B2536] bg-[#0B111C] rounded-lg px-3.5 py-3 text-xs font-medium transition-all group cursor-pointer text-left mb-4",
-                active && "border-[#22D3EE]/40 bg-[#0F1620]"
+                active && "border-[#2F6FFF]/40 bg-[#0F1620]"
               )}
             >
               <span className="text-[13px] font-medium text-[#F5F7FA] flex items-center gap-2 font-space">
                 ⚡ Treasury Agent
               </span>
-              <span className="font-mono text-[10px] tracking-wider text-[#22D3EE] border border-[#163241] bg-[#08161C] px-1.75 py-0.5 rounded flex items-center gap-1.25">
-                <span className="w-1.25 h-1.25 rounded-full bg-[#22D3EE] animate-pulse" />
+              <span className="font-mono text-[10px] tracking-wider text-[#4F8BFF] border border-[#1B2536] bg-[#05080F] px-1.75 py-0.5 rounded flex items-center gap-1.25">
+                <span className="w-1.25 h-1.25 rounded-full bg-[#4F8BFF] animate-pulse" />
                 LIVE
               </span>
             </button>
@@ -144,24 +144,24 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
               className={cn(
                 "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-space transition-all group cursor-pointer text-left border",
                 active
-                  ? "bg-[#22D3EE]/10 border-[#22D3EE]/25 text-[#F5F7FA] font-medium shadow-[0_0_12px_rgba(34,211,238,0.06)]"
+                  ? "bg-[#2F6FFF]/10 border-[#2F6FFF]/25 text-[#F5F7FA] font-medium shadow-[0_0_12px_rgba(47,111,255,0.06)]"
                   : "border-transparent text-[#8A948E] hover:text-[#F5F7FA] hover:bg-[#0B111C]"
               )}
             >
               <Icon
                 className={cn(
                   "w-[17px] h-[17px] shrink-0 transition-colors",
-                  active ? "stroke-[#22D3EE]" : "stroke-[#6B7385] group-hover:stroke-[#9CA6B8]"
+                  active ? "stroke-[#4F8BFF]" : "stroke-[#6B7385] group-hover:stroke-[#9CA6B8]"
                 )}
               />
               <span>{link.label}</span>
               {link.isNew && !active && (
-                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-mono bg-[#08161C] border border-[#163241] text-[#22D3EE]">
+                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-mono bg-[#05080F] border border-[#1B2536] text-[#4F8BFF]">
                   NEW
                 </span>
               )}
               {active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#22D3EE]" />
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#4F8BFF]" />
               )}
             </button>
           );
@@ -255,12 +255,12 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
               </span>
             ) : balance !== null ? (
               isCircle ? (
-                <span className="px-2 py-0.5 rounded-full bg-pink-500/20 border border-pink-500/30 text-pink-400 font-bold flex items-center gap-1">
+                <span className="px-2 py-0.5 rounded-full bg-[#2F6FFF]/10 border border-[#2F6FFF]/20 text-[#4F8BFF] font-bold flex items-center gap-1">
                   <span>{parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC</span>
-                  <span className="text-[9px] font-extrabold px-1 py-0.2 rounded bg-pink-500/30 text-pink-300 animate-pulse">⚡</span>
+                  <span className="text-[9px] font-extrabold px-1 py-0.2 rounded bg-[#2F6FFF]/20 text-[#4F8BFF] animate-pulse">⚡</span>
                 </span>
               ) : (
-                <span className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-purple-300 font-bold">
+                <span className="px-2 py-0.5 rounded-full bg-[#2F6FFF]/10 border border-[#2F6FFF]/20 text-[#4F8BFF] font-bold">
                   {parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
                 </span>
               )
@@ -272,7 +272,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
             <span className="text-muted">Notifications</span>
             <button className="relative p-1.5 text-muted hover:text-foreground transition-colors rounded-full bg-surface-elevated border border-border-thin cursor-pointer">
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary rounded-full border-2 border-background" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#4F8BFF] rounded-full border-2 border-background" />
             </button>
           </div>
         </div>

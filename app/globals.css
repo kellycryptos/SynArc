@@ -1,15 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --success: #10b981;
+  --brand: #2F6FFF;
+  --brand-light: #4F8BFF;
+  --brand-dark: #1E52D4;
+  --positive: #22C55E;
+  --negative: #EF4444;
+
+  --success: var(--positive);
   --warning: #E2A66B;
-  --danger: #ef4444;
+  --danger: var(--negative);
   --accent-foreground: #ffffff;
 
-  --purple-glow: rgba(47, 111, 255, 0.4);
-  --cyan-glow: rgba(34, 211, 238, 0.4);
-  --cyan-soft: #22D3EE;
-  --arc-blue-soft: #2F6FFF;
+  --brand-glow: rgba(47, 111, 255, 0.4);
+  --purple-glow: var(--brand-glow);
+  --cyan-glow: var(--brand-glow);
+  --cyan-soft: var(--brand);
+  --arc-blue-soft: var(--brand);
 
   /* GovCoPilot unified theme (default dark) */
   --bg-primary: #05080F;
@@ -25,15 +32,15 @@
   --border-card: #1B2536;
   --border-cta: #232E42;
 
-  --accent-purple: #2F6FFF;
-  --accent-blue: #22D3EE;
+  --accent-purple: var(--brand);
+  --accent-blue: var(--brand);
 
   --background: var(--bg-primary);
   --foreground: var(--text-primary);
   --card: var(--bg-surface);
   --card-border: var(--border-card);
   --muted: var(--text-muted);
-  --accent: var(--accent-purple);
+  --accent: var(--brand);
   --surface: var(--bg-surface);
   --surface-elevated: rgba(11, 17, 28, 0.85);
   
@@ -42,23 +49,23 @@
   
   --text-tertiary: var(--text-muted);
 
-  --purple-deep: var(--accent-purple);
-  --arc-blue: var(--accent-blue);
+  --purple-deep: var(--brand);
+  --arc-blue: var(--brand);
 
   --glow-purple: rgba(47, 111, 255, 0.04);
-  --glow-blue: rgba(34, 211, 238, 0.02);
+  --glow-blue: rgba(47, 111, 255, 0.04);
 }
 
 .grad, .gradient-text {
-  background: linear-gradient(90deg, #2F6FFF, #22D3EE) !important;
+  background: linear-gradient(90deg, #2F6FFF, #4F8BFF) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   color: transparent !important;
 }
 
 .cta-primary, .btn-primary-grad {
-  background: linear-gradient(90deg, #2F6FFF, #22D3EE) !important;
-  color: #04101C !important;
+  background: linear-gradient(90deg, #2F6FFF, #4F8BFF) !important;
+  color: #FFFFFF !important;
 }
 
 .font-space {
@@ -82,15 +89,15 @@
   --text-muted: #6B7385;
   --border: #151C29;
   --border-card: #1B2536;
-  --accent-purple: #2F6FFF;
-  --accent-blue: #22D3EE;
+  --accent-purple: var(--brand);
+  --accent-blue: var(--brand);
 
   --background: var(--bg-primary);
   --foreground: var(--text-primary);
   --card: var(--bg-surface);
   --card-border: var(--border-card);
   --muted: var(--text-muted);
-  --accent: var(--accent-purple);
+  --accent: var(--brand);
   --surface: var(--bg-surface);
   --surface-elevated: rgba(11, 17, 28, 0.85);
   
@@ -99,11 +106,11 @@
   
   --text-tertiary: var(--text-muted);
 
-  --purple-deep: var(--accent-purple);
-  --arc-blue: var(--accent-blue);
+  --purple-deep: var(--brand);
+  --arc-blue: var(--brand);
 
   --glow-purple: rgba(47, 111, 255, 0.03);
-  --glow-blue: rgba(34, 211, 238, 0.02);
+  --glow-blue: rgba(47, 111, 255, 0.03);
 }
 
 .light {

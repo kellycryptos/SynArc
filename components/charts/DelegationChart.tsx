@@ -15,7 +15,7 @@ interface Props {
   data: { address: string; power: number }[];
 }
 
-const colors = ["#8b5cf6", "#7c3aed", "#6d28d9", "#5b21b6", "#4c1d95"];
+const colors = ["#2F6FFF", "#3D7BFF", "#4F8BFF", "#689DFF", "#85B0FF"];
 
 export function DelegationChart({ data }: Props) {
   return (

@@ -62,7 +62,7 @@ export function ProposalFeed() {
                 </h4>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
                   <span className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-arc-blue" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand" />
                     {proposal.category}
                   </span>
                   {proposal.status === "Active" || proposal.status === "Pending" ? (
@@ -82,16 +82,16 @@ export function ProposalFeed() {
                 {proposal.status !== "Pending" && (
                   <div className="w-full">
                     <div className="flex justify-between text-xs mb-1.5">
-                      <span className="text-success font-medium">For</span>
-                      <span className="text-danger font-medium">Against</span>
+                      <span className="text-positive font-medium">For</span>
+                      <span className="text-negative font-medium">Against</span>
                     </div>
                     <div className="w-full h-2 bg-surface-elevated rounded-full overflow-hidden flex border border-border-thin">
                       <div 
-                        className="h-full bg-success transition-all" 
+                        className="h-full bg-positive transition-all" 
                         style={{ width: `${(proposal.forVotes / (proposal.totalVotes || 1)) * 100 || 0}%` }} 
                       />
                       <div 
-                        className="h-full bg-danger transition-all" 
+                        className="h-full bg-negative transition-all" 
                         style={{ width: `${(proposal.againstVotes / (proposal.totalVotes || 1)) * 100 || 0}%` }} 
                       />
                     </div>
@@ -115,10 +115,10 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span className={cn(
       "text-xs font-semibold px-2.5 py-0.5 rounded-full border",
-      status === "Active" && "bg-primary/10 text-primary border-primary/20 animate-[pulse-glow_4s_ease-in-out_infinite]",
-      status === "Pending" && "bg-warning/10 text-warning border-warning/20",
-      status === "Executed" && "bg-success/10 text-success border-success/20",
-      status === "Defeated" && "bg-danger/10 text-danger border-danger/20"
+      status === "Active" && "bg-brand/10 text-brand-light border-brand/20 animate-[pulse-glow_4s_ease-in-out_infinite]",
+      status === "Pending" && "bg-white/[0.04] text-muted border-border-thin",
+      status === "Executed" && "bg-positive/10 text-positive border-positive/20",
+      status === "Defeated" && "bg-negative/10 text-negative border-negative/20"
     )}>
       {status}
     </span>

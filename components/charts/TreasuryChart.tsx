@@ -12,7 +12,7 @@ interface Props {
   data: { name: string; value: number }[];
 }
 
-const COLORS = ["#8b5cf6", "#06b6d4", "#22c55e", "#f59e0b", "#ef4444"];
+const COLORS = ["#2F6FFF", "#4F8BFF", "#1E52D4", "#689DFF", "#85B0FF"];
 
 export function TreasuryChart({ data }: Props) {
   return (

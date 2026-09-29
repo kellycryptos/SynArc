@@ -65,7 +65,7 @@ export function WalletConnectButton() {
           {({ openConnectModal, connectModalOpen }) => (
             <button
               onClick={openConnectModal}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] text-[#04101C] font-space font-semibold text-xs tracking-wide shadow-md shadow-[#2F6FFF]/20 hover:opacity-95 hover:shadow-lg hover:shadow-[#2F6FFF]/30 active:scale-[0.98] transition-all cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-md shadow-[#2F6FFF]/20 hover:opacity-95 hover:shadow-lg hover:shadow-[#2F6FFF]/30 active:scale-[0.98] transition-all cursor-pointer"
             >
               <Wallet className="w-4 h-4 shrink-0" />
               <span>{connectModalOpen ? "Connecting..." : "Connect Wallet"}</span>
@@ -74,9 +74,9 @@ export function WalletConnectButton() {
         </ConnectButton.Custom>
         <p className="text-[10px] text-center text-[#6B7385] px-1 leading-relaxed font-mono">
           Wallet required for governance.{" "}
-          <a href="/terms" className="text-[#22D3EE] hover:underline transition-all">Terms</a>
+          <a href="/terms" className="text-[#4F8BFF] hover:underline transition-all">Terms</a>
           {" "}&amp;{" "}
-          <a href="/privacy" className="text-[#22D3EE] hover:underline transition-all">Privacy</a>
+          <a href="/privacy" className="text-[#4F8BFF] hover:underline transition-all">Privacy</a>
         </p>
       </div>
     );
@@ -88,19 +88,19 @@ export function WalletConnectButton() {
     <div className="relative w-full" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full p-2.5 rounded-lg bg-[#0B111C] border border-[#1B2536] hover:border-[#22D3EE]/40 hover:bg-[#0F1620] transition-all cursor-pointer group"
+        className="flex items-center justify-between w-full p-2.5 rounded-lg bg-[#0B111C] border border-[#1B2536] hover:border-[#2F6FFF]/40 hover:bg-[#0F1620] transition-all cursor-pointer group"
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#2F6FFF] to-[#22D3EE] flex items-center justify-center relative overflow-hidden shrink-0">
-            <span className="text-[10px] font-bold text-[#04101C] font-mono">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#2F6FFF] to-[#4F8BFF] flex items-center justify-center relative overflow-hidden shrink-0">
+            <span className="text-[10px] font-bold text-white font-mono">
               {walletAddress.slice(2, 4).toUpperCase()}
             </span>
-            <div className="w-2 h-2 rounded-full bg-[#10b981] absolute bottom-0 right-0 border border-[#0B111C]" />
+            <div className="w-2 h-2 rounded-full bg-[#22C55E] absolute bottom-0 right-0 border border-[#0B111C]" />
           </div>
           <div className="flex flex-col text-left truncate">
             <span className="font-mono text-xs font-medium text-[#F5F7FA] truncate">{truncatedAddress}</span>
-            <span className="text-[10px] text-[#22D3EE] font-mono flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" /> Connected
+            <span className="text-[10px] text-[#4F8BFF] font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" /> Connected
             </span>
           </div>
         </div>
@@ -115,8 +115,8 @@ export function WalletConnectButton() {
           >
             {copied ? (
               <>
-                <Check className="w-3.5 h-3.5 text-[#10b981]" />
-                <span className="text-[#10b981]">Copied!</span>
+                <Check className="w-3.5 h-3.5 text-[#22C55E]" />
+                <span className="text-[#22C55E]">Copied!</span>
               </>
             ) : (
               <>

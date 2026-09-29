@@ -11,6 +11,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        brand: {
+          DEFAULT: '#2F6FFF',
+          light: '#4F8BFF',
+          dark: '#1E52D4',
+        },
+        positive: '#22C55E',
+        negative: '#EF4444',
         background: {
           primary: "var(--bg-primary)",
           surface: "var(--bg-surface)",

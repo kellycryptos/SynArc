@@ -63,15 +63,15 @@ export function WalletGuard({ children }: { children: ReactNode }) {
   if (isProtected && !isAuthenticated) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
-        <GlassCard className="p-8 md:p-10 max-w-lg relative overflow-hidden border border-primary/20 shadow-[0_0_50px_rgba(124,58,237,0.1)] flex flex-col items-center gap-6">
+        <GlassCard className="p-8 md:p-10 max-w-lg relative overflow-hidden border border-brand/20 shadow-[0_0_50px_rgba(47,111,255,0.1)] flex flex-col items-center gap-6">
           {/* Ambient Glows */}
-          <div className="absolute -right-16 -top-16 w-36 h-36 bg-primary/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -left-16 -bottom-16 w-36 h-36 bg-arc-blue/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -right-16 -top-16 w-36 h-36 bg-brand/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -left-16 -bottom-16 w-36 h-36 bg-brand/15 rounded-full blur-3xl pointer-events-none" />
 
           {/* Themed Icon */}
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-deep to-primary/30 flex items-center justify-center border border-primary/30 shadow-[0_0_20px_rgba(124,58,237,0.25)] relative overflow-hidden group">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#2F6FFF] to-[#4F8BFF]/30 flex items-center justify-center border border-brand/30 shadow-[0_0_20px_rgba(47,111,255,0.25)] relative overflow-hidden group">
             <ShieldAlert className="w-8 h-8 text-white relative z-10 animate-pulse" />
-            <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-brand/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
           <div className="space-y-3">
@@ -89,7 +89,7 @@ export function WalletGuard({ children }: { children: ReactNode }) {
             {({ show }) => (
               <button 
                 onClick={show}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-deep via-primary to-arc-blue text-white font-bold hover:shadow-[0_0_25px_rgba(124,58,237,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-purple-900/35"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-bold hover:shadow-[0_0_25px_rgba(47,111,255,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#2F6FFF]/35"
               >
                 <Wallet className="w-5 h-5" />
                 Connect Wallet to Participate

@@ -23,8 +23,8 @@ const defaultDaos: DaoItem[] = [
     category: "System Governance",
     proposalsCount: 14,
     treasuryUSDC: "1.25M",
-    iconBg: "bg-gradient-to-br from-[#2F6FFF] to-[#22D3EE]",
-    iconColor: "text-[#04101C]",
+    iconBg: "bg-gradient-to-br from-[#2F6FFF] to-[#4F8BFF]",
+    iconColor: "text-white",
     icon: Shield,
     href: "/treasury",
   },
@@ -34,8 +34,8 @@ const defaultDaos: DaoItem[] = [
     category: "Cross-Chain Treasury",
     proposalsCount: 9,
     treasuryUSDC: "850K",
-    iconBg: "bg-[#0A2540] border border-[#00D4FF]/30",
-    iconColor: "text-[#00D4FF]",
+    iconBg: "bg-[#05080F] border border-[#1B2536]",
+    iconColor: "text-[#4F8BFF]",
     icon: Coins,
     href: "/bridge",
   },
@@ -45,8 +45,8 @@ const defaultDaos: DaoItem[] = [
     category: "AI Execution",
     proposalsCount: 22,
     treasuryUSDC: "340K",
-    iconBg: "bg-purple-950/60 border border-purple-500/30",
-    iconColor: "text-purple-300",
+    iconBg: "bg-[#05080F] border border-[#1B2536]",
+    iconColor: "text-[#4F8BFF]",
     icon: Bot,
     href: "/agent",
   },
@@ -56,8 +56,8 @@ const defaultDaos: DaoItem[] = [
     category: "Community Labs",
     proposalsCount: 18,
     treasuryUSDC: "210K",
-    iconBg: "bg-pink-950/60 border border-pink-500/30",
-    iconColor: "text-pink-300",
+    iconBg: "bg-[#05080F] border border-[#1B2536]",
+    iconColor: "text-[#4F8BFF]",
     icon: Rocket,
     href: "/creator-daos",
   },
@@ -67,8 +67,8 @@ const defaultDaos: DaoItem[] = [
     category: "Ecosystem Growth",
     proposalsCount: 31,
     treasuryUSDC: "500K",
-    iconBg: "bg-emerald-950/60 border border-emerald-500/30",
-    iconColor: "text-emerald-400",
+    iconBg: "bg-[#05080F] border border-[#1B2536]",
+    iconColor: "text-[#4F8BFF]",
     icon: Sparkles,
     href: "/daos",
   },
@@ -78,8 +78,8 @@ const defaultDaos: DaoItem[] = [
     category: "Attestation & Security",
     proposalsCount: 7,
     treasuryUSDC: "620K",
-    iconBg: "bg-amber-950/60 border border-amber-500/30",
-    iconColor: "text-amber-400",
+    iconBg: "bg-[#05080F] border border-[#1B2536]",
+    iconColor: "text-[#4F8BFF]",
     icon: Zap,
     href: "/treasury",
   },
@@ -89,8 +89,8 @@ const defaultDaos: DaoItem[] = [
     category: "Protocol Verification",
     proposalsCount: 12,
     treasuryUSDC: "190K",
-    iconBg: "bg-sky-950/60 border border-sky-500/30",
-    iconColor: "text-sky-300",
+    iconBg: "bg-[#05080F] border border-[#1B2536]",
+    iconColor: "text-[#4F8BFF]",
     icon: Building2,
     href: "/daos",
   },
@@ -100,8 +100,8 @@ const defaultDaos: DaoItem[] = [
     category: "Automated Strategy",
     proposalsCount: 16,
     treasuryUSDC: "430K",
-    iconBg: "bg-indigo-950/60 border border-indigo-500/30",
-    iconColor: "text-indigo-300",
+    iconBg: "bg-[#05080F] border border-[#1B2536]",
+    iconColor: "text-[#4F8BFF]",
     icon: Coins,
     href: "/daos",
   },
@@ -119,7 +119,7 @@ export function EcosystemDaoGrid() {
         </h2>
         <Link
           href="/daos"
-          className="text-xs font-mono text-[#8A948E] hover:text-[#22D3EE] transition-colors flex items-center gap-1"
+          className="text-xs font-mono text-[#8A948E] hover:text-[#4F8BFF] transition-colors flex items-center gap-1"
         >
           All DAOs <ArrowRight className="w-3 h-3" />
         </Link>
@@ -133,7 +133,7 @@ export function EcosystemDaoGrid() {
             <Link
               key={dao.id}
               href={dao.href}
-              className="group flex items-center gap-3.5 p-3.5 rounded-2xl border border-[#1B2536] bg-[#0B111C]/90 hover:border-[#22D3EE]/40 hover:bg-[#0F1620] transition-all duration-200"
+              className="group flex items-center gap-3.5 p-3.5 rounded-2xl border border-[#1B2536] bg-[#0B111C]/90 hover:border-[#2F6FFF]/40 hover:bg-[#0F1620] transition-all duration-200"
             >
               {/* Logo Emblem */}
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${dao.iconBg}`}>
@@ -142,13 +142,13 @@ export function EcosystemDaoGrid() {
 
               {/* Text metadata */}
               <div className="min-w-0 flex-1">
-                <h4 className="text-sm font-semibold font-space text-[#F5F7FA] group-hover:text-[#22D3EE] transition-colors truncate">
+                <h4 className="text-sm font-semibold font-space text-[#F5F7FA] group-hover:text-[#4F8BFF] transition-colors truncate">
                   {dao.name}
                 </h4>
                 <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#8A948E] mt-0.5 truncate">
                   <span>{dao.proposalsCount} proposals</span>
                   <span>·</span>
-                  <span className="text-[#22D3EE]/90">{dao.treasuryUSDC} USDC</span>
+                  <span className="text-[#4F8BFF]">{dao.treasuryUSDC} USDC</span>
                 </div>
               </div>
             </Link>
