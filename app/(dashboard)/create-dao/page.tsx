@@ -789,7 +789,7 @@ export default function CreateDaoPage() {
                 <div className="grid grid-cols-3 p-4">
                   <span className="font-bold text-muted uppercase">Creator URL</span>
                   <span className="col-span-2 font-mono font-bold text-purple-300 break-all">
-                    synarcdao.xyz/creator/{formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
+                    syndaopro.xyz/creator/{formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
                   </span>
                 </div>
               </div>
@@ -887,11 +887,11 @@ export default function CreateDaoPage() {
                 <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Shareable Creator Profile Link</span>
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-mono text-xs text-purple-300 truncate select-all">
-                    https://synarcdao.xyz/creator/{newCreatorId}
+                    https://syndaopro.xyz/creator/{newCreatorId}
                   </span>
                   <button
                     onClick={async () => {
-                      const shareUrl = `https://synarcdao.xyz/creator/${newCreatorId}`;
+                      const shareUrl = `https://syndaopro.xyz/creator/${newCreatorId}`;
                       try {
                         await navigator.clipboard.writeText(shareUrl);
                         toast.success("Link copied!");

@@ -101,7 +101,7 @@ Syn DAO’s Treasury Agent is executed programmatically on a **5-minute recurrin
 
 ### 1. Run Agent Scan
 * **Method:** `POST` / `GET`
-* **Endpoint:** `https://www.synarcdao.xyz/api/agent/run`
+* **Endpoint:** `https://www.syndaopro.xyz/api/agent/run`
 * **Headers:**
   - `x-cron-secret`: `<CRON_SECRET>` (shared-secret authentication header)
 * **Payload:** `{}` (optional)

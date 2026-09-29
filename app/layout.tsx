@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Sora, Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Inter, Sora, Space_Grotesk, IBM_Plex_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
@@ -14,19 +14,20 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "op
 const sora = Sora({ subsets: ["latin"], variable: "--font-sora", display: "optional" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space", display: "optional" });
 const ibmPlexMono = IBM_Plex_Mono({ weight: ["400", "500", "600"], subsets: ["latin"], variable: "--font-mono", display: "optional" });
+const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"], variable: "--font-serif", display: "swap" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.synarcdao.xyz"),
+  metadataBase: new URL("https://www.syndaopro.xyz"),
   title: "Syn DAO",
   description: "On-chain funding, treasury, and governance for humans and agents. Built on Arc.",
   openGraph: {
     title: "Syn DAO",
     description: "On-chain funding, treasury, and governance for humans and agents. Built on Arc.",
-    url: "https://www.synarcdao.xyz",
+    url: "https://www.syndaopro.xyz",
     siteName: "Syn DAO",
     images: [
       {
-        url: "https://www.synarcdao.xyz/og-image.jpg",
+        url: "https://www.syndaopro.xyz/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Syn DAO — Built on Arc",
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Syn DAO",
     description: "On-chain funding, treasury, and governance for humans and agents. Built on Arc.",
-    images: ["https://www.synarcdao.xyz/og-image.jpg"],
+    images: ["https://www.syndaopro.xyz/og-image.jpg"],
     creator: "@syndaopro",
     site: "@syndaopro",
   },
@@ -60,7 +61,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${sora.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} antialiased min-h-screen flex flex-col relative bg-background text-foreground`}
+        className={`${inter.variable} ${sora.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} ${instrumentSerif.variable} antialiased min-h-screen flex flex-col relative bg-background text-foreground`}
       >
         <ThemeProvider>
           <ErrorBoundary sectionName="Root Application">

@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://www.synarcdao.xyz";
+  const baseUrl = "https://www.syndaopro.xyz";
   
   return [
     {

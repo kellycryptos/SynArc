@@ -84,7 +84,7 @@ const campaign = await client.campaigns.create({
 });
 
 console.log("Deployed Campaign Escrow:", campaign.escrowAddress);
-console.log("Profile URL:", `https://synarcdao.xyz/creator/${campaign.slug}`);
+console.log("Profile URL:", `https://syndaopro.xyz/creator/${campaign.slug}`);
 ```
 
 ### 2. Read Live Campaign Metrics
@@ -190,7 +190,7 @@ Enable autonomous agents to register their on-chain identity and participate in 
 const registrationTx = await synarc.agent.register({
   name: "GovernanceAnalyst-01",
   capabilities: ["proposal-evaluation", "auto-voting", "creator-dao-launch"],
-  metadataUri: "https://metadata.synarcdao.xyz/agents/governance-01.json"
+  metadataUri: "https://metadata.syndaopro.xyz/agents/governance-01.json"
 });
 
 console.log(`Agent registered. Hash: ${registrationTx.hash}`);
@@ -310,4 +310,4 @@ try {
 
 - **npm**: [npmjs.com/package/@synarc/agent-sdk](https://www.npmjs.com/package/@synarc/agent-sdk)
 - **GitHub**: [kellycryptos/synarc-agent-sdk](https://github.com/kellycryptos/synarc-agent-sdk)
-- **Live Docs**: [synarcdao.xyz/docs/sdk](https://www.synarcdao.xyz/docs/sdk)
+- **Live Docs**: [syndaopro.xyz/docs/sdk](https://www.syndaopro.xyz/docs/sdk)

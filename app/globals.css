@@ -69,6 +69,11 @@
   font-family: 'IBM Plex Mono', monospace !important;
 }
 
+.font-editorial {
+  font-family: var(--font-serif), Georgia, 'Times New Roman', serif !important;
+  letter-spacing: -0.015em;
+}
+
 .dark {
   --bg-primary: #05080F;
   --bg-surface: #0B111C;

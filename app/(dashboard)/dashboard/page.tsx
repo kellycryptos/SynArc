@@ -10,6 +10,8 @@ import { ArrowRight, Rocket, Plus, Coins, Users, Trophy, Zap, Bot, Activity } fr
 import Link from "next/link";
 import { useCreatorStore } from "@/hooks/useCreatorStore";
 import { SectionErrorBoundary } from "@/components/ErrorBoundary";
+import { GovernanceHeroSection } from "@/components/dashboard/GovernanceHeroSection";
+import { EcosystemDaoGrid } from "@/components/dashboard/EcosystemDaoGrid";
 
 // --- Lazy-loaded components ---
 // WalletFaucetCard: 618 lines, imports framer-motion + BridgeModal + fires 2 fetch()
@@ -74,6 +76,16 @@ export default function DashboardOverview() {
     <div className="space-y-8 animate-fade-in-up">
       {/* Auth-aware header: banner + Create Proposal button */}
       <DashboardHeader />
+
+      {/* Governance Spotlight 3-Card Hero Row */}
+      <SectionErrorBoundary sectionName="Hero Spotlight">
+        <GovernanceHeroSection />
+      </SectionErrorBoundary>
+
+      {/* Ecosystem DAOs & Treasuries Grid */}
+      <SectionErrorBoundary sectionName="Ecosystem DAOs">
+        <EcosystemDaoGrid />
+      </SectionErrorBoundary>
 
       {/* ⚡ Agent Status Banner */}
       <Link href="/agent" className="block">

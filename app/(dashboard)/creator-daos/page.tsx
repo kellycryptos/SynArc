@@ -473,7 +473,7 @@ export default function CampaignsPage() {
 
                     <div className="flex items-center justify-between text-xs pt-1 border-t border-border-thin/30">
                       <span className="text-text-tertiary font-mono text-[11px] truncate max-w-[120px]">
-                        {dao.website ? new URL(dao.website).hostname : "synarcdao.xyz"}
+                        {dao.website ? new URL(dao.website).hostname : "syndaopro.xyz"}
                       </span>
 
                       {dao.id === 'synarc' ? (

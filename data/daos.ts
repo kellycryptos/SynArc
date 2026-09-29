@@ -30,7 +30,7 @@ export const DAO_REGISTRY: DAOInfo[] = [
     category: 'Governance',
     members: 12450,
     treasury: 2450000,
-    website: 'https://synarcdao.xyz',
+    website: 'https://syndaopro.xyz',
   },
   {
     id: 'aave',

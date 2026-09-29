@@ -36,7 +36,7 @@ Authenticate with your wallet (via WalletConnect / MetaMask / Coinbase / Circle)
 ### Step 4: Share Your DAO
 After deployment, a success screen shows:
 - ✅ Your newly deployed **contract address** (linked to ArcScan)
-- 🔗 Your **shareable profile URL**: `https://synarcdao.xyz/creator/[your-slug]`
+- 🔗 Your **shareable profile URL**: `https://syndaopro.xyz/creator/[your-slug]`
 - One-click **Share** button using the native Web Share API
 
 ---
@@ -48,7 +48,7 @@ Every workspace has a public profile page at `/creator/[slug]` — accessible wi
 ### Profile Features:
 - **Live On-Chain Metrics**: `totalRaised` and backer count read directly from your escrow contract via `viem`
 - **Cover Image**: Upload a custom banner via the profile editor
-- **Share Button**: Uses the Web Share API (mobile) or clipboard fallback (desktop) — copies `https://synarcdao.xyz/creator/[slug]`
+- **Share Button**: Uses the Web Share API (mobile) or clipboard fallback (desktop) — copies `https://syndaopro.xyz/creator/[slug]`
 - **Preset Donation Amounts**: $1, $5, $10, or custom amounts — triggers a real on-chain USDC transfer when wallet is connected
 - **AI Agent Audit**: An automated Groq AI-powered audit analyzes campaign feasibility and outputs a legitimacy score
 - **Social Links**: Twitter / X handle integration
@@ -146,7 +146,7 @@ const campaign = await client.campaigns.create({
 });
 
 console.log("Deployed Campaign Escrow:", campaign.escrowAddress);
-console.log("Profile URL:", `https://synarcdao.xyz/creator/${campaign.slug}`);
+console.log("Profile URL:", `https://syndaopro.xyz/creator/${campaign.slug}`);
 ```
 
 → See the full [Agent SDK guide](/docs/sdk) for all available methods.

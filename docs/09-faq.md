@@ -65,7 +65,7 @@ Milestone releases require:
 
 ### 12. How do I share my workspace profile?
  
-Every creator profile has a canonical URL: `https://synarcdao.xyz/creator/[your-slug]`. Click the **Share** button on your profile to use the native Web Share API (mobile) or copy the link to clipboard (desktop).
+Every creator profile has a canonical URL: `https://syndaopro.xyz/creator/[your-slug]`. Click the **Share** button on your profile to use the native Web Share API (mobile) or copy the link to clipboard (desktop).
 
 ---
 

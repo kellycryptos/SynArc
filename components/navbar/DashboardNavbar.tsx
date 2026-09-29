@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
-import { Bell, Search, Menu, LogOut, Wallet } from "lucide-react";
+import { Bell, Search, Menu, LogOut, Wallet, Flame } from "lucide-react";
 import { useMemo } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -57,20 +57,20 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="flex items-center gap-4">
         {/* Syn DAO Logo & Name (Mobile Only) */}
         <div className="flex items-center gap-2.5 md:hidden">
-          <SynArcLogo size={28} animated />
-          <span className="text-xl font-bold tracking-tight">
+          {onMenuClick && (
+            <button onClick={onMenuClick} className="p-1 text-[#8A948E] hover:text-[#F5F7FA]">
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
+          <SynArcLogo size={24} animated />
+          <span className="text-lg font-bold tracking-tight">
             <span className="gradient-text">Syn DAO</span>
           </span>
         </div>
 
-        {/* Search Bar (Desktop Only) */}
-        <div className="hidden md:flex items-center bg-[#0B111C] border border-[#1B2536] rounded-lg px-3.5 py-2.5 w-64 lg:w-80 focus-within:border-[#22D3EE]/40 transition-all">
-          <Search className="w-4 h-4 text-[#6B7385] mr-2" />
-          <input 
-            type="text" 
-            placeholder="Search proposals, addresses…" 
-            className="bg-transparent border-none outline-none text-sm w-full text-[#F5F7FA] placeholder:text-[#6B7385] font-space"
-          />
+        {/* Desktop Breadcrumb */}
+        <div className="hidden md:flex items-center gap-2">
+          <span className="text-sm font-medium font-space text-[#8A948E]">Dashboard</span>
         </div>
       </div>
       
@@ -78,6 +78,12 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="hidden md:flex items-center gap-3 sm:gap-4 font-mono text-xs">
         {isAuthenticated ? (
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Streak Flame Pill */}
+            <div className="tabular flex h-8 items-center gap-1.5 rounded-full border border-[#1B2536] bg-[#0B111C] px-2.5 text-xs font-medium text-[#8A948E] hover:border-[#22D3EE]/40 transition-colors">
+              <Flame className="w-3.5 h-3.5 text-[#22D3EE]" />
+              <span className="text-[#F5F7FA] font-bold">3</span>
+            </div>
+
             {/* Arc Network Status Badge with RPC Health */}
             <NetworkStatusBadge />
 

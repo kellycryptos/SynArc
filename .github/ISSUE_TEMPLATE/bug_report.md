@@ -23,4 +23,4 @@ If applicable, add screenshots.
 - Browser:
 - Wallet:
 - Network: Arc Testnet
-- URL: synarcdao.xyz
+- URL: syndaopro.xyz

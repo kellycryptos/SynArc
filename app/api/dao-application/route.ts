@@ -79,7 +79,7 @@ export async function POST(request: Request) {
             </div>
             
             <div class="footer">
-              <p>This application was submitted via synarcdao.xyz</p>
+              <p>This application was submitted via syndaopro.xyz</p>
             </div>
           </div>
         </body>

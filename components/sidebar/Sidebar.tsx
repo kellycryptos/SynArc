@@ -19,6 +19,7 @@ import {
   Rocket,
   Trophy,
   Zap,
+  Search,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { WalletConnectButton } from "@/components/ui/WalletConnectButton";
@@ -86,7 +87,20 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-5 px-3.5 space-y-1">
+      {/* Quick Search Pill */}
+      <div className="px-3.5 pt-3 pb-1">
+        <div className="flex h-9 w-full items-center gap-2 rounded-xl border border-[#1B2536] bg-[#0B111C] text-xs text-[#8A948E] transition-colors hover:border-[#22D3EE]/40 hover:text-[#F5F7FA] px-2.5">
+          <Search className="w-3.5 h-3.5 text-[#6B7385]" />
+          <input
+            type="text"
+            placeholder="Search…"
+            className="flex-1 bg-transparent border-none outline-none text-xs font-space text-[#F5F7FA] placeholder:text-[#6B7385]"
+          />
+          <kbd className="font-mono rounded border border-[#1B2536] bg-[#05080F] px-1.5 py-0.5 text-[9px] text-[#6B7385]">⌘K</kbd>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto py-4 px-3.5 space-y-1">
         {/* ⚡ AGENT — Primary Feature Card */}
         {(() => {
           const href = "/agent";
@@ -128,10 +142,10 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
               key={link.href}
               onClick={() => handleNavClick(link.href)}
               className={cn(
-                "w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm font-space transition-all group cursor-pointer text-left",
+                "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-space transition-all group cursor-pointer text-left border",
                 active
-                  ? "bg-[#0F1620] text-[#F5F7FA] font-medium"
-                  : "text-[#9CA6B8] hover:text-[#F5F7FA] hover:bg-[#0F1620]/50"
+                  ? "bg-[#22D3EE]/10 border-[#22D3EE]/25 text-[#F5F7FA] font-medium shadow-[0_0_12px_rgba(34,211,238,0.06)]"
+                  : "border-transparent text-[#8A948E] hover:text-[#F5F7FA] hover:bg-[#0B111C]"
               )}
             >
               <Icon
@@ -264,8 +278,14 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
         </div>
       )}
 
+      {/* Non-custodial Note Card */}
+      <div className="mx-3.5 mb-3 rounded-xl border border-[#1B2536] bg-[#0B111C]/90 p-3 text-[11px] text-[#8A948E] font-space leading-relaxed">
+        <span className="font-bold text-[#F5F7FA] block mb-0.5">Non-custodial.</span>
+        Your active proposals, voting streak, and agent rules are secured on Arc Testnet.
+      </div>
+
       {/* Connect Button */}
-      <div className="p-4 border-t border-border-thin mt-auto">
+      <div className="p-4 border-t border-[#151C29] mt-auto">
         <WalletConnectButton />
       </div>
     </aside>

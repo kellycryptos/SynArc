@@ -32,6 +32,8 @@ const config: Config = {
         mono: ["IBM Plex Mono", "monospace"],
         inter: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
         sora: ["var(--font-sora)", "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "Georgia", "serif"],
+        editorial: ["var(--font-serif)", "Georgia", "serif"],
       },
     },
   },

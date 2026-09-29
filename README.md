@@ -20,7 +20,7 @@ Product name updated for Arc naming compliance. Contracts and addresses are unch
 [![npm version](https://img.shields.io/npm/v/@synarc/agent-sdk?color=emerald&style=for-the-badge)](https://www.npmjs.com/package/@synarc/agent-sdk)
 [![Twitter Follow](https://img.shields.io/badge/X-@syndaopro-black?style=for-the-badge&logo=x)](https://x.com/syndaopro)
 
-[**Launch App →**](https://www.synarcdao.xyz/) · [**Developer SDK Docs**](https://www.synarcdao.xyz/docs/sdk) · [**SDK GitHub**](https://github.com/kellycryptos/synarc-agent-sdk) · [**Follow @syndaopro**](https://x.com/syndaopro) · [**Arc Ecosystem**](https://arc.network)
+[**Launch App →**](https://www.syndaopro.xyz/) · [**Developer SDK Docs**](https://www.syndaopro.xyz/docs/sdk) · [**SDK GitHub**](https://github.com/kellycryptos/synarc-agent-sdk) · [**Follow @syndaopro**](https://x.com/syndaopro) · [**Arc Ecosystem**](https://arc.network)
 
 </div>
 
@@ -98,7 +98,7 @@ Agent can release under an on-chain cap (default: **50.00 USDC**). Over the cap 
 ### On-Chain Permissions & Approval Thresholds
 *   **Autonomous Agent Track ($\le 50.00\text{ USDC}$)**: Authorized agents trigger `releaseMilestone` autonomously with deliverable proof. Zero delay, instant settlement.
 *   **Human Review Gate ($> 50.00\text{ USDC}$)**: Amounts exceeding 50 USDC immediately halt with `HumanApprovalRequired(releaseKey, amount, threshold)`. Execution requires on-chain signoff via `approveReleaseHuman(releaseKey)` by the Governor, Owner, or an authorized Human Reviewer.
-*   **Official Social & Community**: Follow [@syndaopro](https://x.com/syndaopro) on X. Web portal: [synarcdao.xyz](https://www.synarcdao.xyz/) (transitioning to `syndaopro.xyz`).
+*   **Official Social & Community**: Follow [@syndaopro](https://x.com/syndaopro) on X. Web portal: [syndaopro.xyz](https://www.syndaopro.xyz/).
 
 ---
 
@@ -111,7 +111,7 @@ Creator DAOs are decentralized funding and governance structures that allow buil
 1. **Choose a Template**: Select from predefined templates (Music Creator, Artist, AI Agent, or Arc Builder) on the **Create DAO** page.
 2. **Set Milestones**: Define the phases of your project and assign a USDC funding amount to each milestone.
 3. **Deploy the Escrow**: Click **Launch Creator DAO** to deploy your independent `SynArcCrowdfund` escrow smart contract directly to Arc Testnet.
-4. **Share and Fund**: Copy your public profile URL (e.g., `https://synarcdao.xyz/creator/[slug]`) and invite your community to back you using USDC nanopayments.
+4. **Share and Fund**: Copy your public profile URL (e.g., `https://syndaopro.xyz/creator/[slug]`) and invite your community to back you using USDC nanopayments.
 
 ---
 
@@ -181,7 +181,7 @@ const agent = new SynArcAgent({
 await agent.registerIdentity({
   name: "Autonomous Portfolio Rebalancer",
   capabilities: ["treasury-monitoring", "cctp-rebalancing"],
-  metadataUri: "https://metadata.synarcdao.xyz/agents/rebalancer-01.json"
+  metadataUri: "https://metadata.syndaopro.xyz/agents/rebalancer-01.json"
 });
 
 // Cast a programmatic vote on a proposal
@@ -191,7 +191,7 @@ await agent.vote(proposalId, 1 /* For */);
 
 - **npm Package**: [@synarc/agent-sdk](https://www.npmjs.com/package/@synarc/agent-sdk)
 - **Repository**: [kellycryptos/synarc-agent-sdk](https://github.com/kellycryptos/synarc-agent-sdk)
-- **Documentation**: [synarcdao.xyz/docs/sdk](https://www.synarcdao.xyz/docs/sdk)
+- **Documentation**: [syndaopro.xyz/docs/sdk](https://www.syndaopro.xyz/docs/sdk)
 
 ---
 
@@ -380,7 +380,7 @@ Below is the verified status of core milestones:
 ## 10. Deployment
 
 ## Live Deployment
-https://www.synarcdao.xyz/
+https://www.syndaopro.xyz/
 
 ### Deploying to Vercel
 1.  Install the Vercel CLI globally:
@@ -493,7 +493,7 @@ This repository is licensed under the **MIT License**. Check [LICENSE](./LICENSE
 
 **Built for the Arc agentic economy.**
 
-[Website](https://www.synarcdao.xyz/) · [Twitter](https://x.com/syndaopro) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
+[Website](https://www.syndaopro.xyz/) · [Twitter](https://x.com/syndaopro) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
 
 <sub>© 2026 Syn DAO. All rights reserved.</sub>
 

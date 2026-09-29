@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/", "/settings/"],
     },
-    sitemap: "https://www.synarcdao.xyz/sitemap.xml",
+    sitemap: "https://www.syndaopro.xyz/sitemap.xml",
   };
 }

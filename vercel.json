@@ -8,10 +8,32 @@
       "has": [
         {
           "type": "host",
+          "value": "syndaopro.xyz"
+        }
+      ],
+      "destination": "https://www.syndaopro.xyz/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
           "value": "synarcdao.xyz"
         }
       ],
-      "destination": "https://www.synarcdao.xyz/$1",
+      "destination": "https://www.syndaopro.xyz/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.synarcdao.xyz"
+        }
+      ],
+      "destination": "https://www.syndaopro.xyz/$1",
       "permanent": true
     }
   ],

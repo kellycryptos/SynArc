@@ -245,6 +245,6 @@ Agent can release under an on-chain cap. Over the cap it stops for a human. Same
 
 ### Rebrand & Official Channels
 - **Official X (Twitter)**: [@syndaopro](https://x.com/syndaopro)
-- **Live Domain**: [synarcdao.xyz](https://www.synarcdao.xyz/) (transitioning to `syndaopro.xyz`)
+- **Live Domain**: [syndaopro.xyz](https://www.syndaopro.xyz/)
 - **Arc Mainnet Explorer**: [explorer.arc.io](https://explorer.arc.io)
 

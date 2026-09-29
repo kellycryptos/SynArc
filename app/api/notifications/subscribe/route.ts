@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
           <li>Proposals are executed or defeated</li>
         </ul>
         <p><strong>Wallet:</strong> ${walletAddress || 'Not connected'}</p>
-        <p>Visit <a href="https://www.synarcdao.xyz">synarcdao.xyz</a> to participate in governance.</p>
+        <p>Visit <a href="https://www.syndaopro.xyz">syndaopro.xyz</a> to participate in governance.</p>
         <hr/>
         <small>Unsubscribe anytime from your Settings page.</small>
       `
