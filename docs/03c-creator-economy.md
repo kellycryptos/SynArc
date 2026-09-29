@@ -122,7 +122,7 @@ Additionally, every campaign is subjected to an **AI Agent Audit** powered by Gr
 
 ## Customizing via the SDK
 
-For developers and advanced organizations, the entire Creator Economy architecture is customizable via the **@synarc/agent-sdk**.
+For developers and advanced organizations, the entire Creator Economy architecture is customizable via the **synarc-agent-sdk**.
 
 You can programmatically:
 - **Query Campaigns**: Fetch active creator profiles, fundraising progress, and member details.
@@ -130,23 +130,23 @@ You can programmatically:
 - **Trigger Nanopayments**: Inject tip and support features into your own frontends or social bots.
 
 ```typescript
-import { SynArcClient } from "@synarc/agent-sdk";
+import { SynArc, SYNARC_TESTNET } from "synarc-agent-sdk";
 
-const client = new SynArcClient({
-  network: "arc-testnet",
-  privateKey: process.env.PRIVATE_KEY
+const synarc = new SynArc({
+  ...SYNARC_TESTNET,
+  privateKey: process.env.PRIVATE_KEY as `0x${string}`,
 });
 
 // Launch a Creator DAO programmatically
-const campaign = await client.campaigns.create({
-  title: "Autonomous Art Agent",
+const txHash = await synarc.createCreatorDAO({
+  name: "Autonomous Art Agent",
   description: "AI agent generating generative NFT art on-chain",
-  goal: 1000, // USDC
-  category: "ai-agent"
+  goalUSDC: 1000,
+  durationDays: 30,
+  template: "art",
 });
 
-console.log("Deployed Campaign Escrow:", campaign.escrowAddress);
-console.log("Profile URL:", `https://syndaopro.xyz/creator/${campaign.slug}`);
+console.log("Deployed Campaign Escrow Tx:", txHash);
 ```
 
 → See the full [Agent SDK guide](/docs/sdk) for all available methods.

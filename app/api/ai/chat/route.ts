@@ -54,26 +54,31 @@ Syn DAO is secure funding and coordination infrastructure for humans and agents,
 
 ---
 
-## Developer SDK (@synarc/agent-sdk)
-- Install: npm install @synarc/agent-sdk ethers
+## Developer SDK (synarc-agent-sdk)
+- Install: npm install synarc-agent-sdk viem
 - Key Methods:
-  - client.campaigns.create({ title, description, goal, category, milestones })
-  - client.campaigns.support({ escrowAddress, amountUsdc })
-  - client.crowdfund.releaseMilestone({ campaignId, milestoneId })
-  - client.token.delegate(delegatee)
-  - client.treasury.executeSweep({ tokenAddress, targetVault, amount })
+  - synarc.createCreatorDAO({ name, description, goalUSDC, durationDays, template, recipientWallet })
+  - synarc.supportCreatorDAO(escrowAddress, amountUSDC)
+  - synarc.supportCreator(creatorAddress, amountUSDC)
+  - synarc.approveMilestone(escrowAddress, milestoneIndex)
+  - synarc.withdrawMilestone(escrowAddress, milestoneIndex)
+  - synarc.syncBalance(treasuryAddress)
+  - synarc.claimTameionRelease(orderId)
+  - synarc.propose({ title, description, targetContract, valueUSDC, durationDays })
+  - synarc.castVote(proposalId, support, reason)
 - Example:
 \`\`\`typescript
-import { SynArcClient } from '@synarc/agent-sdk';
-const client = new SynArcClient({ network: 'arc-testnet', privateKey: process.env.PRIVATE_KEY });
-const campaign = await client.campaigns.create({ title: 'My Workspace', goal: 1000, category: 'Ecosystem Grant' });
+import { SynArc, SYNARC_TESTNET } from 'synarc-agent-sdk';
+const synarc = new SynArc({ ...SYNARC_TESTNET, privateKey: process.env.PRIVATE_KEY });
+const txHash = await synarc.createCreatorDAO({ name: 'My Workspace', description: 'Creator DAO', goalUSDC: 1000 });
 \`\`\`
 
 ---
 
 ## Smart Contracts (Arc Testnet)
 - SynArc Governor: 0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e
-- SynArc Treasury: 0xFE0F6bF45D363d34CD5fC1781594a7471736dC18
+- SynArc Governance Treasury: 0xFE0F6bF45D363d34CD5fC1781594a7471736dC18
+- SynArc Agent Operating Treasury: 0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28
 - SynArcToken (sARC): 0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e
 - EURC Token: 0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a
 - ERC-8004 Registry: 0x8004A818BFB912233c491871b3d84c89A494BD9e
@@ -98,7 +103,7 @@ export async function POST(req: NextRequest) {
       } else if (lastMessage.includes("nanopayment") || lastMessage.includes("usdc") || lastMessage.includes("tip") || lastMessage.includes("micro")) {
         reply = "SynArc supports micro-funding contributions of any size. Because transaction fees are sub-penny, backers can support projects easily. Under workspace profiles, you can click presets ($0.01, $0.10, $1.00) or enter a custom amount. The transaction triggers a direct on-chain deposit to the campaign's milestone escrow contract.";
       } else if (lastMessage.includes("sdk") || lastMessage.includes("agent-sdk")) {
-        reply = "The `@synarc/agent-sdk` lets you interact with SynArc programmatically. You can install it via npm:\n`npm install @synarc/agent-sdk`\n\nHere is a simple example to launch a campaign:\n```typescript\nimport { SynArcClient } from '@synarc/agent-sdk';\nconst client = new SynArcClient({ network: 'arc-testnet' });\nconst campaign = await client.campaigns.create({\n  title: 'My Project Workspace',\n  goal: 1000\n});\n```";
+        reply = "The `synarc-agent-sdk` lets you interact with Syn DAO programmatically. You can install it via npm:\n`npm install synarc-agent-sdk viem`\n\nHere is a simple example to launch a Creator DAO:\n```typescript\nimport { SynArc, SYNARC_TESTNET } from 'synarc-agent-sdk';\nconst synarc = new SynArc({ ...SYNARC_TESTNET, privateKey: process.env.PRIVATE_KEY });\nconst txHash = await synarc.createCreatorDAO({\n  name: 'My Project Workspace',\n  description: 'Creator DAO on Arc',\n  goalUSDC: 1000\n});\n```";
       } else if (lastMessage.includes("escrow") || lastMessage.includes("milestone") || lastMessage.includes("vote")) {
         reply = "Milestone Escrows secure backer capital. When contributors support a project workspace, funds go to a custom smart contract escrow instead of the creator's wallet. The creator claims funds by completing milestones (e.g., 'Alpha Launch'). Release of each milestone requires a community approval vote.";
       }

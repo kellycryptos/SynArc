@@ -17,7 +17,7 @@ Product name updated for Arc naming compliance. Contracts and addresses are unch
 [![WalletConnect](https://img.shields.io/badge/WalletConnect-Reown-3B99FC?style=for-the-badge&logo=walletconnect)](https://cloud.reown.com)
 [![Wagmi](https://img.shields.io/badge/Wagmi-3.6-black?style=for-the-badge)](https://wagmi.sh)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-Governor-4E5EE4?style=for-the-badge)](https://openzeppelin.com)
-[![npm version](https://img.shields.io/npm/v/@synarc/agent-sdk?color=emerald&style=for-the-badge)](https://www.npmjs.com/package/@synarc/agent-sdk)
+[![npm version](https://img.shields.io/npm/v/synarc-agent-sdk?color=emerald&style=for-the-badge)](https://www.npmjs.com/package/synarc-agent-sdk)
 [![Twitter Follow](https://img.shields.io/badge/X-@syndaopro-black?style=for-the-badge&logo=x)](https://x.com/syndaopro)
 
 [**Launch App →**](https://www.syndaopro.xyz/) · [**Developer SDK Docs**](https://www.syndaopro.xyz/docs/sdk) · [**SDK GitHub**](https://github.com/kellycryptos/synarc-agent-sdk) · [**Follow @syndaopro**](https://x.com/syndaopro) · [**Arc Ecosystem**](https://arc.network)
@@ -158,38 +158,38 @@ For complete architectural details, see the [Three-Way Match Architecture Guide]
 
 ## 3e. Developer Agent SDK
 
-Integrate autonomous agents and decentralized organizations programmatically using the `@synarc/agent-sdk` npm package.
+Integrate autonomous agents and decentralized organizations programmatically using the `synarc-agent-sdk` npm package.
 
 ### Installation
 
 ```bash
-npm install @synarc/agent-sdk
+npm install synarc-agent-sdk viem
 ```
 
 ### Quickstart Example
 
 ```typescript
-import { SynArcAgent } from '@synarc/agent-sdk';
+import { SynArc, SYNARC_TESTNET } from 'synarc-agent-sdk';
 
 // Initialize agent client
-const agent = new SynArcAgent({ 
-  rpcUrl: 'https://rpc.testnet.arc.network',
-  privateKey: process.env.PRIVATE_KEY 
+const synarc = new SynArc({ 
+  ...SYNARC_TESTNET,
+  privateKey: process.env.AGENT_PRIVATE_KEY as `0x${string}`
 });
 
-// Register ERC-8004 on-chain agent identity
-await agent.registerIdentity({
-  name: "Autonomous Portfolio Rebalancer",
-  capabilities: ["treasury-monitoring", "cctp-rebalancing"],
-  metadataUri: "https://metadata.syndaopro.xyz/agents/rebalancer-01.json"
+// Deploy a Creator DAO milestone escrow
+const txHash = await synarc.createCreatorDAO({
+  name: "Autonomous Rebalancing Agent",
+  description: "Treasury automation agent on Arc Network",
+  goalUSDC: 1000,
+  durationDays: 30,
+  template: "software",
 });
 
-// Cast a programmatic vote on a proposal
-const proposalId = "0x...";
-await agent.vote(proposalId, 1 /* For */);
+console.log(`Deployed escrow! Tx: ${txHash}`);
 ```
 
-- **npm Package**: [@synarc/agent-sdk](https://www.npmjs.com/package/@synarc/agent-sdk)
+- **npm Package**: [synarc-agent-sdk](https://www.npmjs.com/package/synarc-agent-sdk)
 - **Repository**: [kellycryptos/synarc-agent-sdk](https://github.com/kellycryptos/synarc-agent-sdk)
 - **Documentation**: [syndaopro.xyz/docs/sdk](https://www.syndaopro.xyz/docs/sdk)
 

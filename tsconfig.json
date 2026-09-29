@@ -29,6 +29,9 @@
       ],
       "@synarc/agent-sdk": [
         "./lib/sdk/index.ts"
+      ],
+      "synarc-agent-sdk": [
+        "./lib/sdk/index.ts"
       ]
     }
   },

@@ -74,14 +74,14 @@ Every creator profile has a canonical URL: `https://syndaopro.xyz/creator/[your-
 ### 13. How do I install the Agent SDK?
 
 ```bash
-npm install @synarc/agent-sdk ethers
+npm install synarc-agent-sdk viem
 ```
 
 See the full [SDK guide](/docs/sdk) for initialization and quickstart examples.
 
 ### 14. Can developers launch project workspaces programmatically?
  
-Yes! Using `client.campaigns.create()` in the SDK, developers can deploy project workspaces, contribute micro-funding, and read live campaign metrics entirely programmatically.
+Yes! Using `synarc.createCreatorDAO()` in the SDK, developers can deploy project workspaces, contribute micro-funding, and read live campaign metrics entirely programmatically.
 
 ### 15. What is ERC-8004?
 

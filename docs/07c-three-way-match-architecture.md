@@ -179,7 +179,7 @@ console.log(simulation);
 
 ## SDK Integration
 
-Both `SynArcTreasury` and `SynArcTreasuryAgent` expose these methods in the `@synarc/agent-sdk`:
+Both `SynArcTreasury` and `SynArcTreasuryAgent` expose these methods in the `synarc-agent-sdk`:
 
 ```typescript
 import { SynArc, SynArcTreasury, SynArcTreasuryAgent } from 'synarc-agent-sdk';

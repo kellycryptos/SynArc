@@ -38,4 +38,4 @@ This section outlines Syn DAO's multi-phase roadmap towards providing secure fun
 ### Phase 6: Automated Treasury Guard API
 
 * **Status:** _In Progress / Active_
-* **Description:** Deploy and integrate core Treasury Agent capabilities (Auto Rebalancing, Auto Payments, and Risk Monitoring) with active DeFi yield farming and multi-chain sweeps. Developers can customize automated rebalancing rules and guards via `@synarc/agent-sdk`.
+* **Description:** Deploy and integrate core Treasury Agent capabilities (Auto Rebalancing, Auto Payments, and Risk Monitoring) with active DeFi yield farming and multi-chain sweeps. Developers can customize automated rebalancing rules and guards via `synarc-agent-sdk`.
