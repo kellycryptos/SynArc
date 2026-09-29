@@ -9,9 +9,11 @@ import { http, fallback } from 'wagmi'
 import { arcTestnet, arcMainnet, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK } from '@/lib/arc-config'
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 
-const defaultChains = ACTIVE_NETWORK === 'mainnet'
-  ? ([arcMainnet, arcTestnet, sepolia, baseSepolia, avalancheFuji] as const)
-  : ([arcTestnet, arcMainnet, sepolia, baseSepolia, avalancheFuji] as const);
+// Documented public fallback constant for Arc Testnet
+export const ARC_TESTNET_FALLBACK_RPC = 'https://rpc.testnet.arc.network';
+
+// Default network on any fresh page load with no wallet connected is always mainnet first
+const defaultChains = [arcMainnet, arcTestnet, sepolia, baseSepolia, avalancheFuji] as const;
 
 export const wagmiConfig = getDefaultConfig({
   appName: 'Syn DAO',
@@ -30,16 +32,22 @@ export const wagmiConfig = getDefaultConfig({
     },
   ],
   transports: {
+    // Arc Testnet uses the same-origin server proxy with documented public fallback
     [arcTestnet.id]: fallback(
-      ARC_TESTNET_RPC_URLS.map(url =>
-        http(url, {
+      [
+        http('/api/rpc/testnet', {
           timeout: 10000,
-          retryCount: 3,
+          retryCount: 2,
           retryDelay: 1000,
-        })
-      ),
+        }),
+        http(ARC_TESTNET_FALLBACK_RPC, {
+          timeout: 10000,
+          retryCount: 2,
+          retryDelay: 1000,
+        }),
+      ],
       {
-        retryCount: 3,
+        retryCount: 2,
         retryDelay: 1000,
       }
     ),

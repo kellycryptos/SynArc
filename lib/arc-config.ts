@@ -1,18 +1,15 @@
 import { defineChain } from 'viem'
 import { sepolia, baseSepolia, avalancheFuji, mainnet, base, avalanche } from 'viem/chains'
 
-// Default to Arc Mainnet first
-export const ACTIVE_NETWORK = (process.env.NEXT_PUBLIC_ARC_NETWORK || 'mainnet') as 'testnet' | 'mainnet'
+// Documented public fallback constant for Arc Testnet
+export const ARC_TESTNET_FALLBACK_RPC = 'https://rpc.testnet.arc.network';
 
-// Arc Testnet list (chain 5042002)
-// Priority: NEXT_PUBLIC_ARC_RPC_URL (override) → Arc official (https://rpc.testnet.arc.io) → Canteen CLI testnet node (optional) → Alchemy
-export const ARC_TESTNET_RPC_URLS = Array.from(new Set([
-  process.env.NEXT_PUBLIC_ARC_RPC_URL,
+// Arc Testnet list (chain 5042002) - uses same-origin proxy with public fallback
+export const ARC_TESTNET_RPC_URLS = [
+  '/api/rpc/testnet',
+  ARC_TESTNET_FALLBACK_RPC,
   'https://rpc.testnet.arc.io',
-  process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC,
-  'https://rpc.testnet.arc.network',
-  process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC,
-].filter(Boolean) as string[]))
+];
 
 // Arc Mainnet list (chain 5042)
 // Priority: Official Arc Mainnet RPC (https://rpc.mainnet.arc.io) → Official Fallbacks → Alchemy
@@ -25,16 +22,34 @@ export const ARC_MAINNET_RPC_URLS = Array.from(new Set([
   process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC,
 ].filter(Boolean) as string[]))
 
-// Active-network RPC array (respects ACTIVE_NETWORK: mainnet or testnet)
-export const ARC_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS
+// Default network on any fresh page load with no wallet connected is always mainnet
+export const ACTIVE_NETWORK: 'mainnet' | 'testnet' = 'mainnet';
+
+let _activeNetworkState: 'mainnet' | 'testnet' = 'mainnet';
+
+export function getActiveNetwork(): 'mainnet' | 'testnet' {
+  return _activeNetworkState;
+}
+
+export function setActiveNetwork(net: 'mainnet' | 'testnet') {
+  _activeNetworkState = net;
+}
+
+// Active-network RPC array (respects active network: mainnet or testnet)
+export const ARC_RPC_URLS = new Proxy([] as typeof ARC_MAINNET_RPC_URLS, {
+  get(_target, prop) {
+    const urls = getActiveNetwork() === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS;
+    return (urls as any)[prop];
+  }
+});
 
 export const arcTestnet = defineChain({
   id: 5042002,
   name: 'Arc Testnet',
   nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
   rpcUrls: {
-    default: { http: ARC_TESTNET_RPC_URLS },
-    public: { http: ARC_TESTNET_RPC_URLS }
+    default: { http: ['/api/rpc/testnet', ARC_TESTNET_FALLBACK_RPC] },
+    public: { http: [ARC_TESTNET_FALLBACK_RPC] }
   },
   blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
 })
@@ -51,7 +66,12 @@ export const arcMainnet = defineChain({
   blockExplorers: { default: { name: 'Arc Explorer', url: 'https://explorer.arc.io' } },
 })
 
-export const ARC_CHAIN = ACTIVE_NETWORK === 'mainnet' ? arcMainnet : arcTestnet;
+export const ARC_CHAIN = new Proxy({} as typeof arcMainnet, {
+  get(_target, prop) {
+    const chain = getActiveNetwork() === 'mainnet' ? arcMainnet : arcTestnet;
+    return (chain as any)[prop];
+  }
+});
 
 export const ARC_GAS = {
   propose: 600000n,
@@ -95,9 +115,18 @@ export const CONTRACTS_MAINNET = {
   get crowdfund() { return (process.env.NEXT_PUBLIC_MAINNET_CROWDFUND_ADDRESS || process.env.NEXT_PUBLIC_CROWDFUND_ADDRESS || '0xd5374DFC4B01F60115A52Df027704062506b3030') as `0x${string}` },
 }
 
-export const CONTRACTS = ACTIVE_NETWORK === 'mainnet' ? CONTRACTS_MAINNET : CONTRACTS_TESTNET
+export const CONTRACTS = new Proxy({} as typeof CONTRACTS_MAINNET, {
+  get(_target, prop) {
+    const contracts = getActiveNetwork() === 'mainnet' ? CONTRACTS_MAINNET : CONTRACTS_TESTNET;
+    return (contracts as any)[prop];
+  }
+});
 
-export const IS_MAINNET = ACTIVE_NETWORK === 'mainnet';
+export const IS_MAINNET = true;
+
+export function getIsMainnet(): boolean {
+  return getActiveNetwork() === 'mainnet';
+}
 
 export const CIRCLE_IRIS_API_URL = IS_MAINNET
   ? 'https://iris-api.circle.com/v1/attestations'

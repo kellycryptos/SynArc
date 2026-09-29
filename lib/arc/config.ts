@@ -49,7 +49,9 @@ export async function ensureArcNetwork(ethereumProvider: any, targetChainId: num
   const isMainnet = targetChainId === 5042;
   const chainIdHex = `0x${targetChainId.toString(16)}`;
   const chainName = isMainnet ? "Arc" : "Arc Testnet";
-  const rpcUrls = isMainnet ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS;
+  const rpcUrls = isMainnet 
+    ? ARC_MAINNET_RPC_URLS.filter((url: string) => url.startsWith("http"))
+    : ARC_TESTNET_RPC_URLS.filter((url: string) => url.startsWith("http"));
   const explorerUrl = isMainnet ? "https://explorer.arc.io" : "https://testnet.arcscan.app";
 
   try {

@@ -31,8 +31,8 @@ export const ARC_CONFIG = {
   
   // RPC Configuration
   rpc: {
-    // Primary testnet RPC endpoint
-    primary: process.env.NEXT_PUBLIC_ARC_RPC_URL || process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || 'https://rpc.testnet.arc.io',
+    // Primary testnet RPC endpoint (server-proxied)
+    primary: process.env.NEXT_PUBLIC_ARC_RPC_URL || '/api/rpc/testnet',
     // Fallback — uses the same centralized URL
     fallback: ARC_RPC_URL,
     // Mainnet RPC endpoint — official Arc Mainnet endpoint
