@@ -10,7 +10,8 @@ import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useSwitchChain, useAccount } from "wagmi";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
 import { selectActiveWallet } from "@/lib/tx-helper";
-import { IS_MAINNET } from "@/lib/arc-config";
+import { IS_MAINNET, ACTIVE_NETWORK } from "@/lib/arc-config";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowDown, 

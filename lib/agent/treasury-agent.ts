@@ -6,9 +6,10 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') })
 import Groq from 'groq-sdk'
 import { createPublicClient, createWalletClient, http, fallback, parseAbi, parseUnits, keccak256, toHex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS, ARC_GAS, IS_MAINNET, CIRCLE_ETH_CONFIG, CIRCLE_IRIS_API_URL } from '@/lib/arc-config'
-import { CCTPExecutor } from '@/lib/agent/cctp-executor'
-import { pinJSONToIPFS } from '@/lib/attestation'
+import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS, ARC_GAS, IS_MAINNET, CIRCLE_ETH_CONFIG, CIRCLE_IRIS_API_URL } from '../arc-config'
+import { CCTPExecutor } from './cctp-executor'
+import { pinJSONToIPFS } from '../attestation'
+import { ForensicAuditor } from './forensic-auditor'
 import fs from 'fs'
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || 'mock_groq_api_key_123456' })
@@ -382,7 +383,37 @@ Respond in JSON format:
 
           // Only execute agent's own rebalance proposals targeting this agent
           if ((title.includes('[AGENT]') || title.includes('Proposed by Treasury Agent')) && target.toLowerCase() === agentAddr) {
-            console.log(`[TreasuryAgent] Found succeeded proposal #${i}: "${title}". Executing...`)
+            console.log(`[TreasuryAgent] Found succeeded proposal #${i}: "${title}". Submitting to Forensic Sentinel...`)
+
+            const deliverableURI = prop[15] || ""
+            const impactUSDC = Number(impact) / 1_000_000
+
+            // 0. Adversarial Sentinel Audit Check
+            const auditTicket = await ForensicAuditor.auditReleaseIntent({
+              proposalId: i.toString(),
+              milestoneId: "1",
+              targetPayee: target,
+              amountUSDC: impactUSDC,
+              deliverableURI: deliverableURI,
+              isCrossChain: true,
+              cctpMessageHash: undefined
+            }, {
+              recipient: target,
+              amountUSDC: impactUSDC
+            })
+
+            console.log(`[TreasuryAgent] Forensic Sentinel Verdict: ${auditTicket.verdict} (Risk Score: ${auditTicket.riskScore}/100)`)
+
+            if (auditTicket.verdict === "REJECTED_AUDIT_FAILURE") {
+              console.error(`[TreasuryAgent] Execution halted by Forensic Sentinel: ${auditTicket.canteenControlViolations.join(", ")}`)
+              this.logAction({
+                timestamp: new Date().toISOString(),
+                action: 'error',
+                reasoning: `[FORENSIC SENTINEL REJECTION] Proposal #${i} blocked: ${auditTicket.canteenControlViolations.join("; ")}`,
+                status: 'failed'
+              })
+              continue
+            }
 
             try {
               // 1. Call execute on governor

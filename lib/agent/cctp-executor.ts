@@ -7,7 +7,7 @@ import { mainnet, sepolia } from 'viem/chains'
 export const CCTP_CONTRACTS = {
   arc: {
     tokenMessenger: (process.env.NEXT_PUBLIC_CCTP_TOKEN_MESSENGER_ARC || (IS_MAINNET ? '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d' : '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA')) as `0x${string}`,
-    messageTransmitter: (process.env.NEXT_PUBLIC_CCTP_MESSAGE_TRANSMITTER_ARC || (IS_MAINNET ? '0x81D40F21F12A8F0E3252Bccb954D722a4c464B64' : '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275')) as `0x${string}`,
+    messageTransmitter: (process.env.NEXT_PUBLIC_CCTP_MESSAGE_TRANSMITTER_ARC || (IS_MAINNET ? '0x81D40F21F12A8F0E3252Bccb954D722d4c464B64' : '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275')) as `0x${string}`,
     usdc: (process.env.NEXT_PUBLIC_USDC_CONTRACT_ADDRESS || '0x3600000000000000000000000000000000000000') as `0x${string}`,
   },
   ethereum: {
@@ -141,7 +141,7 @@ export class CCTPExecutor {
           functionName: 'executeYieldStrategy',
           args: [
             treasuryAgentAddress,
-            CCTP_CONTRACTS.arcTestnet.usdc,
+            CCTP_CONTRACTS.arc.usdc,
             amountRaw,
             withdrawCalldata
           ],
@@ -158,7 +158,7 @@ export class CCTPExecutor {
       const calldata = encodeFunctionData({
         abi: TOKEN_MESSENGER_ABI,
         functionName: 'depositForBurn',
-        args: [amountRaw, CCTP_CONTRACTS.ethSepolia.domain, mintRecipient, CCTP_CONTRACTS.arcTestnet.usdc, zeroBytes32, 0n, 0]
+        args: [amountRaw, CCTP_CONTRACTS.ethereum.domain, mintRecipient, CCTP_CONTRACTS.arc.usdc, zeroBytes32, 0n, 2000]
       })
 
       burnTx = await this.arcWalletClient.writeContract({
@@ -168,8 +168,8 @@ export class CCTPExecutor {
         ]),
         functionName: 'executeYieldStrategy',
         args: [
-          CCTP_CONTRACTS.arcTestnet.tokenMessenger,
-          CCTP_CONTRACTS.arcTestnet.usdc,
+          CCTP_CONTRACTS.arc.tokenMessenger,
+          CCTP_CONTRACTS.arc.usdc,
           amountRaw,
           calldata
         ],
@@ -180,10 +180,10 @@ export class CCTPExecutor {
       if (onProgress) onProgress(msgText)
 
       const approveTx = await this.arcWalletClient.writeContract({
-        address: CCTP_CONTRACTS.arcTestnet.usdc,
+        address: CCTP_CONTRACTS.arc.usdc,
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [CCTP_CONTRACTS.arcTestnet.tokenMessenger, amountRaw],
+        args: [CCTP_CONTRACTS.arc.tokenMessenger, amountRaw],
       })
       await this.arcPublicClient.waitForTransactionReceipt({ hash: approveTx, timeout: 120_000 })
       
@@ -192,10 +192,10 @@ export class CCTPExecutor {
       if (onProgress) onProgress(msgText2)
 
       burnTx = await this.arcWalletClient.writeContract({
-        address: CCTP_CONTRACTS.arcTestnet.tokenMessenger,
+        address: CCTP_CONTRACTS.arc.tokenMessenger,
         abi: TOKEN_MESSENGER_ABI,
         functionName: 'depositForBurn',
-        args: [amountRaw, CCTP_CONTRACTS.ethSepolia.domain, mintRecipient, CCTP_CONTRACTS.arcTestnet.usdc, zeroBytes32, 0n, 0],
+        args: [amountRaw, CCTP_CONTRACTS.ethereum.domain, mintRecipient, CCTP_CONTRACTS.arc.usdc, zeroBytes32, 0n, 2000],
       })
     }
     
@@ -379,7 +379,7 @@ export class CCTPExecutor {
         CCTP_CONTRACTS.ethereum.usdc,
         zeroBytes32,
         0n,
-        IS_MAINNET ? 1000 : 2000 // Fast or Standard finality
+        2000 // Standard finality (zero fee transfer)
       ],
     })
 

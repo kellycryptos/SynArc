@@ -15,6 +15,8 @@ import {
 import Link from "next/link";
 import { CctpStepVisualizer } from "@/components/dashboard/CctpStepVisualizer";
 import { ProofOfAutonomyTimeline } from "@/components/dashboard/ProofOfAutonomyTimeline";
+import { TameionReleaseValve } from "@/components/dashboard/TameionReleaseValve";
+import { TameionAdversarialSimulator } from "@/components/dashboard/TameionAdversarialSimulator";
 import toast from "react-hot-toast";
 import { AGENT_CAPABILITIES, AGENT_CONFIG } from "@/lib/agent/smart-account";
 import { useAuth } from "@/hooks/auth/useAuth";
@@ -952,6 +954,16 @@ export default function AgentPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ════ TAMEION ADVERSARIAL STRESS TEST & DUAL-AGENT AUDITING MESH ════ */}
+      <SectionErrorBoundary sectionName="Tameion Adversarial Simulator">
+        <TameionAdversarialSimulator />
+      </SectionErrorBoundary>
+
+      {/* ════ TAMEION ON-CHAIN RELEASE VALVE & PERMISSIONS MATRIX ════ */}
+      <SectionErrorBoundary sectionName="Tameion Release Valve">
+        <TameionReleaseValve treasuryUsdcBalance={treasury?.usdc ?? 25.00} />
+      </SectionErrorBoundary>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

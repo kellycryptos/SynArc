@@ -22,25 +22,26 @@ import { getSigner, selectActiveWallet } from "@/lib/tx-helper";
 import { EVM_BRIDGE_CHAINS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS } from "@/lib/arc-config";
 import { useAuth } from "@/hooks/auth/useAuth";
 
-const IS_MAINNET = ACTIVE_NETWORK === 'mainnet';
+// Circle CCTP V2 canonical addresses
+export const CCTP_TESTNET_MESSENGER = '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA' as const;
+export const CCTP_TESTNET_TRANSMITTER = '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275' as const;
 
-// Iris API
-const IRIS_API_URL = IS_MAINNET
-  ? 'https://iris-api.circle.com/v1/attestations'
-  : 'https://iris-api-sandbox.circle.com/v1/attestations';
+export const CCTP_MAINNET_MESSENGER = '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d' as const;
+export const CCTP_MAINNET_TRANSMITTER = '0x81D40F21F12A8F0E3252Bccb954D722d4c464B64' as const;
 
-const IRIS_FEE_URL = IS_MAINNET
-  ? 'https://iris-api.circle.com/v2/burn/USDC/fees'
-  : 'https://iris-api-sandbox.circle.com/v2/burn/USDC/fees';
+// Iris API URLs
+export const IRIS_API_MAINNET_URL = 'https://iris-api.circle.com/v1/attestations';
+export const IRIS_API_SANDBOX_URL = 'https://iris-api-sandbox.circle.com/v1/attestations';
 
-// CCTP V2 contract addresses differ between testnet and mainnet
-const CCTP_TOKEN_MESSENGER_V2 = IS_MAINNET
-  ? '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d'
-  : '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA';
+export const IRIS_FEE_MAINNET_URL = 'https://iris-api.circle.com/v2/burn/USDC/fees';
+export const IRIS_FEE_SANDBOX_URL = 'https://iris-api-sandbox.circle.com/v2/burn/USDC/fees';
 
-const CCTP_MSG_TRANSMITTER_V2 = IS_MAINNET
-  ? '0x81D40F21F12A8F0E3252Bccb954D722a4c464B64'
-  : '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275';
+// Default values based on active network
+export const IRIS_API_URL = ACTIVE_NETWORK === 'mainnet' ? IRIS_API_MAINNET_URL : IRIS_API_SANDBOX_URL;
+export const IRIS_FEE_URL = ACTIVE_NETWORK === 'mainnet' ? IRIS_FEE_MAINNET_URL : IRIS_FEE_SANDBOX_URL;
+
+export const CCTP_TOKEN_MESSENGER_V2 = ACTIVE_NETWORK === 'mainnet' ? CCTP_MAINNET_MESSENGER : CCTP_TESTNET_MESSENGER;
+export const CCTP_MSG_TRANSMITTER_V2 = ACTIVE_NETWORK === 'mainnet' ? CCTP_MAINNET_TRANSMITTER : CCTP_TESTNET_TRANSMITTER;
 
 // CCTP V2 finality thresholds
 // 1000 = Fast Transfer (fees apply — use fetchMinFee to get the required maxFee)
@@ -49,10 +50,11 @@ const FINALITY_STANDARD = 2000;
 
 async function fetchMinFeeForRoute(
   sourceDomain: number,
-  destDomain: number
+  destDomain: number,
+  feeApiUrl: string = IRIS_FEE_URL
 ): Promise<bigint> {
   try {
-    const res = await fetch(`${IRIS_FEE_URL}/${sourceDomain}/${destDomain}`, {
+    const res = await fetch(`${feeApiUrl}/${sourceDomain}/${destDomain}`, {
       headers: { Accept: "application/json" },
       cache: "no-store"
     });
@@ -76,14 +78,31 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Ethereum" as const,
     domain: 0,
     usdcAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-    tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
-    messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
+    tokenMessenger: CCTP_MAINNET_MESSENGER,
+    messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
       "https://ethereum.reth.rs/rpc",
       "https://rpc.ankr.com/eth",
       "https://eth.llamarpc.com",
     ],
-    icon: "🪙"
+    icon: "🪙",
+    isTestnet: false
+  },
+  ETH_MAINNET: {
+    id: 1,
+    name: "Ethereum",
+    bridgeKitId: "Ethereum" as const,
+    domain: 0,
+    usdcAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    tokenMessenger: CCTP_MAINNET_MESSENGER,
+    messageTransmitter: CCTP_MAINNET_TRANSMITTER,
+    rpcUrls: [
+      "https://ethereum.reth.rs/rpc",
+      "https://rpc.ankr.com/eth",
+      "https://eth.llamarpc.com",
+    ],
+    icon: "🪙",
+    isTestnet: false
   },
   BASE: {
     id: 8453,
@@ -91,13 +110,29 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Base" as const,
     domain: 6,
     usdcAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-    tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
-    messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
+    tokenMessenger: CCTP_MAINNET_MESSENGER,
+    messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
       "https://mainnet.base.org",
       "https://base.llamarpc.com",
     ],
-    icon: "🔵"
+    icon: "🔵",
+    isTestnet: false
+  },
+  BASE_MAINNET: {
+    id: 8453,
+    name: "Base",
+    bridgeKitId: "Base" as const,
+    domain: 6,
+    usdcAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    tokenMessenger: CCTP_MAINNET_MESSENGER,
+    messageTransmitter: CCTP_MAINNET_TRANSMITTER,
+    rpcUrls: [
+      "https://mainnet.base.org",
+      "https://base.llamarpc.com",
+    ],
+    icon: "🔵",
+    isTestnet: false
   },
   AVALANCHE: {
     id: 43114,
@@ -105,13 +140,53 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Avalanche" as const,
     domain: 1,
     usdcAddress: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
-    tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
-    messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
+    tokenMessenger: CCTP_MAINNET_MESSENGER,
+    messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
       "https://api.avax.network/ext/bc/C/rpc",
       "https://avalanche.public-rpc.com",
     ],
-    icon: "🔺"
+    icon: "🔺",
+    isTestnet: false
+  },
+  AVAX_MAINNET: {
+    id: 43114,
+    name: "Avalanche",
+    bridgeKitId: "Avalanche" as const,
+    domain: 1,
+    usdcAddress: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+    tokenMessenger: CCTP_MAINNET_MESSENGER,
+    messageTransmitter: CCTP_MAINNET_TRANSMITTER,
+    rpcUrls: [
+      "https://api.avax.network/ext/bc/C/rpc",
+      "https://avalanche.public-rpc.com",
+    ],
+    icon: "🔺",
+    isTestnet: false
+  },
+  SOL_MAINNET: {
+    id: 101,
+    name: "Solana",
+    bridgeKitId: "Solana" as const,
+    domain: 5,
+    usdcAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    tokenMessenger: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
+    messageTransmitter: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
+    rpcUrls: ["https://api.mainnet-beta.solana.com"],
+    icon: "☀️",
+    isTestnet: false
+  },
+  SOLANA: {
+    id: 101,
+    name: "Solana",
+    bridgeKitId: "Solana" as const,
+    domain: 5,
+    usdcAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    tokenMessenger: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
+    messageTransmitter: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
+    rpcUrls: ["https://api.mainnet-beta.solana.com"],
+    icon: "☀️",
+    isTestnet: false
   },
   // Testnet chains
   ETH_SEPOLIA: {
@@ -120,14 +195,15 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Ethereum_Sepolia" as const,
     domain: 0,
     usdcAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-    tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
-    messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
+    tokenMessenger: CCTP_TESTNET_MESSENGER,
+    messageTransmitter: CCTP_TESTNET_TRANSMITTER,
     rpcUrls: [
       "https://rpc.ankr.com/eth_sepolia",
       "https://ethereum-sepolia-rpc.publicnode.com",
       "https://eth-sepolia.public.blastapi.io",
     ],
-    icon: "🪙"
+    icon: "🪙",
+    isTestnet: true
   },
   BASE_SEPOLIA: {
     id: 84532,
@@ -135,13 +211,14 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Base_Sepolia" as const,
     domain: 6,
     usdcAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-    tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
-    messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
+    tokenMessenger: CCTP_TESTNET_MESSENGER,
+    messageTransmitter: CCTP_TESTNET_TRANSMITTER,
     rpcUrls: [
       "https://sepolia.base.org",
       "https://base-sepolia-rpc.publicnode.com",
     ],
-    icon: "🔵"
+    icon: "🔵",
+    isTestnet: true
   },
   AVAX_FUJI: {
     id: 43113,
@@ -149,13 +226,14 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Avalanche_Fuji" as const,
     domain: 1,
     usdcAddress: "0x5425890298aed601595a70AB815c96711a31Bc65",
-    tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
-    messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
+    tokenMessenger: CCTP_TESTNET_MESSENGER,
+    messageTransmitter: CCTP_TESTNET_TRANSMITTER,
     rpcUrls: [
       "https://api.avax-test.network/ext/bc/C/rpc",
       "https://avalanche-fuji-c-chain-rpc.publicnode.com",
     ],
-    icon: "🔺"
+    icon: "🔺",
+    isTestnet: true
   },
   SOL_DEVNET: {
     id: 103,
@@ -166,18 +244,34 @@ export const SOURCE_CHAINS = {
     tokenMessenger: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
     messageTransmitter: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
     rpcUrls: ["https://api.devnet.solana.com"],
-    icon: "☀️"
+    icon: "☀️",
+    isTestnet: true
   }
 } as const;
 
-export const ARC_CHAIN_CONFIG = IS_MAINNET ? {
+export const ARC_CHAIN_TESTNET_CONFIG = {
+  id: 5042002,
+  name: "Arc Testnet",
+  bridgeKitId: "Arc_Testnet" as const,
+  domain: 26,
+  usdcAddress: "0x3600000000000000000000000000000000000000" as `0x${string}`,
+  tokenMessenger: CCTP_TESTNET_MESSENGER,
+  messageTransmitter: CCTP_TESTNET_TRANSMITTER,
+  rpcUrl: ARC_RPC_URL,
+  rpcUrls: ARC_RPC_URLS,
+  icon: "⚡",
+  isTestnet: true,
+  blockExplorerUrl: "https://testnet.arcscan.app"
+} as const;
+
+export const ARC_CHAIN_MAINNET_CONFIG = {
   id: 5042,
   name: "Arc",
   bridgeKitId: "Arc" as const,
   domain: 26,
   usdcAddress: "0x3600000000000000000000000000000000000000" as `0x${string}`,
-  tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
-  messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
+  tokenMessenger: CCTP_MAINNET_MESSENGER,
+  messageTransmitter: CCTP_MAINNET_TRANSMITTER,
   rpcUrl: process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC || 'https://rpc.mainnet.arc.io',
   rpcUrls: [
     process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC,
@@ -186,19 +280,21 @@ export const ARC_CHAIN_CONFIG = IS_MAINNET ? {
     'https://rpc.mainnet.arc.io',
     'https://rpc.drpc.mainnet.arc.io',
   ].filter(Boolean) as string[],
-  icon: "⚡"
-} : {
-  id: 5042002,
-  name: "Arc Testnet",
-  bridgeKitId: "Arc_Testnet" as const,
-  domain: 26,
-  usdcAddress: "0x3600000000000000000000000000000000000000" as `0x${string}`,
-  tokenMessenger: CCTP_TOKEN_MESSENGER_V2,
-  messageTransmitter: CCTP_MSG_TRANSMITTER_V2,
-  rpcUrl: ARC_RPC_URL,
-  rpcUrls: ARC_RPC_URLS,
-  icon: "⚡"
-};
+  icon: "⚡",
+  isTestnet: false,
+  blockExplorerUrl: "https://explorer.arc.io"
+} as const;
+
+export function getArcChainConfig(isTestnet: boolean) {
+  return isTestnet ? ARC_CHAIN_TESTNET_CONFIG : ARC_CHAIN_MAINNET_CONFIG;
+}
+
+export const ARC_CHAIN_CONFIG = new Proxy({} as typeof ARC_CHAIN_MAINNET_CONFIG, {
+  get(_target, prop) {
+    const config = ACTIVE_NETWORK === 'mainnet' ? ARC_CHAIN_MAINNET_CONFIG : ARC_CHAIN_TESTNET_CONFIG;
+    return (config as any)[prop];
+  }
+});
 
 // ============================================================
 // ABIs
@@ -333,9 +429,10 @@ function extractMessageBytes(logs: any[]): `0x${string}` | null {
 // ============================================================
 async function pollAttestation(
   messageHash: string,
-  onElapsed: (s: number) => void
+  onElapsed: (s: number) => void,
+  apiUrl: string = IRIS_API_URL
 ): Promise<{ attestation: string; messageBytes: string | null }> {
-  const url = `${IRIS_API_URL}/${messageHash}`;
+  const url = `${apiUrl}/${messageHash}`;
   let elapsed = 0;
   let delayMs = 3000; // Start polling faster (3s vs old 5s)
   const MAX_WAIT_MS = 20 * 60 * 1000; // 20 minutes max
@@ -503,6 +600,10 @@ export function useCCTPBridge() {
     direction: "in" | "out" = "in"
   ) => {
     const chainConfig = SOURCE_CHAINS[sourceKey];
+    const isTestnetRoute = Boolean((chainConfig as any).isTestnet);
+    const arcConfig = getArcChainConfig(isTestnetRoute);
+    const irisApiUrl = isTestnetRoute ? IRIS_API_SANDBOX_URL : IRIS_API_MAINNET_URL;
+    const irisFeeUrl = isTestnetRoute ? IRIS_FEE_SANDBOX_URL : IRIS_FEE_MAINNET_URL;
 
     // Solana / Circle-wallet mock bridge simulation
     const isCircleConnected =
@@ -510,7 +611,7 @@ export function useCCTPBridge() {
       localStorage.getItem("synarc_circle_connected") === "true";
 
     if (isCircleConnected || chainConfig.id === 103) {
-      await executeSolanaMockBridge(chainConfig.name, amountString);
+      await executeSolanaMockBridge(chainConfig.name, arcConfig.name, amountString);
       return;
     }
 
@@ -539,6 +640,7 @@ export function useCCTPBridge() {
       await bridgeWithKit(
         activeWallet,
         chainConfig,
+        arcConfig,
         amountString,
         direction
       );
@@ -556,7 +658,7 @@ export function useCCTPBridge() {
     }
 
     // Manual CCTP fallback
-    await bridgeManual(activeWallet, chainConfig, amountString, direction);
+    await bridgeManual(activeWallet, chainConfig, arcConfig, irisApiUrl, irisFeeUrl, amountString, direction);
   };
 
   // -------------------------------------------------------
@@ -565,6 +667,7 @@ export function useCCTPBridge() {
   const bridgeWithKit = async (
     activeWallet: any,
     chainConfig: (typeof SOURCE_CHAINS)[keyof typeof SOURCE_CHAINS],
+    arcConfig: typeof ARC_CHAIN_MAINNET_CONFIG | typeof ARC_CHAIN_TESTNET_CONFIG,
     amountString: string,
     direction: "in" | "out"
   ) => {
@@ -601,8 +704,8 @@ export function useCCTPBridge() {
 
     const kit = new BridgeKit();
 
-    const fromChainId = direction === "in" ? chainConfig.bridgeKitId : ARC_CHAIN_CONFIG.bridgeKitId;
-    const toChainId   = direction === "in" ? ARC_CHAIN_CONFIG.bridgeKitId : chainConfig.bridgeKitId;
+    const fromChainId = direction === "in" ? chainConfig.bridgeKitId : arcConfig.bridgeKitId;
+    const toChainId   = direction === "in" ? arcConfig.bridgeKitId : chainConfig.bridgeKitId;
 
     // Wire up Kit events → bridge state
     setState({ ...INITIAL_STATE, status: "approving", progress: 5, stepDetail: "Requesting USDC approval…" });
@@ -634,7 +737,7 @@ export function useCCTPBridge() {
         ...prev,
         status: "waiting-attestation",
         progress: 65,
-        stepDetail: `Circle attestation received — switching to ${ARC_CHAIN_CONFIG.name}…`
+        stepDetail: `Circle attestation received — switching to ${arcConfig.name}…`
       }));
       // Stop elapsed timer since we have the attestation
       if (timerRef.current) {
@@ -649,7 +752,7 @@ export function useCCTPBridge() {
         ...prev,
         status: "minting",
         progress: 85,
-        stepDetail: `Minting USDC on ${ARC_CHAIN_CONFIG.name}…`
+        stepDetail: `Minting USDC on ${arcConfig.name}…`
       }));
     });
 
@@ -657,7 +760,7 @@ export function useCCTPBridge() {
     setState(prev => ({ ...prev, status: "burning", progress: 25, stepDetail: "Broadcasting burn transaction…" }));
 
     // Switch to correct source chain before Kit executes
-    await switchToChain(activeWallet, direction === "in" ? chainConfig : ARC_CHAIN_CONFIG, switchChainAsync);
+    await switchToChain(activeWallet, direction === "in" ? chainConfig : arcConfig, switchChainAsync);
 
     // Start attestation elapsed timer
     timerRef.current = setInterval(() => {
@@ -691,7 +794,7 @@ export function useCCTPBridge() {
       progress: 100,
       txHash: mintStep?.txHash || "",
       burnTxHash: burnStep?.txHash || prev.burnTxHash,
-      stepDetail: `Bridge complete! Funds arrived on ${ARC_CHAIN_CONFIG.name}.`
+      stepDetail: `Bridge complete! Funds arrived on ${arcConfig.name}.`
     }));
 
     console.log("[Kit] Bridge complete:", result);
@@ -703,22 +806,22 @@ export function useCCTPBridge() {
   const bridgeManual = async (
     activeWallet: any,
     chainConfig: (typeof SOURCE_CHAINS)[keyof typeof SOURCE_CHAINS],
+    arcConfig: typeof ARC_CHAIN_MAINNET_CONFIG | typeof ARC_CHAIN_TESTNET_CONFIG,
+    irisApiUrl: string,
+    irisFeeUrl: string,
     amountString: string,
     direction: "in" | "out"
   ) => {
     const amount = parseFloat(amountString);
     const numericAmount = BigInt(Math.round(amount * 1_000_000));
 
-    // Look up per-route fee so we can correctly set maxFee for fast transfers.
-    // On testnet we use STANDARD (free) to avoid "Insufficient max fee" reverts.
-    // Fast transfers require: maxFee >= minimumFee from Iris fee API.
-    const sourceDomain = (direction === "in" ? chainConfig : ARC_CHAIN_CONFIG).domain;
-    const destDomain   = (direction === "in" ? ARC_CHAIN_CONFIG : chainConfig).domain;
-    const fastMinFee = await fetchMinFeeForRoute(sourceDomain, destDomain);
-    console.log(`[CCTP] Route ${sourceDomain}→${destDomain} fast min fee:`, fastMinFee.toString(), "(USDC micro)");
+    const sourceChainConfig = direction === "in" ? chainConfig : arcConfig;
+    const destChainConfig   = direction === "in" ? arcConfig : chainConfig;
 
-    const sourceChainConfig = direction === "in" ? chainConfig : ARC_CHAIN_CONFIG;
-    const destChainConfig   = direction === "in" ? ARC_CHAIN_CONFIG : chainConfig;
+    const sourceDomain = sourceChainConfig.domain;
+    const destDomain   = destChainConfig.domain;
+    const fastMinFee = await fetchMinFeeForRoute(sourceDomain, destDomain, irisFeeUrl);
+    console.log(`[CCTP] Route ${sourceDomain}→${destDomain} fast min fee:`, fastMinFee.toString(), "(USDC micro)");
 
     console.log("[CCTP Manual] Bridge start:", {
       direction,
@@ -790,8 +893,8 @@ export function useCCTPBridge() {
         account: address,
         chain: sourceChainObj
       };
-      if ((sourceChainConfig as any).id === 5042002) {
-        approveParams.gas = 200000n;
+      if ((sourceChainConfig as any).id === 5042002 || (sourceChainConfig as any).id === 5042) {
+        approveParams.gas = 250000n;
         approveParams.gasPrice = 10000000n;
       }
 
@@ -832,18 +935,22 @@ export function useCCTPBridge() {
 
       // CCTP V2 depositForBurn parameters:
       //   minFinalityThreshold: 2000 = Standard (free) — avoids "Insufficient max fee" reverts.
-      //   maxFee: 0n for Standard (not charged). If upgrading to Fast: maxFee >= fetchMinFeeForRoute().
+      //   If route is fast and free (fastMinFee == 0n, e.g. outbound Arc -> Sepolia/Ethereum), fast finality (1000) can be used.
+      const isFreeFast = fastMinFee === 0n;
+      const minFinality = isFreeFast ? 1000 : FINALITY_STANDARD;
+      const maxFee = 0n;
+
       const burnData = encodeFunctionData({
         abi: tokenMessengerV2Abi,
         functionName: "depositForBurn",
         args: [
           numericAmount,
-          (destChainConfig as any).domain as unknown as number,
+          destDomain as unknown as number,
           mintRecipientBytes32,
           (sourceChainConfig as any).usdcAddress as `0x${string}`,
           zeroBytes32,
-          0n,              // maxFee: 0 for Standard transfers (free)
-          FINALITY_STANDARD // minFinalityThreshold: 2000 = Standard (no fee)
+          maxFee,
+          minFinality
         ]
       });
 
@@ -853,7 +960,7 @@ export function useCCTPBridge() {
         account: address,
         chain: sourceChainObj
       };
-      if ((sourceChainConfig as any).id === 5042002) {
+      if ((sourceChainConfig as any).id === 5042002 || (sourceChainConfig as any).id === 5042) {
         burnParams.gas = 400000n;
         burnParams.gasPrice = 10000000n;
       }
@@ -951,7 +1058,8 @@ export function useCCTPBridge() {
           (secs) => setState(prev => ({
             ...prev,
             stepDetail: `Circle signing attestation… (${secs}s)`
-          }))
+          })),
+          irisApiUrl
         );
         attestation = result.attestation;
         apiMessageBytes = result.messageBytes;
@@ -1059,7 +1167,7 @@ export function useCCTPBridge() {
   // -------------------------------------------------------
   // Mock Solana / Circle wallet bridge simulation
   // -------------------------------------------------------
-  const executeSolanaMockBridge = async (chainName: string, amountString: string) => {
+  const executeSolanaMockBridge = async (chainName: string, arcName: string, amountString: string) => {
     try {
       setState({ ...INITIAL_STATE, status: "approving", progress: 5, stepDetail: "Connecting to Circle bridge…" });
       await new Promise(r => setTimeout(r, 1800));
@@ -1091,7 +1199,7 @@ export function useCCTPBridge() {
         timerRef.current = null;
       }
 
-      setState(prev => ({ ...prev, status: "minting", progress: 85, stepDetail: `Minting USDC on ${ARC_CHAIN_CONFIG.name}…` }));
+      setState(prev => ({ ...prev, status: "minting", progress: 85, stepDetail: `Minting USDC on ${arcName}…` }));
       await new Promise(r => setTimeout(r, 2000));
 
       const mockHash = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");

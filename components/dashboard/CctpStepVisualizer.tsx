@@ -77,6 +77,13 @@ export function CctpStepVisualizer({ txState }: { txState: CctpTxState }) {
     }
   };
 
+  const isTestnetTransfer = 
+    sourceChain.toLowerCase().includes("sepolia") ||
+    sourceChain.toLowerCase().includes("fuji") ||
+    sourceChain.toLowerCase().includes("devnet") ||
+    sourceChain.toLowerCase().includes("testnet") ||
+    destChain.toLowerCase().includes("testnet");
+
   const getChainExplorerLink = (chainName: string, txHash: string) => {
     const lower = chainName.toLowerCase();
     if (lower.includes("sepolia") && lower.includes("ethereum")) {
@@ -97,7 +104,10 @@ export function CctpStepVisualizer({ txState }: { txState: CctpTxState }) {
     if (lower.includes("avalanche")) {
       return `https://snowtrace.io/tx/${txHash}`;
     }
-    return IS_MAINNET ? `https://arcscan.app/tx/${txHash}` : `https://testnet.arcscan.app/tx/${txHash}`;
+    if (lower.includes("testnet")) {
+      return `https://testnet.arcscan.app/tx/${txHash}`;
+    }
+    return `https://explorer.arc.io/tx/${txHash}`;
   };
 
   const steps = [
@@ -112,7 +122,7 @@ export function CctpStepVisualizer({ txState }: { txState: CctpTxState }) {
     },
     {
       title: "Circle Consensus Attestation",
-      description: IS_MAINNET ? "Polling Circle Iris API" : "Polling Circle Sandbox Iris API",
+      description: isTestnetTransfer ? "Polling Circle Sandbox Iris API" : "Polling Circle Production Iris API",
       icon: Search,
       color: "text-purple-400",
       activeColor: "bg-purple-500/10 border-purple-500/30 text-purple-400",
