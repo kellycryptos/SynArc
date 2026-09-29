@@ -1,6 +1,10 @@
 import { ethers } from "hardhat";
 import * as fs from "fs";
 import * as path from "path";
+import * as dotenv from "dotenv";
+
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 /**
  * deployMainnet.ts
@@ -11,7 +15,13 @@ import * as path from "path";
  * 4. Authorizes Operator Agent & Forensic Sentinel Reviewers
  */
 async function main() {
-  const [deployer] = await ethers.getSigners();
+  const signers = await ethers.getSigners();
+  if (!signers || signers.length === 0) {
+    console.error("\n❌ ERROR: No deployer signer configured.");
+    console.error("👉 Please open .env.local and paste your private key in DEPLOYER_PRIVATE_KEY='...'\n");
+    process.exit(1);
+  }
+  const [deployer] = signers;
   const network = await ethers.provider.getNetwork();
   console.log(`\n================================================================`);
   console.log(`🚀 DEPLOYING TAMEION ADVERSARIAL MESH ON ARC MAINNET (5042)`);

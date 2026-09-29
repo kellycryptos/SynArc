@@ -1,10 +1,16 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import * as dotenv from "dotenv";
+import * as path from "path";
 
-dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
-const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000";
+const rawDeployerKey = (process.env.DEPLOYER_PRIVATE_KEY || "").trim().replace(/['"]/g, "");
+const DEPLOYER_PRIVATE_KEY = rawDeployerKey.length > 0
+  ? (rawDeployerKey.startsWith("0x") ? rawDeployerKey : `0x${rawDeployerKey}`)
+  : "0x0000000000000000000000000000000000000000000000000000000000000000";
+const hasDeployerKey = DEPLOYER_PRIVATE_KEY !== "0x0000000000000000000000000000000000000000000000000000000000000000" && DEPLOYER_PRIVATE_KEY.length === 66;
 
 // RPC priority (testnet): Arc official → Canteen CLI testnet node (optional) → Alchemy → hardcoded fallback
 // Note: Canteen's RPC is bundled into their ARC CLI and targets their hosted testnet node.
@@ -42,24 +48,24 @@ const config: HardhatUserConfig = {
     arcTestnet: {
       url: ARC_RPC_URL,
       chainId: 5042002,
-      accounts: DEPLOYER_PRIVATE_KEY !== "0x0000000000000000000000000000000000000000000000000000000000000000" ? [DEPLOYER_PRIVATE_KEY] : [],
+      accounts: hasDeployerKey ? [DEPLOYER_PRIVATE_KEY] : [],
     },
     // Alias used by the ArcScan verify command (--network arc-testnet)
     "arc-testnet": {
       url: ARC_RPC_URL,
       chainId: 5042002,
-      accounts: DEPLOYER_PRIVATE_KEY !== "0x0000000000000000000000000000000000000000000000000000000000000000" ? [DEPLOYER_PRIVATE_KEY] : [],
+      accounts: hasDeployerKey ? [DEPLOYER_PRIVATE_KEY] : [],
     },
     // Arc Mainnet (Chain ID 5042)
     arcMainnet: {
       url: ARC_MAINNET_RPC_URL,
       chainId: 5042,
-      accounts: DEPLOYER_PRIVATE_KEY !== "0x0000000000000000000000000000000000000000000000000000000000000000" ? [DEPLOYER_PRIVATE_KEY] : [],
+      accounts: hasDeployerKey ? [DEPLOYER_PRIVATE_KEY] : [],
     },
     "arc-mainnet": {
       url: ARC_MAINNET_RPC_URL,
       chainId: 5042,
-      accounts: DEPLOYER_PRIVATE_KEY !== "0x0000000000000000000000000000000000000000000000000000000000000000" ? [DEPLOYER_PRIVATE_KEY] : [],
+      accounts: hasDeployerKey ? [DEPLOYER_PRIVATE_KEY] : [],
     },
   },
   etherscan: {

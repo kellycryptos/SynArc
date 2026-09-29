@@ -144,29 +144,30 @@ const MAINNET_SOURCE_CHAINS = [
   },
 ];
 
-const SOURCE_CHAINS = IS_MAINNET ? MAINNET_SOURCE_CHAINS : TESTNET_SOURCE_CHAINS;
+const ARC_CHAIN_MAINNET = {
+  id: "ARC_MAINNET",
+  name: "Arc",
+  icon: "⚡",
+  color: "bg-amber-500/10 border-amber-500/20 text-amber-500",
+  chainId: 5042,
+  bgClass: "from-amber-500/20 to-transparent",
+  borderClass: "border-amber-500/30",
+  blockExplorerUrl: "https://explorer.arc.io"
+};
 
-const ARC_CHAIN = IS_MAINNET
-  ? {
-      id: "ARC_MAINNET",
-      name: "Arc Mainnet",
-      icon: "⚡",
-      color: "bg-amber-500/10 border-amber-500/20 text-amber-500",
-      chainId: 5042,
-      bgClass: "from-amber-500/20 to-transparent",
-      borderClass: "border-amber-500/30",
-      blockExplorerUrl: "https://arcscan.app"
-    }
-  : {
-      id: "ARC_TESTNET",
-      name: "Arc Testnet",
-      icon: "⚡",
-      color: "bg-amber-500/10 border-amber-500/20 text-amber-500",
-      chainId: 5042002,
-      bgClass: "from-amber-500/20 to-transparent",
-      borderClass: "border-amber-500/30",
-      blockExplorerUrl: "https://testnet.arcscan.app"
-    };
+const ARC_CHAIN_TESTNET = {
+  id: "ARC_TESTNET",
+  name: "Arc Testnet",
+  icon: "⚡",
+  color: "bg-amber-500/10 border-amber-500/20 text-amber-500",
+  chainId: 5042002,
+  bgClass: "from-amber-500/20 to-transparent",
+  borderClass: "border-amber-500/30",
+  blockExplorerUrl: "https://testnet.arcscan.app"
+};
+
+const SOURCE_CHAINS = IS_MAINNET ? MAINNET_SOURCE_CHAINS : TESTNET_SOURCE_CHAINS;
+const ARC_CHAIN = IS_MAINNET ? ARC_CHAIN_MAINNET : ARC_CHAIN_TESTNET;
 
 interface BridgeTx {
   id: string;
@@ -197,12 +198,21 @@ export default function BridgePage() {
   // Arc USDC balance
   const { balance: arcUSDCBalance, refetch: refetchArcUSDC, isFetching: arcFetching } = useUSDCBalance(walletAddress);
 
-  // Real CCTP bridge hook — handles approve → burn → attest → mint
+  // Real CCTP bridge hook — handles approve → burn → attest → mint via App Kit / Bridge Kit
   const { state: bridgeState, bridgeUSDC, resetState: resetBridgeState } = useCCTPBridge();
+
+  const [bridgeNetwork, setBridgeNetwork] = useState<"mainnet" | "testnet">(
+    IS_MAINNET ? "mainnet" : "testnet"
+  );
+
+  const activeSourceChains = bridgeNetwork === "mainnet" ? MAINNET_SOURCE_CHAINS : TESTNET_SOURCE_CHAINS;
+  const activeArcChain = bridgeNetwork === "mainnet" ? ARC_CHAIN_MAINNET : ARC_CHAIN_TESTNET;
 
   const [direction, setDirection] = useState<"in" | "out">("in");
   const [switchingNetwork, setSwitchingNetwork] = useState(false);
-  const [selectedChain, setSelectedChain] = useState(SOURCE_CHAINS[0]);
+  const [selectedChain, setSelectedChain] = useState(
+    IS_MAINNET ? MAINNET_SOURCE_CHAINS[0] : TESTNET_SOURCE_CHAINS[0]
+  );
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [sourceBalance, setSourceBalance] = useState<string>("0.00");
@@ -216,11 +226,32 @@ export default function BridgePage() {
   const [bridgeHistory, setBridgeHistory] = useState<BridgeTx[]>([]);
   const [historyOpen, setHistoryOpen] = useState(true);
 
+  // Network mode switch handler
+  const handleNetworkChange = (newNet: "mainnet" | "testnet") => {
+    if (newNet === bridgeNetwork) return;
+    setBridgeNetwork(newNet);
+    const targetChains = newNet === "mainnet" ? MAINNET_SOURCE_CHAINS : TESTNET_SOURCE_CHAINS;
+    let match = targetChains[0];
+    if (selectedChain.id.startsWith("ETH")) {
+      match = targetChains.find(c => c.id.startsWith("ETH")) || targetChains[0];
+    } else if (selectedChain.id.startsWith("BASE")) {
+      match = targetChains.find(c => c.id.startsWith("BASE")) || targetChains[0];
+    } else if (selectedChain.id.startsWith("AVAX")) {
+      match = targetChains.find(c => c.id.startsWith("AVAX")) || targetChains[0];
+    } else if (selectedChain.id.startsWith("SOL")) {
+      match = targetChains.find(c => c.id.startsWith("SOL")) || targetChains[0];
+    }
+    setSelectedChain(match);
+    setAmount("");
+    resetBridgeState();
+    setProgressState("idle");
+  };
+
   // Switch/Add network helper
   const handleSwitchNetwork = async () => {
     setSwitchingNetwork(true);
     try {
-      const targetChainId = direction === "in" ? selectedChain.chainId : ARC_CHAIN.chainId;
+      const targetChainId = direction === "in" ? selectedChain.chainId : activeArcChain.chainId;
       if (targetChainId > 0 && switchChainAsync) {
         try {
           await switchChainAsync({ chainId: targetChainId });
@@ -254,7 +285,7 @@ export default function BridgePage() {
           chainParams = {
             chainId: "0xaa36a7", // 11155111 hex
             chainName: "Ethereum Sepolia",
-            rpcUrls: ["https://rpc.ankr.com/eth_sepolia"],
+            rpcUrls: ["https://rpc.ankr.com/eth_sepolia", "https://ethereum-sepolia-rpc.publicnode.com"],
             nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
             blockExplorerUrls: ["https://sepolia.etherscan.io"],
           };
@@ -262,7 +293,7 @@ export default function BridgePage() {
           chainParams = {
             chainId: "0x14a34", // 84532 hex
             chainName: "Base Sepolia",
-            rpcUrls: ["https://sepolia.base.org"],
+            rpcUrls: ["https://sepolia.base.org", "https://base-sepolia-rpc.publicnode.com"],
             nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
             blockExplorerUrls: ["https://sepolia.basescan.org"],
           };
@@ -274,18 +305,52 @@ export default function BridgePage() {
             nativeCurrency: { name: "Avalanche", symbol: "AVAX", decimals: 18 },
             blockExplorerUrls: ["https://testnet.snowtrace.io"],
           };
+        } else if (selectedChain.id === "ETH_MAINNET") {
+          chainParams = {
+            chainId: "0x1", // 1 hex
+            chainName: "Ethereum Mainnet",
+            rpcUrls: ["https://eth.llamarpc.com", "https://rpc.ankr.com/eth"],
+            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+            blockExplorerUrls: ["https://etherscan.io"],
+          };
+        } else if (selectedChain.id === "BASE_MAINNET") {
+          chainParams = {
+            chainId: "0x2105", // 8453 hex
+            chainName: "Base",
+            rpcUrls: ["https://mainnet.base.org", "https://base.llamarpc.com"],
+            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+            blockExplorerUrls: ["https://basescan.org"],
+          };
+        } else if (selectedChain.id === "AVAX_MAINNET") {
+          chainParams = {
+            chainId: "0xa86a", // 43114 hex
+            chainName: "Avalanche C-Chain",
+            rpcUrls: ["https://api.avax.network/ext/bc/C/rpc"],
+            nativeCurrency: { name: "Avalanche", symbol: "AVAX", decimals: 18 },
+            blockExplorerUrls: ["https://snowtrace.io"],
+          };
         }
       } else {
-        chainParams = {
-          chainId: "0x4cef52", // 5042002 hex
-          chainName: "Arc Testnet",
-          rpcUrls: ["https://rpc.testnet.arc.io"],
-          nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 6 },
-          blockExplorerUrls: ["https://testnet.arcscan.app"],
-        };
+        if (bridgeNetwork === "mainnet") {
+          chainParams = {
+            chainId: "0x13b2", // 5042 hex
+            chainName: "Arc",
+            rpcUrls: ["https://rpc.mainnet.arc.io", "https://rpc.mainnet.arc.network"],
+            nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 6 },
+            blockExplorerUrls: ["https://explorer.arc.io"],
+          };
+        } else {
+          chainParams = {
+            chainId: "0x4cef52", // 5042002 hex
+            chainName: "Arc Testnet",
+            rpcUrls: ["https://rpc.testnet.arc.io"],
+            nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 6 },
+            blockExplorerUrls: ["https://testnet.arcscan.app"],
+          };
+        }
       }
       
-      if (chainParams) {
+      if (chainParams && provider) {
         await provider.request({
           method: "wallet_addEthereumChain",
           params: [chainParams],
@@ -328,17 +393,17 @@ export default function BridgePage() {
           const amountFinal = parseFloat(amount);
           const newTx: BridgeTx = {
             id: "b_" + Date.now(),
-            sourceChain: direction === "in" ? selectedChain.name : "Arc Testnet",
+            sourceChain: direction === "in" ? selectedChain.name : activeArcChain.name,
             sourceIcon: direction === "in" ? selectedChain.icon : "⚡",
-            destChain: direction === "in" ? "Arc Testnet" : selectedChain.name,
+            destChain: direction === "in" ? activeArcChain.name : selectedChain.name,
             destIcon: direction === "in" ? "⚡" : selectedChain.icon,
             amount: isNaN(amountFinal) ? 0 : amountFinal,
             txHash: primaryTxHash,
             timestamp: new Date().toISOString(),
             status: "success",
             explorerUrl: direction === "in"
-              ? `${selectedChain.blockExplorerUrl}/tx/${primaryTxHash}`
-              : `https://testnet.arcscan.app/tx/${primaryTxHash}`
+              ? `${activeArcChain.blockExplorerUrl}/tx/${primaryTxHash}`
+              : `${selectedChain.blockExplorerUrl}/tx/${primaryTxHash}`
           };
           const updated = [newTx, ...prev];
           if (walletAddress) {
@@ -357,7 +422,7 @@ export default function BridgePage() {
       setProgressState("error");
       setErrorMessage(bridgeState.errorMessage || "Bridge transaction failed.");
     }
-  }, [bridgeState.status, bridgeState.txHash, bridgeState.burnTxHash, bridgeState.errorMessage, refetchArcUSDC, amount, selectedChain, walletAddress, direction]);
+  }, [bridgeState.status, bridgeState.txHash, bridgeState.burnTxHash, bridgeState.errorMessage, refetchArcUSDC, amount, selectedChain, walletAddress, direction, activeArcChain]);
 
   // Load history from localStorage — always keyed by wallet address.
   // When wallet disconnects (walletAddress becomes null/undefined) we clear the
@@ -387,7 +452,7 @@ export default function BridgePage() {
       return;
     }
 
-    if (selectedChain.id === "SOL_DEVNET") {
+    if (selectedChain.id === "SOL_DEVNET" || selectedChain.id === "SOL_MAINNET") {
       setSourceBalance("640.00");
       return;
     }
@@ -426,8 +491,8 @@ export default function BridgePage() {
   }, [selectedChain, walletAddress, fetchSourceBalance]);
 
   // Determine what is currently "From" and what is "To"
-  const fromChain = direction === "in" ? selectedChain : ARC_CHAIN;
-  const toChain = direction === "in" ? ARC_CHAIN : selectedChain;
+  const fromChain = direction === "in" ? selectedChain : activeArcChain;
+  const toChain = direction === "in" ? activeArcChain : selectedChain;
 
   const fromBalance = direction === "in" ? sourceBalance : (arcUSDCBalance || "0.00");
   const toBalance = direction === "in" ? (arcUSDCBalance || "0.00") : sourceBalance;
@@ -438,13 +503,13 @@ export default function BridgePage() {
   // Wallet and network alignment check
   const requiresNetworkSwitch = useMemo(() => {
     if (!isConnected || !walletChainId) return false;
-    const expectedChainId = direction === "in" ? selectedChain.chainId : ARC_CHAIN.chainId;
+    const expectedChainId = direction === "in" ? selectedChain.chainId : activeArcChain.chainId;
     
-    // Solana devnet doesn't require EVM wallet switch checks
-    if (direction === "in" && selectedChain.id === "SOL_DEVNET") return false;
+    // Solana chains don't require EVM wallet switch checks
+    if (direction === "in" && (selectedChain.id === "SOL_DEVNET" || selectedChain.id === "SOL_MAINNET")) return false;
 
     return walletChainId !== expectedChainId;
-  }, [isConnected, walletChainId, direction, selectedChain, ARC_CHAIN.chainId]);
+  }, [isConnected, walletChainId, direction, selectedChain, activeArcChain.chainId]);
 
   const handleMaxClick = () => {
     setAmount(fromBalance);
