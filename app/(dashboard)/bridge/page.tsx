@@ -612,15 +612,43 @@ export default function BridgePage() {
             <GlassCard hover={false} className="p-6 border border-border-thin/80 shadow-2xl rounded-3xl relative overflow-hidden backdrop-blur-xl bg-surface-elevated/45">
               
               {/* Settings / Title Area */}
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-base text-white flex items-center gap-2">
-                  <span>🌉</span> Bridge Assets
-                </h3>
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
+                <div className="flex items-center gap-3">
+                  <h3 className="font-bold text-base text-white flex items-center gap-2">
+                    <span>🌉</span> Bridge Assets
+                  </h3>
+
+                  {/* Network Mode Switcher (Mainnet vs Testnet) */}
+                  <div className="flex items-center bg-[#160B2E]/90 border border-border-thin rounded-xl p-0.5 shadow-inner">
+                    <button
+                      type="button"
+                      onClick={() => handleNetworkChange("mainnet")}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        bridgeNetwork === "mainnet"
+                          ? "bg-primary text-black shadow-md font-extrabold"
+                          : "text-muted hover:text-white"
+                      }`}
+                    >
+                      Mainnet
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleNetworkChange("testnet")}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        bridgeNetwork === "testnet"
+                          ? "bg-amber-500 text-black shadow-md font-extrabold"
+                          : "text-muted hover:text-white"
+                      }`}
+                    >
+                      Testnet
+                    </button>
+                  </div>
+                </div>
                 
                 <div className="flex items-center gap-2.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full flex items-center gap-1">
                     <Zap className="w-3 h-3 text-primary animate-pulse" />
-                    CCTP Instant
+                    CCTP Instant ({bridgeNetwork === "mainnet" ? "Iris Prod" : "Iris Sandbox"})
                   </span>
                 </div>
               </div>
@@ -662,7 +690,7 @@ export default function BridgePage() {
 
                             {dropdownOpen && (
                               <div className="absolute right-0 mt-1.5 z-20 w-48 bg-[#160B2E]/95 border border-border-thin backdrop-blur-xl rounded-xl shadow-xl overflow-hidden py-1">
-                                {SOURCE_CHAINS.map((chain) => (
+                                {activeSourceChains.map((chain) => (
                                   <button
                                     key={chain.id}
                                     type="button"
@@ -678,7 +706,7 @@ export default function BridgePage() {
                                   >
                                     <span className="text-sm select-none">{chain.icon}</span>
                                     <span>{chain.name}</span>
-                                    {chain.id === "SOL_DEVNET" && (
+                                    {(chain.id === "SOL_DEVNET" || chain.id === "SOL_MAINNET") && (
                                       <span className="ml-auto text-[9px] font-extrabold text-muted-foreground bg-surface-elevated px-1.5 py-0.5 rounded border border-border-thin select-none">SOON</span>
                                     )}
                                   </button>
@@ -767,7 +795,7 @@ export default function BridgePage() {
 
                             {dropdownOpen && (
                               <div className="absolute right-0 mt-1.5 z-20 w-48 bg-[#160B2E]/95 border border-border-thin backdrop-blur-xl rounded-xl shadow-xl overflow-hidden py-1">
-                                {SOURCE_CHAINS.map((chain) => (
+                                {activeSourceChains.map((chain) => (
                                   <button
                                     key={chain.id}
                                     type="button"
@@ -901,7 +929,7 @@ export default function BridgePage() {
                           </>
                         ) : (
                           <>
-                            <span>Switch Network to {direction === "in" ? fromChain.name : ARC_CHAIN.name}</span>
+                            <span>Switch Network to {direction === "in" ? fromChain.name : activeArcChain.name}</span>
                           </>
                         )}
                       </button>
@@ -965,7 +993,7 @@ export default function BridgePage() {
                                 Burn Transaction (Origin)
                               </span>
                               <a
-                                href={direction === "in" ? `${selectedChain.blockExplorerUrl}/tx/${bridgeState.burnTxHash}` : `https://testnet.arcscan.app/tx/${bridgeState.burnTxHash}`}
+                                href={direction === "in" ? `${selectedChain.blockExplorerUrl}/tx/${bridgeState.burnTxHash}` : `${activeArcChain.blockExplorerUrl}/tx/${bridgeState.burnTxHash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-primary hover:underline font-mono font-bold flex items-center gap-1"
@@ -983,7 +1011,7 @@ export default function BridgePage() {
                                 Mint Transaction (Dest)
                               </span>
                               <a
-                                href={direction === "in" ? `${ARC_CHAIN.blockExplorerUrl}/tx/${activeTxHash}` : `${selectedChain.blockExplorerUrl}/tx/${activeTxHash}`}
+                                href={direction === "in" ? `${activeArcChain.blockExplorerUrl}/tx/${activeTxHash}` : `${selectedChain.blockExplorerUrl}/tx/${activeTxHash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-primary hover:underline font-mono font-bold flex items-center gap-1"
@@ -1085,7 +1113,7 @@ export default function BridgePage() {
                           <div className="flex items-center gap-1.5 font-medium">
                             <span>{tx.sourceChain}</span>
                             <ArrowRight className="w-3.5 h-3.5 text-text-tertiary" />
-                            <span className="text-primary font-bold">{tx.destChain || ARC_CHAIN.name}</span>
+                            <span className="text-primary font-bold">{tx.destChain || activeArcChain.name}</span>
                           </div>
                         </td>
                         <td className="py-3.5 font-mono font-bold text-white">
@@ -1102,7 +1130,7 @@ export default function BridgePage() {
                         </td>
                         <td className="py-3.5 text-right pr-2">
                           <a 
-                            href={tx.explorerUrl || (tx.sourceChain.toLowerCase().includes("arc") ? `${ARC_CHAIN.blockExplorerUrl}/tx/${tx.txHash}` : (IS_MAINNET ? `https://etherscan.io/tx/${tx.txHash}` : `https://sepolia.etherscan.io/tx/${tx.txHash}`))}
+                            href={tx.explorerUrl || (tx.sourceChain.toLowerCase().includes("arc") ? `${activeArcChain.blockExplorerUrl}/tx/${tx.txHash}` : (bridgeNetwork === "mainnet" ? `https://etherscan.io/tx/${tx.txHash}` : `https://sepolia.etherscan.io/tx/${tx.txHash}`))}
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="text-primary hover:underline font-mono text-[11px] inline-flex items-center gap-1"
