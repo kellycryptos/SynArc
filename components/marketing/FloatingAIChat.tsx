@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { X, Send, MessageSquare, Bot, Loader2 } from "lucide-react";
+import { X, Send, MessageSquare } from "lucide-react";
+import { BotAvatar } from "bot-avatars";
+import { ThinkingOrb } from "thinking-orbs";
+import { BorderBeam } from "border-beam";
 
 export function FloatingAIChat() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -49,11 +52,13 @@ export function FloatingAIChat() {
         <div className="w-80 sm:w-96 h-[450px] rounded-2xl border border-primary/20 bg-background/90 backdrop-blur-lg shadow-2xl flex flex-col overflow-hidden mb-4 glass-card">
           {/* Chat Header */}
           <div className="p-4 bg-gradient-to-r from-primary/30 to-accent/30 border-b border-border-thin flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <Bot className="w-5 h-5 text-primary animate-pulse" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <BotAvatar type="mech" size={32} state={sendingChat ? "working" : "default"} />
+              </div>
               <div>
                 <h4 className="text-xs font-bold text-white tracking-wide">Syn DAO AI Companion</h4>
-                <span className="text-[9px] text-muted block">Online · AI Assistant</span>
+                <span className="text-[9px] text-muted block">Online · Autonomous Assistant</span>
               </div>
             </div>
             <button
@@ -84,31 +89,35 @@ export function FloatingAIChat() {
             ))}
             {sendingChat && (
               <div className="flex justify-start">
-                <div className="bg-surface border border-border-thin text-text-secondary p-3 rounded-2xl rounded-tl-none flex items-center gap-1.5">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-                  <span>Thinking...</span>
+                <div className="bg-surface border border-border-thin text-text-secondary p-2.5 px-3 rounded-2xl rounded-tl-none flex items-center gap-2.5 shadow-sm">
+                  <ThinkingOrb state="composing" size={20} theme="dark" />
+                  <span className="text-[11px] font-mono text-primary animate-pulse">Generating response...</span>
                 </div>
               </div>
             )}
           </div>
 
           {/* Chat Input */}
-          <form onSubmit={handleSendChat} className="p-3 border-t border-border-thin flex gap-2">
-            <input
-              type="text"
-              placeholder="Ask a question about Syn DAO..."
-              disabled={sendingChat}
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-xl bg-surface border border-border-thin text-xs text-white placeholder-muted focus:border-primary outline-none transition-colors"
-            />
-            <button
-              type="submit"
-              disabled={sendingChat || !chatInput.trim()}
-              className="p-2 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep disabled:opacity-50 transition-colors cursor-pointer"
-            >
-              <Send className="w-4 h-4" />
-            </button>
+          <form onSubmit={handleSendChat} className="p-3 border-t border-border-thin">
+            <BorderBeam size="line" colorVariant="ocean" active={sendingChat} className="w-full">
+              <div className="flex gap-2 w-full">
+                <input
+                  type="text"
+                  placeholder="Ask a question about Syn DAO..."
+                  disabled={sendingChat}
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  className="flex-1 px-3 py-2 rounded-xl bg-surface border border-border-thin text-xs text-white placeholder-muted focus:border-primary outline-none transition-colors"
+                />
+                <button
+                  type="submit"
+                  disabled={sendingChat || !chatInput.trim()}
+                  className="p-2 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep disabled:opacity-50 transition-colors cursor-pointer shrink-0"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            </BorderBeam>
           </form>
         </div>
       )}
@@ -116,9 +125,16 @@ export function FloatingAIChat() {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsChatOpen(!isChatOpen)}
-        className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-accent hover:opacity-95 text-white shadow-lg flex items-center justify-center cursor-pointer border border-white/10 hover:shadow-[0_0_20px_rgba(124,58,237,0.5)] transition-all"
+        className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-accent hover:opacity-95 text-white shadow-lg flex items-center justify-center cursor-pointer border border-white/10 hover:shadow-[0_0_20px_rgba(124,58,237,0.5)] transition-all overflow-hidden"
+        aria-label="Toggle AI Companion Chat"
       >
-        {isChatOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
+        {isChatOpen ? (
+          <X className="w-6 h-6" />
+        ) : (
+          <div className="w-10 h-10 flex items-center justify-center pointer-events-none">
+            <BotAvatar type="mech" size={40} state="default" />
+          </div>
+        )}
       </button>
     </div>
   );

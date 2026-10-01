@@ -6,6 +6,8 @@ import {
   Play, Pause, Award, CheckCircle2, Lock, Vote, 
   Terminal, DollarSign, Users, ChevronRight, ArrowRight, Loader2
 } from "lucide-react";
+import { ThinkingOrb } from "thinking-orbs";
+import { BorderBeam } from "border-beam";
 
 type TabId = "nanopayments" | "escrows" | "governance" | "copilot";
 
@@ -399,23 +401,25 @@ export function InteractiveShowcase() {
                   </p>
                 </div>
 
-                <div 
-                  ref={logTerminalRef}
-                  className="bg-black/90 font-mono text-[10px] leading-relaxed p-4 rounded-xl border border-border h-48 overflow-y-auto space-y-2 text-left"
-                >
-                  {logs.map((log, idx) => (
-                    <div key={idx} className="flex gap-2">
-                      <span className="text-accent-purple select-none">&rarr;</span>
-                      <span className={log.includes("success") || log.includes("complete") || log.includes("Cast") || log.includes("Signing") ? "text-success" : log.includes("Initializing") || log.includes("Scanning") || log.includes("Found") || log.includes("Loaded") ? "text-cyan-400" : "text-white/80"}>
-                        {log}
-                      </span>
+                <BorderBeam size="md" colorVariant="ocean" active={true} className="rounded-xl overflow-hidden">
+                  <div 
+                    ref={logTerminalRef}
+                    className="bg-black/90 font-mono text-[10px] leading-relaxed p-4 rounded-xl border border-border h-48 overflow-y-auto space-y-2 text-left"
+                  >
+                    {logs.map((log, idx) => (
+                      <div key={idx} className="flex gap-2">
+                        <span className="text-accent-purple select-none">&rarr;</span>
+                        <span className={log.includes("success") || log.includes("complete") || log.includes("Cast") || log.includes("Signing") ? "text-success" : log.includes("Initializing") || log.includes("Scanning") || log.includes("Found") || log.includes("Loaded") ? "text-cyan-400" : "text-white/80"}>
+                          {log}
+                        </span>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-2 pt-1 text-text-muted">
+                      <ThinkingOrb state="connecting" size={20} theme="dark" />
+                      <span className="text-white/70 font-mono text-[11px] animate-pulse">Monitoring transactions...</span>
                     </div>
-                  ))}
-                  <div className="flex items-center gap-1.5 text-text-muted">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-accent-purple" />
-                    <span className="text-white/60">Monitoring transactions...</span>
                   </div>
-                </div>
+                </BorderBeam>
               </div>
             )}
           </motion.div>

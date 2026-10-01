@@ -25,6 +25,8 @@ import {
 import { GlassCard } from "@/components/ui/GlassCard";
 import { BridgeModal } from "@/components/BridgeModal";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { BorderBeam } from "border-beam";
+import { ThinkingOrb } from "thinking-orbs";
 
 
 interface FaucetTx {
@@ -485,27 +487,29 @@ export function WalletFaucetCard() {
                 Token Sent!
               </button>
             ) : (
-              <button
-                onClick={handleRequestFaucet}
-                disabled={faucetStatus === "requesting"}
-                className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs tracking-wide transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer
-                  ${faucetStatus === "idle" || faucetStatus === "error"
-                    ? "bg-brand text-white hover:bg-brand-light shadow-md shadow-brand/20 hover:shadow-lg hover:shadow-brand/30 active:scale-[0.98]" 
-                    : "bg-surface-elevated border border-border-thin text-text-secondary"
-                  }`}
-              >
-                {faucetStatus === "requesting" ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-brand-light animate-spin" />
-                    Requesting Faucet...
-                  </>
-                ) : (
-                  <>
-                    <Coins className="w-3.5 h-3.5" />
-                    Claim 1000 sARC Tokens
-                  </>
-                )}
-              </button>
+              <BorderBeam size="pulse-inner" active={faucetStatus === "requesting"} className="w-full rounded-xl">
+                <button
+                  onClick={handleRequestFaucet}
+                  disabled={faucetStatus === "requesting"}
+                  className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs tracking-wide transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer
+                    ${faucetStatus === "idle" || faucetStatus === "error"
+                      ? "bg-brand text-white hover:bg-brand-light shadow-md shadow-brand/20 hover:shadow-lg hover:shadow-brand/30 active:scale-[0.98]" 
+                      : "bg-surface-elevated border border-border-thin text-text-secondary"
+                    }`}
+                >
+                  {faucetStatus === "requesting" ? (
+                    <>
+                      <ThinkingOrb state="working" size={20} theme="dark" />
+                      <span>Requesting Faucet...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Coins className="w-3.5 h-3.5" />
+                      Claim 1000 sARC Tokens
+                    </>
+                  )}
+                </button>
+              </BorderBeam>
             )}
           </div>
 

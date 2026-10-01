@@ -28,6 +28,8 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { BotAvatar } from "bot-avatars";
+import { MetalBadge } from "metal-fx";
 
 interface ActiveLink {
   href: string;
@@ -121,17 +123,19 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
             <button
               onClick={() => handleNavClick(href)}
               className={cn(
-                "w-full flex items-center justify-between border border-[#1B2536] bg-[#0B111C] rounded-lg px-3.5 py-3 text-xs font-medium transition-all group cursor-pointer text-left mb-4",
+                "w-full flex items-center justify-between border border-[#1B2536] bg-[#0B111C] rounded-lg px-3 py-2.5 text-xs font-medium transition-all group cursor-pointer text-left mb-4 hover:border-[#2F6FFF]/40",
                 active && "border-[#2F6FFF]/40 bg-[#0F1620]"
               )}
             >
-              <span className="text-[13px] font-medium text-[#F5F7FA] flex items-center gap-2 font-space">
+              <span className="text-[13px] font-medium text-[#F5F7FA] flex items-center gap-2.5 font-space">
+                <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                  <BotAvatar type="ghost" size={24} state="working" />
+                </div>
                 Treasury Agent
               </span>
-              <span className="font-mono text-[10px] tracking-wider text-[#4F8BFF] border border-[#1B2536] bg-[#05080F] px-1.75 py-0.5 rounded flex items-center gap-1.25">
-                <span className="w-1.25 h-1.25 rounded-full bg-[#4F8BFF] animate-pulse" />
-                LIVE
-              </span>
+              <div className="shrink-0 flex items-center">
+                <MetalBadge>LIVE</MetalBadge>
+              </div>
             </button>
           );
         })()}
