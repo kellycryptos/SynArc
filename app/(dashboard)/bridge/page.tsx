@@ -585,6 +585,32 @@ export default function BridgePage() {
             </p>
           </div>
 
+          {/* Network Mode Switcher (Mainnet vs Testnet) */}
+          <div className="flex items-center bg-[#160B2E]/90 border border-border-thin rounded-xl p-0.5 shadow-inner shrink-0">
+            <button
+              type="button"
+              onClick={() => handleNetworkChange("mainnet")}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                bridgeNetwork === "mainnet"
+                  ? "bg-primary text-black shadow-md font-extrabold"
+                  : "text-muted hover:text-white"
+              }`}
+            >
+              Mainnet
+            </button>
+            <button
+              type="button"
+              onClick={() => handleNetworkChange("testnet")}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                bridgeNetwork === "testnet"
+                  ? "bg-amber-500 text-black shadow-md font-extrabold"
+                  : "text-muted hover:text-white"
+              }`}
+            >
+              Testnet
+            </button>
+          </div>
+
           {/* Volume Indicator */}
           <div className="bg-surface-elevated/40 border border-border-thin px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-md shrink-0 backdrop-blur-md">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -613,37 +639,9 @@ export default function BridgePage() {
               
               {/* Settings / Title Area */}
               <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
-                <div className="flex items-center gap-3">
-                  <h3 className="font-bold text-base text-white flex items-center gap-2">
-                    <span>🌉</span> Bridge Assets
-                  </h3>
-
-                  {/* Network Mode Switcher (Mainnet vs Testnet) */}
-                  <div className="flex items-center bg-[#160B2E]/90 border border-border-thin rounded-xl p-0.5 shadow-inner">
-                    <button
-                      type="button"
-                      onClick={() => handleNetworkChange("mainnet")}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        bridgeNetwork === "mainnet"
-                          ? "bg-primary text-black shadow-md font-extrabold"
-                          : "text-muted hover:text-white"
-                      }`}
-                    >
-                      Mainnet
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleNetworkChange("testnet")}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        bridgeNetwork === "testnet"
-                          ? "bg-amber-500 text-black shadow-md font-extrabold"
-                          : "text-muted hover:text-white"
-                      }`}
-                    >
-                      Testnet
-                    </button>
-                  </div>
-                </div>
+                <h3 className="font-bold text-base text-white flex items-center gap-2">
+                  <span>🌉</span> Bridge Assets
+                </h3>
                 
                 <div className="flex items-center gap-2.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full flex items-center gap-1">
