@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { usePathname } from "next/navigation";
 import { ShieldAlert, Wallet, Sparkles, RefreshCw } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { ConnectKitButton } from 'connectkit';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const PROTECTED_ROUTES = ['/settings'];
 
@@ -85,17 +85,17 @@ export function WalletGuard({ children }: { children: ReactNode }) {
             </p>
           </div>
 
-          <ConnectKitButton.Custom>
-            {({ show }) => (
+          <ConnectButton.Custom>
+            {({ openConnectModal, connectModalOpen }) => (
               <button 
-                onClick={show}
+                onClick={openConnectModal}
                 className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-bold hover:shadow-[0_0_25px_rgba(47,111,255,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#2F6FFF]/35"
               >
                 <Wallet className="w-5 h-5" />
-                Connect Wallet to Participate
+                {connectModalOpen ? "Connecting..." : "Connect Wallet to Participate"}
               </button>
             )}
-          </ConnectKitButton.Custom>
+          </ConnectButton.Custom>
         </GlassCard>
       </div>
     );
