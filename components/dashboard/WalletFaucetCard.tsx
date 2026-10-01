@@ -388,7 +388,7 @@ export function WalletFaucetCard() {
               Recent Claims
             </h3>
             <span className="text-[10px] font-bold text-text-tertiary bg-surface-elevated border border-border-thin px-2 py-0.5 rounded-full">
-              Faucet History
+              {isArcTestnet ? "Faucet History" : "Recent Activity"}
             </span>
           </div>
 
@@ -440,7 +440,8 @@ export function WalletFaucetCard() {
       </GlassCard>
 
       {/* Get Testnet Tokens Faucet Section */}
-      <GlassCard className="lg:col-span-3 p-6 flex flex-col gap-6 relative overflow-hidden group border border-brand/20 bg-gradient-to-br from-brand/[0.02] to-transparent">
+      {isArcTestnet && (
+        <GlassCard className="lg:col-span-3 p-6 flex flex-col gap-6 relative overflow-hidden group border border-brand/20 bg-gradient-to-br from-brand/[0.02] to-transparent">
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-brand/10 rounded-full blur-2xl pointer-events-none" />
         
         <div className="space-y-1">
@@ -613,13 +614,15 @@ export function WalletFaucetCard() {
           )}
         </AnimatePresence>
 
-        {/* Bridge Modal */}
-        <BridgeModal 
-          isOpen={showBridge} 
-          onClose={() => setShowBridge(false)} 
-          onSuccess={refetchToken} 
-        />
-      </GlassCard>
+        </GlassCard>
+      )}
+
+      {/* Bridge Modal */}
+      <BridgeModal 
+        isOpen={showBridge} 
+        onClose={() => setShowBridge(false)} 
+        onSuccess={refetchToken} 
+      />
     </div>
   );
 }

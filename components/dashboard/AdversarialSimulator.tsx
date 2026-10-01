@@ -37,7 +37,7 @@ const SCENARIOS: { id: AttackScenario; label: string; tag: string; icon: string 
   { id: "whale_drain_bypass", label: "Whale Drain Bypass", tag: "50 USDC Cap Breached", icon: "CAP" }
 ];
 
-export function TameionAdversarialSimulator() {
+export function AdversarialSimulator() {
   const [selectedScenario, setSelectedScenario] = useState<AttackScenario>("phantom_invoice");
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(0);
@@ -85,7 +85,7 @@ export function TameionAdversarialSimulator() {
             </span>
             <div>
               <h2 className="text-lg font-bold font-heading text-text-primary flex items-center gap-2">
-                Tameion Adversarial Stress Test Console
+                Adversarial Stress Test Console
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-primary uppercase font-bold">
                   Dual-Agent Mesh Active
                 </span>
@@ -235,7 +235,7 @@ export function TameionAdversarialSimulator() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  SynDAO Adversarial Mesh (Arc Mainnet 5042)
+                  SynDAO Adversarial Mesh (Arc Mainnet)
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
                   THREE-WAY MATCH
@@ -269,7 +269,7 @@ export function TameionAdversarialSimulator() {
               </div>
 
               <div className="text-purple-400/90 flex items-start gap-2">
-                <span className="text-purple-400 font-bold select-none">[ARC 5042 CONTRACT]</span>
+                <span className="text-purple-400 font-bold select-none">[ARC CONTRACT]</span>
                 <span className="font-bold">{result.smartContractRevert}</span>
               </div>
             </div>
@@ -329,3 +329,5 @@ export function TameionAdversarialSimulator() {
     </GlassCard>
   );
 }
+
+export const TameionAdversarialSimulator = AdversarialSimulator;

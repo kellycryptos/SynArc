@@ -47,8 +47,8 @@ export function MarketingNavbar() {
           <Link href="/docs/sdk" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
             SDK
           </Link>
-          <Link href="/faucet" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
-            Faucet
+          <Link href="/agent" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+            AI Agent
           </Link>
         </nav>
 

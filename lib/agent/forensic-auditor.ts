@@ -254,7 +254,7 @@ export class ForensicAuditor {
     const isOverCap = intent.amountUSDC > this.AGENT_CAP_USDC;
     if (isOverCap) {
       checks.releaseValve = {
-        name: "Tameion Release Valve & Velocity Ceiling",
+        name: "Escrow Release Valve & Velocity Ceiling",
         passed: false,
         critical: false,
         message: `Amount (${intent.amountUSDC} USDC) exceeds on-chain autonomous release cap (${this.AGENT_CAP_USDC} USDC). Requires 48h multisig / human sign-off.`,
@@ -264,7 +264,7 @@ export class ForensicAuditor {
       riskScore += 15;
     } else {
       checks.releaseValve = {
-        name: "Tameion Release Valve & Velocity Ceiling",
+        name: "Escrow Release Valve & Velocity Ceiling",
         passed: true,
         critical: false,
         message: `Amount (${intent.amountUSDC} USDC) is within autonomous cap (${this.AGENT_CAP_USDC} USDC).`,
@@ -282,7 +282,7 @@ export class ForensicAuditor {
 
     const recommendation = 
       verdict === "PASS"
-        ? "Autonomous release approved. All 6 Tameion forensic controls passed."
+        ? "Autonomous release approved. All 6 forensic controls passed."
         : verdict === "FLAGGED_HUMAN_REVIEW"
         ? "Autonomous release held at Release Valve. Forwarded to Human Review Queue."
         : "TRANSACTION REJECTED. Forensic Sentinel detected active ledger attack or document corruption.";
@@ -310,7 +310,7 @@ export class ForensicAuditor {
 
   /**
    * Executes a simulated attack against the adversarial accounting mesh
-   * to demonstrate on-chain and agent-level resilience for hackathon judges.
+   * to demonstrate on-chain and agent-level resilience.
    */
   public static async runSimulatedAttack(scenario: AttackScenario): Promise<AttackSimulationResult> {
     switch (scenario) {

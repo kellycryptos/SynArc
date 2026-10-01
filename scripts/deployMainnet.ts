@@ -8,8 +8,8 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 /**
  * deployMainnet.ts
- * Deploys the complete SynArc Tameion Mesh on Arc Mainnet (Chain ID 5042):
- * 1. SynArcTreasury (The Tameion Three-Way Match Release Valve)
+ * Deploys the complete SynArc Mesh on Arc Mainnet:
+ * 1. SynArcTreasury (The Three-Way Match Release Valve)
  * 2. SynArcGovernor (Document-Anchored Governance Engine)
  * 3. Enforces On-Chain Agent Release Cap (50 USDC) + Human Review Gate
  * 4. Authorizes Operator Agent & Forensic Sentinel Reviewers
@@ -24,7 +24,7 @@ async function main() {
   const [deployer] = signers;
   const network = await ethers.provider.getNetwork();
   console.log(`\n================================================================`);
-  console.log(`🚀 DEPLOYING TAMEION ADVERSARIAL MESH ON ARC MAINNET (5042)`);
+  console.log(`🚀 DEPLOYING ADVERSARIAL MESH ON ARC MAINNET`);
   console.log(`================================================================`);
   console.log("Deployer Address:", deployer.address);
   console.log("Connected Chain ID:", network.chainId.toString());
@@ -41,7 +41,7 @@ async function main() {
   let governorAddress = process.env.NEXT_PUBLIC_MAINNET_GOVERNOR_ADDRESS;
 
   // 1. Deploy SynArcTreasury (The Release Valve)
-  console.log("\n1. Deploying SynArcTreasury (Tameion Three-Way Match Release Valve)...");
+  console.log("\n1. Deploying SynArcTreasury (Three-Way Match Release Valve)...");
   const SynArcTreasury = await ethers.getContractFactory("SynArcTreasury");
   const treasury = await SynArcTreasury.deploy(USDC_ADDRESS, EURC_ADDRESS);
   await treasury.waitForDeployment();
@@ -128,7 +128,7 @@ async function main() {
     treasuryAgent: AGENT_ADDRESS,
     agentReleaseCapUSDC: 50,
     humanReviewThreshold: Number(CAP_USDC),
-    releaseValve: "Tameion Three-Way Match Active",
+    releaseValve: "Escrow Three-Way Match Active",
     forensicMesh: "Dual-Agent Adversarial Sentinel Ready",
     timestamp: new Date().toISOString(),
   };

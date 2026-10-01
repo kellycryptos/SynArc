@@ -18,8 +18,9 @@ import { ARC_GAS_CONFIG } from "@/lib/constants";
 import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams, selectActiveWallet } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 import { resolveAttestationLink } from "@/lib/attestation";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
-const SARC_ADDRESS = (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e") as `0x${string}`;
+const SARC_ADDRESS = CONTRACTS.token as `0x${string}`;
 const GOVERNOR_ABI = GovernorABI;
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -48,6 +49,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   const unwrappedParams = use(params);
   const router = useRouter();
   const { isAuthenticated, walletAddress, login, isCircle } = useAuth();
+  const { isArcMainnet, explorerUrl } = useArcNetwork();
   // Safe: Circle wallet does not register with Privy wallets list
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
@@ -210,7 +212,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       try {
         const provider = await getResilientProvider();
         const governorContract = new Contract(
-          process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e",
+          CONTRACTS.governor,
           GovernorABI,
           provider
         );
@@ -263,7 +265,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
       try {
         const provider = await getResilientProvider();
-        const governorAddress = process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e";
+        const governorAddress = CONTRACTS.governor;
         const GOVERNOR_ABI = [
           "function hasVoted(uint256 proposalId, address account) external view returns (bool)"
         ];
@@ -729,7 +731,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                           <>
                             <span>•</span>
                             <a
-                              href={`https://testnet.arcscan.app/tx/${event.txHash}`}
+                              href={`${explorerUrl}/tx/${event.txHash}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-mono text-primary/70 hover:text-primary hover:underline"
@@ -763,9 +765,9 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                     <div key={i} className="flex justify-between items-center text-xs border-b border-border-thin/40 pb-3 last:border-b-0 last:pb-0">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <Link href={`https://testnet.arcscan.app/address/${v.voter}`} target="_blank" className="font-mono text-primary hover:underline">
+                          <a href={`${explorerUrl}/address/${v.voter}`} target="_blank" rel="noopener noreferrer" className="font-mono text-primary hover:underline">
                             {v.voter.slice(0, 6)}...{v.voter.slice(-4)}
-                          </Link>
+                          </a>
                           <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${
                             v.support === 1 ? "bg-success/15 text-success border border-success/20" :
                             v.support === 0 ? "bg-danger/15 text-danger border border-danger/20" :
@@ -948,12 +950,12 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                       {txHash && (
                         <div className="text-center">
                           <a 
-                            href={`https://testnet.arcscan.app/tx/${txHash}`}
+                            href={`${explorerUrl}/tx/${txHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-bold"
                           >
-                            View on ArcScan
+                            View on {isArcMainnet ? "Arc Explorer" : "ArcScan"}
                           </a>
                         </div>
                       )}
@@ -1123,7 +1125,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                     <div className="flex items-center justify-between">
                       <span className="text-text-secondary text-xs">Deliverable Attestation</span>
                       <span className="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">
-                        Tameion Verified
+                        On-Chain Verified
                       </span>
                     </div>
                     <Link

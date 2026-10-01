@@ -667,7 +667,7 @@ export default function CreateProposalPage() {
                             )}
                           </button>
                           <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">
-                            Tameion Control
+                            Escrow Control
                           </span>
                         </div>
                       </div>

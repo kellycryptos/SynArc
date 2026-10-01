@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createPublicClient, http, fallback, parseAbi } from 'viem';
-import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS } from '@/lib/arc-config';
+import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, CONTRACTS } from '@/lib/arc-config';
 import { TreasuryActivity } from '@/types';
 
 // Active-network RPC list — Canteen primary → Alchemy → Arc official fallback
@@ -180,8 +180,7 @@ const mergeAndSortActivities = (
 
 export const useTreasuryBalances = (customTreasuryAddress?: string) => {
   const treasuryAddress = (customTreasuryAddress ||
-    process.env.NEXT_PUBLIC_TREASURY_ADDRESS ||
-    '0xFE0F6bF45D363d34CD5fC1781594a7471736dC18') as `0x${string}`;
+    CONTRACTS.treasury) as `0x${string}`;
 
   const [balance, setBalance] = useState(0); // Combined total in USD
   const [usdcBalance, setUsdcBalance] = useState(0);

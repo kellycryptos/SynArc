@@ -237,9 +237,9 @@ if (health.recommendedAction === 'rebalance') {
 
 ---
 
-## Tameion Release Valve
+## Escrow Release Valve
 
-The Tameion release valve provides controlled, capped disbursements with role-based allowances and rate limits:
+The escrow release valve provides controlled, capped disbursements with role-based allowances and rate limits:
 
 ```typescript
 // 1. Check release allowance for an address
@@ -247,8 +247,8 @@ const allowance = await synarc.checkReleaseAllowance("0xExecutorAddress");
 console.log(`Available allowance: ${allowance} USDC`);
 
 // 2. Authorize and claim release valve disbursement
-const claimTx = await synarc.claimTameionRelease("order-identifier-123");
-console.log(`Disbursement claimed! Tx: ${claimTx}`);
+const releaseTx = await synarc.releaseMilestone({ proposalId: 42, milestoneId: 1, invoiceHash: "0x..." });
+console.log(`Disbursement claimed! Tx: ${releaseTx}`);
 ```
 
 ---

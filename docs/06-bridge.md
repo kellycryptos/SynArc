@@ -77,7 +77,7 @@ To withdraw your USDC reserves back to an external chain:
 
 Syn DAO coordinates with the following verified Circle contract endpoints:
 
-### Arc Mainnet (`chainId: 5042`) — Production
+### Arc Mainnet — Production
 * **Circle Mainnet Iris Attestation Endpoint**: `https://iris-api.circle.com/v1/attestations`
 
 | Chain | Domain ID | TokenMessenger Address | MessageTransmitter Address | USDC Contract Address |
@@ -87,7 +87,7 @@ Syn DAO coordinates with the following verified Circle contract endpoints:
 | **Base** | `6` | `0x1682Ae6375C4E4A97e4B583BC394c861A46D8962` | `0xAD09780d193884d503182aD4588450C416D6F9D4` | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
 | **Avalanche** | `1` | `0x6B25532e1060CE10cc3B0A99e5683b91BFDe6982` | `0x8186359aF5F57Fb88a2DE088da89b04ad1666488` | `0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E` |
 
-### Arc Testnet (`chainId: 5042002`) — Sandbox
+### Arc Testnet — Sandbox
 * **Circle Sandbox Iris Attestation Endpoint**: `https://iris-api-sandbox.circle.com/v1/attestations`
 
 | Chain | Domain ID | TokenMessenger Address | MessageTransmitter Address | USDC Contract Address |

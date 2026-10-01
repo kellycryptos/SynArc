@@ -23,7 +23,7 @@ Syn DAO provides the tools you need to pool funds, vote on capital releases, and
 
 ## Contracts & Network Reference
 
-### Arc Mainnet (`chainId: 5042`) — Live Production
+### Arc Mainnet — Live Production
 
 | Configuration / Contract | Value / Address | Description | Explorer Link |
 |:---|:---|:---|:---|
@@ -38,7 +38,7 @@ Syn DAO provides the tools you need to pool funds, vote on capital releases, and
 | **Canonical EURC** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | Native Circle EURC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a) |
 | **Agent Release Cap** | `50.00 USDC` (`50_000_000 micro-USDC`) | Enforced on-chain: releases $\le 50$ autonomous; $> 50$ require human review | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
 
-### Arc Testnet (`chainId: 5042002`)
+### Arc Testnet
 
 | Configuration / Contract | Value / Address | Description |
 |:---|:---|:---|

@@ -10,7 +10,7 @@ In automated treasury and escrow management, the default assumption must be **ad
 
 ### The Problem: Circle's `arc-escrow` Reference Sample
 
-Circle's `arc-escrow` reference sample—the starting point recommended to Request for Builders (RFB) applicants—releases real stablecoin reserves based on a single condition:
+Circle's `arc-escrow` reference sample releases real stablecoin reserves based on a single condition:
 
 ```typescript
 // Circle's arc-escrow sample release logic
@@ -212,11 +212,11 @@ console.log(`Milestone released: ${txHash}`);
 | **Error Handling** | Silent / Generic Reverts | Loud Custom Errors with auditable parameters |
 | **Dry-Run Mode** | None | Idempotent `simulateRelease` preview (Ghostfolio) |
 | **Replay Protection** | Timestamp stored but never read | Idempotent release key mapping |
-| **Release Valve Track** | Not supported | Tameion on Arc Mainnet 5042 |
+| **Release Valve** | Not supported | Active on Arc Mainnet |
 
 ---
 
-## 7. Tameion Escrow Release Valve on Arc Mainnet (Chain ID 5042)
+## 7. Escrow Release Valve on Arc Mainnet
 
 **Syn DAO is the release valve: USDC in escrow, proof attached, paid once.**
 
@@ -225,7 +225,7 @@ Agent can release under an on-chain cap. Over the cap it stops for a human. Same
 ### The 3 Non-Negotiable Invariants
 
 1. **USDC in Escrow**:
-   - Liquid USDC resides natively within `SynArcTreasury.sol` on Arc Mainnet (`5042`).
+   - Liquid USDC resides natively within `SynArcTreasury.sol` on Arc Mainnet.
    - Escrow is fully funded and backed; no uncollateralized promises or credit lines.
 
 2. **Proof Attached**:
@@ -243,7 +243,7 @@ Agent can release under an on-chain cap. Over the cap it stops for a human. Same
 | **Autonomous Agent** | $\le 50.00\text{ USDC}$ | `isAuthorizedAgent(caller) == true` | Reverts with `HumanApprovalRequired` if amount $> 50\text{ USDC}$ |
 | **Human Reviewer / Multisig** | Unlimited ($> 50.00\text{ USDC}$) | `isAuthorizedReviewer(caller) == true` or `humanApproved[releaseKey] == true` | Reverts with `HumanApprovalRequired` if unauthorized |
 
-### Live Arc Mainnet (5042) Deployed Contracts
+### Live Arc Mainnet Deployed Contracts
 
 | Contract / Role | Address | On-Chain Function / Link |
 | :--- | :--- | :--- |

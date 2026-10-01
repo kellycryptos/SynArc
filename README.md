@@ -12,8 +12,8 @@ Product name updated for Arc naming compliance. Contracts and addresses are unch
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)](https://typescriptlang.org)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com)
-[![Arc Mainnet](https://img.shields.io/badge/Arc_Mainnet-5042-10B981?style=for-the-badge)](https://arc.network)
-[![Arc Testnet](https://img.shields.io/badge/Arc_Testnet-5042002-7C3AED?style=for-the-badge)](https://arc.network)
+[![Arc Mainnet](https://img.shields.io/badge/Arc_Mainnet-Active-10B981?style=for-the-badge)](https://arc.network)
+[![Arc Testnet](https://img.shields.io/badge/Arc_Testnet-Active-7C3AED?style=for-the-badge)](https://arc.network)
 [![WalletConnect](https://img.shields.io/badge/WalletConnect-Reown-3B99FC?style=for-the-badge&logo=walletconnect)](https://cloud.reown.com)
 [![Wagmi](https://img.shields.io/badge/Wagmi-3.6-black?style=for-the-badge)](https://wagmi.sh)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-Governor-4E5EE4?style=for-the-badge)](https://openzeppelin.com)
@@ -84,14 +84,14 @@ Syn DAO simplifies the funding and governance lifecycle:
 
 ---
 
-## 3a. Tameion Escrow Release Valve (Arc Mainnet 5042)
+## 3a. Escrow Release Valve (Arc Mainnet)
 
 **Syn DAO is the release valve: USDC in escrow, proof attached, paid once.**
 
 Agent can release under an on-chain cap (default: **50.00 USDC**). Over the cap it stops for a human. Same payment cannot run twice.
 
 ### The 3 Core Invariants
-1. **USDC in Escrow**: Funds reside directly in the timelocked treasury escrow vault (`SynArcTreasury.sol`) on Arc Mainnet (`5042`).
+1. **USDC in Escrow**: Funds reside directly in the timelocked treasury escrow vault (`SynArcTreasury.sol`) on Arc Mainnet.
 2. **Proof Attached**: Release claims must link an immutable IPFS deliverable CID (CIDv0/CIDv1) or deterministic invoice hash (`invoiceHash`).
 3. **Paid Once (Idempotency Active)**: On-chain `executedReleases[releaseKey]` bit flip guarantees zero payment replay attacks.
 
@@ -142,7 +142,7 @@ A fully bidirectional stablecoin routing pipeline built natively with Circle CCT
 
 ## 3d. Adversarial Verification: Contract-Level Three-Way Match
 
-Circle's own `arc-escrow` reference sample—recommended by Canteen to RFB 3 builders—releases real treasury reserves based on an unverified GPT-4o output string (`isValid = parsedPromptAnswerContent.valid && confidence === "HIGH"`), with no document checks, dead timestamps, and vulnerable beneficiary addresses.
+Circle's own `arc-escrow` reference sample releases real treasury reserves based on an unverified GPT-4o output string (`isValid = parsedPromptAnswerContent.valid && confidence === "HIGH"`), with no document checks, dead timestamps, and vulnerable beneficiary addresses.
 
 Syn DAO does the **exact opposite by design**:
 1. **Document-Anchored Entries (Odoo vs. ERPNext)**: Every release requires an explicit on-chain document reference (`proposalId`, `milestoneId`, `documentHash`, `invoiceHash`). The document *is* the entry.
@@ -404,7 +404,7 @@ https://www.syndaopro.xyz/
 
 ## 10a. Deployed Contracts & Network Reference
 
-### Arc Mainnet (`chainId: 5042`) — Live Production
+### Arc Mainnet — Live Production
 
 | Configuration / Contract | Value / Address | Description | ArcScan / Explorer |
 |:---|:---|:---|:---|
@@ -419,7 +419,7 @@ https://www.syndaopro.xyz/
 | **Canonical EURC** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | Native Circle EURC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a) |
 | **Agent Release Cap** | `50.00 USDC` (`50_000_000 micro-USDC`) | Enforced on-chain: releases $\le 50$ autonomous; $> 50$ require human review | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
 
-### Arc Testnet (`chainId: 5042002`)
+### Arc Testnet
 
 | Configuration / Contract | Value / Address | Description | ArcScan Explorer |
 |:---|:---|:---|:---|

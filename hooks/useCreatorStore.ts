@@ -1,6 +1,6 @@
 "use client";
 
-// NOTE: For this demo/hackathon, useCreatorStore persists creator organizations and supporter metadata locally via localStorage.
+// NOTE: useCreatorStore persists creator organizations and supporter metadata locally via localStorage.
 // In production/mainnet, this store will connect directly to the Crowdfund Hub contract to query campaigns, track contributions, and fetch on-chain states.
 
 import { create } from "zustand";

@@ -63,7 +63,7 @@ Syn DAO is secure funding and coordination infrastructure for humans and agents,
   - synarc.approveMilestone(escrowAddress, milestoneIndex)
   - synarc.withdrawMilestone(escrowAddress, milestoneIndex)
   - synarc.syncBalance(treasuryAddress)
-  - synarc.claimTameionRelease(orderId)
+  - synarc.releaseMilestone({ proposalId, milestoneId, invoiceHash })
   - synarc.propose({ title, description, targetContract, valueUSDC, durationDays })
   - synarc.castVote(proposalId, support, reason)
 - Example:

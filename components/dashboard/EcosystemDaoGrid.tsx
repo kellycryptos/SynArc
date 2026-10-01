@@ -73,8 +73,8 @@ const defaultDaos: DaoItem[] = [
     href: "/daos",
   },
   {
-    id: "tameion-valve",
-    name: "Tameion Release Valve",
+    id: "escrow-valve",
+    name: "Escrow Release Valve",
     category: "Attestation & Security",
     proposalsCount: 7,
     treasuryUSDC: "620K",

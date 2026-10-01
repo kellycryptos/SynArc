@@ -55,6 +55,7 @@ const TREASURY_ABI = [
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
 const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as `0x${string}`;
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
+import { BridgeModal } from "@/components/BridgeModal";
 import Link from "next/link";
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -63,8 +64,7 @@ import {
 import { 
   ArrowUpRight, ArrowDownRight, Activity, Wallet, Shield, PieChart, Coins, Info, PlusCircle, X, Check, Clock, TrendingUp
 } from "lucide-react";
-import { BridgeModal } from "@/components/BridgeModal";
-import { TameionReleaseValve } from "@/components/dashboard/TameionReleaseValve";
+import { EscrowReleaseValve } from "@/components/dashboard/EscrowReleaseValve";
 
 
 function TreasuryPageContent() {
@@ -681,9 +681,9 @@ function TreasuryPageContent() {
         </div>
       </SectionErrorBoundary>
 
-        {/* Tameion Escrow Release Valve */}
-        <SectionErrorBoundary sectionName="Tameion Escrow Release Valve">
-          <TameionReleaseValve treasuryUsdcBalance={usdcBalance} />
+        {/* Escrow Release Valve */}
+        <SectionErrorBoundary sectionName="Escrow Release Valve">
+          <EscrowReleaseValve treasuryUsdcBalance={usdcBalance} />
         </SectionErrorBoundary>
 
         {/* Charts Row */}

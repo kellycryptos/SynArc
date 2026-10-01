@@ -486,22 +486,24 @@ export const TreasuryABI = [
   },
 ] as const satisfies Abi;
 
+import { CONTRACTS } from '@/lib/arc-config';
+
 /**
- * Governance Contract Addresses (Arc Testnet)
- * These are placeholder addresses - replace with actual deployed contracts
+ * Governance Contract Addresses
+ * Dynamically resolves based on active network (Arc Mainnet 5042 or Arc Testnet 5042002)
  */
 export const GOVERNANCE_CONTRACTS = {
   // Governor contract for proposal voting
-  governor: (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || '0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e') as `0x${string}`,
+  get governor() { return CONTRACTS.governor as `0x${string}`; },
   
-  // USDC token for voting power
-  token: (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e') as `0x${string}`,
+  // Voting power token
+  get token() { return CONTRACTS.token as `0x${string}`; },
   
   // Governance Treasury (timelocked) — source of truth for balances and proposals
-  treasury: (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '0xFE0F6bF45D363d34CD5fC1781594a7471736dC18') as `0x${string}`,
+  get treasury() { return CONTRACTS.treasuryGovernance as `0x${string}`; },
   
   // EURC token address
-  eurc: (process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS || '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}`,
+  get eurc() { return CONTRACTS.eurc as `0x${string}`; },
   
   // Timelock for execution delays
   timelock: '0x0000000000000000000000000000000000000000' as `0x${string}`,

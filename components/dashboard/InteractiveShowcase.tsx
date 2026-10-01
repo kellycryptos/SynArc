@@ -135,7 +135,7 @@ export function InteractiveShowcase() {
       {/* Sidebar Navigation inside the showcase */}
       <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-border bg-surface-elevated/20 p-4 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible shrink-0">
         <div className="hidden md:block pb-4 mb-2 border-b border-border-thin text-left">
-          <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-2">Interactive Demo</p>
+          <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-2">Interactive Showcase</p>
           <p className="text-xs text-text-secondary px-2 mt-1">Try Syn DAO features live</p>
         </div>
         {tabs.map(tab => {

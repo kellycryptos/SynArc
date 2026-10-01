@@ -480,7 +480,7 @@ describe("Three-Way Match, Payee Substitution Defense & Adversarial Verification
     });
   });
 
-  describe("6. Tameion Release Valve: Agent On-Chain Cap & Human Review Gate (Arc Mainnet 5042)", function () {
+  describe("6. Escrow Release Valve: Agent On-Chain Cap & Human Review Gate (Arc Mainnet)", function () {
     const proposalId = 6n;
     const milestoneId = 1n;
     const capAmount = 50n * 10n ** 6n; // 50 USDC cap

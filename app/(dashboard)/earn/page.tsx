@@ -101,7 +101,7 @@ export default function EarnPage() {
                   : "bg-purple-500/10 text-purple-400 border-purple-500/20"
               }`}
             >
-              {networkName} ({isArcMainnet ? "5042" : "5042002"})
+              {isArcMainnet ? "Mainnet" : "Testnet"}
             </span>
           </div>
           <p className="text-sm text-[#8F9CAE] mt-1">

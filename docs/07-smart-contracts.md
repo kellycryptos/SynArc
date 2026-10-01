@@ -12,7 +12,7 @@ All core platform mechanics operate programmatically through secure on-chain EVM
 
 ## Deployed Contract Addresses
 
-### Arc Mainnet (`chainId: 5042`) — Live Production
+### Arc Mainnet — Live Production
 
 | Contract | Address | Explorer Link |
 | :--- | :--- | :--- |
@@ -24,7 +24,7 @@ All core platform mechanics operate programmatically through secure on-chain EVM
 | **Canonical USDC** | `0x3600000000000000000000000000000000000000` | [View on Arc Explorer](https://explorer.arc.io/address/0x3600000000000000000000000000000000000000) |
 | **Canonical EURC** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | [View on Arc Explorer](https://explorer.arc.io/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a) |
 
-### Arc Testnet (`chainId: 5042002`)
+### Arc Testnet
 
 | Contract | Address | ArcScan |
 | :--- | :--- | :--- |

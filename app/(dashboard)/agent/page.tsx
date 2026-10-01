@@ -15,11 +15,12 @@ import {
 import Link from "next/link";
 import { CctpStepVisualizer } from "@/components/dashboard/CctpStepVisualizer";
 import { ProofOfAutonomyTimeline } from "@/components/dashboard/ProofOfAutonomyTimeline";
-import { TameionReleaseValve } from "@/components/dashboard/TameionReleaseValve";
-import { TameionAdversarialSimulator } from "@/components/dashboard/TameionAdversarialSimulator";
+import { EscrowReleaseValve } from "@/components/dashboard/EscrowReleaseValve";
+import { AdversarialSimulator } from "@/components/dashboard/AdversarialSimulator";
 import toast from "react-hot-toast";
 import { AGENT_CAPABILITIES, AGENT_CONFIG } from "@/lib/agent/smart-account";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { usePrivyWallet } from "@/hooks/auth/usePrivyWallet";
 import { createPublicClient, http, fallback, parseUnits } from "viem";
@@ -107,6 +108,7 @@ export default function AgentPage() {
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
+  const { isArcMainnet, isArcTestnet, explorerUrl } = useArcNetwork();
   const { signMessage, address: privyAddress } = usePrivyWallet();
 
   const [onChainPaused, setOnChainPaused] = useState<boolean>(false);
@@ -514,7 +516,7 @@ export default function AgentPage() {
             const newAction = {
               timestamp: new Date().toISOString(),
               action: "bridge_to_ethereum",
-              reasoning: "AUTONOMOUS REBALANCE SUCCESSFUL: Bridged 42.50 USDC from Arc Testnet to Ethereum Sepolia via CCTP. [Demo Simulation]",
+              reasoning: `AUTONOMOUS REBALANCE SUCCESSFUL: Bridged 42.50 USDC from ${isArcMainnet ? "Arc Mainnet" : "Arc Testnet"} to ${isArcMainnet ? "Ethereum Mainnet" : "Ethereum Sepolia"} via CCTP. [Demo Simulation]`,
               txHash: "0xbc84294c718a29b01284d72856fe8d3615418b7625ea4b971aefd82b130c25d8",
               status: "executed" as const,
               usdcAmount: 42.50
@@ -679,12 +681,12 @@ export default function AgentPage() {
     usdcBalance: govUsdcBalance,
     loading: govLoading,
     activities: govActivities,
-  } = useTreasuryBalances(process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18");
+  } = useTreasuryBalances(CONTRACTS.treasuryGovernance);
 
   const agentFundingHistory = useMemo(() => {
     return govActivities.filter(act => 
       act.type === "Outflow" && 
-      act.party?.toLowerCase() === (CONTRACTS.treasuryAgent || "0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28").toLowerCase()
+      act.party?.toLowerCase() === CONTRACTS.treasuryAgent.toLowerCase()
     );
   }, [govActivities]);
 
@@ -935,13 +937,13 @@ export default function AgentPage() {
               <p className="text-xs text-muted mt-1 leading-relaxed">{verifyResult.reasoning}</p>
               {verifyResult.txHash && (
                 <a
-                  href={`https://testnet.arcscan.app/tx/${verifyResult.txHash}`}
+                  href={`${explorerUrl}/tx/${verifyResult.txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-1.5 inline-flex items-center gap-1 text-xs text-primary hover:underline"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
-                  View on ArcScan
+                  View on {isArcMainnet ? "Arc Explorer" : "ArcScan"}
                 </a>
               )}
             </div>
@@ -955,14 +957,14 @@ export default function AgentPage() {
         )}
       </AnimatePresence>
 
-      {/* ════ TAMEION ADVERSARIAL STRESS TEST & DUAL-AGENT AUDITING MESH ════ */}
-      <SectionErrorBoundary sectionName="Tameion Adversarial Simulator">
-        <TameionAdversarialSimulator />
+      {/* ════ ADVERSARIAL STRESS TEST & DUAL-AGENT AUDITING MESH ════ */}
+      <SectionErrorBoundary sectionName="Adversarial Simulator">
+        <AdversarialSimulator />
       </SectionErrorBoundary>
 
-      {/* ════ TAMEION ON-CHAIN RELEASE VALVE & PERMISSIONS MATRIX ════ */}
-      <SectionErrorBoundary sectionName="Tameion Release Valve">
-        <TameionReleaseValve treasuryUsdcBalance={treasury?.usdc ?? 25.00} />
+      {/* ════ ON-CHAIN ESCROW RELEASE VALVE & PERMISSIONS MATRIX ════ */}
+      <SectionErrorBoundary sectionName="Escrow Release Valve">
+        <EscrowReleaseValve treasuryUsdcBalance={treasury?.usdc ?? 25.00} />
       </SectionErrorBoundary>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1047,7 +1049,7 @@ export default function AgentPage() {
                         )}
                       </button>
                       <a
-                        href={`https://testnet.arcscan.app/address/${agentState.agentAddress}`}
+                        href={`${explorerUrl}/address/${agentState.agentAddress}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-muted hover:text-primary transition-colors shrink-0"
@@ -1057,14 +1059,14 @@ export default function AgentPage() {
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted mb-0.5">Executor EOA Signer</p>
+                    <p className="text-[10px] text-muted mb-0.5">Executor Signer</p>
                     <div className="flex items-center gap-2 min-w-0">
                       <code className="text-xs text-text-secondary font-mono truncate flex-1">
-                        0x35630dFE2592AB19d979ec1B173697aEa554b66b
+                        {CONTRACTS.treasuryAgent}
                       </code>
                       <button
                         type="button"
-                        onClick={() => handleCopy("0x35630dFE2592AB19d979ec1B173697aEa554b66b", "executor")}
+                        onClick={() => handleCopy(CONTRACTS.treasuryAgent, "executor")}
                         className="text-muted hover:text-primary transition-colors cursor-pointer p-0.5 focus:outline-none"
                         title="Copy Address"
                       >
@@ -1075,7 +1077,7 @@ export default function AgentPage() {
                         )}
                       </button>
                       <a
-                        href={`https://testnet.arcscan.app/address/0x35630dFE2592AB19d979ec1B173697aEa554b66b`}
+                        href={`${explorerUrl}/address/${CONTRACTS.treasuryAgent}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-muted hover:text-primary transition-colors shrink-0"
@@ -1102,11 +1104,11 @@ export default function AgentPage() {
                     <div className="flex flex-col gap-1 mt-1.5">
                       <div className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                        <a href="https://testnet.arcscan.app/address/0xFE0F6bF45D363d34CD5fC1781594a7471736dC18#code" target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-primary hover:underline">Governance Treasury ↗</a>
+                        <a href={`${explorerUrl}/address/${CONTRACTS.treasuryGovernance}#code`} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-primary hover:underline">Governance Treasury ↗</a>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                        <a href="https://testnet.arcscan.app/address/0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28#code" target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-amber-300 hover:underline">Agent Operating Treasury ↗</a>
+                        <a href={`${explorerUrl}/address/${CONTRACTS.treasuryAgent}#code`} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-amber-300 hover:underline">Agent Operating Treasury ↗</a>
                       </div>
                     </div>
                   </div>
@@ -1143,7 +1145,7 @@ export default function AgentPage() {
                 <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
                   <span className="text-xs font-bold text-amber-400">ARC</span>
                 </div>
-                <span className="text-[10px] text-muted text-center">Arc Testnet</span>
+                <span className="text-[10px] text-muted text-center">{isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}</span>
               </div>
               <div className="flex flex-col items-center gap-0.5">
                 <ArrowLeftRight className="w-4 h-4 text-blue-400" />
@@ -1153,12 +1155,12 @@ export default function AgentPage() {
                 <div className="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/25 flex items-center justify-center">
                   <span className="text-xs font-bold text-blue-400">ETH</span>
                 </div>
-                <span className="text-[10px] text-muted text-center">Eth Sepolia</span>
+                <span className="text-[10px] text-muted text-center">{isArcMainnet ? "Ethereum Mainnet" : "Eth Sepolia"}</span>
               </div>
             </div>
             <div className="space-y-1.5 pt-1 border-t border-border-thin/40 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-muted">Sepolia Balance</span>
+                <span className="text-muted">{isArcMainnet ? "Ethereum USDC" : "Sepolia Balance"}</span>
                 {loading ? (
                   <div className="h-4 w-14 bg-white/10 rounded animate-pulse" />
                 ) : (
@@ -1278,13 +1280,13 @@ export default function AgentPage() {
                           <p className="text-xs text-muted leading-relaxed line-clamp-2">{action.reasoning}</p>
                           {action.txHash && (
                             <a
-                              href={`https://testnet.arcscan.app/tx/${action.txHash}`}
+                              href={`${explorerUrl}/tx/${action.txHash}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="mt-1 inline-flex items-center gap-1 text-[10px] text-primary hover:text-primary-glow transition-colors"
                             >
                               <ExternalLink className="w-3 h-3" />
-                              View on ArcScan
+                              View on {isArcMainnet ? "Arc Explorer" : "ArcScan"}
                             </a>
                           )}
                         </div>
@@ -1364,7 +1366,7 @@ export default function AgentPage() {
                     </div>
                     <p className="text-[10px] text-text-secondary leading-normal">{act.description}</p>
                     <a
-                      href={`https://testnet.arcscan.app/tx/${act.txHash}`}
+                      href={`${explorerUrl}/tx/${act.txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-[9px] text-primary hover:underline self-start"
@@ -1390,6 +1392,8 @@ export default function AgentPage() {
  
             {(() => {
               const activeCctp = actions.find(a => a.action === 'bridge_to_ethereum' || a.action === 'return_funds')
+              const sourceChainName = isArcMainnet ? "Arc Mainnet" : "Arc Testnet";
+              const ethChainName = isArcMainnet ? "Ethereum Mainnet" : "Ethereum Sepolia";
               
               if (!activeCctp) {
                 return (
@@ -1412,8 +1416,8 @@ export default function AgentPage() {
                     <CctpStepVisualizer 
                       txState={{
                         isActive: false,
-                        sourceChain: "Arc Testnet",
-                        destChain: "Ethereum Sepolia",
+                        sourceChain: sourceChainName,
+                        destChain: ethChainName,
                         currentStep: "idle"
                       }}
                     />
@@ -1431,13 +1435,13 @@ export default function AgentPage() {
                 stageText = "Rebalancing Failed"
               } else if (reasoning.includes('Step 1/3') || reasoning.includes('smart account')) {
                 stage = "burn"
-                stageText = "Step 1: Burning USDC on Arc Testnet"
+                stageText = `Step 1: Burning USDC on ${sourceChainName}`
               } else if (reasoning.includes('Step 2/3') || reasoning.includes('polling')) {
                 stage = "attestation"
                 stageText = "Step 2: Polling Circle Attestation API"
               } else if (reasoning.includes('Step 3/3') || reasoning.includes('minting')) {
                 stage = "mint"
-                stageText = "Step 3: Minting USDC on Sepolia"
+                stageText = `Step 3: Minting USDC on ${ethChainName}`
               } else if (activeCctp.status === 'executed' || reasoning.includes('Success') || reasoning.includes('SUCCESSFUL')) {
                 stage = "done"
                 stageText = "Rebalance Completed Successfully"
@@ -1479,8 +1483,8 @@ export default function AgentPage() {
                   <CctpStepVisualizer 
                     txState={{
                       isActive: true,
-                      sourceChain: activeCctp.action === "return_funds" ? "Ethereum Sepolia" : "Arc Testnet",
-                      destChain: activeCctp.action === "return_funds" ? "Arc Testnet" : "Ethereum Sepolia",
+                      sourceChain: activeCctp.action === "return_funds" ? ethChainName : sourceChainName,
+                      destChain: activeCctp.action === "return_funds" ? sourceChainName : ethChainName,
                       amount: activeCctp.usdcAmount,
                       currentStep,
                       burnTxHash,
@@ -1782,8 +1786,8 @@ export default function AgentPage() {
             {/* Visual chain map */}
             <div className="flex items-center justify-between gap-2 p-4 bg-surface-elevated/40 border border-border-thin rounded-2xl">
               {[
-                { label: "Ethereum Sepolia", emoji: "ETH", color: "border-blue-500/30 bg-blue-500/10" },
-                { label: "Arc Testnet",      emoji: "ARC", color: "border-primary/30 bg-primary/10" },
+                { label: isArcMainnet ? "Ethereum Mainnet" : "Ethereum Sepolia", emoji: "ETH", color: "border-blue-500/30 bg-blue-500/10" },
+                { label: isArcMainnet ? "Arc Mainnet" : "Arc Testnet",      emoji: "ARC", color: "border-primary/30 bg-primary/10" },
                 { label: "DAO Treasury",     emoji: "DAO",  color: "border-emerald-500/30 bg-emerald-500/10" },
               ].map((chain) => (
                 <div key={chain.label} className="flex flex-col items-center gap-1.5">
@@ -1798,12 +1802,17 @@ export default function AgentPage() {
             {/* Supported chains */}
             <div className="space-y-2">
               <p className="text-[10px] text-muted font-bold uppercase tracking-wider">Chain Support</p>
-              {[
+              {(isArcMainnet ? [
+                { name: "Arc Mainnet",        status: "live" },
+                { name: "Ethereum Mainnet",  status: "live" },
+                { name: "Base",              status: "planned" },
+                { name: "Arbitrum",          status: "planned" },
+              ] : [
                 { name: "Arc Testnet",       status: "live" },
                 { name: "Ethereum Sepolia",  status: "live" },
                 { name: "Ethereum Mainnet",  status: "planned" },
                 { name: "Base",              status: "planned" },
-              ].map(c => (
+              ]).map(c => (
                 <div key={c.name} className="flex items-center justify-between text-xs py-1.5 border-b border-border-thin/50 last:border-0">
                   <span className="text-text-secondary font-medium">{c.name}</span>
                   <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
@@ -2299,7 +2308,7 @@ export default function AgentPage() {
                 Return Funds Proposal
               </h3>
               <p className="text-xs text-muted mb-4">
-                This will submit an on-chain governance proposal to bridge USDC back from Ethereum Sepolia and deposit it to the main Treasury contract on Arc Testnet.
+                This will submit an on-chain governance proposal to bridge USDC back from {isArcMainnet ? "Ethereum Mainnet" : "Ethereum Sepolia"} and deposit it to the main Treasury contract on {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}.
               </p>
 
               <div className="space-y-4">
@@ -2311,15 +2320,15 @@ export default function AgentPage() {
                     </span>
                   </div>
                   <div className="flex justify-between items-start">
-                    <span className="text-muted">Source Wallet (Sepolia)</span>
+                    <span className="text-muted">Source Wallet ({isArcMainnet ? "Ethereum" : "Sepolia"})</span>
                     <span className="text-text-secondary font-mono text-[10px] break-all text-right max-w-[200px]">
-                      0x88BdF819466C1802ce6C780a9fbdF3A314cab07D
+                      {agentState?.agentAddress || CONTRACTS.treasuryAgent}
                     </span>
                   </div>
                   <div className="flex justify-between items-start">
-                    <span className="text-muted">Destination (Arc Testnet)</span>
+                    <span className="text-muted">Destination ({isArcMainnet ? "Arc Mainnet" : "Arc Testnet"})</span>
                     <span className="text-text-secondary font-mono text-[10px] break-all text-right max-w-[200px]">
-                      Main Treasury (0xFE0F6bF45D363d34CD5fC1781594a7471736dC18)
+                      Main Treasury ({CONTRACTS.treasuryGovernance})
                     </span>
                   </div>
                   <div className="flex justify-between">

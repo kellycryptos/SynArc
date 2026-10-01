@@ -8,7 +8,7 @@
   "treasuryAgent": "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D",
   "agentReleaseCapUSDC": 50,
   "humanReviewThreshold": 50000000,
-  "releaseValve": "Tameion Three-Way Match Active",
+  "releaseValve": "Escrow Three-Way Match Active",
   "forensicMesh": "Dual-Agent Adversarial Sentinel Ready",
   "deployer": "0xE819090D7810D89f2E86e167d0b58425dEd745D8",
   "timestamp": "2026-10-01T11:05:14.000Z"

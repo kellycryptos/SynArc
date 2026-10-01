@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
     const manifestPayload = {
       specVersion: "1.0.0",
-      protocol: "Syn DAO / Tameion Financial Control",
+      protocol: "Syn DAO Escrow Financial Control",
       documentType: "Governance Proposal Deliverable Attestation",
       title,
       category: category || "General",
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       recipientTarget: target || "",
       details: details || {},
       timestamp: new Date().toISOString(),
-      network: `${ARC_CHAIN.name} (Chain ID ${ARC_CHAIN.id})`,
+      network: ARC_CHAIN.name,
       sourceWitness: "Syn DAO Pinned Attestation Document",
     };
 

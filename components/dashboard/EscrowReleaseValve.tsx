@@ -23,7 +23,7 @@ import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 import { GOVERNANCE_CONTRACTS } from "@/lib/governance/contracts";
 import { useAuth } from "@/hooks/auth/useAuth";
 
-const TAMEION_ABI = parseAbi([
+const RELEASE_VALVE_ABI = parseAbi([
   "function agentReleaseCap() view returns (uint256)",
   "function humanReviewThreshold() view returns (uint256)",
   "function isAuthorizedAgent(address account) view returns (bool)",
@@ -33,11 +33,11 @@ const TAMEION_ABI = parseAbi([
   "function owner() view returns (address)"
 ]);
 
-interface TameionReleaseValveProps {
+interface EscrowReleaseValveProps {
   treasuryUsdcBalance?: number;
 }
 
-export function TameionReleaseValve({ treasuryUsdcBalance = 0 }: TameionReleaseValveProps) {
+export function EscrowReleaseValve({ treasuryUsdcBalance = 0 }: EscrowReleaseValveProps) {
   const { walletAddress, isAuthenticated } = useAuth();
   
   const [agentCap, setAgentCap] = useState<number>(50);
@@ -66,7 +66,7 @@ export function TameionReleaseValve({ treasuryUsdcBalance = 0 }: TameionReleaseV
       try {
         const rawCap = await client.readContract({
           address: treasuryAddress,
-          abi: TAMEION_ABI,
+          abi: RELEASE_VALVE_ABI,
           functionName: "agentReleaseCap",
         });
         setAgentCap(Number(formatUnits(rawCap, 6)));
@@ -75,7 +75,7 @@ export function TameionReleaseValve({ treasuryUsdcBalance = 0 }: TameionReleaseV
         try {
           const rawCap = await client.readContract({
             address: treasuryAddress,
-            abi: TAMEION_ABI,
+            abi: RELEASE_VALVE_ABI,
             functionName: "humanReviewThreshold",
           });
           setAgentCap(Number(formatUnits(rawCap, 6)));
@@ -88,7 +88,7 @@ export function TameionReleaseValve({ treasuryUsdcBalance = 0 }: TameionReleaseV
       try {
         const agAddress = await client.readContract({
           address: treasuryAddress,
-          abi: TAMEION_ABI,
+          abi: RELEASE_VALVE_ABI,
           functionName: "agentAddress",
         });
         setAgentContractAddress(agAddress);
@@ -97,7 +97,7 @@ export function TameionReleaseValve({ treasuryUsdcBalance = 0 }: TameionReleaseV
       try {
         const gov = await client.readContract({
           address: treasuryAddress,
-          abi: TAMEION_ABI,
+          abi: RELEASE_VALVE_ABI,
           functionName: "governor",
         });
         setGovernorAddress(gov);
@@ -109,13 +109,13 @@ export function TameionReleaseValve({ treasuryUsdcBalance = 0 }: TameionReleaseV
           const [agentCheck, reviewerCheck] = await Promise.all([
             client.readContract({
               address: treasuryAddress,
-              abi: TAMEION_ABI,
+              abi: RELEASE_VALVE_ABI,
               functionName: "isAuthorizedAgent",
               args: [walletAddress as `0x${string}`],
             }),
             client.readContract({
               address: treasuryAddress,
-              abi: TAMEION_ABI,
+              abi: RELEASE_VALVE_ABI,
               functionName: "isAuthorizedReviewer",
               args: [walletAddress as `0x${string}`],
             }),
@@ -128,7 +128,7 @@ export function TameionReleaseValve({ treasuryUsdcBalance = 0 }: TameionReleaseV
         }
       }
     } catch (err) {
-      console.warn("[TameionReleaseValve] Failed to read on-chain config:", err);
+      console.warn("[EscrowReleaseValve] Failed to read on-chain config:", err);
     } finally {
       setIsLoading(false);
     }
@@ -149,13 +149,13 @@ export function TameionReleaseValve({ treasuryUsdcBalance = 0 }: TameionReleaseV
       const [ag, rev] = await Promise.all([
         client.readContract({
           address: treasuryAddress,
-          abi: TAMEION_ABI,
+          abi: RELEASE_VALVE_ABI,
           functionName: "isAuthorizedAgent",
           args: [lookupAddress as `0x${string}`],
         }),
         client.readContract({
           address: treasuryAddress,
-          abi: TAMEION_ABI,
+          abi: RELEASE_VALVE_ABI,
           functionName: "isAuthorizedReviewer",
           args: [lookupAddress as `0x${string}`],
         }),
@@ -179,19 +179,16 @@ export function TameionReleaseValve({ treasuryUsdcBalance = 0 }: TameionReleaseV
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-thin pb-5 relative z-10">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-accent-purple/20 text-accent-purple border border-accent-purple/30">
-                Tameion Track
-              </span>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                 Release Valve Active
               </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold text-text-tertiary bg-surface border border-border-thin">
-                Chain ID: {ARC_CHAIN.id}
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-accent-purple/20 text-accent-purple border border-accent-purple/30">
+                {ARC_CHAIN.name}
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-white mt-2 flex items-center gap-2.5">
               <ShieldCheck className="w-6 h-6 text-accent-purple shrink-0" />
-              <span>Tameion Escrow Release Valve · {ARC_CHAIN.name} ({ARC_CHAIN.id})</span>
+              <span>Escrow Release Valve · {ARC_CHAIN.name}</span>
             </h2>
             <p className="text-xs sm:text-sm text-text-tertiary mt-1">
               USDC in escrow, proof attached, paid once. Agent can release under on-chain cap. Over the cap it stops for a human.
@@ -306,7 +303,7 @@ export function TameionReleaseValve({ treasuryUsdcBalance = 0 }: TameionReleaseV
               <div 
                 className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full relative group transition-all" 
                 style={{ width: "35%" }}
-                title={`Agent Autonomous Release Track (<= $${agentCap})`}
+                title={`Agent Autonomous Release (<= $${agentCap})`}
               />
               <div 
                 className="bg-gradient-to-r from-amber-500 to-purple-500 h-full relative group transition-all" 
@@ -443,3 +440,5 @@ export function TameionReleaseValve({ treasuryUsdcBalance = 0 }: TameionReleaseV
     </div>
   );
 }
+
+export const TameionReleaseValve = EscrowReleaseValve;
