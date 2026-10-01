@@ -20,6 +20,7 @@ import {
   Trophy,
   Zap,
   Search,
+  TrendingUp,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { WalletConnectButton } from "@/components/ui/WalletConnectButton";
@@ -40,6 +41,7 @@ const activeLinks: ActiveLink[] = [
   { href: "/creator-daos", label: "Creator DAO", icon: Rocket },
   { href: "/proposals", label: "Proposals", icon: FileText },
   { href: "/treasury", label: "Treasury", icon: Shield },
+  { href: "/earn", label: "Earn", icon: TrendingUp, isNew: true },
   { href: "/bridge", label: "Bridge", icon: ArrowRightLeft },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/faucet", label: "Faucet", icon: Droplets },
@@ -288,11 +290,6 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
         </div>
       )}
 
-      {/* Non-custodial Note Card */}
-      <div className="mx-3.5 mb-3 rounded-xl border border-[#1B2536] bg-[#0B111C]/90 p-3 text-[11px] text-[#8A948E] font-space leading-relaxed">
-        <span className="font-bold text-[#F5F7FA] block mb-0.5">Non-custodial.</span>
-        Your active proposals, voting streak, and agent rules are secured on {networkName}.
-      </div>
 
       {/* Connect Button */}
       <div className="p-4 border-t border-[#151C29] mt-auto">
