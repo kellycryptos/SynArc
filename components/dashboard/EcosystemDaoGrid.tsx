@@ -19,7 +19,7 @@ interface DaoItem {
 const defaultDaos: DaoItem[] = [
   {
     id: "synarc-core",
-    name: "SynArc Core Treasury",
+    name: "SynDAO Core Treasury",
     category: "System Governance",
     proposalsCount: 14,
     treasuryUSDC: "1.25M",

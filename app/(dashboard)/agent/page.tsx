@@ -230,7 +230,7 @@ export default function AgentPage() {
       
       toast.loading(onChainPaused ? "⏳ Confirming unpause..." : "⏳ Confirming pause...", { id: toastId });
       await waitForTransaction(publicClient, hash);
-      toast.success(onChainPaused ? "Agent resumed successfully! ✅" : "Agent paused successfully! 🛑", { id: toastId });
+      toast.success(onChainPaused ? "Agent resumed successfully!" : "Agent paused successfully!", { id: toastId });
       fetchOnChainState();
     } catch (err: any) {
       console.error(err);
@@ -273,7 +273,7 @@ export default function AgentPage() {
       
       toast.loading("⏳ Confirming limit update...", { id: toastId });
       await waitForTransaction(publicClient, hash);
-      toast.success(`Limit successfully updated to ${newLimit} USDC! ✅`, { id: toastId });
+      toast.success(`Limit successfully updated to ${newLimit} USDC!`, { id: toastId });
       setShowLimitModal(false);
       fetchOnChainState();
     } catch (err: any) {
@@ -315,7 +315,7 @@ export default function AgentPage() {
       
       toast.loading("⏳ Confirming execution...", { id: toastId });
       await waitForTransaction(publicClient, hash);
-      toast.success("Agent withdrawal executed successfully! ✅", { id: toastId });
+      toast.success("Agent withdrawal executed successfully!", { id: toastId });
       fetchOnChainState();
     } catch (err: any) {
       console.error(err);
@@ -356,7 +356,7 @@ export default function AgentPage() {
       
       toast.loading("⏳ Confirming cancellation...", { id: toastId });
       await waitForTransaction(publicClient, hash);
-      toast.success("Agent withdrawal canceled successfully! ✅", { id: toastId });
+      toast.success("Agent withdrawal canceled successfully!", { id: toastId });
       fetchOnChainState();
     } catch (err: any) {
       console.error(err);
@@ -405,7 +405,7 @@ export default function AgentPage() {
       
       toast.loading("⏳ Confirming queued withdrawal...", { id: toastId });
       await waitForTransaction(publicClient, hash);
-      toast.success("Withdrawal queued successfully! ✅ (24h delay enforced)", { id: toastId });
+      toast.success("Withdrawal queued successfully! (24h delay enforced)", { id: toastId });
       setShowWithdrawalModal(false);
       fetchOnChainState();
     } catch (err: any) {
@@ -427,7 +427,7 @@ export default function AgentPage() {
       if (!response.ok || !data.success) {
         throw new Error(data.error || "Failed to create return proposal");
       }
-      toast.success("Governance proposal created successfully! ✅ Proposal Tx: " + data.txHash.substring(0, 10) + "...", { id: toastId, duration: 6000 });
+      toast.success("Governance proposal created successfully! Proposal Tx: " + data.txHash.substring(0, 10) + "...", { id: toastId, duration: 6000 });
       setShowReturnModal(false);
       fetchAgentState();
     } catch (err: any) {
@@ -637,7 +637,7 @@ export default function AgentPage() {
         }
         if (data.treasurySource) setTreasurySource(data.treasurySource);
         if (action?.action === "bridge_to_ethereum") {
-          toast.success(`Agent proposed CCTP bridge: ${action.usdcAmount} USDC → Ethereum`, { id: toastId, duration: 5000 });
+          toast.success(`Agent proposed CCTP bridge: ${action.usdcAmount} USDC to Ethereum`, { id: toastId, duration: 5000 });
         } else if (action?.action === "monitoring") {
           toast.success("Agent verified rules — treasury healthy", { id: toastId });
         } else {
@@ -870,7 +870,7 @@ export default function AgentPage() {
                         ? 'bg-amber-500/15 border-amber-500/25 text-amber-400'
                         : 'bg-surface-elevated border-border-thin text-muted'
                     }`}>
-                      {treasurySource === 'live' ? '⬤ LIVE' : treasurySource === 'fallback' ? '⚠ RPC DOWN' : '...'}
+                      {treasurySource === 'live' ? 'LIVE' : treasurySource === 'fallback' ? 'RPC DOWN' : '...'}
                     </span>
                   )}
                 </div>
@@ -926,7 +926,7 @@ export default function AgentPage() {
                   verifyResult.status === 'failed'   ? 'text-red-400' : 'text-primary'
                 }`}>
                   {verifyResult.action === 'monitoring' ? 'Rules Verified — Treasury Healthy' :
-                   verifyResult.action === 'bridge_to_ethereum' ? `Rule Triggered: Bridge ${verifyResult.usdcAmount} USDC → Ethereum` :
+                   verifyResult.action === 'bridge_to_ethereum' ? `Rule Triggered: Bridge ${verifyResult.usdcAmount} USDC to Ethereum` :
                    verifyResult.action === 'emergency_funding' ? 'Rule Triggered: Emergency Funding Required' :
                    verifyResult.action}
                 </p>
@@ -1141,7 +1141,7 @@ export default function AgentPage() {
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-col items-center gap-1 flex-1">
                 <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
-                  <span className="text-sm">⚡</span>
+                  <span className="text-xs font-bold text-amber-400">ARC</span>
                 </div>
                 <span className="text-[10px] text-muted text-center">Arc Testnet</span>
               </div>
@@ -1151,7 +1151,7 @@ export default function AgentPage() {
               </div>
               <div className="flex flex-col items-center gap-1 flex-1">
                 <div className="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/25 flex items-center justify-center">
-                  <span className="text-sm">🪙</span>
+                  <span className="text-xs font-bold text-blue-400">ETH</span>
                 </div>
                 <span className="text-[10px] text-muted text-center">Eth Sepolia</span>
               </div>
@@ -1271,7 +1271,7 @@ export default function AgentPage() {
                             <StatusBadge status={action.status} />
                             {action.action !== "monitoring" && action.action !== "error" && (
                               <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary shrink-0 whitespace-nowrap">
-                                🤖 Treasury Agent
+                                Treasury Agent
                               </span>
                             )}
                           </div>
@@ -1782,9 +1782,9 @@ export default function AgentPage() {
             {/* Visual chain map */}
             <div className="flex items-center justify-between gap-2 p-4 bg-surface-elevated/40 border border-border-thin rounded-2xl">
               {[
-                { label: "Ethereum Sepolia", emoji: "🪙", color: "border-blue-500/30 bg-blue-500/10" },
-                { label: "Arc Testnet",      emoji: "⚡", color: "border-primary/30 bg-primary/10" },
-                { label: "DAO Treasury",     emoji: "🏛️",  color: "border-emerald-500/30 bg-emerald-500/10" },
+                { label: "Ethereum Sepolia", emoji: "ETH", color: "border-blue-500/30 bg-blue-500/10" },
+                { label: "Arc Testnet",      emoji: "ARC", color: "border-primary/30 bg-primary/10" },
+                { label: "DAO Treasury",     emoji: "DAO",  color: "border-emerald-500/30 bg-emerald-500/10" },
               ].map((chain) => (
                 <div key={chain.label} className="flex flex-col items-center gap-1.5">
                   <div className={`w-12 h-12 rounded-xl border ${chain.color} flex items-center justify-center text-xl`}>
@@ -2329,7 +2329,7 @@ export default function AgentPage() {
                 </div>
 
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-[11px] text-amber-400 leading-relaxed">
-                  ⚠️ <strong>Security Note:</strong> Once created, the community must vote to pass the proposal. Upon success, the agent will autonomously trigger CCTP and complete the deposit securely.
+                  <strong>Security Note:</strong> Once created, the community must vote to pass the proposal. Upon success, the agent will autonomously trigger CCTP and complete the deposit securely.
                 </div>
 
                 <div className="flex gap-3 pt-2">

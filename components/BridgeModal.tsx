@@ -37,7 +37,7 @@ const SOURCE_CHAINS = [
     name: "Ethereum Sepolia",
     tokenAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
     rpcUrl: "https://rpc.ankr.com/eth_sepolia",
-    icon: "🪙",
+    icon: "ETH",
     color: "text-blue-400"
   },
   {
@@ -45,7 +45,7 @@ const SOURCE_CHAINS = [
     name: "Base Sepolia",
     tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dcf7e",
     rpcUrl: "https://sepolia.base.org",
-    icon: "🔵",
+    icon: "BASE",
     color: "text-blue-500"
   },
   {
@@ -53,7 +53,7 @@ const SOURCE_CHAINS = [
     name: "Avalanche Fuji",
     tokenAddress: "0x5425890298aed601595a70AB815c96711a31Bc65",
     rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc",
-    icon: "🔺",
+    icon: "AVAX",
     color: "text-red-500"
   },
   {
@@ -61,7 +61,7 @@ const SOURCE_CHAINS = [
     name: "Solana Devnet",
     tokenAddress: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
     rpcUrl: "https://api.devnet.solana.com",
-    icon: "☀️",
+    icon: "SOL",
     color: "text-purple-400"
   },
 ];
@@ -282,7 +282,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
         <div className="flex items-center justify-between border-b border-border-thin pb-4 mb-6">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <span className="text-lg">🌉</span>
+              
             </div>
             <div>
               <h3 className="font-bold text-lg text-text-primary">Bridge Funds to Arc</h3>
@@ -323,7 +323,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                       <div className="p-4 bg-warning/10 border border-warning/30 rounded-2xl space-y-3 animate-fade-in-up text-left">
                         <div className="flex items-center gap-2 text-warning font-bold text-sm">
                           <AlertCircle className="w-5 h-5 text-warning shrink-0 animate-pulse" />
-                          <span>⚠️ Network Configuration Required</span>
+                          <span>Network Configuration Required</span>
                         </div>
                         <p className="text-xs text-text-secondary leading-normal">
                           {selectedChain.name} has not been added to your wallet or is not configured.
@@ -507,7 +507,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     <Check className="w-8 h-8" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-text-primary">Bridge complete ✓</h3>
+                    <h3 className="text-xl font-bold text-text-primary">Bridge complete</h3>
                     <p className="text-xs text-text-tertiary mt-1.5 max-w-sm mx-auto leading-relaxed">
                       Your USDC has successfully arrived on Arc Testnet and is ready to use.
                     </p>

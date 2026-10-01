@@ -6,7 +6,7 @@ import { X, Send, MessageSquare, Bot, Loader2 } from "lucide-react";
 export function FloatingAIChat() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([
-    { role: 'assistant', content: 'Hi there! 👋 I am your Syn DAO AI Companion. Ask me anything about Creator DAOs, USDC nanopayments, milestone escrows, or our SDK!' }
+    { role: 'assistant', content: 'Hi there! I am your Syn DAO AI Companion. Ask me anything about Creator DAOs, USDC nanopayments, milestone escrows, or our SDK!' }
   ]);
   const [chatInput, setChatInput] = useState("");
   const [sendingChat, setSendingChat] = useState(false);

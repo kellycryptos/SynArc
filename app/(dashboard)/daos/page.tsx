@@ -233,7 +233,7 @@ export default function DAOsPage() {
                     <h3 className="font-extrabold text-white text-lg">{dao.name}</h3>
                     {dao.verified ? (
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-success/15 border border-success/30 text-[9px] font-bold text-success">
-                        ✅ Verified
+                        Verified
                       </span>
                     ) : (
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-[9px] font-bold text-amber-400">

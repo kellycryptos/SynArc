@@ -85,7 +85,7 @@ export const SOURCE_CHAINS = {
       "https://rpc.ankr.com/eth",
       "https://eth.llamarpc.com",
     ],
-    icon: "🪙",
+    icon: "ETH",
     isTestnet: false
   },
   ETH_MAINNET: {
@@ -101,7 +101,7 @@ export const SOURCE_CHAINS = {
       "https://rpc.ankr.com/eth",
       "https://eth.llamarpc.com",
     ],
-    icon: "🪙",
+    icon: "ETH",
     isTestnet: false
   },
   BASE: {
@@ -116,7 +116,7 @@ export const SOURCE_CHAINS = {
       "https://mainnet.base.org",
       "https://base.llamarpc.com",
     ],
-    icon: "🔵",
+    icon: "BASE",
     isTestnet: false
   },
   BASE_MAINNET: {
@@ -131,7 +131,7 @@ export const SOURCE_CHAINS = {
       "https://mainnet.base.org",
       "https://base.llamarpc.com",
     ],
-    icon: "🔵",
+    icon: "BASE",
     isTestnet: false
   },
   AVALANCHE: {
@@ -146,7 +146,7 @@ export const SOURCE_CHAINS = {
       "https://api.avax.network/ext/bc/C/rpc",
       "https://avalanche.public-rpc.com",
     ],
-    icon: "🔺",
+    icon: "AVAX",
     isTestnet: false
   },
   AVAX_MAINNET: {
@@ -161,7 +161,7 @@ export const SOURCE_CHAINS = {
       "https://api.avax.network/ext/bc/C/rpc",
       "https://avalanche.public-rpc.com",
     ],
-    icon: "🔺",
+    icon: "AVAX",
     isTestnet: false
   },
   SOL_MAINNET: {
@@ -173,7 +173,7 @@ export const SOURCE_CHAINS = {
     tokenMessenger: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
     messageTransmitter: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
     rpcUrls: ["https://api.mainnet-beta.solana.com"],
-    icon: "☀️",
+    icon: "SOL",
     isTestnet: false
   },
   SOLANA: {
@@ -185,7 +185,7 @@ export const SOURCE_CHAINS = {
     tokenMessenger: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
     messageTransmitter: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
     rpcUrls: ["https://api.mainnet-beta.solana.com"],
-    icon: "☀️",
+    icon: "SOL",
     isTestnet: false
   },
   // Testnet chains
@@ -202,7 +202,7 @@ export const SOURCE_CHAINS = {
       "https://ethereum-sepolia-rpc.publicnode.com",
       "https://eth-sepolia.public.blastapi.io",
     ],
-    icon: "🪙",
+    icon: "ETH",
     isTestnet: true
   },
   BASE_SEPOLIA: {
@@ -217,7 +217,7 @@ export const SOURCE_CHAINS = {
       "https://sepolia.base.org",
       "https://base-sepolia-rpc.publicnode.com",
     ],
-    icon: "🔵",
+    icon: "BASE",
     isTestnet: true
   },
   AVAX_FUJI: {
@@ -232,7 +232,7 @@ export const SOURCE_CHAINS = {
       "https://api.avax-test.network/ext/bc/C/rpc",
       "https://avalanche-fuji-c-chain-rpc.publicnode.com",
     ],
-    icon: "🔺",
+    icon: "AVAX",
     isTestnet: true
   },
   SOL_DEVNET: {
@@ -244,7 +244,7 @@ export const SOURCE_CHAINS = {
     tokenMessenger: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
     messageTransmitter: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
     rpcUrls: ["https://api.devnet.solana.com"],
-    icon: "☀️",
+    icon: "SOL",
     isTestnet: true
   }
 } as const;
@@ -259,7 +259,7 @@ export const ARC_CHAIN_TESTNET_CONFIG = {
   messageTransmitter: CCTP_TESTNET_TRANSMITTER,
   rpcUrl: ARC_RPC_URL,
   rpcUrls: ARC_RPC_URLS,
-  icon: "⚡",
+  icon: "ARC",
   isTestnet: true,
   blockExplorerUrl: "https://testnet.arcscan.app"
 } as const;
@@ -280,7 +280,7 @@ export const ARC_CHAIN_MAINNET_CONFIG = {
     'https://rpc.mainnet.arc.io',
     'https://rpc.drpc.mainnet.arc.io',
   ].filter(Boolean) as string[],
-  icon: "⚡",
+  icon: "ARC",
   isTestnet: false,
   blockExplorerUrl: "https://explorer.arc.io"
 } as const;

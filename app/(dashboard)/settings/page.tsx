@@ -168,7 +168,7 @@ export default function SettingsPage() {
                     {isArc && !isUnsupported ? (
                       <div className="flex items-center gap-2 text-success font-semibold text-sm">
                         <CheckCircle className="w-4 h-4 text-success animate-pulse" />
-                        <span>{networkName} ✅</span>
+                        <span>{networkName}</span>
                       </div>
                     ) : (
                       <div className="flex flex-1 items-center justify-between gap-3">
@@ -231,7 +231,7 @@ export default function SettingsPage() {
                         : 'text-muted hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    🌙 Dark
+                    Dark
                   </button>
                   <button 
                     onClick={() => setTheme('light')}
@@ -241,7 +241,7 @@ export default function SettingsPage() {
                         : 'text-muted hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    ☀️ Light
+                    Light
                   </button>
                 </div>
               </div>
@@ -266,7 +266,7 @@ export default function SettingsPage() {
 
                 {subscribed ? (
                   <p className="text-sm text-success font-semibold flex items-center gap-1.5 py-2">
-                    ✅ Subscribed! Check your email for confirmation.
+                    Subscribed! Check your email for confirmation.
                   </p>
                 ) : (
                   <div className="space-y-4">

@@ -48,7 +48,7 @@ const TESTNET_SOURCE_CHAINS = [
     name: "Ethereum Sepolia", 
     tokenAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", 
     rpcUrl: "https://rpc.ankr.com/eth_sepolia",
-    icon: "🪙",
+    icon: "ETH",
     color: "bg-blue-500/10 border-blue-500/20 text-blue-400",
     chainId: 11155111,
     bgClass: "from-blue-500/20 to-transparent",
@@ -60,7 +60,7 @@ const TESTNET_SOURCE_CHAINS = [
     name: "Base Sepolia", 
     tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dcf7e", 
     rpcUrl: "https://sepolia.base.org",
-    icon: "🔵",
+    icon: "BASE",
     color: "bg-blue-600/10 border-blue-600/20 text-blue-500",
     chainId: 84532,
     bgClass: "from-blue-600/20 to-transparent",
@@ -72,7 +72,7 @@ const TESTNET_SOURCE_CHAINS = [
     name: "Avalanche Fuji", 
     tokenAddress: "0x5425890298aed601595a70AB815c96711a31Bc65", 
     rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc",
-    icon: "🔺",
+    icon: "AVAX",
     color: "bg-red-500/10 border-red-500/20 text-red-500",
     chainId: 43113,
     bgClass: "from-red-500/20 to-transparent",
@@ -84,7 +84,7 @@ const TESTNET_SOURCE_CHAINS = [
     name: "Solana Devnet", 
     tokenAddress: "4zMMC9SRGx2txA24js12jccVwMAwFFdp47rFZ5y76hA3", 
     rpcUrl: "https://api.devnet.solana.com",
-    icon: "☀️",
+    icon: "SOL",
     color: "bg-purple-500/10 border-purple-500/20 text-purple-400",
     chainId: 103,
     bgClass: "from-purple-500/20 to-transparent",
@@ -99,7 +99,7 @@ const MAINNET_SOURCE_CHAINS = [
     name: "Ethereum", 
     tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 
     rpcUrl: "https://eth.llamarpc.com",
-    icon: "🪙",
+    icon: "ETH",
     color: "bg-blue-500/10 border-blue-500/20 text-blue-400",
     chainId: 1,
     bgClass: "from-blue-500/20 to-transparent",
@@ -111,7 +111,7 @@ const MAINNET_SOURCE_CHAINS = [
     name: "Base", 
     tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", 
     rpcUrl: "https://mainnet.base.org",
-    icon: "🔵",
+    icon: "BASE",
     color: "bg-blue-600/10 border-blue-600/20 text-blue-500",
     chainId: 8453,
     bgClass: "from-blue-600/20 to-transparent",
@@ -123,7 +123,7 @@ const MAINNET_SOURCE_CHAINS = [
     name: "Avalanche", 
     tokenAddress: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E", 
     rpcUrl: "https://api.avax.network/ext/bc/C/rpc",
-    icon: "🔺",
+    icon: "AVAX",
     color: "bg-red-500/10 border-red-500/20 text-red-500",
     chainId: 43114,
     bgClass: "from-red-500/20 to-transparent",
@@ -135,7 +135,7 @@ const MAINNET_SOURCE_CHAINS = [
     name: "Solana", 
     tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", 
     rpcUrl: "https://api.mainnet-beta.solana.com",
-    icon: "☀️",
+    icon: "SOL",
     color: "bg-purple-500/10 border-purple-500/20 text-purple-400",
     chainId: 101,
     bgClass: "from-purple-500/20 to-transparent",
@@ -147,7 +147,7 @@ const MAINNET_SOURCE_CHAINS = [
 const ARC_CHAIN_MAINNET = {
   id: "ARC_MAINNET",
   name: "Arc",
-  icon: "⚡",
+  icon: "ARC",
   color: "bg-amber-500/10 border-amber-500/20 text-amber-500",
   chainId: 5042,
   bgClass: "from-amber-500/20 to-transparent",
@@ -158,7 +158,7 @@ const ARC_CHAIN_MAINNET = {
 const ARC_CHAIN_TESTNET = {
   id: "ARC_TESTNET",
   name: "Arc Testnet",
-  icon: "⚡",
+  icon: "ARC",
   color: "bg-amber-500/10 border-amber-500/20 text-amber-500",
   chainId: 5042002,
   bgClass: "from-amber-500/20 to-transparent",
@@ -394,9 +394,9 @@ export default function BridgePage() {
           const newTx: BridgeTx = {
             id: "b_" + Date.now(),
             sourceChain: direction === "in" ? selectedChain.name : activeArcChain.name,
-            sourceIcon: direction === "in" ? selectedChain.icon : "⚡",
+            sourceIcon: direction === "in" ? selectedChain.icon : "ARC",
             destChain: direction === "in" ? activeArcChain.name : selectedChain.name,
-            destIcon: direction === "in" ? "⚡" : selectedChain.icon,
+            destIcon: direction === "in" ? "ARC" : selectedChain.icon,
             amount: isNaN(amountFinal) ? 0 : amountFinal,
             txHash: primaryTxHash,
             timestamp: new Date().toISOString(),
@@ -640,7 +640,7 @@ export default function BridgePage() {
               {/* Settings / Title Area */}
               <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
                 <h3 className="font-bold text-base text-white flex items-center gap-2">
-                  <span>🌉</span> Bridge Assets
+                  Bridge Assets
                 </h3>
                 
                 <div className="flex items-center gap-2.5">
@@ -733,7 +733,7 @@ export default function BridgePage() {
                           className="text-2xl sm:text-3xl font-semibold font-mono text-text-primary placeholder-text-muted bg-transparent border-none focus:outline-none w-full p-0 py-1"
                         />
                         <div className="flex items-center gap-1 bg-[#1e133d]/70 px-3 py-1.5 rounded-xl border border-border-thin shrink-0 select-none">
-                          <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary">💵</span>
+                          <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary font-bold">$</span>
                           <span className="text-xs font-extrabold text-white">USDC</span>
                         </div>
                       </div>
@@ -828,7 +828,7 @@ export default function BridgePage() {
                           {amount || "0.00"}
                         </div>
                         <div className="flex items-center gap-1 bg-[#1e133d]/70 px-3 py-1.5 rounded-xl border border-border-thin shrink-0 select-none">
-                          <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary">💵</span>
+                          <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary font-bold">$</span>
                           <span className="text-xs font-extrabold text-white">USDC</span>
                         </div>
                       </div>

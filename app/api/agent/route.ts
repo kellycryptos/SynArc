@@ -101,7 +101,7 @@ function fallbackAnalyze(text: string): any {
 function fallbackGenerate(text: string): any {
   const cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, "");
   
-  let title = "✨ AI Generated Proposal";
+  let title = "AI Generated Proposal";
   const titleMatch = cleaned.match(/title["'\s:]+([^"}\n]+)/i);
   if (titleMatch) title = titleMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
 
@@ -191,7 +191,7 @@ function fallbackAnalyzeCampaign(text: string): any {
 function fallbackGenerateCampaign(text: string): any {
   const cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, "");
 
-  let title = "✨ AI: Generated Campaign";
+  let title = "AI: Generated Campaign";
   const titleMatch = cleaned.match(/title["'\s:]+([^"}\n]+)/i);
   if (titleMatch) title = titleMatch[1].trim().replace(/^"/, "").replace(/"$/, "");
 
@@ -341,7 +341,7 @@ export async function POST(req: NextRequest) {
         const idea = proposalData?.idea || "Build a mobile app";
         
         const proposal = {
-          title: `✨ AI Generated: ${idea.substring(0, 1).toUpperCase() + idea.substring(1)}`,
+          title: `AI Generated: ${idea.substring(0, 1).toUpperCase() + idea.substring(1)}`,
           description: `This proposal details the design, execution parameters, and milestones to successfully implement the community initiative: "${idea}". \n\nBy leveraging Arc's high-throughput architecture, we aim to implement this within standard DAO timelines, boosting engagement metrics and establishing standard developer toolkits across all active delegates.\n\nWe request a USDC treasury allocation to fund core contributors and cover smart contract execution audits to ensure the stability of the deployment.`,
           category: idea.toLowerCase().includes("grant") || idea.toLowerCase().includes("usdc") ? "Treasury Allocation" : "Ecosystem Grant",
           treasuryImpact: idea.toLowerCase().includes("grant") ? "medium" : "none",
@@ -376,7 +376,7 @@ export async function POST(req: NextRequest) {
                 
                 Respond in JSON format:
                 {
-                  "title": "✨ Proposal Title",
+                  "title": "Proposal Title",
                   "description": "Provide a detailed 2-3 paragraph explanation of the proposal detailing value, execution path, and safety protocols.",
                   "category": "Governance",
                   "treasuryImpact": "none",
@@ -392,7 +392,7 @@ export async function POST(req: NextRequest) {
         console.warn("[API Agent] Groq call failed for 'generate', falling back to rule-based mock:", apiErr);
         const idea = proposalData?.idea || "Build a mobile app";
         const proposal = {
-          title: `✨ AI Generated: ${idea.substring(0, 1).toUpperCase() + idea.substring(1)}`,
+          title: `AI Generated: ${idea.substring(0, 1).toUpperCase() + idea.substring(1)}`,
           description: `This proposal details the design, execution parameters, and milestones to successfully implement the community initiative: "${idea}". \n\nBy leveraging Arc's high-throughput architecture, we aim to implement this within standard DAO timelines, boosting engagement metrics and establishing standard developer toolkits across all active delegates.\n\nWe request a USDC treasury allocation to fund core contributors and cover smart contract execution audits to ensure the stability of the deployment.\n\n[Rule-based: AI rate-limited/unavailable]`,
           category: idea.toLowerCase().includes("grant") || idea.toLowerCase().includes("usdc") ? "Treasury" : "Ecosystem",
           treasuryImpact: idea.toLowerCase().includes("grant") ? "medium" : "none",
@@ -653,7 +653,7 @@ export async function POST(req: NextRequest) {
         const category = isAgent ? "AI Infrastructure" : "Ecosystem Grant";
 
         const generated = {
-          title: `✨ AI: ${cleanIdea.substring(0, 1).toUpperCase() + cleanIdea.substring(1)}`,
+          title: `AI: ${cleanIdea.substring(0, 1).toUpperCase() + cleanIdea.substring(1)}`,
           description: `This autonomous campaign proposes the implementation of a decentralized solution for: "${cleanIdea}". Built natively on the Arc Testnet, this project optimizes coordination, security, and smart contract architecture to enable frictionless stablecoin workflows. We request funding to coordinate developers, establish testing rigs, and deploy final production frameworks.`,
           category,
           goal,
@@ -689,7 +689,7 @@ export async function POST(req: NextRequest) {
                 Creator DAO Type: ${isAgent ? 'Autonomous Agent Fund (AI created)' : 'Human Creator DAO (Developer/Community built)'}
                 
                 Constraints:
-                1. Title must start with "✨ AI: "
+                1. Title must start with "AI: "
                 2. Category must be exactly one of: "Ecosystem Grant", "AI Infrastructure", "Product Development", "Protocol Upgrade", "Community Initiative", "Research"
                 3. Goal must be a number between 5000 and 25000 (USDC amount as number)
                 4. Duration must be a number between 14 and 60 (number of days)
@@ -698,7 +698,7 @@ export async function POST(req: NextRequest) {
                 
                 Respond in JSON format:
                 {
-                  "title": "✨ AI: Arcade Ecosystem Hub",
+                  "title": "AI: Arcade Ecosystem Hub",
                   "description": "Provide a detailed 2-3 paragraph explanation of the value proposition, development milestones, and ecosystem benefits.",
                   "category": "Community Initiative",
                   "goal": 10000,
@@ -723,7 +723,7 @@ export async function POST(req: NextRequest) {
         const category = isAgent ? "AI Infrastructure" : "Ecosystem Grant";
 
         const generated = {
-          title: `✨ AI: ${cleanIdea.substring(0, 1).toUpperCase() + cleanIdea.substring(1)}`,
+          title: `AI: ${cleanIdea.substring(0, 1).toUpperCase() + cleanIdea.substring(1)}`,
           description: `This campaign proposes the implementation of a solution for: "${cleanIdea}". Built on the Arc Testnet, this project optimizes coordination, security, and smart contract architecture to enable stablecoin workflows.\n\n[Rule-based: AI rate-limited/unavailable]`,
           category,
           goal,

@@ -154,14 +154,14 @@ export default function CampaignsPage() {
     if (recommendation === 'REVIEW') {
       return (
         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-400">
-          ⚠️ Needs Review
+          Needs Review
         </span>
       );
     }
     if (recommendation === 'REJECT') {
       return (
         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-400">
-          ❌ High Risk
+          High Risk
         </span>
       );
     }
@@ -337,11 +337,11 @@ export default function CampaignsPage() {
                         </span>
                         {isAgent ? (
                           <span className="text-[10px] font-medium text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md">
-                            🤖 AI Agent
+                            AI Agent
                           </span>
                         ) : (
                           <span className="text-[10px] font-medium text-blue-300 bg-blue-500/10 border border-blue-400/20 px-2 py-0.5 rounded-md">
-                            👤 Creator DAO
+                            Creator DAO
                           </span>
                         )}
                       </div>

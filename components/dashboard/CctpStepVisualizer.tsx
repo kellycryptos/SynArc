@@ -246,7 +246,7 @@ export function CctpStepVisualizer({ txState }: { txState: CctpTxState }) {
                 <span className={`text-[10px] font-bold font-mono ${
                   isActiveStep ? "text-text-primary" : isCompleted ? "text-success" : "text-text-tertiary"
                 }`}>
-                  {isCompleted ? "✓ Done" : isActiveStep ? "Active" : `0${idx + 1}`}
+                  {isCompleted ? "Done" : isActiveStep ? "Active" : `0${idx + 1}`}
                 </span>
               </div>
 

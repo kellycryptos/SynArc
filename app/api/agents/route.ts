@@ -32,8 +32,8 @@ export interface RegisteredAgent {
 const INITIAL_AGENTS: RegisteredAgent[] = [
   {
     id: "agent_gov",
-    name: "SynArc Governance Agent",
-    avatar: "🤖",
+    name: "SynDAO Governance Agent",
+    avatar: "",
     address: "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e",
     model: "Groq AI Engine",
     capabilities: "On-chain risk scans, automated treasury sanity audits, voting recommendations",
@@ -73,7 +73,7 @@ const INITIAL_AGENTS: RegisteredAgent[] = [
   {
     id: "agent_allocation",
     name: "Ecosystem Allocation Agent",
-    avatar: "📈",
+    avatar: "",
     address: "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18",
     model: "Groq AI Engine",
     capabilities: "Milestone escrow disburse auditing, gas optimization recommendations",
@@ -106,7 +106,7 @@ const INITIAL_AGENTS: RegisteredAgent[] = [
   {
     id: "agent_guardian",
     name: "Emergency Guardian Agent",
-    avatar: "🛡️",
+    avatar: "",
     address: "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e",
     model: "Groq AI",
     capabilities: "Spam proposal identification, autonomous veto scoring",
@@ -208,7 +208,7 @@ export async function POST(req: Request) {
     const newAgent: RegisteredAgent = {
       id: `agent-${String(agents.length + 1).padStart(3, "0")}`,
       name,
-      avatar: "🤖",
+      avatar: "",
       address,
       model: model || "Groq AI Engine",
       capabilities,

@@ -132,7 +132,7 @@ export default function CreateProposalPage() {
         throw new Error(data.error || "Failed to pin specification.");
       }
       setFormData(prev => ({ ...prev, deliverableURI: data.ipfsUri }));
-      toast.success("Proposal specification pinned to IPFS! 📌");
+      toast.success("Proposal specification pinned to IPFS!");
     } catch (err: any) {
       console.error("Auto pin error:", err);
       toast.error(err?.message || "Failed to pin specification to IPFS.");
@@ -344,7 +344,7 @@ export default function CreateProposalPage() {
       // Force-refetch proposal list from chain (bypasses 3-minute staleness cache)
       await useGovernanceStore.getState().initializeStore(undefined, true);
 
-      toast.success('Proposal submitted! ✅');
+      toast.success('Proposal submitted!');
       setSuccessProposalId(finalProposalId);
 
       setTimeout(() => {
@@ -360,7 +360,7 @@ export default function CreateProposalPage() {
               href="/faucet" 
               className="self-start text-xs font-bold text-primary hover:underline flex items-center gap-1 mt-1"
             >
-              🚰 Claim testnet gas tokens from Faucet →
+              Claim testnet gas tokens from Faucet →
             </Link>
           )}
         </div>
@@ -383,7 +383,7 @@ export default function CreateProposalPage() {
               <Check className="w-8 h-8" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-white">✅ Proposal created successfully</h2>
+              <h2 className="text-2xl font-bold text-white">Proposal created successfully</h2>
               <p className="text-muted text-sm">Your governance action has been broadcast and confirmed on the Arc Testnet.</p>
             </div>
             <div className="bg-surface-elevated/40 border border-border-thin rounded-xl p-4 font-mono text-sm text-text-primary">
@@ -478,7 +478,7 @@ export default function CreateProposalPage() {
                     <Check className="w-5 h-5 shrink-0 text-success" />
                     <div>
                       <span className="font-bold">Wallet Gas Ready</span>
-                      <p className="text-xs text-muted/80 mt-0.5 font-semibold">✅ {usdcBalance} USDC is available in your wallet for transaction fees.</p>
+                      <p className="text-xs text-muted/80 mt-0.5 font-semibold">{usdcBalance} USDC is available in your wallet for transaction fees.</p>
                     </div>
                   </div>
                 )}
@@ -495,7 +495,7 @@ export default function CreateProposalPage() {
                 >
                   <div className="flex items-center gap-2">
                     <Bot className="w-5 h-5 text-primary" />
-                    <span>✨ AI Proposal Assistant</span>
+                    <span>AI Proposal Assistant</span>
                   </div>
                   <ChevronDown className={`w-4 h-4 text-muted transition-transform duration-300 ${isAssistantOpen ? "rotate-180 text-white" : ""}`} />
                 </button>
@@ -662,7 +662,7 @@ export default function CreateProposalPage() {
                               </>
                             ) : (
                               <>
-                                📌 Pin Spec to IPFS
+                                Pin Spec to IPFS
                               </>
                             )}
                           </button>

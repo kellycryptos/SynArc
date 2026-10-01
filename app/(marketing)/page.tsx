@@ -161,23 +161,23 @@ export default function LandingPage() {
           {/* Creator Economy Highlights Row */}
           <div className="mt-16 pt-10 border-t border-border-thin flex flex-wrap justify-center items-center gap-4 md:gap-8 text-center">
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
-              <span className="text-base select-none">⚡</span>
+              
               <span className="text-xs md:text-sm font-semibold text-text-primary">Workspace Funding</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
-              <span className="text-base select-none">🏛</span>
+              
               <span className="text-xs md:text-sm font-semibold text-text-primary">One-Click Setup</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
-              <span className="text-base select-none">💸</span>
+              
               <span className="text-xs md:text-sm font-semibold text-text-primary">Micro-Funding Support</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
-              <span className="text-base select-none">🤖</span>
+              
               <span className="text-xs md:text-sm font-semibold text-text-primary">Automated Treasury Rules</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/40 border border-border-thin hover:border-primary/25 transition-all duration-300">
-              <span className="text-base select-none">🏆</span>
+              
               <span className="text-xs md:text-sm font-semibold text-text-primary">Leaderboard Recognition</span>
             </div>
           </div>

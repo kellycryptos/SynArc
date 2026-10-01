@@ -23,9 +23,9 @@ export function InteractiveShowcase() {
   
   // 1. Nanopayments Stream State
   const [streams, setStreams] = useState<StreamState[]>([
-    { id: "1", name: "Alice.eth", avatar: "🎨", ratePerMin: 0.06, accumulated: 0.1524, active: true },
-    { id: "2", name: "Bob.eth", avatar: "🎮", ratePerMin: 0.015, accumulated: 14.4023, active: true },
-    { id: "3", name: "Charlie.eth", avatar: "✔️", ratePerMin: 0.12, accumulated: 3.8451, active: false }
+    { id: "1", name: "Alice.eth", avatar: "A", ratePerMin: 0.06, accumulated: 0.1524, active: true },
+    { id: "2", name: "Bob.eth", avatar: "B", ratePerMin: 0.015, accumulated: 14.4023, active: true },
+    { id: "3", name: "Charlie.eth", avatar: "C", ratePerMin: 0.12, accumulated: 3.8451, active: false }
   ]);
 
   // Tick the streams up every 100ms
@@ -81,10 +81,10 @@ export function InteractiveShowcase() {
 
   // 4. Copilot Logs State
   const [logs, setLogs] = useState<string[]>([
-    "🚀 Initializing Syn DAO Treasury Guard...",
-    "🔑 Loaded workspace wallet: 0x8b3f...e4d2",
-    "🔍 Scanning active proposals for community sweeps...",
-    "🎯 Found proposal SAP-04. Analysis initiated."
+    "Initializing Syn DAO Treasury Guard...",
+    "Loaded workspace wallet: 0x8b3f...e4d2",
+    "Scanning active proposals for community sweeps...",
+    "Found proposal SAP-04. Analysis initiated."
   ]);
   const logTerminalRef = useRef<HTMLDivElement>(null);
  
@@ -92,13 +92,13 @@ export function InteractiveShowcase() {
     if (activeTab !== "copilot") return;
     
     const additionalLogs = [
-      "📝 Proposal review complete: verified safety criteria.",
-      "⚖️ Check complete: workspace rules fully satisfied.",
-      "✔️ Signing transaction payload dynamically...",
-      "📡 Broadcasting on-chain signature payload...",
-      "🗳️ Vote cast: FOR on proposal SAP-04 (Tx: 0xdf84...c391).",
-      "💸 Sweep trigger: routing 142.50 USDC to workspace treasury.",
-      "💤 Sleeping until next block epoch..."
+      "Proposal review complete: verified safety criteria.",
+      "Check complete: workspace rules fully satisfied.",
+      "Signing transaction payload dynamically...",
+      "Broadcasting on-chain signature payload...",
+      "Vote cast: FOR on proposal SAP-04 (Tx: 0xdf84...c391).",
+      "Sweep trigger: routing 142.50 USDC to workspace treasury.",
+      "Sleeping until next block epoch..."
     ];
 
     let logIndex = 0;
@@ -122,10 +122,10 @@ export function InteractiveShowcase() {
 
   // Tab Details
   const tabs = [
-    { id: "nanopayments", label: "⚡ USDC Streams", icon: DollarSign },
-    { id: "escrows", label: "🏢 Milestone Escrow", icon: Award },
-    { id: "governance", label: "🗳️ Governance", icon: Vote },
-    { id: "copilot", label: "🤖 AI Copilot", icon: Terminal }
+    { id: "nanopayments", label: "USDC Streams", icon: DollarSign },
+    { id: "escrows", label: "Milestone Escrow", icon: Award },
+    { id: "governance", label: "Governance", icon: Vote },
+    { id: "copilot", label: "AI Copilot", icon: Terminal }
   ];
 
   return (
@@ -232,7 +232,9 @@ export function InteractiveShowcase() {
                 <div className="relative pl-6 border-l border-border space-y-4">
                   {/* Step 1 */}
                   <div className="relative text-left">
-                    <div className="absolute -left-[30px] top-0 w-4 h-4 rounded-full bg-success flex items-center justify-center text-[8px] text-white">✓</div>
+                    <div className="absolute -left-[30px] top-0 w-4 h-4 flex items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-success" />
+                    </div>
                     <div>
                       <span className="text-[10px] font-bold text-success uppercase tracking-wider">Milestone 1 · Released</span>
                       <h5 className="text-xs font-bold text-text-primary mt-0.5">Deploy Smart Contracts &amp; SDK Core (1,500 USDC)</h5>
@@ -404,7 +406,7 @@ export function InteractiveShowcase() {
                   {logs.map((log, idx) => (
                     <div key={idx} className="flex gap-2">
                       <span className="text-accent-purple select-none">&rarr;</span>
-                      <span className={log.includes("success") || log.includes("complete") || log.includes("Cast") || log.includes("Signing") ? "text-success" : log.includes("🚀") || log.includes("🔍") || log.includes("🎯") || log.includes("Loaded") ? "text-cyan-400" : "text-white/80"}>
+                      <span className={log.includes("success") || log.includes("complete") || log.includes("Cast") || log.includes("Signing") ? "text-success" : log.includes("Initializing") || log.includes("Scanning") || log.includes("Found") || log.includes("Loaded") ? "text-cyan-400" : "text-white/80"}>
                         {log}
                       </span>
                     </div>

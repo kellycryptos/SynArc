@@ -95,7 +95,7 @@ export function GovernanceHeroSection() {
               Today
             </span>
             <span className={`text-xs font-bold font-mono mt-0.5 block ${hasVotedToday ? "text-[#22C55E]" : "text-[#8A948E]"}`}>
-              {hasVotedToday ? "Verified ✓" : "Pending"}
+              {hasVotedToday ? "Verified" : "Pending"}
             </span>
           </div>
         </div>

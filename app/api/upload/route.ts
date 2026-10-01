@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
     const dataUrl = `data:${file.type};base64,${base64}`;
 
     console.warn(
-      "⚠️  Image stored as base64 — only visible to the uploader. " +
+      "Image stored as base64 — only visible to the uploader. " +
       "Set PINATA_JWT in .env.local for persistent, shared image hosting."
     );
 

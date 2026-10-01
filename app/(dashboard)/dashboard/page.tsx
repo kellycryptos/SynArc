@@ -87,12 +87,12 @@ export default function DashboardOverview() {
         <EcosystemDaoGrid />
       </SectionErrorBoundary>
 
-      {/* ⚡ Agent Status Banner */}
+      {/* Agent Status Banner */}
       <Link href="/agent" className="block">
         <div className="relative overflow-hidden flex items-center justify-between gap-4 px-5 py-4 rounded-lg border border-[#1B2536] bg-[#0B111C] hover:border-[#2F6FFF]/40 transition-all group cursor-pointer">
           <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-[#2F6FFF] to-[#4F8BFF]" />
           <div className="flex items-center gap-3.5 pl-1">
-            <span className="text-lg text-[#4F8BFF]">🛡</span>
+            
             <div>
               <div className="text-sm font-medium text-[#F5F7FA] font-space">Treasury guard active</div>
               <div className="text-xs text-[#6B7385] font-mono mt-0.5">monitoring treasury · automated rules active</div>
@@ -114,13 +114,13 @@ export default function DashboardOverview() {
         <WalletFaucetCard />
       </SectionErrorBoundary>
 
-      {/* ⚡ Creator DAOs Section */}
+      {/* Creator DAOs Section */}
       <SectionErrorBoundary sectionName="Creator DAOs">
         <GlassCard className="p-6 border border-brand/20 bg-brand/[0.01] space-y-6" hover={false}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Rocket className="w-5 h-5 text-brand" />
-              <h2 className="text-lg sm:text-xl font-bold font-heading text-text-primary">⚡ Creator DAOs</h2>
+              <h2 className="text-lg sm:text-xl font-bold font-heading text-text-primary">Creator DAOs</h2>
             </div>
             <Link href="/creator-daos" className="text-xs font-bold text-brand hover:text-brand-light flex items-center gap-1 transition-all">
               View All Creator DAOs <ArrowRight className="w-3.5 h-3.5" />
@@ -164,7 +164,7 @@ export default function DashboardOverview() {
                               ? "bg-[#2F6FFF]/10 border border-[#2F6FFF]/20 text-[#4F8BFF]" 
                               : "bg-white/5 border border-white/10 text-[#F5F7FA]"
                           }`}>
-                            {c.isAgent ? "🤖 Agent" : "👤 Human"}
+                            {c.isAgent ? "Agent" : "Human"}
                           </span>
                           <span className="text-[9px] text-muted uppercase font-bold">{c.state}</span>
                         </div>
@@ -199,7 +199,7 @@ export default function DashboardOverview() {
             <Link href="/create-dao">
               <button className="px-4 py-2.5 rounded-xl bg-brand hover:bg-brand-light text-white font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(47,111,255,0.2)] cursor-pointer">
                 <Plus className="w-4 h-4" />
-                🚀 Launch Creator DAO
+                Launch Creator DAO
               </button>
             </Link>
           </div>
@@ -240,7 +240,7 @@ export default function DashboardOverview() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-brand" />
-                    <h3 className="text-sm font-extrabold font-heading text-text-primary uppercase tracking-wider">⚡ Creator Economy</h3>
+                    <h3 className="text-sm font-extrabold font-heading text-text-primary uppercase tracking-wider">Creator Economy</h3>
                   </div>
                   <Link href="/leaderboard" className="text-xs font-bold text-brand hover:text-brand-light transition-colors flex items-center gap-0.5">
                     View All <ArrowRight className="w-3.5 h-3.5" />
@@ -275,7 +275,7 @@ export default function DashboardOverview() {
                       <Link href={`/creator/${creator.id}`} key={creator.id} className="block group">
                         <div className="flex items-center justify-between p-2.5 rounded-xl bg-surface/25 border border-border-subtle hover:border-brand/20 group-hover:bg-brand/[0.01] transition-all duration-300">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs select-none">{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
+                            <span className="text-xs select-none">{`#${i + 1}`}</span>
                             <span className="text-xs font-bold text-text-primary group-hover:text-brand-light transition-colors">{creator.name}</span>
                           </div>
                           <span className="text-xs font-bold text-brand-light">{creator.raised.toLocaleString()} USDC</span>

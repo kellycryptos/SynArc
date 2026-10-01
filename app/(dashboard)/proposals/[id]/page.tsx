@@ -307,7 +307,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       });
       await waitForTransaction(publicClient, hash);
       setDelegateSuccess(true);
-      toast.success("✅ sARC delegated! You now have voting power.");
+      toast.success("sARC delegated! You now have voting power.");
       // Refetch voting power immediately after delegation
       await refetchToken();
     } catch (err: any) {
@@ -507,8 +507,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
       await waitForTransaction(publicClient, voteTx);
 
-      setStatus('✅ Vote recorded on Arc');
-      toast.success('Vote recorded on-chain! ✅');
+      setStatus('Vote recorded on Arc');
+      toast.success('Vote recorded on-chain!');
       
       // Reactive force-refetch — bypasses 3-minute staleness cache so UI updates immediately
       await initializeStore(undefined, true);
@@ -845,7 +845,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                         href="/faucet"
                         className="self-end px-3 py-1 bg-danger/20 hover:bg-danger/30 text-white font-bold text-xs rounded-lg transition-colors border border-danger/40 flex items-center gap-1 cursor-pointer"
                       >
-                        🚰 Claim Native Gas from Faucet →
+                        Claim Native Gas from Faucet →
                       </Link>
                     )}
                   </div>
@@ -866,7 +866,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                         <ShieldCheck className="w-4 h-4" />
                         Cast Complete
                       </div>
-                      <span className="text-xs text-text-tertiary">Your vote is registered on-chain ✅</span>
+                      <span className="text-xs text-text-tertiary">Your vote is registered on-chain</span>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -896,7 +896,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                       {hasVotingPower ? (
                         <div className="mb-2 space-y-1">
                           <p className="text-emerald-400 text-xs font-semibold text-center">
-                            ✅ {usdcFormatted} USDC + {sarcFormatted} sARC
+                            {usdcFormatted} USDC + {sarcFormatted} sARC
                           </p>
                           <p className="text-text-tertiary text-[10px] text-center leading-tight">
                             On-chain vote weight: <span className="text-purple-400 font-bold">{sarcFormatted} sARC</span>
@@ -904,7 +904,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                         </div>
                       ) : sarcBalance > 0 && !delegateSuccess ? null : (
                         <p className="text-red-400 text-xs font-semibold text-center mb-2">
-                          ⚠️ You need USDC or sARC on Arc Testnet to vote.{" "}
+                          You need USDC or sARC on Arc Testnet to vote.{" "}
                           <a href="/faucet" className="text-primary hover:underline font-bold">
                             Get sARC from faucet
                           </a>
@@ -918,7 +918,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                           className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-success/10 hover:border-success/30 hover:text-success text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50"
                         >
                           <ThumbsUp className="w-4 h-4" />
-                          {voting ? 'Submitting...' : '👍 For'}
+                          {voting ? 'Submitting...' : 'For'}
                         </button>
                         <button
                           onClick={() => handleCastVote(0)}
@@ -926,7 +926,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                           className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-danger/10 hover:border-danger/30 hover:text-danger text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50"
                         >
                           <ThumbsDown className="w-4 h-4" />
-                          {voting ? 'Submitting...' : '👎 Against'}
+                          {voting ? 'Submitting...' : 'Against'}
                         </button>
                         <button
                           onClick={() => handleCastVote(2)}
@@ -934,7 +934,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                           className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-surface-elevated hover:text-foreground text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50"
                         >
                           <CircleDot className="w-4 h-4" />
-                          {voting ? 'Submitting...' : '⚪ Abstain'}
+                          {voting ? 'Submitting...' : 'Abstain'}
                         </button>
                       </div>
 
@@ -953,7 +953,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-bold"
                           >
-                            View on ArcScan ✅
+                            View on ArcScan
                           </a>
                         </div>
                       )}
@@ -973,7 +973,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                     rel="noopener noreferrer" 
                     className="text-primary hover:underline font-bold block"
                   >
-                    🚰 Claim USDC Gas Faucet
+                    Claim USDC Gas Faucet
                   </a>
                 </div>
               </div>
@@ -1016,9 +1016,9 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                       aiDecision.vote === "AGAINST" ? "bg-danger/10 border-danger/20 text-danger" :
                       "bg-surface-elevated border-border-thin text-text-primary"
                     }`}>
-                      {aiDecision.vote === "FOR" ? "FOR ✅" :
-                       aiDecision.vote === "AGAINST" ? "AGAINST ❌" :
-                       "ABSTAIN ⚪"}
+                      {aiDecision.vote === "FOR" ? "FOR" :
+                       aiDecision.vote === "AGAINST" ? "AGAINST" :
+                       "ABSTAIN"}
                     </span>
                   </div>
 
@@ -1057,7 +1057,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                     <div className="space-y-1">
                       <span className="text-[10px] text-red-400 block font-bold uppercase tracking-wider">Key Concerns</span>
                       <p className="text-text-secondary font-semibold leading-normal text-red-300 bg-danger/5 border border-danger/10 p-2 rounded-xl">
-                        ⚠️ {aiDecision.concerns}
+                        {aiDecision.concerns}
                       </p>
                     </div>
                   )}
@@ -1147,7 +1147,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
           <GlassCard className="p-6 border border-warning/20 bg-warning/5 rounded-2xl mt-8">
             <div className="flex items-center gap-2 mb-4 text-warning font-bold text-sm">
               <ShieldCheck className="w-5 h-5 text-warning animate-pulse" />
-              <span>🛠 Arc Developer Debug Panel</span>
+              <span>Arc Developer Debug Panel</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
               <div className="space-y-1.5">

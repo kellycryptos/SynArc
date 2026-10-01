@@ -109,7 +109,7 @@ export function RequestListingModal({ isOpen, onClose }: RequestListingModalProp
           <form onSubmit={handleSubmit} className="space-y-4">
             {errorMsg && (
               <div className="p-3 rounded-xl bg-danger/10 border border-danger/20 text-xs text-danger font-semibold">
-                ⚠️ {errorMsg}
+                {errorMsg}
               </div>
             )}
 

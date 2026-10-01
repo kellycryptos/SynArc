@@ -365,7 +365,7 @@ export function WalletFaucetCard() {
                 )}
               </div>
               <span className="text-[10px] text-text-tertiary">
-                {sarcVotes > 0 ? "✅ Voting active" : sarcBalance > 0 ? "⚠️ Delegate to vote" : "No sARC yet"}
+                {sarcVotes > 0 ? "Voting active" : sarcBalance > 0 ? "Delegate to vote" : "No sARC yet"}
               </span>
             </div>
 
@@ -443,7 +443,7 @@ export function WalletFaucetCard() {
         
         <div className="space-y-1">
           <h3 className="text-xl font-bold font-heading text-white flex items-center gap-2">
-            ⚡ Get Testnet Tokens
+            Get Testnet Tokens
           </h3>
           <p className="text-xs text-text-tertiary">
             Claim testnet assets once per day to build delegation reputation, participate in voting, and interact with the treasury.
@@ -454,7 +454,7 @@ export function WalletFaucetCard() {
           {/* Option 1 — Syn DAO Token (sARC) */}
           <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-brand/30 transition-all duration-300">
             <div className="flex items-center gap-3">
-              <span className="text-2xl select-none">🪙</span>
+              <span className="text-sm font-bold text-blue-400 select-none">ETH</span>
               <div>
                 <h4 className="font-bold text-white text-sm">Syn DAO Token</h4>
                 <p className="text-[10px] text-muted font-mono">sARC · 1000 per claim</p>
@@ -512,7 +512,7 @@ export function WalletFaucetCard() {
           {/* Option 2 — USDC Testnet */}
           <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-brand/30 transition-all duration-300">
             <div className="flex items-center gap-3">
-              <span className="text-2xl select-none">💵</span>
+              <span className="text-sm font-bold text-primary select-none">USDC</span>
               <div>
                 <h4 className="font-bold text-white text-sm">USDC Testnet</h4>
                 <p className="text-[10px] text-muted font-mono">Circle Faucet</p>
@@ -536,7 +536,7 @@ export function WalletFaucetCard() {
           {/* Option 3 — EURC Testnet */}
           <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-brand/30 transition-all duration-300">
             <div className="flex items-center gap-3">
-              <span className="text-2xl select-none">🟣</span>
+              <span className="text-sm font-bold text-purple-400 select-none">sARC</span>
               <div>
                 <h4 className="font-bold text-white text-sm">EURC Testnet</h4>
                 <p className="text-[10px] text-muted font-mono">Circle Faucet</p>
@@ -560,7 +560,7 @@ export function WalletFaucetCard() {
           {/* Option 4 — Bridge USDC */}
           <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-brand/30 transition-all duration-300">
             <div className="flex items-center gap-3">
-              <span className="text-2xl select-none">🌉</span>
+              <span className="text-sm font-bold text-amber-400 select-none">CCTP</span>
               <div>
                 <h4 className="font-bold text-white text-sm">Bridge USDC</h4>
                 <p className="text-[10px] text-muted font-mono">Circle Bridge Kit</p>
@@ -593,7 +593,7 @@ export function WalletFaucetCard() {
               className="p-4 rounded-xl bg-positive/10 border border-positive/20 flex flex-col sm:flex-row justify-between sm:items-center gap-2.5 text-xs text-positive"
             >
               <div>
-                <span className="font-semibold block mb-0.5">🎉 Faucet Transaction Confirmed Successfully!</span>
+                <span className="font-semibold block mb-0.5">Faucet Transaction Confirmed Successfully!</span>
                 <span className="font-mono opacity-80 select-all block sm:inline">{currentTxHash}</span>
               </div>
               <a

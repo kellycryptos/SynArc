@@ -113,7 +113,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
       </div>
 
       <div className="flex-1 overflow-y-auto py-4 px-3.5 space-y-1">
-        {/* ⚡ AGENT — Primary Feature Card */}
+        {/* AGENT — Primary Feature Card */}
         {(() => {
           const href = "/agent";
           const active = pathname === href || pathname.startsWith(href + "/");
@@ -126,7 +126,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
               )}
             >
               <span className="text-[13px] font-medium text-[#F5F7FA] flex items-center gap-2 font-space">
-                ⚡ Treasury Agent
+                Treasury Agent
               </span>
               <span className="font-mono text-[10px] tracking-wider text-[#4F8BFF] border border-[#1B2536] bg-[#05080F] px-1.75 py-0.5 rounded flex items-center gap-1.25">
                 <span className="w-1.25 h-1.25 rounded-full bg-[#4F8BFF] animate-pulse" />
@@ -269,7 +269,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
               isCircle ? (
                 <span className="px-2 py-0.5 rounded-full bg-[#2F6FFF]/10 border border-[#2F6FFF]/20 text-[#4F8BFF] font-bold flex items-center gap-1">
                   <span>{parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC</span>
-                  <span className="text-[9px] font-extrabold px-1 py-0.2 rounded bg-[#2F6FFF]/20 text-[#4F8BFF] animate-pulse">⚡</span>
+                  <span className="text-[9px] font-extrabold px-1 py-0.2 rounded bg-[#2F6FFF]/20 text-[#4F8BFF]">AI</span>
                 </span>
               ) : (
                 <span className="px-2 py-0.5 rounded-full bg-[#2F6FFF]/10 border border-[#2F6FFF]/20 text-[#4F8BFF] font-bold">

@@ -115,9 +115,9 @@ export default function LeaderboardPage() {
 
   // Podium Positions helpers
   const podiumOrder = [
-    { rank: 2, index: 1, height: "h-40", border: "border-slate-400/20", glow: "rgba(148,163,184,0.05)", text: "🥈" },
-    { rank: 1, index: 0, height: "h-48", border: "border-amber-400/30", glow: "rgba(245,158,11,0.08)", text: "🥇" },
-    { rank: 3, index: 2, height: "h-36", border: "border-amber-700/20", glow: "rgba(180,83,9,0.04)", text: "🥉" },
+    { rank: 2, index: 1, height: "h-40", border: "border-slate-400/20", glow: "rgba(148,163,184,0.05)", text: "#2" },
+    { rank: 1, index: 0, height: "h-48", border: "border-amber-400/30", glow: "rgba(245,158,11,0.08)", text: "#1" },
+    { rank: 3, index: 2, height: "h-36", border: "border-amber-700/20", glow: "rgba(180,83,9,0.04)", text: "#3" },
   ];
 
   return (
@@ -126,7 +126,7 @@ export default function LeaderboardPage() {
       <div className="border-b border-border-subtle pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold font-heading text-white tracking-tight flex items-center gap-2.5">
-            🏆 Creator Leaderboard
+            Creator Leaderboard
           </h1>
           <p className="text-xs text-text-secondary mt-1">
             Top funded creators and AI agents on Arc — ranked by USDC raised.
@@ -266,7 +266,7 @@ export default function LeaderboardPage() {
                     <tr key={creator.id} className="hover:bg-surface-elevated/15 transition-colors group">
                       {/* Rank Column */}
                       <td className="p-4 text-center font-extrabold text-sm text-text-secondary">
-                        {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
+                        `#${i + 1}`
                       </td>
                       
                       {/* Creator Details Column */}

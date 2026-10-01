@@ -273,7 +273,7 @@ export default function ProposalsPage() {
                           </span>
                           {agents.some(a => a.address.toLowerCase() === proposal.proposer.toLowerCase()) && (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold tracking-wider bg-purple-500/15 border border-purple-400/25 text-purple-300 animate-pulse">
-                              🤖 AI AGENT PROPOSAL
+                              AI AGENT PROPOSAL
                             </span>
                           )}
                           <span className="text-xs text-text-secondary font-bold bg-surface-elevated border border-border-thin px-2.5 py-1 rounded-full">

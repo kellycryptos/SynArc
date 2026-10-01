@@ -426,13 +426,13 @@ export function TameionReleaseValve({ treasuryUsdcBalance = 0 }: TameionReleaseV
                 <div className="flex justify-between">
                   <span className="text-text-tertiary">Agent Release (&le; ${agentCap}):</span>
                   <span className={lookupResult.isAgent ? "text-emerald-400 font-bold" : "text-text-tertiary"}>
-                    {lookupResult.isAgent ? "Authorized ✅" : "No ❌"}
+                    {lookupResult.isAgent ? "Authorized" : "Unauthorized"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-tertiary">Human Reviewer (&gt; ${agentCap}):</span>
                   <span className={lookupResult.isReviewer ? "text-purple-400 font-bold" : "text-text-tertiary"}>
-                    {lookupResult.isReviewer ? "Authorized ✅" : "No ❌"}
+                    {lookupResult.isReviewer ? "Authorized" : "Unauthorized"}
                   </span>
                 </div>
               </div>

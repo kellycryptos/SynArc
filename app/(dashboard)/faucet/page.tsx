@@ -207,14 +207,14 @@ export default function FaucetPage() {
       {/* Token Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        {/* ── SynArc Token (sARC) ─────────────────────────────────────────── */}
+        {/* ── SynDAO Token (sARC) ─────────────────────────────────────────── */}
         <GlassCard className="p-6 flex flex-col gap-5 border border-primary/20 bg-gradient-to-br from-primary/[0.04] to-transparent relative overflow-hidden">
           {/* Glow */}
           <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/20 rounded-full blur-2xl pointer-events-none" />
 
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/20 flex items-center justify-center text-xl font-extrabold text-purple-300 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
-              ⚡
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/20 flex items-center justify-center text-xs font-extrabold text-purple-300 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
+              sARC
             </div>
             <div>
               <h2 className="font-extrabold text-white text-lg leading-tight">Syn DAO Token</h2>
@@ -319,7 +319,7 @@ export default function FaucetPage() {
                 href="/proposals"
                 className="w-full py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-amber-500/20 transition-all"
               >
-                ⚡ Activate voting power → open a proposal &amp; delegate
+                Activate voting power to open a proposal &amp; delegate
               </a>
             </div>
           ) : (
@@ -350,7 +350,7 @@ export default function FaucetPage() {
 
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-400/20 flex items-center justify-center text-xl shadow-[0_0_20px_rgba(59,130,246,0.15)]">
-              💵
+              USDC
             </div>
             <div>
               <h2 className="font-extrabold text-white text-lg leading-tight">USDC Testnet</h2>
@@ -391,7 +391,7 @@ export default function FaucetPage() {
 
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 border border-purple-400/20 flex items-center justify-center text-xl shadow-[0_0_20px_rgba(168,85,247,0.15)]">
-              🟣
+              sARC
             </div>
             <div>
               <h2 className="font-extrabold text-white text-lg leading-tight">EURC Testnet</h2>

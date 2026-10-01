@@ -94,27 +94,27 @@ export function getProposalStateDisplay(state: ProposalState): {
     [ProposalState.Active]: {
       label: 'Active',
       color: 'bg-blue-500/20 text-blue-400 border-blue-500/20',
-      icon: '🔵',
+      icon: '',
     },
     [ProposalState.Canceled]: {
       label: 'Canceled',
       color: 'bg-red-500/20 text-red-400 border-red-500/20',
-      icon: '❌',
+      icon: '',
     },
     [ProposalState.Defeated]: {
       label: 'Defeated',
       color: 'bg-red-500/20 text-red-400 border-red-500/20',
-      icon: '👎',
+      icon: '',
     },
     [ProposalState.Succeeded]: {
       label: 'Succeeded',
       color: 'bg-green-500/20 text-green-400 border-green-500/20',
-      icon: '✅',
+      icon: '',
     },
     [ProposalState.Queued]: {
       label: 'Queued',
       color: 'bg-purple-500/20 text-purple-400 border-purple-500/20',
-      icon: '📦',
+      icon: '',
     },
     [ProposalState.Expired]: {
       label: 'Expired',
@@ -124,7 +124,7 @@ export function getProposalStateDisplay(state: ProposalState): {
     [ProposalState.Executed]: {
       label: 'Executed',
       color: 'bg-green-500/20 text-green-400 border-green-500/20',
-      icon: '🚀',
+      icon: '',
     },
   };
 
@@ -143,17 +143,17 @@ export function getVoteTypeDisplay(voteType: VoteType): {
     [VoteType.Against]: {
       label: 'Against',
       color: 'text-red-400 bg-red-500/10',
-      icon: '👎',
+      icon: '',
     },
     [VoteType.For]: {
       label: 'For',
       color: 'text-green-400 bg-green-500/10',
-      icon: '👍',
+      icon: '',
     },
     [VoteType.Abstain]: {
       label: 'Abstain',
       color: 'text-gray-400 bg-gray-500/10',
-      icon: '🤷',
+      icon: '',
     },
   };
 

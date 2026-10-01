@@ -129,7 +129,7 @@ function TreasuryPageContent() {
       
       toast.loading("⏳ Confirming withdrawal execution...", { id: toastId });
       await waitForTransaction(publicClient, hash);
-      toast.success("Withdrawal executed successfully! ✅", { id: toastId });
+      toast.success("Withdrawal executed successfully!", { id: toastId });
       refetchTreasury();
     } catch (err: any) {
       console.error(err);
@@ -166,7 +166,7 @@ function TreasuryPageContent() {
       
       toast.loading("⏳ Confirming cancellation...", { id: toastId });
       await waitForTransaction(publicClient, hash);
-      toast.success("Withdrawal canceled successfully! ✅", { id: toastId });
+      toast.success("Withdrawal canceled successfully!", { id: toastId });
       refetchTreasury();
     } catch (err: any) {
       console.error(err);
@@ -395,7 +395,7 @@ function TreasuryPageContent() {
           throw new Error('Deposit failed on-chain.');
         }
 
-        setDepositStatus('✅ Deposit successful!');
+        setDepositStatus('Deposit successful!');
         toast.success(`${amount} ${token} deposited to treasury`);
 
         addTransaction({
@@ -509,7 +509,7 @@ function TreasuryPageContent() {
       setDepositStatus('Confirming deposit...');
       await waitForTransaction(publicClient, depositTx);
 
-      setDepositStatus('✅ Deposit successful!')
+      setDepositStatus('Deposit successful!')
       toast.success(`${amount} ${token} deposited to treasury`)
       
       // Store in activity log
@@ -584,7 +584,7 @@ function TreasuryPageContent() {
                   onClick={() => setShowBridge(true)}
                   className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-text-primary font-semibold text-sm transition-all border border-border-thin flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] shrink-0 w-full lg:w-auto"
                 >
-                  🌉 Bridge USDC to Arc
+                  Bridge USDC to Arc
                 </button>
 
                 <Link
@@ -795,7 +795,7 @@ function TreasuryPageContent() {
                                 rel="noreferrer"
                                 className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-mono"
                               >
-                                📄 Attestation Doc ↗
+                                Attestation Doc ↗
                               </a>
                             </div>
                           )}
@@ -1043,7 +1043,7 @@ function TreasuryPageContent() {
                     }}
                     className="self-end px-3 py-1.5 rounded-lg bg-danger/20 border border-danger/30 hover:bg-danger/30 text-xs font-bold text-danger transition-colors cursor-pointer flex items-center gap-1 mt-1"
                   >
-                    🔄 Retry Deposit
+                    Retry Deposit
                   </button>
                 )}
               </div>

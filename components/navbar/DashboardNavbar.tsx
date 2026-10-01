@@ -109,7 +109,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
                   </>
                 ) : (
                   <>
-                    <span>⚡ Arc Wallet ({shortAddress})</span>
+                    <span>Arc Wallet ({shortAddress})</span>
                   </>
                 )}
               </span>

@@ -149,11 +149,11 @@ export default function CreatorProfilePage({ params }: PageProps) {
 
   // Quick donation helpers
   const presets = [
-    { amount: 0.01, label: "☕ $0.01", desc: "USDC Nanopayment" },
-    { amount: 0.10, label: "🎯 $0.10", desc: "Micro Support" },
-    { amount: 1.00, label: "⭐ $1.00", desc: "Super Backer" },
-    { amount: 5.00, label: "🔥 $5.00", desc: "Ecosystem Builder" },
-    { amount: 10.00, label: "💎 $10.00", desc: "Executive Patron" },
+    { amount: 0.01, label: "$0.01", desc: "USDC Nanopayment" },
+    { amount: 0.10, label: "$0.10", desc: "Micro Support" },
+    { amount: 1.00, label: "$1.00", desc: "Super Backer" },
+    { amount: 5.00, label: "$5.00", desc: "Ecosystem Builder" },
+    { amount: 10.00, label: "$10.00", desc: "Executive Patron" },
   ];
 
   const handleShare = async () => {
@@ -298,7 +298,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
 
         await waitForTransaction(publicClient, contributeHash);
         txHash = contributeHash;
-        toast.success(`🎉 Deposited ${amountVal} USDC into Creator DAO milestone escrow!`, { id: "support-toast" });
+        toast.success(`Deposited ${amountVal} USDC into Creator DAO milestone escrow!`, { id: "support-toast" });
       } else {
         // Direct USDC transfer fallback
         const usdcAbi = parseAbi([
@@ -652,7 +652,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
             <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex gap-2.5 text-[11px] leading-relaxed text-text-secondary">
               <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold text-text-primary">💰 How it works:</span>{" "}
+                <span className="font-bold text-text-primary">How it works:</span>{" "}
                 Your USDC is sent to a secure <span className="font-semibold text-text-primary">on-chain escrow contract</span>. Funds are locked and released to the creator <span className="font-semibold text-text-primary">only after</span> community/governance approves the milestones. This protects both supporters and creators.
               </div>
             </div>
@@ -667,7 +667,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
           <GlassCard className="p-6 space-y-4" hover={false}>
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-primary animate-pulse" />
-              <h3 className="text-base font-extrabold font-heading text-white">🤖 AI Agent Analysis</h3>
+              <h3 className="text-base font-extrabold font-heading text-white">AI Agent Analysis</h3>
             </div>
             
             <p className="text-xs text-text-tertiary leading-relaxed">

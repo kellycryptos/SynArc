@@ -90,7 +90,7 @@ export function NetworkStatusBadge() {
         <span className="font-medium">{networkName}</span>
         <span className="text-white/30">·</span>
         <span className="hidden sm:inline">{isHealthy ? `${latency}ms` : "Reconnecting"}</span>
-        <span className="sm:hidden">{isHealthy ? "✓" : "✗"}</span>
+        <span className="sm:hidden">{isHealthy ? "OK" : "ERR"}</span>
         <ChevronDown
           className={`w-3.5 h-3.5 text-[#8A948E] transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""

@@ -22,7 +22,7 @@ export function WalletGuard({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [isProtected, ready]);
 
-  // 🔥 THE FIX: If NOT protected, render IMMEDIATELY to avoid blocking public read-only views
+  // THE FIX: If NOT protected, render IMMEDIATELY to avoid blocking public read-only views
   if (!isProtected) {
     return <>{children}</>;
   }
@@ -58,7 +58,7 @@ export function WalletGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  // 🔥 THE FIX: If trying to view a locked tab without being logged in, 
+  // THE FIX: If trying to view a locked tab without being logged in, 
   // DO NOT redirect. Stop the navigation and show an inline, themed access block.
   if (isProtected && !isAuthenticated) {
     return (

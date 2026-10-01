@@ -44,12 +44,12 @@ interface PageProps {
 const LIFECYCLE_STATES = ['Draft', 'Active', 'Voting', 'Funded', 'Completed'] as const;
 
 const STATE_CONFIG = {
-  Draft: { color: 'text-gray-400', bg: 'bg-white/5 border-white/10', icon: '📝', description: 'Campaign being prepared' },
-  Active: { color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-400/20', icon: '🚀', description: 'Accepting USDC contributions' },
-  Voting: { color: 'text-purple-300', bg: 'bg-purple-500/10 border-purple-400/20', icon: '🗳️', description: 'Community voting on milestone release' },
-  Funded: { color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-400/20', icon: '✅', description: 'Milestone approved and USDC released' },
-  Failed: { color: 'text-red-400', bg: 'bg-red-500/10 border-red-400/20', icon: '❌', description: 'Campaign did not reach goal' },
-  Completed: { color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-400/25 shadow-[0_0_10px_rgba(245,158,11,0.15)]', icon: '🏆', description: 'All milestones successfully completed' },
+  Draft: { color: 'text-gray-400', bg: 'bg-white/5 border-white/10', icon: '', description: 'Campaign being prepared' },
+  Active: { color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-400/20', icon: '', description: 'Accepting USDC contributions' },
+  Voting: { color: 'text-purple-300', bg: 'bg-purple-500/10 border-purple-400/20', icon: '', description: 'Community voting on milestone release' },
+  Funded: { color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-400/20', icon: '', description: 'Milestone approved and USDC released' },
+  Failed: { color: 'text-red-400', bg: 'bg-red-500/10 border-red-400/20', icon: '', description: 'Campaign did not reach goal' },
+  Completed: { color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-400/25 shadow-[0_0_10px_rgba(245,158,11,0.15)]', icon: '', description: 'All milestones successfully completed' },
 };
 
 function FundingSourceItem({ icon, title, description, status }: { icon: string; title: string; description: string; status: string }) {
@@ -327,7 +327,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
       });
       
       const receipt = await waitForTransaction(publicClient, contributeHash);
-      console.log("🎉 On-chain contribution completed! Receipt:", receipt);
+      console.log("On-chain contribution completed! Receipt:", receipt);
 
       // 4. Update the campaign store state & sync metrics on-chain
       await contribute(campaignId, contributionAmount);
@@ -461,7 +461,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
           ...gasParams,
         });
         const receipt = await waitForTransaction(publicClient, withdrawHash);
-        console.log("🎉 ESCROW RELEASE COMPLETED! Milestone locked USDC successfully disbursed.", receipt);
+        console.log("ESCROW RELEASE COMPLETED! Milestone locked USDC successfully disbursed.", receipt);
         alert(`Success! Milestone ${index + 1} funds released and sent to recipient on-chain.`);
       } catch (withdrawErr: any) {
         console.log("Milestone not yet fully approved by backers. Vote registered successfully.", withdrawErr);
@@ -483,27 +483,27 @@ export default function CampaignDetailPage({ params }: PageProps) {
     if (recommendation === 'FUND') {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-          🤖 AI Reviewed — Recommended ✅
+          AI Reviewed — Recommended
         </span>
       );
     }
     if (recommendation === 'REVIEW') {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-500/10 border border-amber-500/20 text-amber-400">
-          🤖 AI Reviewed — Needs Review ⚠️
+          AI Reviewed — Needs Review
         </span>
       );
     }
     if (recommendation === 'REJECT') {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-red-500/10 border border-red-500/20 text-red-400">
-          🤖 AI Reviewed — High Risk ❌
+          AI Reviewed — High Risk
         </span>
       );
     }
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-white/[0.04] border border-white/[0.08] text-muted/80">
-        🤖 AI Review Pending...
+        AI Review Pending...
       </span>
     );
   };
@@ -565,11 +565,11 @@ export default function CampaignDetailPage({ params }: PageProps) {
             <div className="flex flex-wrap items-center justify-between gap-3">
               {campaign.isAgent ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider bg-purple-500/15 border border-purple-400/25 text-purple-300 animate-pulse">
-                  🤖 AUTONOMOUS AGENT FUND
+                  AUTONOMOUS AGENT FUND
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider bg-blue-500/15 border border-blue-400/25 text-blue-300">
-                  👤 HUMAN CAMPAIGN
+                  HUMAN CAMPAIGN
                 </span>
               )}
 
@@ -597,7 +597,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
             {/* 1. Add Escrow Trust Messaging */}
             <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[10.5px] text-purple-300 leading-normal flex items-start gap-2 max-w-sm">
-              <span className="shrink-0 text-xs">🔒</span>
+              
               <span>
                 USDC contributed to this Creator DAO is secured directly within decentralized milestone escrow vaults. Syn DAO treasury cannot arbitrarily drain or redirect these funds — capital release requires cryptographic proof of deliverable approval.
               </span>
@@ -708,9 +708,9 @@ export default function CampaignDetailPage({ params }: PageProps) {
                                 Processing...
                               </>
                             ) : isCreator ? (
-                              "🔓 Release Escrow Funds"
+                              "Release Escrow Funds"
                             ) : (
-                              "🗳️ Vote Approve Milestone"
+                              "Vote Approve Milestone"
                             )}
                           </button>
                         </div>
@@ -790,7 +790,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
               
               {/* 1. Tooltip / Notice Info Block */}
               <div className="p-3 rounded-xl bg-surface/30 border border-border-thin text-[10.5px] text-muted space-y-1">
-                <span className="text-purple-300 font-bold block">🔒 Escrow Vault Locks:</span>
+                <span className="text-purple-300 font-bold block">Escrow Vault Locks:</span>
                 <span className="block leading-relaxed">
                   Your USDC is locked in a smart contract escrow vault. Funds only release when the community votes to approve each milestone. You can claim a refund if the Creator DAO funding fails.
                 </span>
@@ -803,7 +803,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
             <GlassCard className="p-6 border border-amber-500/20 bg-amber-500/[0.01] space-y-5 animate-fade-in" hover={false}>
               <div>
                 <span className="text-[9px] px-2 py-0.2 rounded font-extrabold bg-amber-500/10 border border-amber-500/30 text-amber-400 uppercase tracking-widest block w-fit mb-1.5">Governor Hook Active</span>
-                <h3 className="text-sm font-extrabold uppercase tracking-wider text-amber-400">🏛 Milestone Proposal #{campaign.proposalNumber}</h3>
+                <h3 className="text-sm font-extrabold uppercase tracking-wider text-amber-400">Milestone Proposal #{campaign.proposalNumber}</h3>
                 <p className="text-[11px] text-muted leading-relaxed mt-1">
                   Proposal to release <strong>{activeMilestone?.amount.toLocaleString()} USDC</strong> for:
                 </p>
@@ -823,7 +823,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
                   <div className="space-y-2.5 text-xs">
                     <div className="space-y-1">
                       <div className="flex justify-between font-semibold">
-                        <span className="text-success">✅ Approve Release (FOR)</span>
+                        <span className="text-success">Approve Release (FOR)</span>
                         <span className="text-text-primary">{campaign.votes.for.toLocaleString()} votes ({forPercent.toFixed(1)}%)</span>
                       </div>
                       <div className="w-full h-1.5 bg-surface rounded-full overflow-hidden border border-border-thin/40">
@@ -833,7 +833,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
                     <div className="space-y-1">
                       <div className="flex justify-between font-semibold">
-                        <span className="text-danger">❌ Reject Release (AGAINST)</span>
+                        <span className="text-danger">Reject Release (AGAINST)</span>
                         <span className="text-text-primary">{campaign.votes.against.toLocaleString()} votes ({againstPercent.toFixed(1)}%)</span>
                       </div>
                       <div className="w-full h-1.5 bg-surface rounded-full overflow-hidden border border-border-thin/40">
@@ -843,7 +843,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
                     <div className="space-y-1">
                       <div className="flex justify-between font-semibold">
-                        <span className="text-muted">⚪ Abstain</span>
+                        <span className="text-muted">Abstain</span>
                         <span className="text-text-primary">{campaign.votes.abstain.toLocaleString()} votes ({abstainPercent.toFixed(1)}%)</span>
                       </div>
                       <div className="w-full h-1.5 bg-surface rounded-full overflow-hidden border border-border-thin/40">
@@ -923,7 +923,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
             <div className="absolute top-0 right-0 w-16 h-16 bg-purple-glow/5 rounded-full blur-lg pointer-events-none" />
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-purple-glow animate-pulse shrink-0" />
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-purple-300">🔍 AI Risk Analysis</h3>
+              <h3 className="text-sm font-extrabold uppercase tracking-wider text-purple-300">AI Risk Analysis</h3>
             </div>
             
             {analyzing ? (
@@ -1019,7 +1019,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
                 </div>
 
                 <div className="pt-2 border-t border-border-thin/40 text-[9px] text-muted leading-normal italic text-center">
-                  ⚠️ AI Risk Analysis is advisory only. Always perform comprehensive due diligence.
+                  AI Risk Analysis is advisory only. Always perform comprehensive due diligence.
                 </div>
               </div>
             ) : (
@@ -1047,7 +1047,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
             <GlassCard className="p-6 border border-purple-500/25 bg-purple-500/[0.02] space-y-4 animate-fade-in" hover={false}>
               <div className="flex items-center gap-2">
                 <Brain className="w-4 h-4 text-purple-300 animate-pulse" />
-                <h3 className="text-sm font-extrabold uppercase tracking-wider text-purple-300">🤖 Autonomous Agent Details</h3>
+                <h3 className="text-sm font-extrabold uppercase tracking-wider text-purple-300">Autonomous Agent Details</h3>
               </div>
 
               <div className="space-y-3.5 text-xs text-text-secondary">
@@ -1094,7 +1094,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
           <GlassCard className="p-6 border border-border-thin space-y-4" hover={false}>
             <div>
               <h3 className="text-sm font-extrabold uppercase tracking-wider text-text-primary flex items-center gap-1.5">
-                <span>💰</span> Funding Sources
+                Funding Sources
               </h3>
               <p className="text-[11px] text-muted mt-1 leading-relaxed">
                 This Creator DAO is eligible to receive deposits in USDC from multiple coordination vectors:
@@ -1103,25 +1103,25 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
             <div className="grid grid-cols-1 gap-3">
               <FundingSourceItem
-                icon="👤"
+                icon=""
                 title="Individual Contributors"
                 description="Anyone on Arc Testnet can back Creator DAOs directly using stablecoins."
                 status="Active"
               />
               <FundingSourceItem
-                icon="🏛"
+                icon=""
                 title="DAO Treasury Allocation"
                 description="Syn DAO can allocate matching treasury blocks via governor proposals."
                 status="Active"
               />
               <FundingSourceItem
-                icon="🤖"
+                icon=""
                 title="AI Treasury Agents"
                 description="Autonomous liquidity agents can deposit based on yield parameters."
                 status="Active"
               />
               <FundingSourceItem
-                icon="🌐"
+                icon=""
                 title="Ecosystem Grants"
                 description="Direct capital matches from Arc chain developer ecosystems."
                 status="Soon"
@@ -1137,9 +1137,9 @@ export default function CampaignDetailPage({ params }: PageProps) {
               <div className="flex items-center justify-between">
                 <span>Account Type</span>
                 {campaign.isAgent ? (
-                  <span className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-400/20 text-purple-300 font-bold text-[10px]">🤖 AI Agent</span>
+                  <span className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-400/20 text-purple-300 font-bold text-[10px]">AI Agent</span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-400/20 text-blue-300 font-bold text-[10px]">👤 Human</span>
+                  <span className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-400/20 text-blue-300 font-bold text-[10px]">Human</span>
                 )}
               </div>
 
@@ -1149,19 +1149,19 @@ export default function CampaignDetailPage({ params }: PageProps) {
                 <div className="flex justify-between items-center">
                   <span>AI Scanned</span>
                   <span className={campaign.sybilProtection.aiScanned ? "text-success font-bold" : "text-muted"}>
-                    {campaign.sybilProtection.aiScanned ? "✅ Active" : "⏳ Pending"}
+                    {campaign.sybilProtection.aiScanned ? "Active" : "Pending"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Reputation Verified</span>
                   <span className={campaign.sybilProtection.reputationChecked ? "text-success font-bold" : "text-muted"}>
-                    {campaign.sybilProtection.reputationChecked ? "✅ Active" : "⏳ Pending"}
+                    {campaign.sybilProtection.reputationChecked ? "Active" : "Pending"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Stake Deposited</span>
                   <span className={campaign.sybilProtection.stakeRequired ? "text-success font-bold" : "text-muted"}>
-                    {campaign.sybilProtection.stakeRequired ? "✅ Active" : "⏳ Pending"}
+                    {campaign.sybilProtection.stakeRequired ? "Active" : "Pending"}
                   </span>
                 </div>
               </div>

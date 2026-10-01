@@ -30,11 +30,11 @@ import {
 } from "@/lib/agent/forensic-auditor";
 
 const SCENARIOS: { id: AttackScenario; label: string; tag: string; icon: string }[] = [
-  { id: "phantom_invoice", label: "Phantom Invoice", tag: "Fake CID / Omission", icon: "👻" },
-  { id: "payee_substitution", label: "Payee Substitution", tag: "Prompt Injection", icon: "🎭" },
-  { id: "silent_roundoff", label: "Silent Round-Off", tag: "ERPNext Float Drift", icon: "🧮" },
-  { id: "unwitnessed_bridge", label: "Unwitnessed Bridge", tag: "No Iris Attestation", icon: "🌉" },
-  { id: "whale_drain_bypass", label: "Whale Drain Bypass", tag: "50 USDC Cap Breached", icon: "🐋" }
+  { id: "phantom_invoice", label: "Phantom Invoice", tag: "Fake CID / Omission", icon: "INV" },
+  { id: "payee_substitution", label: "Payee Substitution", tag: "Prompt Injection", icon: "SUB" },
+  { id: "silent_roundoff", label: "Silent Round-Off", tag: "ERPNext Float Drift", icon: "CALC" },
+  { id: "unwitnessed_bridge", label: "Unwitnessed Bridge", tag: "No Iris Attestation", icon: "BRG" },
+  { id: "whale_drain_bypass", label: "Whale Drain Bypass", tag: "50 USDC Cap Breached", icon: "CAP" }
 ];
 
 export function TameionAdversarialSimulator() {
@@ -226,16 +226,16 @@ export function TameionAdversarialSimulator() {
                 Standard double-entry ledgers allow this error because debits still equal credits. The contract blindly releases funds, or quietly rounds off differences into a hidden expense account.
               </p>
               <div className="p-2.5 bg-red-950/40 border border-red-500/30 rounded-xl text-[11px] font-mono text-red-300">
-                ❌ {result.naiveLedgerOutcome}
+                {result.naiveLedgerOutcome}
               </div>
             </div>
 
-            {/* The SynArc Adversarial Mesh */}
+            {/* The SynDAO Adversarial Mesh */}
             <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/25 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  SynArc Adversarial Mesh (Arc Mainnet 5042)
+                  SynDAO Adversarial Mesh (Arc Mainnet 5042)
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
                   THREE-WAY MATCH
@@ -245,7 +245,7 @@ export function TameionAdversarialSimulator() {
                 The Forensic Sentinel halts execution before broadcast. If forced, the on-chain contract reverts loudly with auditable parameters, refusing silent compensation.
               </p>
               <div className="p-2.5 bg-emerald-950/40 border border-emerald-500/30 rounded-xl text-[11px] font-mono text-emerald-300">
-                🛡️ {result.synArcOutcome}
+                {result.synArcOutcome}
               </div>
             </div>
           </div>

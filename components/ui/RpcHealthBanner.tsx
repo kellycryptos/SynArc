@@ -25,7 +25,7 @@ export function RpcHealthBanner({ hasLoadedBalance = false }: RpcHealthBannerPro
       <div className="flex items-center gap-3">
         <AlertCircle className="w-5 h-5 shrink-0 text-warning animate-bounce" />
         <div>
-          <span className="font-bold">⚠ Unable to reach Arc RPC</span>
+          <span className="font-bold">Unable to reach Arc RPC</span>
           <p className="text-xs text-muted/80 mt-0.5 font-semibold">Retrying automatically...</p>
         </div>
       </div>

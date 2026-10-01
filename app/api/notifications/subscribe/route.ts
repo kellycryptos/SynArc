@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       to: email,
       subject: 'You are now subscribed to Syn DAO governance alerts',
       html: `
-        <h2>Welcome to Syn DAO Governance Alerts 🏛</h2>
+        <h2>Welcome to Syn DAO Governance Alerts</h2>
         <p>You will now receive email notifications when:</p>
         <ul>
           <li>New governance proposals are submitted</li>

@@ -17,12 +17,12 @@ import { getAddress, isAddress, encodeDeployData } from "viem";
 
 
 const TEMPLATES = [
-  { icon: "🎵", name: "Music Creator", desc: "Fund your album, tour, or music video", category: "music" },
-  { icon: "🎨", name: "Artist", desc: "Fund commissions, exhibitions, or collections", category: "art" },
-  { icon: "✍️", name: "Writer", desc: "Fund your book, newsletter, or research", category: "writing" },
-  { icon: "🎮", name: "Game Developer", desc: "Fund your indie game or mod", category: "gaming" },
-  { icon: "🤖", name: "Automated Project", desc: "Start a project with custom automated treasury rules", category: "ai-agent" },
-  { icon: "🛠️", name: "Open Source / Builder", desc: "Fund your software tools or ecosystem project", category: "builder" },
+  { icon: "Music", name: "Music Creator", desc: "Fund your album, tour, or music video", category: "music" },
+  { icon: "Art", name: "Artist", desc: "Fund commissions, exhibitions, or collections", category: "art" },
+  { icon: "Writing", name: "Writer", desc: "Fund your book, newsletter, or research", category: "writing" },
+  { icon: "Gaming", name: "Game Developer", desc: "Fund your indie game or mod", category: "gaming" },
+  { icon: "AI Agent", name: "Automated Project", desc: "Start a project with custom automated treasury rules", category: "ai-agent" },
+  { icon: "Builder", name: "Open Source / Builder", desc: "Fund your software tools or ecosystem project", category: "builder" },
 ];
 
 const isValidEVMAddress = (addr: string) => {
@@ -102,7 +102,7 @@ export default function CreateDaoPage() {
           duration: c.duration ? c.duration.toString() : prev.duration,
           wallet: c.recipient || prev.wallet,
         }));
-        toast.success("🤖 Details auto-drafted successfully!");
+        toast.success("Details auto-drafted successfully!");
       } else {
         toast.error(data.error || "Failed to generate campaign draft.");
       }
@@ -420,7 +420,7 @@ export default function CreateDaoPage() {
         });
 
         // Show real transaction hash and success message
-        toast.success(`🚀 Creator DAO launched! Tx: ${transactionHash.slice(0, 10)}...`, { id: launchToastId, duration: 5000 });
+        toast.success(`Creator DAO launched! Tx: ${transactionHash.slice(0, 10)}...`, { id: launchToastId, duration: 5000 });
         
         // Immediately redirect to creator profile page
         router.push(`/creator/${creatorId}`);
@@ -456,7 +456,7 @@ export default function CreateDaoPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-subtle pb-6">
         <div>
           <h1 className="text-3xl font-extrabold font-heading text-white tracking-tight flex items-center gap-2">
-            🚀 Launch Project Workspace
+            Launch Project Workspace
           </h1>
           <p className="text-xs text-text-secondary mt-1">
             Set up your project workspace and enable community funding with near-zero transaction fees.
@@ -550,7 +550,7 @@ export default function CreateDaoPage() {
                 <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-full blur-lg pointer-events-none" />
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-primary animate-pulse shrink-0" />
-                  <h4 className="text-xs font-bold text-text-primary uppercase tracking-wide">🤖 Auto-Draft with AI</h4>
+                  <h4 className="text-xs font-bold text-text-primary uppercase tracking-wide">Auto-Draft with AI</h4>
                 </div>
                 <p className="text-xs text-text-tertiary leading-relaxed">
                   Briefly describe your Creator DAO idea and our AI agent will auto-fill your name, description, funding goal, and duration.
@@ -685,7 +685,7 @@ export default function CreateDaoPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
                       <div className="relative z-10 flex flex-col items-center gap-2 text-center p-2">
                         <span className="text-[10px] bg-success/20 border border-success/30 px-2 py-0.5 rounded-full text-success font-bold">
-                          ✓ Image Uploaded
+                          Image Uploaded
                         </span>
                         <p className="text-[10px] text-text-secondary truncate max-w-[200px]">Cover image active</p>
                         <button
@@ -700,7 +700,7 @@ export default function CreateDaoPage() {
                   ) : (
                     <>
                       <div className="w-10 h-10 rounded-xl bg-surface-elevated border border-border-thin flex items-center justify-center text-xl text-text-secondary shadow-inner">
-                        🖼️
+                        IMG
                       </div>
                       <div className="text-center space-y-1">
                         <span className="text-xs font-bold text-white hover:text-primary transition-colors cursor-pointer relative block">
@@ -796,7 +796,7 @@ export default function CreateDaoPage() {
 
               {/* Escrow Notice */}
               <div className="p-4 rounded-xl border border-primary/20 bg-primary/[0.01] flex items-start gap-2.5 text-xs text-text-secondary leading-relaxed">
-                <span className="text-base select-none">🔒</span>
+                
                 <div>
                   <span className="font-bold text-white block mb-0.5">Escrow Security Policy:</span>
                   Funds raised are locked securely in milestone escrows and only released when the community votes to approve your progress.
@@ -849,7 +849,7 @@ export default function CreateDaoPage() {
           >
             <GlassCard className="p-8 text-center space-y-6 border border-success/30 bg-success/[0.01]" hover={false}>
               <div className="w-16 h-16 bg-success/10 border border-success/20 rounded-full flex items-center justify-center text-3xl mx-auto shadow-lg animate-bounce">
-                🎉
+                
               </div>
               
               <div className="space-y-2">
@@ -929,7 +929,7 @@ export default function CreateDaoPage() {
       {/* SDK Sponsorship Footer */}
       <div className="pt-6 border-t border-border-thin flex justify-center items-center">
         <p className="text-[10px] text-text-tertiary/60 font-mono tracking-wider">
-          ⚙️ Powered by secure on-chain smart accounts.
+          Powered by secure on-chain smart accounts.
         </p>
       </div>
     </div>
