@@ -122,16 +122,18 @@ export const CONTRACTS_TESTNET = {
 }
 
 // Arc Mainnet — falls back to deployed addresses when mainnet-specific overrides are unset
+// Deployed 2026-10-01 on Arc Mainnet (Chain ID 5042)
 export const CONTRACTS_MAINNET = {
-  get governor() { return (process.env.NEXT_PUBLIC_MAINNET_GOVERNOR_ADDRESS || process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || '0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e') as `0x${string}` },
-  get treasuryGovernance() { return (process.env.NEXT_PUBLIC_MAINNET_TREASURY_ADDRESS || process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '0xFE0F6bF45D363d34CD5fC1781594a7471736dC18') as `0x${string}` },
-  get treasuryAgent() { return (process.env.NEXT_PUBLIC_MAINNET_TREASURY_AGENT_ADDRESS || process.env.NEXT_PUBLIC_TREASURY_AGENT_ADDRESS || '0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28') as `0x${string}` },
+  get governor() { return (process.env.NEXT_PUBLIC_MAINNET_GOVERNOR_ADDRESS || process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || '0xc20ED7a2d87e3B7Ac7f9b2ac5F5a91E15E3E36f5') as `0x${string}` },
+  get treasuryGovernance() { return (process.env.NEXT_PUBLIC_MAINNET_TREASURY_ADDRESS || process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '0x8205e9782Fe54fD2aaD895b436B695db169F3d7B') as `0x${string}` },
+  get treasuryAgent() { return (process.env.NEXT_PUBLIC_MAINNET_TREASURY_AGENT_ADDRESS || process.env.NEXT_PUBLIC_TREASURY_AGENT_ADDRESS || '0x88BdF819466C1802ce6C780a9fbdF3A314cab07D') as `0x${string}` },
   get treasury() { return this.treasuryGovernance },
-  get token() { return (process.env.NEXT_PUBLIC_MAINNET_TOKEN_ADDRESS || process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e') as `0x${string}` },
+  get token() { return (process.env.NEXT_PUBLIC_MAINNET_TOKEN_ADDRESS || process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4') as `0x${string}` },
   get eurc() { return (process.env.NEXT_PUBLIC_MAINNET_EURC_CONTRACT_ADDRESS || process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS || '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}` },
   get tokenMessenger() { return (process.env.NEXT_PUBLIC_MAINNET_TOKEN_MESSENGER_ADDRESS || process.env.NEXT_PUBLIC_TOKEN_MESSENGER_ADDRESS || '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d') as `0x${string}` },
   get crowdfund() { return (process.env.NEXT_PUBLIC_MAINNET_CROWDFUND_ADDRESS || process.env.NEXT_PUBLIC_CROWDFUND_ADDRESS || '0xd5374DFC4B01F60115A52Df027704062506b3030') as `0x${string}` },
 }
+
 
 export const CONTRACTS = new Proxy({} as typeof CONTRACTS_MAINNET, {
   get(_target, prop) {

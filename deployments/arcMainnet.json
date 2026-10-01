@@ -1,14 +1,15 @@
 {
   "network": "arcMainnet",
-  "chainId": 31337,
-  "token": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-  "treasury": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  "governor": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+  "chainId": 5042,
+  "token": "0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4",
+  "treasury": "0x8205e9782Fe54fD2aaD895b436B695db169F3d7B",
+  "governor": "0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025",
   "crowdfund": "0xd5374DFC4B01F60115A52Df027704062506b3030",
   "treasuryAgent": "0x88BdF819466C1802ce6C780a9fbdF3A314cab07D",
   "agentReleaseCapUSDC": 50,
   "humanReviewThreshold": 50000000,
   "releaseValve": "Tameion Three-Way Match Active",
   "forensicMesh": "Dual-Agent Adversarial Sentinel Ready",
-  "timestamp": "2026-09-29T18:31:17.602Z"
+  "deployer": "0xE819090D7810D89f2E86e167d0b58425dEd745D8",
+  "timestamp": "2026-10-01T11:05:14.000Z"
 }

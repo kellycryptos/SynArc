@@ -102,7 +102,7 @@ describe("SynArc Governance System", function () {
       await treasury.depositUSDC(depositAmount);
       await expect(
         treasury.connect(voter1).withdrawUSDC(executionTarget.address, depositAmount)
-      ).to.be.revertedWith("Only governor can call");
+      ).to.be.revertedWith("Only governor");
     });
   });
 

@@ -13,7 +13,7 @@ async function main() {
   }
   const key = rawKey.startsWith('0x') ? rawKey : '0x' + rawKey;
   const wallet = new ethers.Wallet(key, provider);
-  const bal = await wallet.getBalance();
+  const bal = await provider.getBalance(wallet.address);
   const network = await provider.getNetwork();
   console.log('Deployer address:', wallet.address);
   console.log('Balance:', ethers.formatEther(bal), 'ARC');

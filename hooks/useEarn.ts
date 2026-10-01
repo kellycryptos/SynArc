@@ -3,14 +3,133 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useAccount } from "wagmi";
+import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 import { toast } from "react-hot-toast";
 import type { ArcEarnChain, EarnVault, DepositQuote, WithdrawalQuote, EarnPosition } from "@/types/earn";
 
+// Helper to load SDK dynamically
+const getEarnKit = async () => {
+  const { EarnKit } = await import("@circle-fin/earn-kit");
+  return new EarnKit();
+};
+
+const getBrowserProvider = async () => {
+  if (typeof window === "undefined") return null;
+  return (window as any).ethereum || null;
+};
+
+const getAdapter = async () => {
+  const { createViemAdapterFromProvider } = await import("@circle-fin/adapter-viem-v2");
+  const provider = await getBrowserProvider();
+
+  if (!provider) {
+    throw new Error("No Web3 provider found. Please connect your wallet.");
+  }
+
+  return await createViemAdapterFromProvider({
+    provider,
+    capabilities: { addressContext: "user-controlled" },
+  });
+};
+
 export function useEarn() {
-  const { isArcTestnet, activeNetwork, networkName, isConnected } = useArcNetwork();
+  const deferred = useDeferredWeb3();
+
+  // If Web3Provider has not been mounted yet (SSR or unauthenticated visitor),
+  // use the guest version of useEarn so no Wagmi hooks are executed outside WagmiProvider.
+  if (deferred && !deferred.isMounted) {
+    return useGuestEarn();
+  }
+
+  return useActiveEarn();
+}
+
+/**
+ * Guest version of useEarn for SSR and unauthenticated state.
+ * Allows browsing vaults freely without executing wallet-dependent Wagmi hooks.
+ */
+function useGuestEarn() {
+  const { isArcTestnet, activeNetwork, networkName } = useArcNetwork();
+  const [vaults, setVaults] = useState<EarnVault[]>([]);
+  const [isLoadingVaults, setIsLoadingVaults] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const currentEarnChain: ArcEarnChain = useMemo(() => {
+    return isArcTestnet ? "Arc_Testnet" : "Arc";
+  }, [isArcTestnet]);
+
+  const fetchVaults = useCallback(async (chainOverride?: ArcEarnChain) => {
+    const chainToUse = chainOverride || currentEarnChain;
+    setIsLoadingVaults(true);
+    setError(null);
+
+    try {
+      const kit = await getEarnKit();
+      const res = await kit.exploreVaults({
+        chain: chainToUse,
+        sortBy: "apy",
+      });
+
+      const rawVaults = res?.vaults || [];
+      const formattedVaults: EarnVault[] = rawVaults.map((v: any) => ({
+        vaultAddress: v.vaultAddress || v.address,
+        chain: v.chain as ArcEarnChain,
+        name: v.name || "Morpho Vault",
+        protocol: v.protocol || "MORPHO",
+        asset: v.asset || "USDC",
+        assetAddress: v.assetAddress || "0x3600000000000000000000000000000000000000",
+        currentApy: typeof v.currentApy === "number" ? v.currentApy : 0,
+        nativeApy: v.nativeApy,
+        vaultFee: v.vaultFee,
+        status: v.status || "active",
+        circleGuarded: Boolean(v.circleGuarded),
+        totalDeposits: v.totalDeposits || "0.0",
+        liquidity: v.liquidity || "0.0",
+        manager: v.manager,
+        fee: v.fee,
+        liquidityProfile: v.liquidityProfile,
+      }));
+
+      setVaults(formattedVaults);
+      return formattedVaults;
+    } catch (err: any) {
+      console.error("[useEarn guest] fetchVaults error:", err);
+      setError(err?.message || "Failed to load Earn vaults");
+      return [];
+    } finally {
+      setIsLoadingVaults(false);
+    }
+  }, [currentEarnChain]);
+
+  useEffect(() => {
+    fetchVaults();
+  }, [fetchVaults]);
+
+  return {
+    vaults,
+    positions: {},
+    currentEarnChain,
+    activeNetwork,
+    networkName,
+    isLoadingVaults,
+    isLoadingPositions: false,
+    isTransacting: false,
+    error,
+    fetchVaults,
+    fetchPositions: async () => ({}),
+    getDepositQuote: async () => null,
+    deposit: async () => { throw new Error("Please connect your wallet to deposit."); },
+    getWithdrawalQuote: async () => null,
+    withdraw: async () => { throw new Error("Please connect your wallet to withdraw."); },
+  };
+}
+
+/**
+ * Active version of useEarn for connected/mounted Web3 sessions.
+ */
+function useActiveEarn() {
+  const { isArcTestnet, activeNetwork, networkName } = useArcNetwork();
   const { walletAddress, isAuthenticated } = useAuth();
-  const { connector } = useAccount();
 
   const [vaults, setVaults] = useState<EarnVault[]>([]);
   const [positions, setPositions] = useState<Record<string, EarnPosition>>({});
@@ -22,30 +141,6 @@ export function useEarn() {
   const currentEarnChain: ArcEarnChain = useMemo(() => {
     return isArcTestnet ? "Arc_Testnet" : "Arc";
   }, [isArcTestnet]);
-
-  // Helper to load SDK dynamically (safeguard against SSR issues)
-  const getEarnKit = async () => {
-    const { EarnKit } = await import("@circle-fin/earn-kit");
-    return new EarnKit();
-  };
-
-  const getAdapter = async () => {
-    const { createViemAdapterFromProvider } = await import("@circle-fin/adapter-viem-v2");
-
-    const provider = await (
-      connector?.getProvider?.() ||
-      (typeof window !== "undefined" ? (window as any).ethereum : null)
-    );
-
-    if (!provider) {
-      throw new Error("No Web3 provider found. Please connect your wallet.");
-    }
-
-    return await createViemAdapterFromProvider({
-      provider,
-      capabilities: { addressContext: "user-controlled" },
-    });
-  };
 
   // 1. Fetch available vaults on Arc (Mainnet or Testnet)
   const fetchVaults = useCallback(async (chainOverride?: ArcEarnChain) => {
@@ -131,7 +226,7 @@ export function useEarn() {
               };
             }
           } catch {
-            // Ignore individual position query failures for vaults with 0 shares
+            // Ignore 0 balance queries
           }
         })
       );
@@ -199,7 +294,6 @@ export function useEarn() {
 
       toast.success(`Successfully deposited ${amount} USDC into vault!`, { id: toastId });
 
-      // Refresh positions
       setTimeout(() => {
         fetchPositions();
       }, 1500);
@@ -252,7 +346,6 @@ export function useEarn() {
 
       toast.success(`Successfully redeemed ${result?.amount || amount} USDC!`, { id: toastId });
 
-      // Refresh positions
       setTimeout(() => {
         fetchPositions();
       }, 1500);
