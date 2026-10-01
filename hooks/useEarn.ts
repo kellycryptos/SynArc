@@ -107,7 +107,7 @@ function useGuestEarn() {
 
   return {
     vaults,
-    positions: {},
+    positions: {} as Record<string, EarnPosition>,
     currentEarnChain,
     activeNetwork,
     networkName,
@@ -116,7 +116,7 @@ function useGuestEarn() {
     isTransacting: false,
     error,
     fetchVaults,
-    fetchPositions: async () => ({}),
+    fetchPositions: async () => ({} as Record<string, EarnPosition>),
     getDepositQuote: async () => null,
     deposit: async () => { throw new Error("Please connect your wallet to deposit."); },
     getWithdrawalQuote: async () => null,
