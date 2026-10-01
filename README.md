@@ -404,7 +404,22 @@ https://www.syndaopro.xyz/
 
 ## 10a. Deployed Contracts & Network Reference
 
-Below is the official network configuration and deployed smart contract addresses for SynArc on the Arc Testnet (`chainId: 5042002`).
+### Arc Mainnet (`chainId: 5042`) — Live Production
+
+| Configuration / Contract | Value / Address | Description | ArcScan / Explorer |
+|:---|:---|:---|:---|
+| **Chain ID** | `5042` | Arc Mainnet Identifier | [Arc Explorer](https://explorer.arc.io) |
+| **RPC Endpoint** | `https://rpc.mainnet.arc.io` | Official Arc Mainnet RPC Endpoint | — |
+| **SynArcTreasury** (Release Valve) | `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B` | Three-Way Match Release Valve, Payee Cooldown & Idempotency Guard | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
+| **SynArcGovernor** (Document Engine) | `0xc20ED7a2d87e3B7Ac7f9b2ac5F5a91E15E3E36f5` | Document-Anchored Governance Engine (48h timelock) | [Inspect](https://explorer.arc.io/address/0xc20ED7a2d87e3B7Ac7f9b2ac5F5a91E15E3E36f5) |
+| **SynArcToken** (`sARC`) | `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4` | Primary Governance Token with checkpoint delegation | [Inspect](https://explorer.arc.io/address/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) |
+| **Authorized Operator Agent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | Autonomous AI Agent executing under-cap releases & rebalances | [Inspect](https://explorer.arc.io/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
+| **Authorized Human Reviewer** | `0xE819090D7810D89f2E86e167d0b58425dEd745D8` | Deployer EOA registered on-chain for emergency overrides & multisig signoff | [Inspect](https://explorer.arc.io/address/0xE819090D7810D89f2E86e167d0b58425dEd745D8) |
+| **Canonical USDC** | `0x3600000000000000000000000000000000000000` | Native Circle USDC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0x3600000000000000000000000000000000000000) |
+| **Canonical EURC** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | Native Circle EURC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a) |
+| **Agent Release Cap** | `50.00 USDC` (`50_000_000 micro-USDC`) | Enforced on-chain: releases $\le 50$ autonomous; $> 50$ require human review | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
+
+### Arc Testnet (`chainId: 5042002`)
 
 | Configuration / Contract | Value / Address | Description | ArcScan Explorer |
 |:---|:---|:---|:---|
@@ -419,7 +434,7 @@ Below is the official network configuration and deployed smart contract addresse
 | **USDC (Gas Token)** | `0x3600000000000000000000000000000000000000` | Native USDC stablecoin for fee payment | [Inspect](https://testnet.arcscan.app/address/0x3600000000000000000000000000000000000000) |
 | **Treasury Agent Contract** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | On-chain autonomous agent rules executor | [Inspect](https://testnet.arcscan.app/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
 
-> ℹ️ All contracts are deployed on Arc Testnet. Verified contracts have direct explorer links.
+> ℹ️ Verified contracts have direct explorer links on Arc Mainnet Explorer and ArcScan Testnet.
 
 ---
 

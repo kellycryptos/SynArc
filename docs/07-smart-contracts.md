@@ -12,19 +12,30 @@ All core platform mechanics operate programmatically through secure on-chain EVM
 
 ## Deployed Contract Addresses
 
-Syn DAO contracts are deployed on the Arc Testnet (`chainId: 5042002`) and are verified on the ArcScan block explorer.
+### Arc Mainnet (`chainId: 5042`) — Live Production
 
-### Quick Reference
+| Contract | Address | Explorer Link |
+| :--- | :--- | :--- |
+| **SynArc Treasury** (Release Valve) | `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B` | [View on Arc Explorer](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
+| **SynArc Governor** (Document Engine) | `0xc20ED7a2d87e3B7Ac7f9b2ac5F5a91E15E3E36f5` | [View on Arc Explorer](https://explorer.arc.io/address/0xc20ED7a2d87e3B7Ac7f9b2ac5F5a91E15E3E36f5) |
+| **SynArcToken (`sARC`)** | `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4` | [View on Arc Explorer](https://explorer.arc.io/address/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) |
+| **Authorized Operator Agent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | [View on Arc Explorer](https://explorer.arc.io/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
+| **Authorized Human Reviewer** | `0xE819090D7810D89f2E86e167d0b58425dEd745D8` | [View on Arc Explorer](https://explorer.arc.io/address/0xE819090D7810D89f2E86e167d0b58425dEd745D8) |
+| **Canonical USDC** | `0x3600000000000000000000000000000000000000` | [View on Arc Explorer](https://explorer.arc.io/address/0x3600000000000000000000000000000000000000) |
+| **Canonical EURC** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | [View on Arc Explorer](https://explorer.arc.io/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a) |
+
+### Arc Testnet (`chainId: 5042002`)
 
 | Contract | Address | ArcScan |
 | :--- | :--- | :--- |
 | **SynArc Governor** | `0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e` | [View on ArcScan](https://testnet.arcscan.app/address/0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e) |
-| **SynArc Treasury** | `0xFE0F6bF45D363d34CD5fC1781594a7471736dC18` | [View on ArcScan](https://testnet.arcscan.app/address/0xFE0F6bF45D363d34CD5fC1781594a7471736dC18) |
+| **SynArc Treasury** (Governance) | `0xFE0F6bF45D363d34CD5fC1781594a7471736dC18` | [View on ArcScan](https://testnet.arcscan.app/address/0xFE0F6bF45D363d34CD5fC1781594a7471736dC18) |
+| **SynArc Treasury** (Agent Operating) | `0x302D7cba3553e22E24C7A5C9aFee3942EBC6ea63` | [View on ArcScan](https://testnet.arcscan.app/address/0x302D7cba3553e22E24C7A5C9aFee3942EBC6ea63) |
 | **SynArcToken (sARC)** | `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e` | [View on ArcScan](https://testnet.arcscan.app/address/0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e) |
 | **EURC Token (Circle)** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | [View on ArcScan](https://testnet.arcscan.app/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a) |
 | **ERC-8004 Registry** | `0x8004A818BFB912233c491871b3d84c89A494BD9e` | [View on ArcScan](https://testnet.arcscan.app/address/0x8004A818BFB912233c491871b3d84c89A494BD9e) |
 | **SynArcAgent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | [View on ArcScan](https://testnet.arcscan.app/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
-| **SynArcCrowdfund** | Dynamic — per Creator DAO | — |
+| **SynArcCrowdfund** | `0xd5374DFC4B01F60115A52Df027704062506b3030` | [View on ArcScan](https://testnet.arcscan.app/address/0xd5374DFC4B01F60115A52Df027704062506b3030) |
 
 ---
 

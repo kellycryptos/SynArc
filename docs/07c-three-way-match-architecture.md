@@ -243,8 +243,20 @@ Agent can release under an on-chain cap. Over the cap it stops for a human. Same
 | **Autonomous Agent** | $\le 50.00\text{ USDC}$ | `isAuthorizedAgent(caller) == true` | Reverts with `HumanApprovalRequired` if amount $> 50\text{ USDC}$ |
 | **Human Reviewer / Multisig** | Unlimited ($> 50.00\text{ USDC}$) | `isAuthorizedReviewer(caller) == true` or `humanApproved[releaseKey] == true` | Reverts with `HumanApprovalRequired` if unauthorized |
 
+### Live Arc Mainnet (5042) Deployed Contracts
+
+| Contract / Role | Address | On-Chain Function / Link |
+| :--- | :--- | :--- |
+| **SynArcTreasury** (Release Valve) | `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B` | [View on Arc Explorer](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
+| **SynArcGovernor** (Document Engine) | `0xc20ED7a2d87e3B7Ac7f9b2ac5F5a91E15E3E36f5` | [View on Arc Explorer](https://explorer.arc.io/address/0xc20ED7a2d87e3B7Ac7f9b2ac5F5a91E15E3E36f5) |
+| **SynArcToken** (`sARC`) | `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4` | [View on Arc Explorer](https://explorer.arc.io/address/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) |
+| **Authorized Operator Agent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | [View on Arc Explorer](https://explorer.arc.io/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
+| **Authorized Human Reviewer** | `0xE819090D7810D89f2E86e167d0b58425dEd745D8` | [View on Arc Explorer](https://explorer.arc.io/address/0xE819090D7810D89f2E86e167d0b58425dEd745D8) |
+| **On-Chain Agent Release Cap** | `50.00 USDC` (`50_000_000 micro-USDC`) | Enforced by `SynArcTreasury.agentReleaseCap()` |
+
 ### Rebrand & Official Channels
 - **Official X (Twitter)**: [@syndaopro](https://x.com/syndaopro)
 - **Live Domain**: [syndaopro.xyz](https://www.syndaopro.xyz/)
 - **Arc Mainnet Explorer**: [explorer.arc.io](https://explorer.arc.io)
+
 

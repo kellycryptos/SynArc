@@ -7,6 +7,7 @@ import { Bell, Search, Menu, LogOut, Wallet, Flame } from "lucide-react";
 import { useMemo } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 
 /**
  * DashboardNavbar Component
@@ -19,7 +20,8 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
  * - Notification bell and logout button
  */
 export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
-  const { isAuthenticated, walletAddress, email, user, logout, isCircle } = useAuth();
+  const deferred = useDeferredWeb3();
+  const { isAuthenticated, walletAddress, email, user, logout, login, isCircle } = useAuth();
   const activeWalletAddress = walletAddress;
   const { balance, loading, error } = useUSDCBalance(activeWalletAddress);
 
@@ -130,17 +132,27 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
               <span className="w-1.5 h-1.5 rounded-full bg-[#4F8BFF] animate-pulse" />
               Browsing as Guest
             </span>
-            <ConnectButton.Custom>
-              {({ openConnectModal, connectModalOpen }) => (
-                <button
-                  onClick={openConnectModal}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-sm hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
-                >
-                  <Wallet className="w-3.5 h-3.5 shrink-0" />
-                  <span>{connectModalOpen ? "Connecting..." : "Connect Wallet"}</span>
-                </button>
-              )}
-            </ConnectButton.Custom>
+            {deferred?.isMounted ? (
+              <ConnectButton.Custom>
+                {({ openConnectModal, connectModalOpen }) => (
+                  <button
+                    onClick={openConnectModal}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-sm hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    <Wallet className="w-3.5 h-3.5 shrink-0" />
+                    <span>{connectModalOpen ? "Connecting..." : "Connect Wallet"}</span>
+                  </button>
+                )}
+              </ConnectButton.Custom>
+            ) : (
+              <button
+                onClick={login}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-sm hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <Wallet className="w-3.5 h-3.5 shrink-0" />
+                <span>Connect Wallet</span>
+              </button>
+            )}
           </div>
         )}
 

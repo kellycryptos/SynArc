@@ -6,9 +6,11 @@ import { ARC_CHAIN } from "@/lib/arc-config";
 import { Wallet, LogOut, Copy, ExternalLink, ChevronUp, ChevronDown, Check } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 
 export function WalletConnectButton() {
-  const { isAuthenticated, walletAddress, logout, ready } = useAuth();
+  const deferred = useDeferredWeb3();
+  const { isAuthenticated, walletAddress, logout, ready, login } = useAuth();
   const { chainId } = useArcNetwork();
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -61,17 +63,27 @@ export function WalletConnectButton() {
   if (!isAuthenticated || !walletAddress) {
     return (
       <div className="space-y-2.5 w-full flex flex-col items-center">
-        <ConnectButton.Custom>
-          {({ openConnectModal, connectModalOpen }) => (
-            <button
-              onClick={openConnectModal}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-md shadow-[#2F6FFF]/20 hover:opacity-95 hover:shadow-lg hover:shadow-[#2F6FFF]/30 active:scale-[0.98] transition-all cursor-pointer"
-            >
-              <Wallet className="w-4 h-4 shrink-0" />
-              <span>{connectModalOpen ? "Connecting..." : "Connect Wallet"}</span>
-            </button>
-          )}
-        </ConnectButton.Custom>
+        {deferred?.isMounted ? (
+          <ConnectButton.Custom>
+            {({ openConnectModal, connectModalOpen }) => (
+              <button
+                onClick={openConnectModal}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-md shadow-[#2F6FFF]/20 hover:opacity-95 hover:shadow-lg hover:shadow-[#2F6FFF]/30 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <Wallet className="w-4 h-4 shrink-0" />
+                <span>{connectModalOpen ? "Connecting..." : "Connect Wallet"}</span>
+              </button>
+            )}
+          </ConnectButton.Custom>
+        ) : (
+          <button
+            onClick={login}
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-md shadow-[#2F6FFF]/20 hover:opacity-95 hover:shadow-lg hover:shadow-[#2F6FFF]/30 active:scale-[0.98] transition-all cursor-pointer"
+          >
+            <Wallet className="w-4 h-4 shrink-0" />
+            <span>Connect Wallet</span>
+          </button>
+        )}
         <p className="text-[10px] text-center text-[#6B7385] px-1 leading-relaxed font-mono">
           Wallet required for governance.{" "}
           <a href="/terms" className="text-[#4F8BFF] hover:underline transition-all">Terms</a>

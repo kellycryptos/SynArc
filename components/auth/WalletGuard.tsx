@@ -6,11 +6,13 @@ import { usePathname } from "next/navigation";
 import { ShieldAlert, Wallet, Sparkles, RefreshCw } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 
 const PROTECTED_ROUTES = ['/settings'];
 
 export function WalletGuard({ children }: { children: ReactNode }) {
-  const { isAuthenticated, ready } = useAuth();
+  const deferred = useDeferredWeb3();
+  const { isAuthenticated, ready, login } = useAuth();
   const pathname = usePathname();
 
   const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
@@ -85,17 +87,27 @@ export function WalletGuard({ children }: { children: ReactNode }) {
             </p>
           </div>
 
-          <ConnectButton.Custom>
-            {({ openConnectModal, connectModalOpen }) => (
-              <button 
-                onClick={openConnectModal}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-bold hover:shadow-[0_0_25px_rgba(47,111,255,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#2F6FFF]/35"
-              >
-                <Wallet className="w-5 h-5" />
-                {connectModalOpen ? "Connecting..." : "Connect Wallet to Participate"}
-              </button>
-            )}
-          </ConnectButton.Custom>
+          {deferred?.isMounted ? (
+            <ConnectButton.Custom>
+              {({ openConnectModal, connectModalOpen }) => (
+                <button 
+                  onClick={openConnectModal}
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-bold hover:shadow-[0_0_25px_rgba(47,111,255,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#2F6FFF]/35"
+                >
+                  <Wallet className="w-5 h-5" />
+                  {connectModalOpen ? "Connecting..." : "Connect Wallet to Participate"}
+                </button>
+              )}
+            </ConnectButton.Custom>
+          ) : (
+            <button 
+              onClick={login}
+              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-bold hover:shadow-[0_0_25px_rgba(47,111,255,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#2F6FFF]/35"
+            >
+              <Wallet className="w-5 h-5" />
+              Connect Wallet to Participate
+            </button>
+          )}
         </GlassCard>
       </div>
     );
