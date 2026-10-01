@@ -55,12 +55,13 @@ const TREASURY_ABI = [
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
 const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as `0x${string}`;
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
+import Link from "next/link";
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart as RechartsPieChart, Pie, Cell, Legend
 } from "recharts";
 import { 
-  ArrowUpRight, ArrowDownRight, Activity, Wallet, Shield, PieChart, Coins, Info, PlusCircle, X, Check, Clock
+  ArrowUpRight, ArrowDownRight, Activity, Wallet, Shield, PieChart, Coins, Info, PlusCircle, X, Check, Clock, TrendingUp
 } from "lucide-react";
 import { BridgeModal } from "@/components/BridgeModal";
 import { TameionReleaseValve } from "@/components/dashboard/TameionReleaseValve";
@@ -585,6 +586,14 @@ function TreasuryPageContent() {
                 >
                   🌉 Bridge USDC to Arc
                 </button>
+
+                <Link
+                  href="/earn"
+                  className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-semibold text-sm transition-all border border-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] shrink-0 w-full lg:w-auto"
+                >
+                  <TrendingUp className="w-4.5 h-4.5" />
+                  Earn Yield
+                </Link>
 
                 <button 
                   onClick={() => setModalOpen(true)}

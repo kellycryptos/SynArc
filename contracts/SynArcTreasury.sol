@@ -217,12 +217,12 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
 
     // --- Modifiers ---
     modifier onlyGovernor() {
-        require(msg.sender == governor, "Only governor can call");
+        require(msg.sender == governor, "Only governor");
         _;
     }
 
     modifier onlyGovernorOrOwner() {
-        require(msg.sender == governor || msg.sender == owner(), "Only governor or owner can call");
+        require(msg.sender == governor || msg.sender == owner(), "Only governor or owner");
         _;
     }
 
@@ -433,13 +433,80 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         return (true, overCap && !isApproved, role);
     }
 
+    // --- Storage Push Helpers to prevent bytecode bloat ---
+    function _addTransaction(
+        string memory txType,
+        address party,
+        uint256 amount,
+        string memory tokenSymbol,
+        string memory description,
+        string memory deliverableURI
+    ) internal {
+        transactions.push(Transaction({
+            txType: txType,
+            party: party,
+            amount: amount,
+            tokenSymbol: tokenSymbol,
+            description: description,
+            timestamp: block.timestamp,
+            deliverableURI: deliverableURI
+        }));
+    }
+
+    function _queueWithdrawal(
+        address recipient,
+        uint256 amount,
+        address token,
+        string memory tokenSymbol,
+        string memory description,
+        string memory deliverableURI
+    ) internal {
+        withdrawalCount++;
+        queuedWithdrawals[withdrawalCount] = QueuedWithdrawal({
+            id: withdrawalCount,
+            recipient: recipient,
+            amount: amount,
+            token: token,
+            tokenSymbol: tokenSymbol,
+            description: description,
+            executionTime: block.timestamp + withdrawalDelay,
+            executed: false,
+            canceled: false,
+            deliverableURI: deliverableURI
+        });
+        emit WithdrawalQueued(withdrawalCount, recipient, amount, token, tokenSymbol, block.timestamp + withdrawalDelay);
+    }
+
+    function _recordReleaseEntry(
+        bytes32 releaseKey,
+        uint256 proposalId,
+        uint256 milestoneId,
+        bytes32 documentHash,
+        bytes32 invoiceHash,
+        address recipient,
+        uint256 amount
+    ) internal {
+        ReleaseEntry memory entry = ReleaseEntry({
+            proposalId: proposalId,
+            milestoneId: milestoneId,
+            documentHash: documentHash,
+            invoiceHash: invoiceHash,
+            recipient: recipient,
+            amount: amount,
+            timestamp: block.timestamp,
+            executed: true
+        });
+        releaseEntries[releaseKey] = entry;
+        allReleaseEntries.push(entry);
+    }
+
     // --- Deposits ---
     function depositUSDC(uint256 amount) external nonReentrant whenNotPaused {
         require(amount > 0, "Amount must be greater than 0");
         IERC20(usdcToken).safeTransferFrom(msg.sender, address(this), amount);
         usdcBalance += amount;
         
-        transactions.push(Transaction("Inflow", msg.sender, amount, "USDC", "USDC Deposit", block.timestamp, ""));
+        _addTransaction("Inflow", msg.sender, amount, "USDC", "USDC Deposit", "");
         emit DepositUSDC(msg.sender, amount, block.timestamp);
         emit Inflow(msg.sender, amount, "USDC", "USDC Deposit", block.timestamp);
     }
@@ -449,7 +516,7 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         IERC20(eurcToken).safeTransferFrom(msg.sender, address(this), amount);
         eurcBalance += amount;
         
-        transactions.push(Transaction("Inflow", msg.sender, amount, "EURC", "EURC Deposit", block.timestamp, ""));
+        _addTransaction("Inflow", msg.sender, amount, "EURC", "EURC Deposit", "");
         emit DepositEURC(msg.sender, amount, block.timestamp);
         emit Inflow(msg.sender, amount, "EURC", "EURC Deposit", block.timestamp);
     }
@@ -557,38 +624,50 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         address recipient,
         uint256 amount,
         uint8 aiConfidenceScore
-    ) external view returns (SimulationResult memory) {
+    ) external view returns (SimulationResult memory res) {
         ValidationContext memory ctx = _evaluateMatch(proposalId, milestoneId, documentHash, invoiceHash, recipient, amount, aiConfidenceScore);
 
-        if (ctx.isDuplicate) {
-            return SimulationResult(false, true, false, false, false, false, false, false, usdcBalance >= amount, "DUPLICATE_RELEASE", 409);
-        }
-        if (!ctx.orderFound) {
-            return SimulationResult(false, false, false, false, false, false, false, false, usdcBalance >= amount, "ORDER_NOT_FOUND_OR_NOT_SUCCEEDED", 404);
-        }
-        if (ctx.payeeCooldown) {
-            return SimulationResult(false, false, true, false, false, false, true, false, usdcBalance >= amount, "PAYEE_COOLDOWN_ACTIVE", 423);
-        }
-        if (!ctx.payeeMatched) {
-            return SimulationResult(false, false, true, false, false, false, false, false, usdcBalance >= amount, "PAYEE_MISMATCH", 403);
-        }
-        if (!ctx.receiptMatched) {
-            return SimulationResult(false, false, true, false, false, true, false, false, usdcBalance >= amount, "RECEIPT_DOCUMENT_HASH_MISMATCH", 422);
-        }
-        if (!ctx.amountMatched) {
-            return SimulationResult(false, false, true, true, false, true, false, false, usdcBalance >= amount, "AMOUNT_MISMATCH", 400);
-        }
-        if (!ctx.confidenceOk) {
-            return SimulationResult(false, false, true, true, true, true, false, false, usdcBalance >= amount, "LOW_CONFIDENCE_SCORE", 412);
-        }
-        if (!ctx.balanceOk) {
-            return SimulationResult(false, false, true, true, true, true, false, ctx.humanRequired, false, "INSUFFICIENT_TREASURY_BALANCE", 402);
-        }
-        if (ctx.humanRequired) {
-            return SimulationResult(false, false, true, true, true, true, false, true, true, "HUMAN_APPROVAL_REQUIRED", 201);
-        }
+        res.isDuplicate = ctx.isDuplicate;
+        res.orderMatches = ctx.orderFound;
+        res.receiptMatches = ctx.receiptMatched;
+        res.invoiceMatches = ctx.amountMatched;
+        res.payeeMatches = ctx.payeeMatched;
+        res.payeeCooldownActive = ctx.payeeCooldown;
+        res.requiresHumanApproval = ctx.humanRequired;
+        res.sufficientBalance = (usdcBalance >= amount);
 
-        return SimulationResult(true, false, true, true, true, true, false, false, true, "READY_FOR_RELEASE", 200);
+        if (ctx.isDuplicate) {
+            res.statusMessage = "DUPLICATE_RELEASE";
+            res.returnCode = 409;
+        } else if (!ctx.orderFound) {
+            res.statusMessage = "ORDER_NOT_FOUND_OR_NOT_SUCCEEDED";
+            res.returnCode = 404;
+        } else if (ctx.payeeCooldown) {
+            res.statusMessage = "PAYEE_COOLDOWN_ACTIVE";
+            res.returnCode = 423;
+        } else if (!ctx.payeeMatched) {
+            res.statusMessage = "PAYEE_MISMATCH";
+            res.returnCode = 403;
+        } else if (!ctx.receiptMatched) {
+            res.statusMessage = "RECEIPT_DOCUMENT_HASH_MISMATCH";
+            res.returnCode = 422;
+        } else if (!ctx.amountMatched) {
+            res.statusMessage = "AMOUNT_MISMATCH";
+            res.returnCode = 400;
+        } else if (!ctx.confidenceOk) {
+            res.statusMessage = "LOW_CONFIDENCE_SCORE";
+            res.returnCode = 412;
+        } else if (!ctx.balanceOk) {
+            res.statusMessage = "INSUFFICIENT_TREASURY_BALANCE";
+            res.returnCode = 402;
+        } else if (ctx.humanRequired) {
+            res.statusMessage = "HUMAN_APPROVAL_REQUIRED";
+            res.returnCode = 201;
+        } else {
+            res.canRelease = true;
+            res.statusMessage = "READY_FOR_RELEASE";
+            res.returnCode = 200;
+        }
     }
 
     // --- CONTRACT-LEVEL THREE-WAY MATCH RELEASE (Order, Receipt, Invoice) ---
@@ -627,28 +706,8 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         }
         usdcBalance -= amount;
 
-        ReleaseEntry memory entry = ReleaseEntry({
-            proposalId: proposalId,
-            milestoneId: milestoneId,
-            documentHash: documentHash,
-            invoiceHash: invoiceHash,
-            recipient: recipient,
-            amount: amount,
-            timestamp: block.timestamp,
-            executed: true
-        });
-        releaseEntries[ctx.releaseKey] = entry;
-        allReleaseEntries.push(entry);
-
-        transactions.push(Transaction({
-            txType: "Outflow",
-            party: recipient,
-            amount: amount,
-            tokenSymbol: "USDC",
-            description: "Three-way match verified milestone release",
-            timestamp: block.timestamp,
-            deliverableURI: ctx.deliverableURI
-        }));
+        _recordReleaseEntry(ctx.releaseKey, proposalId, milestoneId, documentHash, invoiceHash, recipient, amount);
+        _addTransaction("Outflow", recipient, amount, "USDC", "Three-way match verified milestone release", ctx.deliverableURI);
 
         IERC20(usdcToken).safeTransfer(recipient, amount);
 
@@ -718,38 +777,14 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         bytes32 releaseKey = keccak256(abi.encodePacked(proposalId, uint256(0), invHash));
         executedReleases[releaseKey] = true;
 
-        ReleaseEntry memory entry = ReleaseEntry({
-            proposalId: proposalId,
-            milestoneId: 0,
-            documentHash: docHash,
-            invoiceHash: invHash,
-            recipient: effectiveRecipient,
-            amount: amount,
-            timestamp: block.timestamp,
-            executed: true
-        });
-        releaseEntries[releaseKey] = entry;
-        allReleaseEntries.push(entry);
+        _recordReleaseEntry(releaseKey, proposalId, 0, docHash, invHash, effectiveRecipient, amount);
         
         if (effectiveRecipient == agentAddress || effectiveRecipient == owner()) {
             IERC20(usdcToken).safeTransfer(effectiveRecipient, amount);
-            transactions.push(Transaction("Outflow", effectiveRecipient, amount, "USDC", "Governance approved instant withdraw", block.timestamp, deliverableURI));
+            _addTransaction("Outflow", effectiveRecipient, amount, "USDC", "Governance approved instant withdraw", deliverableURI);
             emit Outflow(effectiveRecipient, amount, "USDC", "Governance approved instant withdraw", block.timestamp, deliverableURI);
         } else {
-            withdrawalCount++;
-            queuedWithdrawals[withdrawalCount] = QueuedWithdrawal({
-                id: withdrawalCount,
-                recipient: effectiveRecipient,
-                amount: amount,
-                token: usdcToken,
-                tokenSymbol: "USDC",
-                description: "Governance approved withdraw with attestation",
-                executionTime: block.timestamp + withdrawalDelay,
-                executed: false,
-                canceled: false,
-                deliverableURI: deliverableURI
-            });
-            emit WithdrawalQueued(withdrawalCount, effectiveRecipient, amount, usdcToken, "USDC", block.timestamp + withdrawalDelay);
+            _queueWithdrawal(effectiveRecipient, amount, usdcToken, "USDC", "Governance approved withdraw with attestation", deliverableURI);
         }
     }
 
@@ -758,44 +793,14 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         require(amount > 0, "Amount must be greater than 0");
         require(usdcBalance >= amount, "Insufficient USDC balance");
         usdcBalance -= amount;
-        
-        withdrawalCount++;
-        queuedWithdrawals[withdrawalCount] = QueuedWithdrawal({
-            id: withdrawalCount,
-            recipient: recipient,
-            amount: amount,
-            token: usdcToken,
-            tokenSymbol: "USDC",
-            description: "Governance approved USDC withdraw",
-            executionTime: block.timestamp + withdrawalDelay,
-            executed: false,
-            canceled: false,
-            deliverableURI: "ipfs://QmPgvwkpDNgHSTx3V7NrLwCrQbppN39Zpji6o3TwbtVuiU"
-        });
-
-        emit WithdrawalQueued(withdrawalCount, recipient, amount, usdcToken, "USDC", block.timestamp + withdrawalDelay);
+        _queueWithdrawal(recipient, amount, usdcToken, "USDC", "Governance approved USDC withdraw", "ipfs://QmPgvwkpDNgHSTx3V7NrLwCrQbppN39Zpji6o3TwbtVuiU");
     }
 
     function withdrawEURC(address recipient, uint256 amount) external onlyGovernor nonReentrant whenNotPaused {
         require(amount > 0, "Amount must be greater than 0");
         require(eurcBalance >= amount, "Insufficient EURC balance");
         eurcBalance -= amount;
-        
-        withdrawalCount++;
-        queuedWithdrawals[withdrawalCount] = QueuedWithdrawal({
-            id: withdrawalCount,
-            recipient: recipient,
-            amount: amount,
-            token: eurcToken,
-            tokenSymbol: "EURC",
-            description: "Governance approved EURC withdraw",
-            executionTime: block.timestamp + withdrawalDelay,
-            executed: false,
-            canceled: false,
-            deliverableURI: "ipfs://QmPgvwkpDNgHSTx3V7NrLwCrQbppN39Zpji6o3TwbtVuiU"
-        });
-
-        emit WithdrawalQueued(withdrawalCount, recipient, amount, eurcToken, "EURC", block.timestamp + withdrawalDelay);
+        _queueWithdrawal(recipient, amount, eurcToken, "EURC", "Governance approved EURC withdraw", "ipfs://QmPgvwkpDNgHSTx3V7NrLwCrQbppN39Zpji6o3TwbtVuiU");
     }
 
     // Execute a queued withdrawal after the delay
@@ -809,7 +814,7 @@ contract SynArcTreasury is Ownable, ReentrancyGuard, Pausable {
         q.executed = true;
         IERC20(q.token).safeTransfer(q.recipient, q.amount);
 
-        transactions.push(Transaction("Outflow", q.recipient, q.amount, q.tokenSymbol, q.description, block.timestamp, q.deliverableURI));
+        _addTransaction("Outflow", q.recipient, q.amount, q.tokenSymbol, q.description, q.deliverableURI);
         
         if (q.token == usdcToken) {
             emit WithdrawalUSDC(q.recipient, q.amount, block.timestamp);
