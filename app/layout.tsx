@@ -60,6 +60,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Blocking script — must run before first paint to avoid theme flash on refresh.
+            Reads localStorage synchronously and applies the theme class to <html>. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('synarc-theme');document.documentElement.classList.add(t==='light'?'light':'dark')}catch(e){document.documentElement.classList.add('dark')}})();`,
+          }}
+        />
+      </head>
       <body
         className={`${inter.variable} ${sora.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} ${instrumentSerif.variable} antialiased min-h-screen flex flex-col relative bg-background text-foreground`}
       >

@@ -11,12 +11,12 @@ const ThemeContext = createContext<{
 }>({ theme: 'dark', setTheme: () => {} })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark')
-
-  useEffect(() => {
-    const saved = localStorage.getItem('synarc-theme') as Theme
-    if (saved) setTheme(saved)
-  }, [])
+  // Initialise from the class already applied by the blocking script (avoids a
+  // second paint / state-sync flash). Falls back to 'dark' for SSR.
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return 'dark'
+    return (localStorage.getItem('synarc-theme') as Theme) ?? 'dark'
+  })
 
   useEffect(() => {
     localStorage.setItem('synarc-theme', theme)
