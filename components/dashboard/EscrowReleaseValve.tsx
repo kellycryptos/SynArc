@@ -440,5 +440,3 @@ export function EscrowReleaseValve({ treasuryUsdcBalance = 0 }: EscrowReleaseVal
     </div>
   );
 }
-
-export const TameionReleaseValve = EscrowReleaseValve;

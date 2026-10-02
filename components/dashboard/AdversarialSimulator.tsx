@@ -329,5 +329,3 @@ export function AdversarialSimulator() {
     </GlassCard>
   );
 }
-
-export const TameionAdversarialSimulator = AdversarialSimulator;

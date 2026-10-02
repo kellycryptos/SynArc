@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import Link from "next/link";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { 
   Bot, 
   Zap, 
@@ -38,6 +39,7 @@ const getActionDescription = (proposalId: string, title: string) => {
 };
 
 export function ProofOfAutonomyTimeline({ limit = 10 }: { limit?: number }) {
+  const { explorerUrl } = useArcNetwork();
   const { proposals, initialized, initializeStore } = useGovernanceStore();
 
   useEffect(() => {
@@ -170,7 +172,7 @@ export function ProofOfAutonomyTimeline({ limit = 10 }: { limit?: number }) {
                       </Link>
 
                       <a 
-                        href={`https://testnet.arcscan.app/address/${action.proposer}`}
+                        href={`${explorerUrl}/address/${action.proposer}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-elevated border border-border-thin text-text-secondary text-[10px] font-bold hover:bg-surface hover:text-text-primary transition-all cursor-pointer"

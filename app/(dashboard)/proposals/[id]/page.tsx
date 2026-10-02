@@ -1090,9 +1090,9 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-text-secondary">Proposer</span>
-                  <Link href={`https://testnet.arcscan.app/address/${proposal.proposer}`} target="_blank" className="text-primary hover:underline font-mono">
+                  <a href={`${explorerUrl}/address/${proposal.proposer}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono">
                     {proposal.proposer.slice(0,6)}...{proposal.proposer.slice(-4)}
-                  </Link>
+                  </a>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary">Start Date</span>
