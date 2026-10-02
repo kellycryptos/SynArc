@@ -21,6 +21,7 @@ import { parseArcError } from "@/lib/utils";
 import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams, selectActiveWallet } from "@/lib/tx-helper";
 import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
 import { resolveAttestationLink } from "@/lib/attestation";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 const ERC20_ABI = [
   {
@@ -86,6 +87,7 @@ function TreasuryPageContent() {
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
+  const { isArcMainnet, explorerUrl } = useArcNetwork();
 
   const [executingId, setExecutingId] = useState<string | null>(null);
   const [cancelingId, setCancelingId] = useState<string | null>(null);
@@ -566,7 +568,7 @@ function TreasuryPageContent() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">DAO Treasury</h1>
-            <p className="text-muted text-xs sm:text-sm mt-1">Multi-asset capital reserves and smart treasury contracts on Arc Testnet.</p>
+            <p className="text-muted text-xs sm:text-sm mt-1">Multi-asset capital reserves and smart treasury contracts on {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}.</p>
           </div>
           
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 w-full lg:w-auto">
@@ -923,7 +925,7 @@ function TreasuryPageContent() {
                       </td>
                       <td className="py-4 text-right pr-2">
                         <a 
-                          href={`https://testnet.arcscan.app/tx/${tx.txHash}`} 
+                          href={`${explorerUrl}/tx/${tx.txHash}`} 
                           target="_blank" 
                           rel="noreferrer" 
                           className="text-primary hover:underline font-mono text-xs"
@@ -1061,7 +1063,7 @@ function TreasuryPageContent() {
                 </div>
                 {txHash && (
                   <a
-                    href={`https://testnet.arcscan.app/tx/${txHash}`}
+                    href={`${explorerUrl}/tx/${txHash}`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-block text-xs font-semibold text-primary hover:underline font-mono"
