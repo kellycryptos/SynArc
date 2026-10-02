@@ -4,7 +4,7 @@ import { TreasuryActivity } from "@/types";
 import { ethers, JsonRpcProvider, BrowserProvider, Contract, formatUnits, parseUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI, ProposalState, VoteType, ERC20ABI } from "@/lib/governance/contracts";
 import { getAggressiveGasParams, getAuthenticatedClient } from "@/lib/tx-helper";
-import { ARC_CHAIN, ARC_RPC_URLS } from "@/lib/arc-config";
+import { ARC_CHAIN, ARC_RPC_URLS, getActiveNetwork } from "@/lib/arc-config";
 import { createPublicClient, fallback, http } from "viem";
 import { getCachedProvider } from "@/lib/rpc/provider-cache";
 import historicalProposals from "@/data/historical-proposals.json";
@@ -160,14 +160,18 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     });
 
     // --- Step 0: Eagerly pre-populate with cached live + historical + simulated proposals
-    // so the UI renders all 941+ proposals immediately for guests (before any RPC round-trip completes).
+    // For testnet, historical baseline (SIP-1..941) is loaded.
+    // For mainnet, ONLY mainnet-specific cached/live proposals are loaded — NO testnet data.
+    const isMainnet = getActiveNetwork() === 'mainnet';
+    const netKey = isMainnet ? 'mainnet' : 'testnet';
+
     let simulatedProposalsEager: Proposal[] = [];
     let cachedLiveProposalsEager: Proposal[] = [];
     if (typeof window !== "undefined") {
       try {
-        const storedSim = localStorage.getItem("synarc_simulated_proposals");
+        const storedSim = localStorage.getItem(`synarc_simulated_proposals_${netKey}`) || (!isMainnet ? localStorage.getItem("synarc_simulated_proposals") : null);
         if (storedSim) simulatedProposalsEager = JSON.parse(storedSim);
-        const storedLive = localStorage.getItem("synarc_cached_live_proposals");
+        const storedLive = localStorage.getItem(`synarc_cached_live_proposals_${netKey}`) || (!isMainnet ? localStorage.getItem("synarc_cached_live_proposals") : null);
         if (storedLive) cachedLiveProposalsEager = JSON.parse(storedLive);
       } catch { /* ignore */ }
     }
@@ -177,27 +181,27 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     const uniqueSimEager = simulatedProposalsEager.filter(p => !cachedLiveIds.has(p.id));
 
     const eagerProposals = activeDaoId === 'synarc'
-      ? [...cachedLiveProposalsEager, ...uniqueSimEager, ...(historicalProposals as Proposal[])]
+      ? (isMainnet 
+          ? [...cachedLiveProposalsEager, ...uniqueSimEager]
+          : [...cachedLiveProposalsEager, ...uniqueSimEager, ...(historicalProposals as Proposal[])])
       : [...cachedLiveProposalsEager, ...uniqueSimEager];
 
-    // Show historical proposals & baseline metrics immediately — the UI never shows zeros.
-    // treasuryValue, governanceParticipation, daoMembers all default to the verified
-    // on-chain historical baseline; the live RPC fetch below will update them if it succeeds.
+    // Show baseline metrics immediately. On Mainnet, clean zeroes/active live defaults.
     set({
       proposals: eagerProposals,
       initialized: true,
       metrics: {
-        treasuryValue: "$2,450,000",
+        treasuryValue: isMainnet ? "$0" : "$2,450,000",
         activeProposals: eagerProposals.filter(p => p.status === "Active").length,
         totalProposals: eagerProposals.length,
         governanceParticipation: eagerProposals.length > 0
           ? (eagerProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / eagerProposals.length).toFixed(1) + "%"
-          : "16.7%",
-        daoMembers: 12450,
-        treasuryTransactions: 3,
+          : (isMainnet ? "0.0%" : "16.7%"),
+        daoMembers: isMainnet ? 1 : 12450,
+        treasuryTransactions: isMainnet ? 0 : 3,
         proposalExecutionRate: eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
           ? ((eagerProposals.filter(p => p.status === "Executed").length / eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-          : "92.4%"
+          : (isMainnet ? "100%" : "92.4%")
       }
     });
 
@@ -220,10 +224,12 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const count = await withTimeout(governorContract.proposalCount(), 8000);
       const totalCount = Number(count);
 
-      // Fetch new on-chain proposals starting after historical baseline proposals (index 942+)
-      const START_INDEX = totalCount > 941 ? 942 : totalCount + 1;
+      // Fetch on-chain proposals:
+      // On Mainnet, indexing begins at proposal 1 up to totalCount.
+      // On Testnet, proposals 1-941 are in the historical baseline JSON, so we fetch starting at index 942+.
+      const START_INDEX = isMainnet ? 1 : (totalCount > 941 ? 942 : totalCount + 1);
       const proposalIndices = Array.from(
-        { length: Math.max(0, totalCount - START_INDEX + 1) },
+        { length: isMainnet ? totalCount : Math.max(0, totalCount - START_INDEX + 1) },
         (_, i) => START_INDEX + i
       );
       const settled = await Promise.allSettled(
@@ -326,7 +332,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       let simulatedProposals: Proposal[] = [];
       if (typeof window !== "undefined") {
         try {
-          const stored = localStorage.getItem("synarc_simulated_proposals");
+          const stored = localStorage.getItem(`synarc_simulated_proposals_${netKey}`) || (!isMainnet ? localStorage.getItem("synarc_simulated_proposals") : null);
           if (stored) {
             simulatedProposals = JSON.parse(stored);
           }
@@ -339,7 +345,8 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const uniqueSimulated = simulatedProposals.filter(p => !loadedIds.has(p.id));
 
       let combinedProposals = [...loadedProposals, ...uniqueSimulated];
-      if (activeDaoId === 'synarc') {
+      // Only include testnet historical baseline proposals on Testnet
+      if (activeDaoId === 'synarc' && !isMainnet) {
         const normalizedHistorical = (historicalProposals as any[]).map((hp) => ({
           ...hp,
           votingStarts: hp.votingStarts || hp.createdAt || (hp.timeline && hp.timeline[0]?.timestamp) || new Date().toISOString(),
@@ -351,44 +358,47 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const treasuryAddress = contracts.treasury;
       const treasuryContract = new Contract(treasuryAddress, [
         "function getTransactions() external view returns (tuple(string txType, address party, uint256 amount, string description, uint256 timestamp)[])",
-        "function balance() external view returns (uint256)"
+        "function balance() external view returns (uint256)",
+        "function usdcBalance() external view returns (uint256)"
       ], provider);
 
       let loadedActivities: TreasuryActivity[] = [];
       let treasuryVal = 0;
       try {
         const [rawActivities, bal] = await withTimeout(Promise.all([
-          treasuryContract.getTransactions(),
-          treasuryContract.balance()
-        ]), 2500);
+          treasuryContract.getTransactions().catch(() => []),
+          treasuryContract.usdcBalance().catch(() => treasuryContract.balance().catch(() => 0n))
+        ]), 3000);
 
-        loadedActivities = rawActivities.map((act: any, idx: number) => ({
-          id: idx.toString(),
-          type: act.txType as "Inflow" | "Outflow",
-          amount: Number(formatUnits(act.amount, 6)),
-          token: "USDC",
-          timestamp: new Date(Number(act.timestamp) * 1000).toISOString(),
-          description: act.description,
-          txHash: "0x" + Math.random().toString(16).substring(2, 10) + "..."
-        }));
-        loadedActivities.reverse();
+        if (Array.isArray(rawActivities)) {
+          loadedActivities = rawActivities.map((act: any, idx: number) => ({
+            id: idx.toString(),
+            type: act.txType as "Inflow" | "Outflow",
+            amount: Number(formatUnits(act.amount, 6)),
+            token: "USDC",
+            timestamp: new Date(Number(act.timestamp) * 1000).toISOString(),
+            description: act.description,
+            txHash: "0x" + Math.random().toString(16).substring(2, 10) + "..."
+          }));
+          loadedActivities.reverse();
+        }
 
-        treasuryVal = Number(formatUnits(bal, 6));
+        treasuryVal = Number(formatUnits(bal || 0n, 6));
       } catch (err) {
-        console.warn("Failed to load Treasury activities via RPC, preserving default treasury state:", err);
+        console.warn("Failed to load Treasury activities via RPC:", err);
       }
 
       const avgPart = combinedProposals.length > 0
         ? (combinedProposals.reduce((sum, p) => sum + p.participationPercentage, 0) / combinedProposals.length).toFixed(1) + "%"
-        : "16.7%";
+        : (isMainnet ? "0.0%" : "16.7%");
 
       const executionRate = combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
         ? ((combinedProposals.filter(p => p.status === "Executed").length / combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-        : "92.4%";
+        : (isMainnet ? "100%" : "92.4%");
 
       if (typeof window !== "undefined" && loadedProposals.length > 0) {
         try {
-          localStorage.setItem("synarc_cached_live_proposals", JSON.stringify(loadedProposals));
+          localStorage.setItem(`synarc_cached_live_proposals_${netKey}`, JSON.stringify(loadedProposals));
         } catch { /* ignore quota errors */ }
       }
 
@@ -398,21 +408,23 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
-          treasuryValue: treasuryVal > 0 ? `$${treasuryVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "$2,450,000",
+          treasuryValue: treasuryVal > 0 
+            ? `$${treasuryVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}` 
+            : (isMainnet ? "$0" : "$2,450,000"),
           activeProposals: combinedProposals.filter(p => p.status === "Active").length,
           totalProposals: combinedProposals.length,
-          governanceParticipation: avgPart !== "0.0%" && avgPart !== "0%" ? avgPart : "16.7%",
-          daoMembers: 12450,
-          treasuryTransactions: loadedActivities.length || 3,
-          proposalExecutionRate: executionRate !== "0.0%" && executionRate !== "0%" ? executionRate : "92.4%",
+          governanceParticipation: avgPart !== "0.0%" && avgPart !== "0%" ? avgPart : (isMainnet ? "0.0%" : "16.7%"),
+          daoMembers: isMainnet ? 1 : 12450,
+          treasuryTransactions: isMainnet ? loadedActivities.length : (loadedActivities.length || 3),
+          proposalExecutionRate: executionRate !== "0.0%" && executionRate !== "0%" ? executionRate : (isMainnet ? "100%" : "92.4%"),
         }
       });
     } catch (e) {
-      console.warn("RPC connection unavailable or timed out, preserving reliable DB/historical metrics:", e);
+      console.warn("RPC connection unavailable or timed out, preserving reliable baseline metrics:", e);
       let simulatedProposals: Proposal[] = [];
       if (typeof window !== "undefined") {
         try {
-          const stored = localStorage.getItem("synarc_simulated_proposals");
+          const stored = localStorage.getItem(`synarc_simulated_proposals_${netKey}`) || (!isMainnet ? localStorage.getItem("synarc_simulated_proposals") : null);
           if (stored) {
             simulatedProposals = JSON.parse(stored);
           }
@@ -420,27 +432,27 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           console.error("Failed to parse simulated proposals from localStorage", err);
         }
       }
-      const fallbackProposals = activeDaoId === 'synarc'
+      const fallbackProposals = (activeDaoId === 'synarc' && !isMainnet)
         ? [...simulatedProposals, ...(historicalProposals as Proposal[])]
         : simulatedProposals;
-      // RPC timeout/failure: preserve the reliable baseline — never show zeros.
+      // RPC timeout/failure: preserve baseline
       set({
         proposals: fallbackProposals,
         treasuryActivities: [],
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
-          treasuryValue: "$2,450,000",
+          treasuryValue: isMainnet ? "$0" : "$2,450,000",
           activeProposals: fallbackProposals.filter(p => p.status === "Active").length,
           totalProposals: fallbackProposals.length,
           governanceParticipation: fallbackProposals.length > 0
             ? (fallbackProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / fallbackProposals.length).toFixed(1) + "%"
-            : "16.7%",
-          daoMembers: 12450,
-          treasuryTransactions: 3,
+            : (isMainnet ? "0.0%" : "16.7%"),
+          daoMembers: isMainnet ? 1 : 12450,
+          treasuryTransactions: isMainnet ? 0 : 3,
           proposalExecutionRate: fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
             ? ((fallbackProposals.filter(p => p.status === "Executed").length / fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-            : "92.4%"
+            : (isMainnet ? "100%" : "92.4%")
         }
       });
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { arcTestnet } from '@/lib/chains/arc';
+import { ARC_CHAIN } from '@/lib/arc-config';
 import { GovernorABI, ERC20ABI, GOVERNANCE_CONTRACTS, ProposalState, VoteType } from '@/lib/governance/contracts';
 import { parseUnits } from 'viem';
 
@@ -11,7 +11,7 @@ import { parseUnits } from 'viem';
  */
 export function useProposalCount() {
   const { data: count, isLoading, error } = useReadContract({
-    chainId: arcTestnet.id,
+    chainId: ARC_CHAIN.id,
     address: GOVERNANCE_CONTRACTS.governor,
     abi: GovernorABI,
     functionName: 'proposalCount',
@@ -26,7 +26,7 @@ export function useProposalCount() {
  */
 export function useProposal(proposalId: bigint | null) {
   const { data: proposal, isLoading, error } = useReadContract({
-    chainId: arcTestnet.id,
+    chainId: ARC_CHAIN.id,
     address: GOVERNANCE_CONTRACTS.governor,
     abi: GovernorABI,
     functionName: 'proposals',
@@ -43,7 +43,7 @@ export function useProposal(proposalId: bigint | null) {
  */
 export function useProposalState(proposalId: bigint | null) {
   const { data: stateNumber, isLoading, error } = useReadContract({
-    chainId: arcTestnet.id,
+    chainId: ARC_CHAIN.id,
     address: GOVERNANCE_CONTRACTS.governor,
     abi: GovernorABI,
     functionName: 'state',
@@ -61,7 +61,7 @@ export function useProposalState(proposalId: bigint | null) {
  */
 export function useHasVoted(proposalId: bigint | null, account: `0x${string}` | null) {
   const { data: hasVoted, isLoading, error } = useReadContract({
-    chainId: arcTestnet.id,
+    chainId: ARC_CHAIN.id,
     address: GOVERNANCE_CONTRACTS.governor,
     abi: GovernorABI,
     functionName: 'hasVoted',
@@ -78,7 +78,7 @@ export function useHasVoted(proposalId: bigint | null, account: `0x${string}` | 
  */
 export function useTokenBalance(account: `0x${string}` | null) {
   const { data: balance, isLoading, error, refetch } = useReadContract({
-    chainId: arcTestnet.id,
+    chainId: ARC_CHAIN.id,
     address: GOVERNANCE_CONTRACTS.token,
     abi: ERC20ABI,
     functionName: 'balanceOf',
@@ -100,7 +100,7 @@ export function useTokenBalance(account: `0x${string}` | null) {
  */
 export function useTreasuryBalance() {
   const { data: balance, isLoading, error, refetch } = useReadContract({
-    chainId: arcTestnet.id,
+    chainId: ARC_CHAIN.id,
     address: GOVERNANCE_CONTRACTS.treasury,
     abi: ERC20ABI,
     functionName: 'balanceOf',
@@ -134,7 +134,7 @@ export function useCastVote() {
   const castVote = (proposalId: bigint, support: VoteType, reason?: string) => {
     if (reason) {
       writeContract({
-        chainId: arcTestnet.id,
+        chainId: ARC_CHAIN.id,
         address: GOVERNANCE_CONTRACTS.governor,
         abi: GovernorABI,
         functionName: 'castVoteWithReason',
@@ -145,7 +145,7 @@ export function useCastVote() {
       });
     } else {
       writeContract({
-        chainId: arcTestnet.id,
+        chainId: ARC_CHAIN.id,
         address: GOVERNANCE_CONTRACTS.governor,
         abi: GovernorABI,
         functionName: 'castVote',
@@ -189,7 +189,7 @@ export function useCreateProposal() {
     deliverableURI: string = ""
   ) => {
     writeContract({
-      chainId: arcTestnet.id,
+      chainId: ARC_CHAIN.id,
       address: GOVERNANCE_CONTRACTS.governor,
       abi: GovernorABI,
       functionName: 'propose',
@@ -230,7 +230,7 @@ export function useExecuteProposal() {
     proposalId: bigint
   ) => {
     writeContract({
-      chainId: arcTestnet.id,
+      chainId: ARC_CHAIN.id,
       address: GOVERNANCE_CONTRACTS.governor,
       abi: GovernorABI,
       functionName: 'execute',
@@ -257,7 +257,7 @@ export function useExecuteProposal() {
  */
 export function useVotingPeriod() {
   const { data: period, isLoading, error } = useReadContract({
-    chainId: arcTestnet.id,
+    chainId: ARC_CHAIN.id,
     address: GOVERNANCE_CONTRACTS.governor,
     abi: GovernorABI,
     functionName: 'votingPeriod',
@@ -272,7 +272,7 @@ export function useVotingPeriod() {
  */
 export function useQuorumNumerator() {
   const { data: quorum, isLoading, error } = useReadContract({
-    chainId: arcTestnet.id,
+    chainId: ARC_CHAIN.id,
     address: GOVERNANCE_CONTRACTS.governor,
     abi: GovernorABI,
     functionName: 'quorumNumerator',

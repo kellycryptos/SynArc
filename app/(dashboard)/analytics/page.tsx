@@ -8,6 +8,7 @@ import { BarChart3, TrendingUp, Users, Activity, AlertCircle, RefreshCw } from "
 import { useState, useEffect, useMemo } from "react";
 import { ethers, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { getLogsResiliently } from "@/lib/rpc/config";
 
 // Module-level cache for VoteCast event scan
@@ -39,6 +40,7 @@ const FALLBACK_VOTERS = [
 ];
 
 export default function AnalyticsPage() {
+  const { isArcMainnet } = useArcNetwork();
   const { proposals, initialized, initializeStore } = useGovernanceStore();
   const { balance, activities, loading: treasuryLoading, error: treasuryError, refetch: refetchTreasury } = useTreasury();
   const [dateFilter, setDateFilter] = useState<"7d" | "30d" | "all">("all");
@@ -354,7 +356,7 @@ export default function AnalyticsPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">DAO Analytics</h1>
-            <p className="text-muted text-xs sm:text-sm mt-1">Real-time charts and metrics retrieved directly from Arc Testnet contracts.</p>
+            <p className="text-muted text-xs sm:text-sm mt-1">Real-time charts and metrics retrieved directly from {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"} contracts.</p>
           </div>
           
           <div className="flex items-center gap-2 bg-surface border border-border-thin rounded-2xl p-1.5 self-start">

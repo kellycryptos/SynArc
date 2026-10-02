@@ -109,19 +109,23 @@ export function WalletFaucetCard() {
         setNextClaimAt(null);
       }
 
-      // 2. Transaction History
-      const savedHistory = localStorage.getItem(`synarc_sarc_faucet_history_${walletAddress}`);
-      if (savedHistory) {
-        setTxHistory(JSON.parse(savedHistory));
+      // 2. Transaction History (Faucet history only relevant on Testnet)
+      if (isArcTestnet) {
+        const savedHistory = localStorage.getItem(`synarc_sarc_faucet_history_${walletAddress}`);
+        if (savedHistory) {
+          setTxHistory(JSON.parse(savedHistory));
+        } else {
+          setTxHistory([]);
+        }
       } else {
         setTxHistory([]);
       }
     }
-  }, [walletAddress]);
+  }, [walletAddress, isArcTestnet]);
 
-  // Check server-side cooldown on mount & address change
+  // Check server-side cooldown on mount & address change (Testnet only)
   useEffect(() => {
-    if (!walletAddress) return;
+    if (!walletAddress || !isArcTestnet) return;
     fetch(`/api/faucet?wallet=${walletAddress}`)
       .then((r) => r.json())
       .then((data) => {
@@ -131,7 +135,7 @@ export function WalletFaucetCard() {
         }
       })
       .catch(() => {});
-  }, [walletAddress]);
+  }, [walletAddress, isArcTestnet]);
 
   // Copy Address helper
   const copyAddress = async () => {
@@ -385,10 +389,10 @@ export function WalletFaucetCard() {
           <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
             <h3 className="font-bold text-sm text-text-primary flex items-center gap-2">
               <History className="w-4.5 h-4.5 text-brand" />
-              Recent Claims
+              {isArcTestnet ? "Recent Claims" : "Wallet Activity"}
             </h3>
             <span className="text-[10px] font-bold text-text-tertiary bg-surface-elevated border border-border-thin px-2 py-0.5 rounded-full">
-              {isArcTestnet ? "Faucet History" : "Recent Activity"}
+              {isArcTestnet ? "Faucet History" : "On-Chain Activity"}
             </span>
           </div>
 
@@ -396,7 +400,11 @@ export function WalletFaucetCard() {
             {txHistory.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center p-6 text-text-tertiary border border-dashed border-border-thin rounded-xl gap-2 bg-surface/20">
                 <Coins className="w-6 h-6 opacity-30" />
-                <span className="text-[11px]">No claimed sARC faucet transactions detected on this account yet.</span>
+                <span className="text-[11px]">
+                  {isArcTestnet
+                    ? "No claimed sARC faucet transactions detected on this account yet."
+                    : "No recent transactions detected for this wallet."}
+                </span>
               </div>
             ) : (
               txHistory.map((tx) => (

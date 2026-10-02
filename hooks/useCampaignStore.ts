@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { Campaign, Milestone, CampaignAIAnalysis } from "@/types";
 import { createPublicClient, http } from "viem";
-import { arcTestnet } from "@/lib/arc-config";
+import { ARC_CHAIN } from "@/lib/arc-config";
 import { getArcRpcUrl } from "@/lib/rpc/config";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 
@@ -16,16 +16,17 @@ interface CampaignState {
   syncOnChainCampaign: (campaignId: string) => Promise<void>;
 }
 
-// Reuse a single client instance to prevent redundant RPC connections and connection overhead
-let globalPublicClient: any = null;
+// Client instance per chain to prevent cross-network caching issues
+const publicClients: Record<number, any> = {};
 function getSharedPublicClient() {
-  if (!globalPublicClient) {
-    globalPublicClient = createPublicClient({
-      chain: arcTestnet,
+  const chainId = ARC_CHAIN.id;
+  if (!publicClients[chainId]) {
+    publicClients[chainId] = createPublicClient({
+      chain: ARC_CHAIN,
       transport: http(getArcRpcUrl())
     });
   }
-  return globalPublicClient;
+  return publicClients[chainId];
 }
 
 let lastFetchTime = 0;

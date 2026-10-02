@@ -407,7 +407,7 @@ export default function BridgePage() {
           };
           const updated = [newTx, ...prev];
           if (walletAddress) {
-            localStorage.setItem(`synarc_bridge_history_${walletAddress.toLowerCase()}`, JSON.stringify(updated));
+            localStorage.setItem(`synarc_bridge_history_${bridgeNetwork}_${walletAddress.toLowerCase()}`, JSON.stringify(updated));
           }
           // Adjust local balance visually
           setSourceBalance(prevBal => {
@@ -422,22 +422,22 @@ export default function BridgePage() {
       setProgressState("error");
       setErrorMessage(bridgeState.errorMessage || "Bridge transaction failed.");
     }
-  }, [bridgeState.status, bridgeState.txHash, bridgeState.burnTxHash, bridgeState.errorMessage, refetchArcUSDC, amount, selectedChain, walletAddress, direction, activeArcChain]);
+  }, [bridgeState.status, bridgeState.txHash, bridgeState.burnTxHash, bridgeState.errorMessage, refetchArcUSDC, amount, selectedChain, walletAddress, direction, activeArcChain, bridgeNetwork]);
 
-  // Load history from localStorage — always keyed by wallet address.
+  // Load history from localStorage — keyed by network and wallet address.
   // When wallet disconnects (walletAddress becomes null/undefined) we clear the
   // in-memory history so the header total and the table remain in sync.
   useEffect(() => {
     if (typeof window !== "undefined") {
       if (walletAddress) {
-        const stored = localStorage.getItem(`synarc_bridge_history_${walletAddress.toLowerCase()}`);
+        const stored = localStorage.getItem(`synarc_bridge_history_${bridgeNetwork}_${walletAddress.toLowerCase()}`);
         setBridgeHistory(stored ? JSON.parse(stored) : []);
       } else {
         // No wallet connected — reset so header can never contradict the empty table
         setBridgeHistory([]);
       }
     }
-  }, [walletAddress]);
+  }, [walletAddress, bridgeNetwork]);
 
   // Total volume is derived purely from the same bridgeHistory that populates the
   // activity table — the two can now never contradict each other.

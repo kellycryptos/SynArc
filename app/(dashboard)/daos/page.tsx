@@ -9,8 +9,10 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { AnimatePresence } from "framer-motion";
 import { ethers, Contract, formatUnits } from "ethers";
 import { getResilientProvider } from "@/lib/rpc/config";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 export default function DAOsPage() {
+  const { isArcMainnet } = useArcNetwork();
   const { isAuthenticated, login } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -148,7 +150,7 @@ export default function DAOsPage() {
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">DAO Registry</h1>
           <p className="text-muted leading-relaxed">
-            Syn DAO hosts governance infrastructure for approved DAOs on Arc Testnet. Each DAO manages its own proposals and treasury.
+            Syn DAO hosts governance infrastructure for approved DAOs on {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}. Each DAO manages its own proposals and treasury.
           </p>
         </div>
 

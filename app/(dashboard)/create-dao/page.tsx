@@ -14,6 +14,7 @@ import { getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } fr
 import { SynArcCrowdfundABI, SynArcCrowdfundBytecode } from "@/lib/governance/SynArcCrowdfund";
 import { ARC_CHAIN } from "@/lib/arc-config";
 import { getAddress, isAddress, encodeDeployData } from "viem";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 
 const TEMPLATES = [
@@ -33,6 +34,7 @@ const isValidEVMAddress = (addr: string) => {
 export default function CreateDaoPage() {
   const router = useRouter();
   const { walletAddress, isAuthenticated, login } = useAuth();
+  const { networkName, explorerUrl } = useArcNetwork();
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   
@@ -282,13 +284,13 @@ export default function CreateDaoPage() {
         }
 
         if (usdcBalance < 0.1) { // 0.1 USDC is a tiny threshold for gas
-          toast.error(`Insufficient USDC balance for gas on Arc Testnet. You have ${usdcBalance.toFixed(2)} USDC available.`);
+          toast.error(`Insufficient USDC balance for gas on ${networkName}. You have ${usdcBalance.toFixed(2)} USDC available.`);
           setLaunching(false);
           return;
         }
 
         // Show clear user feedback that we are using USDC as native gas
-        toast.loading(`Using USDC as gas on Arc Testnet. You have ${usdcBalance.toFixed(2)} USDC available. Preparing wallet popup...`, { id: launchToastId });
+        toast.loading(`Using USDC as gas on ${networkName}. You have ${usdcBalance.toFixed(2)} USDC available. Preparing wallet popup...`, { id: launchToastId });
         
         // 2. Format parameters for on-chain deployment
         const goalBigInt = BigInt(Math.round(creatorGoal * 1_000_000));
@@ -363,9 +365,9 @@ export default function CreateDaoPage() {
         setTxHash(deployHash);
         toast.loading(`Confirming transaction ${deployHash.slice(0, 10)}...`, { id: launchToastId });
 
-        // Show a reassurance message if the confirmation takes longer than 20s (Arc testnet latency)
+        // Show a reassurance message if the confirmation takes longer than 20s
         slowConfirmTimer = setTimeout(() => {
-          toast.loading(`Still confirming on Arc Testnet — this can take up to 45s. Please wait...`, { id: launchToastId });
+          toast.loading(`Still confirming on ${networkName} — this can take up to 45s. Please wait...`, { id: launchToastId });
         }, 20000);
 
         // 4. Wait for transaction confirmation
@@ -861,10 +863,10 @@ export default function CreateDaoPage() {
 
               {/* Deployed Contract Address Info */}
               <div className="p-4 rounded-xl border border-border-thin bg-surface/30 space-y-2 text-left">
-                <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">On-Chain Address (ArcScan)</span>
+                <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">On-Chain Address (Explorer)</span>
                 <div className="flex items-center justify-between gap-3">
                   <a
-                    href={`https://testnet.arcscan.app/address/${newDeployedAddress}`}
+                    href={`${explorerUrl}/address/${newDeployedAddress}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-mono text-xs text-primary hover:underline truncate select-all"
@@ -872,7 +874,7 @@ export default function CreateDaoPage() {
                     {newDeployedAddress}
                   </a>
                   <a
-                    href={`https://testnet.arcscan.app/address/${newDeployedAddress}`}
+                    href={`${explorerUrl}/address/${newDeployedAddress}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-2.5 py-1.5 rounded-lg bg-surface hover:bg-surface-elevated text-[10px] font-bold text-text-secondary hover:text-white border border-border-thin transition-colors"

@@ -124,7 +124,7 @@ export const CONTRACTS_TESTNET = {
 // Arc Mainnet — falls back to deployed addresses when mainnet-specific overrides are unset
 // Deployed 2026-10-01 on Arc Mainnet (Chain ID 5042)
 export const CONTRACTS_MAINNET = {
-  get governor() { return (process.env.NEXT_PUBLIC_MAINNET_GOVERNOR_ADDRESS || '0xc20ED7a2d87e3B7Ac7f9b2ac5F5a91E15E3E36f5') as `0x${string}` },
+  get governor() { return (process.env.NEXT_PUBLIC_MAINNET_GOVERNOR_ADDRESS || '0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025') as `0x${string}` },
   get treasuryGovernance() { return (process.env.NEXT_PUBLIC_MAINNET_TREASURY_ADDRESS || '0x8205e9782Fe54fD2aaD895b436B695db169F3d7B') as `0x${string}` },
   get treasuryAgent() { return (process.env.NEXT_PUBLIC_MAINNET_TREASURY_AGENT_ADDRESS || '0x88BdF819466C1802ce6C780a9fbdF3A314cab07D') as `0x${string}` },
   get treasury() { return this.treasuryGovernance },

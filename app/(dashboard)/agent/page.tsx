@@ -1511,7 +1511,9 @@ export default function AgentPage() {
             <div className="flex items-center gap-2">
               <Percent className="w-5 h-5 text-violet-400" />
               <h2 className="text-sm font-bold text-text-primary">Auto Yield Farming</h2>
-              <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-violet-500/15 border border-violet-500/25 text-violet-400">TESTNET</span>
+              <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold border ${isArcMainnet ? 'bg-emerald-500/15 border-emerald-500/25 text-emerald-400' : 'bg-violet-500/15 border-violet-500/25 text-violet-400'}`}>
+                {isArcMainnet ? 'MAINNET' : 'TESTNET'}
+              </span>
             </div>
 
             <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl flex items-start gap-3">

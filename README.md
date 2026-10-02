@@ -411,7 +411,7 @@ https://www.syndaopro.xyz/
 | **Chain ID** | `5042` | Arc Mainnet Identifier | [Arc Explorer](https://explorer.arc.io) |
 | **RPC Endpoint** | `https://rpc.mainnet.arc.io` | Official Arc Mainnet RPC Endpoint | — |
 | **SynArcTreasury** (Release Valve) | `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B` | Three-Way Match Release Valve, Payee Cooldown & Idempotency Guard | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
-| **SynArcGovernor** (Document Engine) | `0xc20ED7a2d87e3B7Ac7f9b2ac5F5a91E15E3E36f5` | Document-Anchored Governance Engine (48h timelock) | [Inspect](https://explorer.arc.io/address/0xc20ED7a2d87e3B7Ac7f9b2ac5F5a91E15E3E36f5) |
+| **SynArcGovernor** (Document Engine) | `0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025` | Document-Anchored Governance Engine (48h timelock) | [Inspect](https://explorer.arc.io/address/0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025) |
 | **SynArcToken** (`sARC`) | `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4` | Primary Governance Token with checkpoint delegation | [Inspect](https://explorer.arc.io/address/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) |
 | **Authorized Operator Agent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | Autonomous AI Agent executing under-cap releases & rebalances | [Inspect](https://explorer.arc.io/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
 | **Authorized Human Reviewer** | `0xE819090D7810D89f2E86e167d0b58425dEd745D8` | Deployer EOA registered on-chain for emergency overrides & multisig signoff | [Inspect](https://explorer.arc.io/address/0xE819090D7810D89f2E86e167d0b58425dEd745D8) |
