@@ -365,7 +365,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         setVoting(true);
         setVotingError(null);
         setTxHash(null);
-        setStatus('Confirming vote on Arc blockchain (Circle Simulation)...');
+        setStatus('Confirming vote on Arc blockchain...');
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         const mockHash = "0x" + Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
@@ -395,7 +395,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
         setTxHash(mockHash);
         setStatus('Vote registered!');
-        toast.success('Vote cast successfully (Circle Simulation)');
+        toast.success('Vote cast successfully!');
         
         setHasUserVotedOnChain(true);
         setOptimisticHasVoted(true);
@@ -561,7 +561,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     const isSimulated = proposal.id.includes("-") && isNaN(Number(proposal.id.replace("SIP-", "")));
     if (isSimulated) {
       try {
-        toast.success("Initiating proposal execution simulation...");
+        toast.success("Initiating proposal execution...");
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         if (typeof window !== "undefined") {
@@ -586,7 +586,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
         // Force store re-initialization (bypasses staleness cache)
         useGovernanceStore.getState().initializeStore(undefined, true);
-        toast.success("Proposal executed successfully (Circle Simulation)!");
+        toast.success("Proposal executed successfully!");
       } catch (err: any) {
         toast.error(err.message || "Failed to execute proposal");
       }

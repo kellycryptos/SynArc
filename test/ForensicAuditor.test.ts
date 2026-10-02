@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ForensicAuditor, ReleaseIntent } from "../lib/agent/forensic-auditor";
 
-describe("Forensic Sentinel Agent: Adversarial Audit & Canteen Defense Matrix", function () {
+describe("Forensic Sentinel Agent: Security Audit & Defense Matrix", function () {
   const VALID_CIDV0 = "ipfs://QmPgvwkpDNgHSTx3V7NrLwCrQbppN39Zpji6o3TwbtVuiU";
   const FAKE_PLACEHOLDER_CID = "ipfs://bafkreiautonomousagentfakeplaceholderreceipt";
   const VENDOR_PAYEE = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
@@ -65,7 +65,7 @@ describe("Forensic Sentinel Agent: Adversarial Audit & Canteen Defense Matrix", 
     });
   });
 
-  describe("3. Adversarial Attack Scenarios (Canteen Benchmark)", function () {
+  describe("3. Adversarial Defense Scenarios (Security Benchmark)", function () {
     it("Attack 1 (Phantom Invoice): should intercept fake/unpinned CIDs and reject release", async function () {
       const sim = await ForensicAuditor.runSimulatedAttack("phantom_invoice");
       expect(sim.auditTicket.verdict).to.equal("REJECTED_AUDIT_FAILURE");
@@ -86,7 +86,7 @@ describe("Forensic Sentinel Agent: Adversarial Audit & Canteen Defense Matrix", 
       const sim = await ForensicAuditor.runSimulatedAttack("silent_roundoff");
       expect(sim.auditTicket.verdict).to.equal("REJECTED_AUDIT_FAILURE");
       expect(sim.auditTicket.checks.zeroRoundoff.passed).to.be.false;
-      expect(sim.auditTicket.canteenControlViolations[0]).to.include("ERPNext Silent Round-Off");
+      expect(sim.auditTicket.canteenControlViolations[0]).to.include("Precision Float Drift");
       expect(sim.smartContractRevert).to.include("AmountMismatch");
     });
 

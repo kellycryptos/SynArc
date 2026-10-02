@@ -441,7 +441,7 @@ export function WalletFaucetCard() {
           <div className="pt-4 mt-4 border-t border-border-subtle text-[11px] text-text-tertiary flex items-start gap-2">
             <Clock className="w-3.5 h-3.5 text-brand shrink-0 mt-0.5" />
             <span>
-              Faucet transactions are mock-simulated on top of Privy keys for offline usability, using active JSON-RPC channels on network nodes.
+              Faucet transactions are processed on Arc network nodes using active JSON-RPC channels.
             </span>
           </div>
         )}

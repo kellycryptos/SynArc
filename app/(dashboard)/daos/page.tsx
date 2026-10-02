@@ -395,7 +395,7 @@ export default function DAOsPage() {
                         name="daoName"
                         required
                         disabled={submitting}
-                        placeholder="e.g. Canteen DAO"
+                        placeholder="e.g. Protocol Reserve DAO"
                         value={formData.daoName}
                         onChange={handleInputChange}
                         className="w-full px-4 py-2.5 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none text-sm text-white transition-colors"

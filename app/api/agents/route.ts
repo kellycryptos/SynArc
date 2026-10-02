@@ -49,7 +49,7 @@ const INITIAL_AGENTS: RegisteredAgent[] = [
     history: [
       {
         proposalId: "prop_1",
-        title: "Allocate 20k USDC for Canteen Mobile Integration",
+        title: "Allocate 20k USDC for Mobile App Integration",
         recommendation: "FOR",
         confidence: 87,
         timestamp: "2026-05-28T04:12:00Z"
@@ -89,7 +89,7 @@ const INITIAL_AGENTS: RegisteredAgent[] = [
     history: [
       {
         proposalId: "prop_1",
-        title: "Allocate 20k USDC for Canteen Mobile Integration",
+        title: "Allocate 20k USDC for Mobile App Integration",
         recommendation: "FOR",
         confidence: 90,
         timestamp: "2026-05-28T04:15:00Z"

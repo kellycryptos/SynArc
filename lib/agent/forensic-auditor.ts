@@ -3,11 +3,11 @@ import { CIRCLE_IRIS_API_URL, IS_MAINNET } from "../arc-config";
 
 /**
  * Forensic Audit Verification Models
- * Implementing Canteen's six non-double-entry defense controls:
+ * Implementing six core non-double-entry defense controls:
  * 1. Document-Anchored Verification (No document = Rejection)
  * 2. Format & Cryptographic Gateway Check (Eliminates fake/placeholder CIDs)
  * 3. Payee Divergence & Prompt Injection Defense (Flags recipient changes)
- * 4. Micro-USDC Exact Match (Zero ERPNext-style silent round-off)
+ * 4. Micro-USDC Exact Match (Zero silent round-off drift)
  * 5. Third-Party Consensus Witness (Circle Iris API for cross-chain rebalance)
  * 6. Release Valve Velocity Cap (Enforces on-chain 50 USDC autonomous ceiling)
  */
@@ -45,6 +45,7 @@ export interface ForensicAuditTicket {
   verdict: AuditVerdict;
   riskScore: number; // 0 (Clean) to 100 (Critical Attack)
   checks: Record<string, AuditCheckItem>;
+  securityControlViolations: string[];
   canteenControlViolations: string[];
   recommendation: string;
   ticketSignatureDigest: `0x${string}`;
@@ -60,6 +61,7 @@ export type AttackScenario =
 export interface AttackSimulationResult {
   scenario: AttackScenario;
   scenarioTitle: string;
+  vulnerabilityProfile: string;
   canteenVulnerability: string;
   naiveLedgerOutcome: "COMPROMISED - Funds Released (Debits == Credits)";
   synArcOutcome: "PROTECTED - Attack Neutralized by Forensic Mesh";
@@ -155,7 +157,7 @@ export class ForensicAuditor {
         message: `Schema Verification Failed: ${schemaRes.reason}`,
         details: { uri: intent.deliverableURI }
       };
-      violations.push("Canteen Control #1 & #2: Error of Omission / Fictitious Document Entry");
+      violations.push("Control #1 & #2: Error of Omission / Fictitious Document Entry");
       riskScore += 45;
     } else {
       checks.documentIntegrity = {
@@ -181,7 +183,7 @@ export class ForensicAuditor {
             attemptedPayee: intent.targetPayee
           }
         };
-        violations.push("Canteen Control #3: Payee Substitution (Party-Level Commission)");
+        violations.push("Control #3: Payee Substitution (Party-Level Commission)");
         riskScore += 50;
       } else {
         checks.payeeIntegrity = {
@@ -215,7 +217,7 @@ export class ForensicAuditor {
         message: `Amount mismatch / floating roundoff error detected! Stated: ${intent.amountUSDC}, Expected: ${knownOrderTerms?.amountUSDC ?? reconstructedAmount}. Difference: ${diff} USDC.`,
         details: { amount: intent.amountUSDC, microUnits: microUnits.toString(), diff }
       };
-      violations.push("Canteen Control #4: ERPNext Silent Round-Off Flaw (Tolerance Absorbed)");
+      violations.push("Control #4: Precision Float Drift (Tolerance Absorbed)");
       riskScore += 35;
     } else {
       checks.zeroRoundoff = {
@@ -237,7 +239,7 @@ export class ForensicAuditor {
           message: "Cross-chain fund claim lacks valid Circle Iris consensus witness attestation URL.",
           details: { deliverableURI: intent.deliverableURI }
         };
-        violations.push("Canteen Control #5: Unwitnessed Cross-Chain Ledger Movement");
+        violations.push("Control #5: Unwitnessed Cross-Chain Ledger Movement");
         riskScore += 40;
       } else {
         checks.crossChainWitness = {
@@ -302,6 +304,7 @@ export class ForensicAuditor {
       verdict,
       riskScore: Math.min(riskScore, 100),
       checks,
+      securityControlViolations: violations,
       canteenControlViolations: violations,
       recommendation,
       ticketSignatureDigest
@@ -327,10 +330,12 @@ export class ForensicAuditor {
           amountUSDC: 25.0
         });
 
+        const vulnDesc = "Error of Omission / Fictitious Entries: The agent fabricates a plausible-looking hash string to pass non-empty string checks in contracts.";
         return {
           scenario,
           scenarioTitle: "Phantom Invoice Attack (Fake CID / Unpinned Content)",
-          canteenVulnerability: "Error of Omission / Fictitious Entries: The agent fabricates a plausible-looking hash string to pass non-empty string checks in contracts.",
+          vulnerabilityProfile: vulnDesc,
+          canteenVulnerability: vulnDesc,
           naiveLedgerOutcome: "COMPROMISED - Funds Released (Debits == Credits)",
           synArcOutcome: "PROTECTED - Attack Neutralized by Forensic Mesh",
           auditTicket: ticket,
@@ -355,10 +360,12 @@ export class ForensicAuditor {
           amountUSDC: 45.0
         });
 
+        const vulnDesc = "Error of Commission at Party Level: Prompt injection modifies the payout IBAN/wallet address on the invoice. Double-entry passes because debits still equal credits.";
         return {
           scenario,
           scenarioTitle: "Prompt Injection Payee Substitution (Wallet Hijack)",
-          canteenVulnerability: "Error of Commission at Party Level: Prompt injection modifies the payout IBAN/wallet address on the invoice. Double-entry passes because debits still equal credits.",
+          vulnerabilityProfile: vulnDesc,
+          canteenVulnerability: vulnDesc,
           naiveLedgerOutcome: "COMPROMISED - Funds Released (Debits == Credits)",
           synArcOutcome: "PROTECTED - Attack Neutralized by Forensic Mesh",
           auditTicket: ticket,
@@ -381,10 +388,12 @@ export class ForensicAuditor {
           amountUSDC: 50.000000
         });
 
+        const vulnDesc = "Compensating Error / Floating Round-Off Drift: Accounting systems absorb fractional float discrepancies up to 0.5 units into hidden expense accounts.";
         return {
           scenario,
-          scenarioTitle: "ERPNext Silent Round-Off Attack (Micro-Float Drift)",
-          canteenVulnerability: "Compensating Error / ERPNext Round-Off Account: Accounting systems absorb fractional float discrepancies up to 0.5 units into hidden expense accounts.",
+          scenarioTitle: "Silent Round-Off Attack (Micro-Float Drift)",
+          vulnerabilityProfile: vulnDesc,
+          canteenVulnerability: vulnDesc,
           naiveLedgerOutcome: "COMPROMISED - Funds Released (Debits == Credits)",
           synArcOutcome: "PROTECTED - Attack Neutralized by Forensic Mesh",
           auditTicket: ticket,
@@ -409,10 +418,12 @@ export class ForensicAuditor {
           amountUSDC: 40.0
         });
 
+        const vulnDesc = "Phantom State Reconciliation: An agent marks funds as received across chains without an independent cryptographic witness from the bridge consensus.";
         return {
           scenario,
           scenarioTitle: "Unwitnessed Cross-Chain Bridge Claim",
-          canteenVulnerability: "Phantom State Reconciliation: An agent marks funds as received across chains without an independent cryptographic witness from the bridge consensus.",
+          vulnerabilityProfile: vulnDesc,
+          canteenVulnerability: vulnDesc,
           naiveLedgerOutcome: "COMPROMISED - Funds Released (Debits == Credits)",
           synArcOutcome: "PROTECTED - Attack Neutralized by Forensic Mesh",
           auditTicket: ticket,
@@ -435,10 +446,12 @@ export class ForensicAuditor {
           amountUSDC: 500.0
         });
 
+        const vulnDesc = "Model as Sole Release Trigger: The Circle escrow flaw where high confidence directly unlocks infinite funds without on-chain velocity controls.";
         return {
           scenario,
           scenarioTitle: "Whale Drain Bypass Attack ($500 Autonomous vs $50 Cap)",
-          canteenVulnerability: "Model as Sole Release Trigger: The Circle escrow flaw where high confidence directly unlocks infinite funds without on-chain velocity controls.",
+          vulnerabilityProfile: vulnDesc,
+          canteenVulnerability: vulnDesc,
           naiveLedgerOutcome: "COMPROMISED - Funds Released (Debits == Credits)",
           synArcOutcome: "PROTECTED - Attack Neutralized by Forensic Mesh",
           auditTicket: ticket,

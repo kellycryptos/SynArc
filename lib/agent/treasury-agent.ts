@@ -405,11 +405,12 @@ Respond in JSON format:
             console.log(`[TreasuryAgent] Forensic Sentinel Verdict: ${auditTicket.verdict} (Risk Score: ${auditTicket.riskScore}/100)`)
 
             if (auditTicket.verdict === "REJECTED_AUDIT_FAILURE") {
-              console.error(`[TreasuryAgent] Execution halted by Forensic Sentinel: ${auditTicket.canteenControlViolations.join(", ")}`)
+              const violations = auditTicket.securityControlViolations || auditTicket.canteenControlViolations || [];
+              console.error(`[TreasuryAgent] Execution halted by Forensic Sentinel: ${violations.join(", ")}`)
               this.logAction({
                 timestamp: new Date().toISOString(),
                 action: 'error',
-                reasoning: `[FORENSIC SENTINEL REJECTION] Proposal #${i} blocked: ${auditTicket.canteenControlViolations.join("; ")}`,
+                reasoning: `[FORENSIC SENTINEL REJECTION] Proposal #${i} blocked: ${violations.join("; ")}`,
                 status: 'failed'
               })
               continue

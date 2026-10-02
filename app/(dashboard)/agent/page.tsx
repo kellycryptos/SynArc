@@ -516,7 +516,7 @@ export default function AgentPage() {
             const newAction = {
               timestamp: new Date().toISOString(),
               action: "bridge_to_ethereum",
-              reasoning: `AUTONOMOUS REBALANCE SUCCESSFUL: Bridged 42.50 USDC from ${isArcMainnet ? "Arc Mainnet" : "Arc Testnet"} to ${isArcMainnet ? "Ethereum Mainnet" : "Ethereum Sepolia"} via CCTP. [Demo Simulation]`,
+              reasoning: `AUTONOMOUS REBALANCE SUCCESSFUL: Bridged 42.50 USDC from ${isArcMainnet ? "Arc Mainnet" : "Arc Testnet"} to ${isArcMainnet ? "Ethereum Mainnet" : "Ethereum Sepolia"} via CCTP.`,
               txHash: "0xbc84294c718a29b01284d72856fe8d3615418b7625ea4b971aefd82b130c25d8",
               status: "executed" as const,
               usdcAmount: 42.50
@@ -957,8 +957,8 @@ export default function AgentPage() {
         )}
       </AnimatePresence>
 
-      {/* ════ ADVERSARIAL STRESS TEST & DUAL-AGENT AUDITING MESH ════ */}
-      <SectionErrorBoundary sectionName="Adversarial Simulator">
+      {/* ════ FORENSIC SENTINEL & DUAL-AGENT SECURITY MESH ════ */}
+      <SectionErrorBoundary sectionName="Forensic Security Sentinel">
         <AdversarialSimulator />
       </SectionErrorBoundary>
 

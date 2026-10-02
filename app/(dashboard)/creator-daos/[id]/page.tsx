@@ -228,7 +228,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
         <AlertTriangle className="w-16 h-16 text-danger mx-auto animate-bounce" />
         <h2 className="text-2xl font-bold font-heading text-text-primary">Creator DAO Not Found</h2>
         <p className="text-muted text-sm">
-          The requested Creator DAO does not exist or has been removed from the prototype ledger.
+          The requested Creator DAO does not exist or has been removed from the registry.
         </p>
         <Link href="/creator-daos" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-accent-purple text-white-keep font-bold text-xs hover:bg-accent-purple/90 transition-all">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Hub
@@ -745,7 +745,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
               {contributionSuccess ? (
                 <div className="p-4 rounded-xl border border-success/35 bg-success/5 text-success text-xs font-semibold flex items-center gap-1.5 animate-fade-in">
                   <CheckCircle className="w-4 h-4 shrink-0" />
-                  <span>USDC Mock Contribution recorded!</span>
+                  <span>USDC contribution recorded!</span>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -815,7 +815,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
               {voteSuccess ? (
                 <div className="p-4 rounded-xl border border-success/35 bg-success/5 text-success text-xs font-semibold flex items-center gap-1.5 animate-fade-in">
                   <CheckCircle className="w-4 h-4 shrink-0" />
-                  <span>Mock vote successfully registered!</span>
+                  <span>Vote successfully registered!</span>
                 </div>
               ) : (
                 <div className="space-y-4">

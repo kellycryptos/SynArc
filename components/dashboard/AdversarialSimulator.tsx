@@ -85,13 +85,13 @@ export function AdversarialSimulator() {
             </span>
             <div>
               <h2 className="text-lg font-bold font-heading text-text-primary flex items-center gap-2">
-                Adversarial Stress Test Console
+                Autonomous Security Sentinel
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-primary uppercase font-bold">
                   Dual-Agent Mesh Active
                 </span>
               </h2>
               <p className="text-xs text-muted mt-0.5">
-                Stress-test the six non-double-entry vulnerabilities identified in Canteen&apos;s analysis of autonomous accounting.
+                Active defense verification for the six non-double-entry vulnerability vectors in autonomous accounting.
               </p>
             </div>
           </div>
@@ -106,12 +106,12 @@ export function AdversarialSimulator() {
             {isRunning ? (
               <>
                 <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                <span>Simulating Attack...</span>
+                <span>Verifying Security Controls...</span>
               </>
             ) : (
               <>
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Launch Attack Simulation</span>
+                <span>Run Defense Verification</span>
               </>
             )}
           </button>
@@ -149,7 +149,7 @@ export function AdversarialSimulator() {
           <div className="flex justify-between items-center text-xs font-semibold">
             <span className="text-primary flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-primary animate-pulse" />
-              Adversarial Interception Pipeline
+              Autonomous Security Defense Pipeline
             </span>
             <span className="font-mono text-muted text-[10px]">Step {currentStep} of 4</span>
           </div>
@@ -158,7 +158,7 @@ export function AdversarialSimulator() {
             <div className={`p-2.5 rounded-xl border text-center transition-all ${
               currentStep >= 1 ? "bg-amber-500/15 border-amber-500/40 text-amber-300 font-bold" : "bg-surface/40 border-border-thin text-muted"
             }`}>
-              1. Attack Injected
+              1. Threat Detected
             </div>
             <div className={`p-2.5 rounded-xl border text-center transition-all ${
               currentStep >= 2 ? "bg-blue-500/15 border-blue-500/40 text-blue-300 font-bold" : "bg-surface/40 border-border-thin text-muted"
@@ -173,7 +173,7 @@ export function AdversarialSimulator() {
             <div className={`p-2.5 rounded-xl border text-center transition-all ${
               currentStep >= 4 ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300 font-bold" : "bg-surface/40 border-border-thin text-muted"
             }`}>
-              4. Contract Loud Revert
+              4. On-Chain Revert Enforced
             </div>
           </div>
         </div>
@@ -190,13 +190,13 @@ export function AdversarialSimulator() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <span>Attack Neutralized: {result.scenarioTitle}</span>
+                  <span>Threat Neutralized: {result.scenarioTitle}</span>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold">
                     Risk Score: {result.auditTicket.riskScore}/100
                   </span>
                 </h3>
                 <p className="text-xs text-muted mt-1 leading-relaxed">
-                  {result.canteenVulnerability}
+                  {result.vulnerabilityProfile || result.canteenVulnerability}
                 </p>
               </div>
             </div>
@@ -230,12 +230,12 @@ export function AdversarialSimulator() {
               </div>
             </div>
 
-            {/* The SynDAO Adversarial Mesh */}
+            {/* The SynDAO Forensic Security Mesh */}
             <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/25 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  SynDAO Adversarial Mesh (Arc Mainnet)
+                  SynDAO Forensic Security Mesh (Arc Mainnet)
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
                   THREE-WAY MATCH
@@ -254,7 +254,7 @@ export function AdversarialSimulator() {
           <div className="p-4 bg-black/60 border border-border-thin rounded-2xl space-y-3 font-mono text-xs">
             <div className="flex items-center gap-2 text-text-secondary pb-2 border-b border-white/10 text-[11px] font-bold uppercase tracking-wider">
               <Terminal className="w-4 h-4 text-primary" />
-              Dual-Agent Adversarial Trace Logs
+              Dual-Agent Security Trace Logs
             </div>
 
             <div className="space-y-2 text-[11px] leading-relaxed">

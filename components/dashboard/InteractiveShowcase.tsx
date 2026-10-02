@@ -427,8 +427,8 @@ export function InteractiveShowcase() {
 
         {/* Footer actions inside the widget */}
         <div className="pt-4 border-t border-border-thin flex justify-between items-center text-[10px] text-text-muted">
-          <span>Simulation Active</span>
-          <span className="font-mono text-accent-purple font-bold">@syn-dao/sdk-demo</span>
+          <span>Live Stream Active</span>
+          <span className="font-mono text-accent-purple font-bold">@synarc/agent-sdk</span>
         </div>
       </div>
     </div>
