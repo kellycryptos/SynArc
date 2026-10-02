@@ -3,13 +3,20 @@
  * Defines the on-chain identity for the SynArc Treasury Agent
  */
 
+import { getActiveNetwork, CONTRACTS } from "@/lib/arc-config";
+
 export const AGENT_CONFIG = {
-  name: 'SynArc Treasury Agent',
+  name: 'SynDAO Treasury Agent',
   version: '1.0.0',
-  network: 'arc-testnet',
-  chainId: 5042002,
+  get network() { return getActiveNetwork() === 'mainnet' ? 'arc' : 'arc-testnet'; },
+  get chainId() { return getActiveNetwork() === 'mainnet' ? 5042 : 5042002; },
   // Agent smart account address (Circle Modular Wallet / ERC-4337)
-  address: (process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || process.env.NEXT_PUBLIC_AGENT_ADDRESS) as `0x${string}` | undefined,
+  get address() { 
+    return (process.env.NEXT_PUBLIC_MAINNET_AGENT_ADDRESS || 
+            process.env.NEXT_PUBLIC_AGENT_SMART_ACCOUNT || 
+            process.env.NEXT_PUBLIC_AGENT_ADDRESS || 
+            CONTRACTS.treasuryAgent) as `0x${string}`; 
+  },
   // ERC-8004 identity registry
   registryAddress: '0x8004A818BFB912233c491871b3d84c89A494BD9e' as `0x${string}`,
 }

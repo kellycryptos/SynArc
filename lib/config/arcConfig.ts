@@ -26,7 +26,7 @@ export const ARC_CONFIG = {
     name: 'Arc Mainnet',
     currency: 'USDC',
     decimals: 18,
-    blockExplorer: 'https://arcscan.app',
+    blockExplorer: 'https://explorer.arc.io',
   },
   
   // RPC Configuration

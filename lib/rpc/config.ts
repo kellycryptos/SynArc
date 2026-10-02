@@ -1,7 +1,7 @@
 import { JsonRpcProvider } from "ethers";
 import { checkRpcHealth } from "./health";
 
-import { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK } from "@/lib/arc-config";
+import { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK, ARC_RPC_URLS, getActiveNetwork } from "@/lib/arc-config";
 
 /**
  * Arc RPC Configuration
@@ -15,10 +15,8 @@ import { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK } from "@/li
 export const TESTNET_RPC_URLS = ARC_TESTNET_RPC_URLS;
 export const MAINNET_RPC_URLS = ARC_MAINNET_RPC_URLS;
 
-const isMainnet = ACTIVE_NETWORK === 'mainnet';
-
-// Centralized resilient fallbacks based on active network
-export const RPC_URLS = isMainnet ? MAINNET_RPC_URLS : TESTNET_RPC_URLS;
+// Centralized resilient fallbacks dynamically proxying active network (Mainnet or Testnet)
+export const RPC_URLS = ARC_RPC_URLS;
 export const ARC_TESTNET_RPC = TESTNET_RPC_URLS[0] || 'https://rpc.testnet.arc.io';
 /** @deprecated Use ARC_TESTNET_RPC. Canteen's RPC is CLI-bundled for their testnet only — not a public mainnet endpoint. */
 export const CANTEEN_RPC = ARC_TESTNET_RPC;

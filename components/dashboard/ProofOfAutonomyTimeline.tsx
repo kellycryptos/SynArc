@@ -5,6 +5,7 @@ import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import Link from "next/link";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { CONTRACTS } from "@/lib/arc-config";
 import { 
   Bot, 
   Zap, 
@@ -55,7 +56,9 @@ export function ProofOfAutonomyTimeline({ limit = 10 }: { limit?: number }) {
         const idNum = Number(p.id.replace("SIP-", ""));
         const isTargetProposal = idNum === 599 || idNum === 791 || idNum === 792 || idNum === 793 || idNum === 794;
         const isAgentCategory = p.category === "TREASURY_REBALANCE";
-        const isAgentProposer = p.proposer.toLowerCase() === "0x35630dfe2592ab19d979ec1b173697aea554b66b";
+        const isAgentProposer = 
+          p.proposer.toLowerCase() === CONTRACTS.treasuryAgent.toLowerCase() ||
+          p.proposer.toLowerCase() === "0x35630dfe2592ab19d979ec1b173697aea554b66b";
         const hasAgentKeywords = 
           p.title.toLowerCase().includes("treasury agent") || 
           p.description.toLowerCase().includes("autonomous agent proposal");
