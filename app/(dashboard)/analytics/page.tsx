@@ -44,7 +44,7 @@ export default function AnalyticsPage() {
   const { proposals, initialized, initializeStore } = useGovernanceStore();
   const { balance, activities, loading: treasuryLoading, error: treasuryError, refetch: refetchTreasury } = useTreasury();
   const [dateFilter, setDateFilter] = useState<"7d" | "30d" | "all">("all");
-  const [activeVoters, setActiveVoters] = useState<{ address: string; votesCount: number; power: number }[]>(FALLBACK_VOTERS);
+  const [activeVoters, setActiveVoters] = useState<{ address: string; votesCount: number; power: number }[]>([]);
   const [votersLoading, setVotersLoading] = useState(true);
   const [chartsReady, setChartsReady] = useState(false);
 
@@ -132,14 +132,14 @@ export default function AnalyticsPage() {
           power: voterPower.get(address) || 0,
         })).sort((a, b) => b.votesCount - a.votesCount).slice(0, 5);
 
-        const finalVoters = sortedVoters.length > 0 ? sortedVoters : FALLBACK_VOTERS;
+        const finalVoters = sortedVoters.length > 0 ? sortedVoters : (isArcMainnet ? [] : FALLBACK_VOTERS);
         VOTERS_CACHE.data = finalVoters;
         VOTERS_CACHE.ts = Date.now();
 
         setActiveVoters(finalVoters);
       } catch (err) {
         console.warn("Failed to load active voters, using fallbacks:", err);
-        setActiveVoters(FALLBACK_VOTERS);
+        setActiveVoters(isArcMainnet ? [] : FALLBACK_VOTERS);
       } finally {
         setVotersLoading(false);
       }
@@ -205,7 +205,7 @@ export default function AnalyticsPage() {
 
   // Dynamic Line Chart — Treasury balance trajectory
   const treasuryTrendData = useMemo(() => {
-    const targetBalance = (typeof balance === "number" && !isNaN(balance) && balance > 0) ? balance : 2_450_000;
+    const targetBalance = (typeof balance === "number" && !isNaN(balance) && balance > 0) ? balance : (isArcMainnet ? 0 : 2_450_000);
     
     if (filteredActivities.length > 0) {
       let runningBalance = targetBalance;

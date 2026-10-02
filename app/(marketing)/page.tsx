@@ -6,6 +6,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 // in Server Components). This keeps the interactive AI chat bundle entirely off the
 // server render critical path without breaking the Server Component contract.
 import { FloatingAIChatLazy } from "@/components/marketing/FloatingAIChatLazy";
+import { ACTIVE_NETWORK } from "@/lib/arc-config";
 
 interface FeatureCardProps {
   icon: string;
@@ -82,13 +83,13 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 max-w-5xl mx-auto mt-16 pt-8 border-t border-[#151C29] gap-y-6">
             <div className="stat px-4 text-center md:border-r border-[#151C29]">
               <div className="font-mono text-2xl sm:text-[27px] font-medium bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] bg-clip-text text-transparent">
-                $2.4M
+                {ACTIVE_NETWORK === 'mainnet' ? "$0" : "$2.4M"}
               </div>
               <div className="text-xs sm:text-[13px] text-[#6B7385] mt-2 font-space">Under escrow</div>
             </div>
             <div className="stat px-4 text-center md:border-r border-[#151C29]">
               <div className="font-mono text-2xl sm:text-[27px] font-medium bg-gradient-to-r from-[#2F6FFF] to-[#22D3EE] bg-clip-text text-transparent">
-                900+
+                {ACTIVE_NETWORK === 'mainnet' ? "0" : "900+"}
               </div>
               <div className="text-xs sm:text-[13px] text-[#6B7385] mt-2 font-space">Proposals recorded</div>
             </div>

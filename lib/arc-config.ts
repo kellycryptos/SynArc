@@ -129,7 +129,7 @@ export const CONTRACTS_MAINNET = {
   get treasuryAgent() { return (process.env.NEXT_PUBLIC_MAINNET_TREASURY_AGENT_ADDRESS || '0x88BdF819466C1802ce6C780a9fbdF3A314cab07D') as `0x${string}` },
   get treasury() { return this.treasuryGovernance },
   get token() { return (process.env.NEXT_PUBLIC_MAINNET_TOKEN_ADDRESS || '0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4') as `0x${string}` },
-  get eurc() { return (process.env.NEXT_PUBLIC_MAINNET_EURC_CONTRACT_ADDRESS || '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}` },
+  get eurc() { return (process.env.NEXT_PUBLIC_MAINNET_EURC_CONTRACT_ADDRESS || '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1') as `0x${string}` },
   get tokenMessenger() { return (process.env.NEXT_PUBLIC_MAINNET_TOKEN_MESSENGER_ADDRESS || '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d') as `0x${string}` },
   get crowdfund() { return (process.env.NEXT_PUBLIC_MAINNET_CROWDFUND_ADDRESS || '0xd5374DFC4B01F60115A52Df027704062506b3030') as `0x${string}` },
 }

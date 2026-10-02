@@ -1,14 +1,13 @@
 import { createPublicClient, http, fallback } from 'viem'
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from "@/hooks/auth/useAuth"
-import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS } from '@/lib/arc-config'
+import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, CONTRACTS } from '@/lib/arc-config'
 
 // Active-network RPC list — Canteen primary → Alchemy → Arc official fallback
-const ACTIVE_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS
+const ACTIVE_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS;
 
-// Arc Testnet EURC contract address
-const EURC_ADDRESS = (process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS ||
-  '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}`
+// Dynamic active-network EURC contract address
+const getEurcAddress = () => (CONTRACTS.eurc || '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1') as `0x${string}`;
 
 // ERC20 balanceOf ABI
 const ERC20_ABI = [
@@ -76,7 +75,7 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
       })
 
       const raw = await client.readContract({
-        address: EURC_ADDRESS,
+        address: getEurcAddress(),
         abi: ERC20_ABI,
         functionName: 'balanceOf',
         args: [activeAddress as `0x${string}`],

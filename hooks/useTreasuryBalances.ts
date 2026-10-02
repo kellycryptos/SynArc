@@ -71,8 +71,7 @@ const TREASURY_EVENTS_ABI = parseAbi([
 ]);
 
 const USDC_ADDRESS = '0x3600000000000000000000000000000000000000' as `0x${string}`;
-const EURC_ADDRESS = (process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS ||
-  '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}`;
+const getEurcAddress = () => (CONTRACTS.eurc || '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1') as `0x${string}`;
 
 export interface QueuedWithdrawal {
   id: string;
@@ -216,7 +215,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
           args: [treasuryAddress],
         }).catch(() => 0n),
         publicClient.readContract({
-          address: EURC_ADDRESS,
+          address: getEurcAddress(),
           abi: ERC20_ABI,
           functionName: 'balanceOf',
           args: [treasuryAddress],

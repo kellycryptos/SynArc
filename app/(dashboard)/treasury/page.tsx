@@ -54,7 +54,7 @@ const TREASURY_ABI = [
 ] as const
 
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
-const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as `0x${string}`;
+const getEurcAddress = () => (CONTRACTS.eurc || '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1') as `0x${string}`;
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
 import { BridgeModal } from "@/components/BridgeModal";
 import Link from "next/link";
@@ -336,7 +336,7 @@ function TreasuryPageContent() {
         const provider = new BrowserProvider(eip1193Provider);
         const signer = await provider.getSigner();
 
-        const tokenAddress = token === 'USDC' ? USDC_ADDRESS : EURC_ADDRESS;
+        const tokenAddress = token === 'USDC' ? USDC_ADDRESS : getEurcAddress();
         const amountRaw = BigInt(Math.floor(amount * 1_000_000));
 
         // ERC20 Contract instance
@@ -419,7 +419,7 @@ function TreasuryPageContent() {
       // Get provider and client — Privy wallet, Circle wallet OR external wallet
       const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
 
-      const tokenAddress = token === 'USDC' ? USDC_ADDRESS : EURC_ADDRESS;
+      const tokenAddress = token === 'USDC' ? USDC_ADDRESS : getEurcAddress();
       const amountRaw = BigInt(Math.floor(amount * 1_000_000));
 
       // Dynamically estimate fees using low-latency and aggressive parameters

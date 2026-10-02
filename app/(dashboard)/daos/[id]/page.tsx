@@ -34,7 +34,7 @@ import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { GOVERNANCE_CONTRACTS, ERC20ABI, GovernorABI } from "@/lib/governance/contracts";
 import { getResilientProvider } from "@/lib/rpc/config";
 import { enforceChain, selectActiveWallet } from "@/lib/tx-helper";
-import { ARC_CHAIN } from "@/lib/arc-config";
+import { ARC_CHAIN, CONTRACTS } from "@/lib/arc-config";
 
 interface Member {
   id: string;
@@ -320,7 +320,7 @@ export default function DAODetailsPage() {
 
       const tokenAddress = depositToken === "USDC" 
         ? "0x3600000000000000000000000000000000000000" // USDC stablecoin
-        : "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a"; // EURC stablecoin
+        : (CONTRACTS.eurc || "0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1"); // EURC stablecoin
 
       const tokenContract = new Contract(tokenAddress, ERC20ABI, signer);
       const amountWei = parseUnits(depositAmount, 6);

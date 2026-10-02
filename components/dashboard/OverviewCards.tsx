@@ -7,6 +7,7 @@ import { DollarSign, FileText, Activity, Users, ArrowRightLeft, CheckCircle2 } f
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { getActiveNetwork } from "@/lib/arc-config";
 
 function RenderAnimatedValue({ value }: { value: string | number }) {
   if (typeof value === "number") {
@@ -59,13 +60,15 @@ export function OverviewCards() {
     );
   }
 
+  const isMainnet = getActiveNetwork() === 'mainnet';
+
   const cards = [
-    { title: "Treasury Value", value: metrics?.treasuryValue || "$0", icon: DollarSign, trend: "+2.4%" },
+    { title: "Treasury Value", value: metrics?.treasuryValue || "$0", icon: DollarSign, trend: isMainnet ? "Live" : "+2.4%" },
     { title: "Total Proposals", value: metrics?.totalProposals !== undefined ? metrics.totalProposals : 0, icon: FileText, trend: "Live" },
     { title: "Active Proposals", value: metrics?.activeProposals !== undefined ? metrics.activeProposals : 0, icon: Activity, trend: "Stable" },
-    { title: "Governance Participation", value: metrics?.governanceParticipation || "0%", icon: ArrowRightLeft, trend: "+5.1%" },
+    { title: "Governance Participation", value: metrics?.governanceParticipation || "0%", icon: ArrowRightLeft, trend: isMainnet ? "0.0%" : "+5.1%" },
     { title: "DAO Members", value: metrics?.daoMembers !== undefined ? metrics.daoMembers : 0, icon: Users, trend: "Active" },
-    { title: "Proposal Execution Rate", value: metrics?.proposalExecutionRate || "0%", icon: CheckCircle2, trend: "High" },
+    { title: "Proposal Execution Rate", value: metrics?.proposalExecutionRate || "0%", icon: CheckCircle2, trend: isMainnet ? "0.0%" : "High" },
   ];
 
   const containerVariants = {

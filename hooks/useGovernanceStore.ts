@@ -98,20 +98,21 @@ interface GovernanceState {
 const INITIAL_PROPOSALS: Proposal[] = [];
 const INITIAL_TREASURY_ACTIVITIES: TreasuryActivity[] = [];
 
+const isMainnetInitial = getActiveNetwork() === 'mainnet';
+const INITIAL_METRICS: GovernanceMetrics = {
+  treasuryValue: isMainnetInitial ? "$0" : "$2,450,000",
+  activeProposals: 0,
+  totalProposals: 0,
+  governanceParticipation: isMainnetInitial ? "0.0%" : "16.7%",
+  daoMembers: isMainnetInitial ? 1 : 12450,
+  treasuryTransactions: isMainnetInitial ? 0 : 3,
+  proposalExecutionRate: isMainnetInitial ? "0.0%" : "92.4%",
+};
+
 export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   proposals: [],
-  // Reliable baseline metrics — displayed until on-chain data arrives or in case of RPC failure.
-  // These values ($2,450,000 treasury, 16.7% participation) are the verified on-chain
-  // historical baseline. Must not be reset to zero.
-  metrics: {
-    treasuryValue: "$2,450,000",
-    activeProposals: 0,
-    totalProposals: 0,
-    governanceParticipation: "16.7%",
-    daoMembers: 12450,
-    treasuryTransactions: 3,
-    proposalExecutionRate: "92.4%",
-  },
+  // Reliable baseline metrics — on Mainnet, clean zeroes/active live defaults; on Testnet, verified historical baseline.
+  metrics: INITIAL_METRICS,
   treasuryActivities: [],
   userVotes: {},
   initialized: false,
@@ -201,7 +202,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         treasuryTransactions: isMainnet ? 0 : 3,
         proposalExecutionRate: eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
           ? ((eagerProposals.filter(p => p.status === "Executed").length / eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-          : (isMainnet ? "100%" : "92.4%")
+          : (isMainnet ? "0.0%" : "92.4%")
       }
     });
 
@@ -394,7 +395,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
       const executionRate = combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
         ? ((combinedProposals.filter(p => p.status === "Executed").length / combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-        : (isMainnet ? "100%" : "92.4%");
+        : (isMainnet ? "0.0%" : "92.4%");
 
       if (typeof window !== "undefined" && loadedProposals.length > 0) {
         try {
@@ -416,7 +417,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           governanceParticipation: avgPart !== "0.0%" && avgPart !== "0%" ? avgPart : (isMainnet ? "0.0%" : "16.7%"),
           daoMembers: isMainnet ? 1 : 12450,
           treasuryTransactions: isMainnet ? loadedActivities.length : (loadedActivities.length || 3),
-          proposalExecutionRate: executionRate !== "0.0%" && executionRate !== "0%" ? executionRate : (isMainnet ? "100%" : "92.4%"),
+          proposalExecutionRate: executionRate !== "0.0%" && executionRate !== "0%" ? executionRate : (isMainnet ? "0.0%" : "92.4%"),
         }
       });
     } catch (e) {
@@ -452,7 +453,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           treasuryTransactions: isMainnet ? 0 : 3,
           proposalExecutionRate: fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
             ? ((fallbackProposals.filter(p => p.status === "Executed").length / fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-            : (isMainnet ? "100%" : "92.4%")
+            : (isMainnet ? "0.0%" : "92.4%")
         }
       });
     }
