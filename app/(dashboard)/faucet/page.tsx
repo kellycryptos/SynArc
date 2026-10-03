@@ -17,7 +17,8 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useToken } from "@/hooks/useToken";
 import { useWallets } from "@/hooks/useWallets";
 import { getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
-import { ARC_CHAIN } from "@/lib/arc-config";
+import { ARC_CHAIN, CONTRACTS } from "@/lib/arc-config";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { toast } from "react-hot-toast";
 
 
@@ -60,6 +61,7 @@ function CooldownTimer({ nextClaimAt }: { nextClaimAt: string }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function FaucetPage() {
   const { isAuthenticated, walletAddress, login } = useAuth();
+  const { isArcMainnet, switchToTestnet } = useArcNetwork();
 
   const [sarcStatus, setSarcStatus] = useState<ClaimStatus>("idle");
   const [sarcMsg, setSarcMsg] = useState("");
@@ -84,7 +86,7 @@ export default function FaucetPage() {
         outputs: []
       }] as const;
 
-      const SARC_ADDRESS = (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e") as `0x${string}`;
+      const SARC_ADDRESS = CONTRACTS.token;
 
       const gasParams = await getAggressiveGasParams(publicClient);
 
@@ -203,6 +205,27 @@ export default function FaucetPage() {
           sARC tokens give you voting power; USDC and EURC let you deposit into the treasury.
         </p>
       </div>
+
+      {/* Mainnet Active Notice */}
+      {isArcMainnet && (
+        <div className="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-amber-300">You are viewing Arc Mainnet (Chain 5042)</p>
+              <p className="text-xs text-amber-200/80">
+                Faucets distribute free test tokens for Arc Testnet only. Switch to Testnet to claim sARC, USDC, and gas tokens.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => switchToTestnet()}
+            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs font-mono transition-colors shrink-0 flex items-center gap-1.5 justify-center"
+          >
+            Switch to Testnet <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Token Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

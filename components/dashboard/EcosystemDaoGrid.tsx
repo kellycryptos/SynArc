@@ -1,8 +1,8 @@
-"use client";
-
+import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight, Shield, Zap, Sparkles, Building2, Coins, Bot, Rocket } from "lucide-react";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 interface DaoItem {
   id: string;
@@ -109,6 +109,20 @@ const defaultDaos: DaoItem[] = [
 
 export function EcosystemDaoGrid() {
   const { campaigns } = useCampaignStore();
+  const { isArcMainnet } = useArcNetwork();
+
+  const daos = useMemo(() => {
+    return defaultDaos.map((dao) => {
+      if (dao.id === "synarc-core" && isArcMainnet) {
+        return {
+          ...dao,
+          proposalsCount: 0,
+          treasuryUSDC: "0",
+        };
+      }
+      return dao;
+    });
+  }, [isArcMainnet]);
 
   return (
     <div className="space-y-3.5">
@@ -127,7 +141,7 @@ export function EcosystemDaoGrid() {
 
       {/* Grid of horizontal DAO cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {defaultDaos.map((dao) => {
+        {daos.map((dao) => {
           const Icon = dao.icon;
           return (
             <Link

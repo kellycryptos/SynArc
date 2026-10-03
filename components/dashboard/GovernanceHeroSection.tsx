@@ -6,8 +6,10 @@ import { Flame, ArrowRight, ShieldCheck, CheckCircle2, Sparkles, Clock, Layers }
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 export function GovernanceHeroSection() {
+  const { isArcMainnet } = useArcNetwork();
   const { campaigns } = useCampaignStore();
   const { metrics } = useGovernanceStore();
   const { isAuthenticated } = useAuth();
@@ -36,6 +38,18 @@ export function GovernanceHeroSection() {
       if (active) return active;
       return campaigns[0];
     }
+    if (isArcMainnet) {
+      return {
+        id: "mainnet-genesis",
+        title: "Arc Mainnet Community Treasury Initialization",
+        description: "Initial allocation and governance activation on Arc Mainnet (Chain ID 5042).",
+        state: "Genesis",
+        isAgent: true,
+        raised: 0,
+        goal: 1000000,
+        isGenesis: true,
+      };
+    }
     return {
       id: "arc-prop-104",
       title: "Arc Treasury Liquidity Rebalance & CCTP Yield",
@@ -45,7 +59,13 @@ export function GovernanceHeroSection() {
       raised: 450000,
       goal: 500000,
     };
-  }, [campaigns]);
+  }, [campaigns, isArcMainnet]);
+
+  const proposalNumberLabel = useMemo(() => {
+    if (featuredProposal.id === "mainnet-genesis") return "Genesis";
+    const num = featuredProposal.id.replace(/[^0-9]/g, "");
+    return num ? `#${num}` : "#1";
+  }, [featuredProposal.id]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -115,10 +135,10 @@ export function GovernanceHeroSection() {
           {/* Badges row */}
           <div className="flex items-center gap-2 flex-wrap mb-2.5">
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-[#151C29] text-[#8A948E] border border-[#1B2536]">
-              #104
+              {proposalNumberLabel}
             </span>
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-[#2F6FFF]/10 text-[#4F8BFF] border border-[#2F6FFF]/30">
-              Active
+              {featuredProposal.state}
             </span>
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-[#2F6FFF]/10 text-[#4F8BFF] border border-[#2F6FFF]/25">
               Autonomous Agent
@@ -172,7 +192,7 @@ export function GovernanceHeroSection() {
             <div className="flex items-center justify-between text-xs">
               <span className="text-[#8A948E] font-medium">Quick Target</span>
               <span className="font-mono text-[10px] text-[#4F8BFF] bg-[#2F6FFF]/10 px-1.5 py-0.5 rounded border border-[#2F6FFF]/20">
-                Arc Mainnet
+                {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}
               </span>
             </div>
             <p className="text-[11px] text-[#6B7385] font-mono">
