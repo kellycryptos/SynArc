@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { AnimatePresence } from "framer-motion";
 import { ethers, Contract, formatUnits } from "ethers";
 import { getResilientProvider } from "@/lib/rpc/config";
+import { CONTRACTS } from "@/lib/arc-config";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 export default function DAOsPage() {
@@ -57,7 +58,7 @@ export default function DAOsPage() {
 
         const fetchPromise = (async () => {
           const provider = await getResilientProvider();
-          const treasuryAddress = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18";
+          const treasuryAddress = CONTRACTS.treasuryGovernance;
           const TREASURY_ABI = [
             "function usdcBalance() external view returns (uint256)",
             "function eurcBalance() external view returns (uint256)"
@@ -73,17 +74,17 @@ export default function DAOsPage() {
         })();
 
         const combinedTreasury = await Promise.race([fetchPromise, timeoutPromise]);
-        setSynarcTreasury(combinedTreasury || 2450000);
-        setSynarcMembers(12450);
+        setSynarcTreasury(combinedTreasury > 0 ? combinedTreasury : (isArcMainnet ? 0 : 2450000));
+        setSynarcMembers(isArcMainnet ? 1 : 12450);
       } catch (err) {
-        setSynarcTreasury(2450000);
-        setSynarcMembers(12450);
+        setSynarcTreasury(isArcMainnet ? 0 : 2450000);
+        setSynarcMembers(isArcMainnet ? 1 : 12450);
       } finally {
         setMetricsLoading(false);
       }
     }
     fetchSynArcLiveMetrics();
-  }, []);
+  }, [isArcMainnet]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

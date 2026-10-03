@@ -1,3 +1,5 @@
+import { CONTRACTS, getActiveNetwork } from "@/lib/arc-config";
+
 export interface DAOInfo {
   id: string;
   name: string;
@@ -21,15 +23,25 @@ export const DAO_REGISTRY: DAOInfo[] = [
     name: 'Syn DAO',
     description: 'Governance and treasury infrastructure on Arc',
     logo: '/logo.png',
-    governorAddress: process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || '0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e',
-    treasuryAddress: process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '0xFE0F6bF45D363d34CD5fC1781594a7471736dC18',
-    tokenAddress: process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e',
+    get governorAddress() {
+      return CONTRACTS.governor;
+    },
+    get treasuryAddress() {
+      return CONTRACTS.treasuryGovernance;
+    },
+    get tokenAddress() {
+      return CONTRACTS.token;
+    },
     status: 'active',
     verified: true,
     featured: true,
     category: 'Governance',
-    members: 12450,
-    treasury: 2450000,
+    get members() {
+      return getActiveNetwork() === 'mainnet' ? 1 : 12450;
+    },
+    get treasury() {
+      return getActiveNetwork() === 'mainnet' ? 0 : 2450000;
+    },
     website: 'https://syndaopro.xyz',
   },
   {

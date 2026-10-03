@@ -53,7 +53,10 @@ export interface UseTokenReturn {
  * This is shown in the UI to give users a full picture of their holdings.
  * The Governor contract only uses sARC (getPastVotes) for on-chain vote weight.
  */
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+
 export function useToken(userAddress: string | null): UseTokenReturn {
+  const { activeNetwork } = useArcNetwork();
   const [votingPower, setVotingPower] = useState(0);
   const [sarcBalance, setSarcBalance] = useState(0);
   const [usdcBalance, setUsdcBalance] = useState(0);
@@ -112,10 +115,18 @@ export function useToken(userAddress: string | null): UseTokenReturn {
     } finally {
       setLoading(false);
     }
-  }, [userAddress]);
+  }, [userAddress, activeNetwork]);
 
   useEffect(() => {
     fetchBalances();
+
+    const handleNetworkChange = () => {
+      fetchBalances();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("synarc_network_changed", handleNetworkChange);
+    }
 
     // Refresh every 60 seconds and only if visible
     const interval = setInterval(() => {
@@ -123,7 +134,13 @@ export function useToken(userAddress: string | null): UseTokenReturn {
         fetchBalances();
       }
     }, 60_000);
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(interval);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("synarc_network_changed", handleNetworkChange);
+      }
+    };
   }, [fetchBalances]);
 
   const totalDisplayPower = votingPower + usdcBalance;

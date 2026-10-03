@@ -1,10 +1,11 @@
 import { createPublicClient, http, fallback } from 'viem'
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from "@/hooks/auth/useAuth"
-import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, CONTRACTS } from '@/lib/arc-config'
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork"
+import { ARC_CHAIN, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, getActiveNetwork, CONTRACTS } from '@/lib/arc-config'
 
-// Active-network RPC list — Canteen primary → Alchemy → Arc official fallback
-const ACTIVE_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS;
+// Dynamic getter — resolves the correct RPC list at call time, not import time
+const getActiveRpcUrls = () => getActiveNetwork() === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS;
 
 // Dynamic active-network EURC contract address
 const getEurcAddress = () => (CONTRACTS.eurc || '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1') as `0x${string}`;
@@ -26,6 +27,7 @@ const pendingFetches: { [address: string]: Promise<string> | undefined } = {}
 
 export const useEURCBalance = (walletAddress?: string | undefined) => {
   const { walletAddress: authAddress } = useAuth()
+  const { activeNetwork } = useArcNetwork()
   const activeAddress = walletAddress || authAddress
 
   const [balance, setBalance] = useState<string>('0.00')
@@ -40,7 +42,7 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
       return
     }
 
-    const key = activeAddress.toLowerCase()
+    const key = `${activeAddress.toLowerCase()}_${activeNetwork}`
     const now = Date.now()
 
     // 1. Check cache (5 seconds cache to deduplicate simultaneous calls on load)
@@ -52,7 +54,7 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
       return
     }
 
-    // 2. Check if there is already a pending promise for this address
+    // 2. Check if there is already a pending promise for this address on this network
     if (pendingFetches[key]) {
       setLoading(true)
       try {
@@ -71,7 +73,7 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
     const fetchPromise = (async () => {
       const client = createPublicClient({
         chain: ARC_CHAIN,
-        transport: fallback(ACTIVE_RPC_URLS.map(url => http(url))),
+        transport: fallback(getActiveRpcUrls().map(url => http(url))),
       })
 
       const raw = await client.readContract({
@@ -99,19 +101,32 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
     } finally {
       delete pendingFetches[key]
     }
-  }, [activeAddress])
+  }, [activeAddress, activeNetwork])
 
   useEffect(() => {
     fetchBalance()
     
+    const handleNetworkChange = () => {
+      fetchBalance()
+    }
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("synarc_network_changed", handleNetworkChange)
+    }
+
     // Refresh every 60 seconds (reduced from 30s) and only if visible
     const interval = setInterval(() => {
       if (typeof document === "undefined" || document.visibilityState === "visible") {
         fetchBalance()
       }
     }, 60_000)
-    return () => clearInterval(interval)
-    
+
+    return () => {
+      clearInterval(interval)
+      if (typeof window !== "undefined") {
+        window.removeEventListener("synarc_network_changed", handleNetworkChange)
+      }
+    }
   }, [fetchBalance])
 
   return {

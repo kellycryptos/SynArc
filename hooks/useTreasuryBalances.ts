@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createPublicClient, http, fallback, parseAbi } from 'viem';
-import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, CONTRACTS } from '@/lib/arc-config';
+import { ARC_CHAIN, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, getActiveNetwork, CONTRACTS } from '@/lib/arc-config';
 import { TreasuryActivity } from '@/types';
 
-// Active-network RPC list — Canteen primary → Alchemy → Arc official fallback
-const ACTIVE_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS;
+// Dynamic getter — resolves the correct RPC list at call time, not import time
+const getActiveRpcUrls = () => getActiveNetwork() === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS;
 
 const ERC20_ABI = [
   {
@@ -202,7 +202,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
 
     const publicClient = createPublicClient({
       chain: ARC_CHAIN,
-      transport: fallback(ACTIVE_RPC_URLS.map((url) => http(url, { timeout: 5000 }))),
+      transport: fallback(getActiveRpcUrls().map((url) => http(url, { timeout: 5000 }))),
     });
 
     try {
@@ -384,13 +384,27 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
   useEffect(() => {
     fetchBalances();
 
+    const handleNetworkChange = () => {
+      fetchBalances();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("synarc_network_changed", handleNetworkChange);
+    }
+
     // Auto-refresh every 60 seconds and only if visible
     const interval = setInterval(() => {
       if (typeof document === "undefined" || document.visibilityState === "visible") {
         fetchBalances();
       }
     }, 60_000);
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(interval);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("synarc_network_changed", handleNetworkChange);
+      }
+    };
   }, [fetchBalances]);
 
   return {
