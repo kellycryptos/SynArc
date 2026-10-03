@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
+import { useConnectorClient } from "wagmi";
 import { toast } from "react-hot-toast";
 import type { ArcEarnChain, EarnVault, DepositQuote, WithdrawalQuote, EarnPosition } from "@/types/earn";
 
@@ -13,19 +14,27 @@ const getEarnKit = async () => {
   return new EarnKit();
 };
 
-const getBrowserProvider = async () => {
-  if (typeof window === "undefined") return null;
-  return (window as any).ethereum || null;
+/**
+ * Build an EIP-1193-compatible provider from the wagmi connector client.
+ * Falls back to window.ethereum for injected wallets not connected via wagmi.
+ * Throws a user-friendly message when no provider is available at all.
+ */
+const makeProviderFromClient = (connectorClient: any) => {
+  if (connectorClient?.transport?.request) {
+    // wagmi v2 connector client exposes a viem-transport-shaped object;
+    // wrap it in an EIP-1193 provider so Circle's adapter-viem-v2 can use it.
+    return {
+      request: (args: any) => connectorClient.transport.request(args),
+    };
+  }
+  if (typeof window !== "undefined" && (window as any).ethereum) {
+    return (window as any).ethereum;
+  }
+  return null;
 };
 
-const getAdapter = async () => {
+const buildAdapter = async (provider: any) => {
   const { createViemAdapterFromProvider } = await import("@circle-fin/adapter-viem-v2");
-  const provider = await getBrowserProvider();
-
-  if (!provider) {
-    throw new Error("No Web3 provider found. Please connect your wallet.");
-  }
-
   return await createViemAdapterFromProvider({
     provider,
     capabilities: { addressContext: "user-controlled" },
@@ -131,6 +140,9 @@ function useActiveEarn() {
   const { isArcTestnet, activeNetwork, networkName } = useArcNetwork();
   const { walletAddress, isAuthenticated } = useAuth();
 
+  // Get the currently connected wagmi connector client (EIP-1193 transport)
+  const { data: connectorClient } = useConnectorClient();
+
   const [vaults, setVaults] = useState<EarnVault[]>([]);
   const [positions, setPositions] = useState<Record<string, EarnPosition>>({});
   const [isLoadingVaults, setIsLoadingVaults] = useState(false);
@@ -141,6 +153,21 @@ function useActiveEarn() {
   const currentEarnChain: ArcEarnChain = useMemo(() => {
     return isArcTestnet ? "Arc_Testnet" : "Arc";
   }, [isArcTestnet]);
+
+  /**
+   * Build and return the adapter, using the wagmi connector client as the
+   * primary provider source. Falls back to window.ethereum for injected
+   * wallets that may not be reflected by wagmi yet.
+   */
+  const getAdapter = useCallback(async () => {
+    const provider = makeProviderFromClient(connectorClient);
+    if (!provider) {
+      throw new Error(
+        "No Web3 provider found. Please connect your wallet first."
+      );
+    }
+    return buildAdapter(provider);
+  }, [connectorClient]);
 
   // 1. Fetch available vaults on Arc (Mainnet or Testnet)
   const fetchVaults = useCallback(async (chainOverride?: ArcEarnChain) => {
@@ -239,7 +266,7 @@ function useActiveEarn() {
     } finally {
       setIsLoadingPositions(false);
     }
-  }, [walletAddress, isAuthenticated, vaults, currentEarnChain]);
+  }, [walletAddress, isAuthenticated, vaults, currentEarnChain, getAdapter]);
 
   // Auto-fetch on chain or wallet switch
   useEffect(() => {

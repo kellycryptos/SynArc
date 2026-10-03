@@ -101,14 +101,31 @@ async function checkRateLimit(ip: string): Promise<boolean> {
 function isAllowedUrl(urlString: string, host: string): boolean {
   try {
     const parsed = new URL(urlString);
-    if (parsed.host === host) return true;
-    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") return true;
-    if (parsed.hostname.endsWith(".vercel.app")) return true;
+    const domain = parsed.hostname.toLowerCase();
+    const cleanHost = host.split(":")[0].toLowerCase().replace(/^www\./, "");
+    const cleanDomain = domain.replace(/^www\./, "");
+
+    // 1. Direct host match (with or without port, with or without www)
+    if (parsed.host === host || cleanDomain === cleanHost) return true;
+
+    // 2. Local development
+    if (domain === "localhost" || domain === "127.0.0.1") return true;
+
+    // 3. Vercel deployment preview and production domains
+    if (domain.endsWith(".vercel.app")) return true;
+
+    // 4. Official project domains (apex syndaopro.xyz and any subdomains like www)
+    if (domain === "syndaopro.xyz" || domain.endsWith(".syndaopro.xyz")) return true;
+    if (domain === "synarc.io" || domain.endsWith(".synarc.io")) return true;
+    if (domain === "arc.network" || domain.endsWith(".arc.network") || domain === "arc.io" || domain.endsWith(".arc.io")) return true;
+
+    // 5. Configured site URL (ignoring www mismatch)
     if (process.env.NEXT_PUBLIC_SITE_URL) {
       let rawSite = process.env.NEXT_PUBLIC_SITE_URL;
       if (!/^https?:\/\//i.test(rawSite)) rawSite = `https://${rawSite}`;
       const siteUrl = new URL(rawSite);
-      if (parsed.host === siteUrl.host) return true;
+      const siteDomain = siteUrl.hostname.toLowerCase().replace(/^www\./, "");
+      if (cleanDomain === siteDomain || domain === siteUrl.hostname.toLowerCase()) return true;
     }
     return false;
   } catch {
@@ -117,48 +134,28 @@ function isAllowedUrl(urlString: string, host: string): boolean {
 }
 
 function isOriginAllowed(req: NextRequest): boolean {
-  // 1. Explicit cross-site fetch rejected immediately by browser-enforced header
+  const host = req.headers.get("host") || "";
+  const origin = req.headers.get("origin");
+  const referer = req.headers.get("referer");
   const secFetchSite = req.headers.get("sec-fetch-site");
+
+  // If explicit Origin header present, validate against allowed domains
+  if (origin) {
+    return isAllowedUrl(origin, host);
+  }
+
+  // If explicit Referer header present, validate against allowed domains
+  if (referer) {
+    return isAllowedUrl(referer, host);
+  }
+
+  // Reject untrusted cross-site requests
   if (secFetchSite === "cross-site") {
     return false;
   }
 
-  const host = req.headers.get("host") || "";
-  const origin = req.headers.get("origin");
-  const referer = req.headers.get("referer");
-
-  // 2. Validate Origin header if present — must be allowed
-  if (origin && !isAllowedUrl(origin, host)) {
-    return false;
-  }
-
-  // 3. Validate Referer header if present — must be allowed
-  if (referer && !isAllowedUrl(referer, host)) {
-    return false;
-  }
-
-  // 4. In development / non-production, allow local test tools & scripts
-  if (process.env.NODE_ENV !== "production") {
-    return true;
-  }
-
-  // 5. Allow browser same-origin or same-site requests
-  if (secFetchSite === "same-origin" || secFetchSite === "same-site" || secFetchSite === "none") {
-    return true;
-  }
-
-  // 6. If origin or referer was present and passed validation, allow
-  if (origin || referer) {
-    return true;
-  }
-
-  // 7. SSR / app transport marker (raises bar past blind bots; rate limiter is primary boundary)
-  const appSource = req.headers.get("x-synarc-source");
-  if (appSource === "app-client") {
-    return true;
-  }
-
-  return false;
+  // Browser same-origin, same-site, non-browser, or SSR calls
+  return true;
 }
 
 /**
