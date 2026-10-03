@@ -21,6 +21,22 @@ export function getTestnetProxyUrl(): string {
   return `${siteUrl.replace(/\/$/, '')}/api/rpc/testnet`;
 }
 
+/**
+ * Resolves the Arc Mainnet proxy URL safely across both browser and server contexts.
+ * In the browser, returns '/api/rpc/mainnet'.
+ */
+export function getMainnetProxyUrl(): string {
+  if (typeof window !== 'undefined') {
+    return '/api/rpc/mainnet';
+  }
+  let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+  if (!/^https?:\/\//i.test(siteUrl)) {
+    siteUrl = `https://${siteUrl}`;
+  }
+  return `${siteUrl.replace(/\/$/, '')}/api/rpc/mainnet`;
+}
+
 // Arc Testnet list (chain 5042002) - uses same-origin proxy with public fallback
 export const ARC_TESTNET_RPC_URLS = [
   getTestnetProxyUrl(),
@@ -29,12 +45,11 @@ export const ARC_TESTNET_RPC_URLS = [
 ];
 
 // Arc Mainnet list (chain 5042)
-// Priority: Official Arc Mainnet RPC (https://rpc.mainnet.arc.io) → Official Fallbacks → Alchemy
+// Priority: Same-Origin Proxy → Official Arc Mainnet RPC (https://rpc.mainnet.arc.io) → Alchemy
 export const ARC_MAINNET_RPC_URLS = Array.from(new Set([
+  getMainnetProxyUrl(),
   process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL,
   'https://rpc.mainnet.arc.io',
-  'https://rpc.arc.network',
-  'https://rpc.mainnet.arc.network',
   process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC,
   process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC,
 ].filter(Boolean) as string[]))

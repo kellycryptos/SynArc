@@ -1,10 +1,9 @@
 import { createPublicClient, http, fallback } from 'viem'
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from "@/hooks/auth/useAuth"
-import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS } from '@/lib/arc-config'
+import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS } from '@/lib/arc-config'
 
-// Active-network RPC list — Canteen primary → Alchemy → Arc official fallback
-const ACTIVE_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork"
 
 // Arc Testnet USDC contract address
 const USDC_ADDRESS = '0x3600000000000000000000000000000000000000'
@@ -25,8 +24,9 @@ const cachedBalance: { [address: string]: { balance: string; timestamp: number }
 const pendingFetches: { [address: string]: Promise<string> | undefined } = {}
 
 export const useUSDCBalance = (walletAddress?: string | undefined) => {
-  const { walletAddress: authAddress } = useAuth()
+  const { walletAddress: authAddress, isCircle } = useAuth()
   const activeAddress = walletAddress || authAddress
+  const { arcChain, isArcTestnet } = useArcNetwork()
 
   const [balance, setBalance] = useState<string>('0.00')
   const [loading, setLoading] = useState(false)
@@ -43,7 +43,7 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
       return
     }
 
-    const key = activeAddress.toLowerCase()
+    const key = `${activeAddress.toLowerCase()}_${arcChain?.id || (isArcTestnet ? 5042002 : 5042)}`
     const now = Date.now()
 
     // 1. Check cache (5 seconds cache to deduplicate simultaneous calls on load)
@@ -72,9 +72,41 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
     setError(null)
     
     const fetchPromise = (async () => {
+      // If user is connected via Circle Wallet, fetch from Circle user-controlled wallet balances API first
+      if (isCircle && typeof window !== 'undefined') {
+        const userToken = localStorage.getItem('synarc_circle_user_token')
+        if (userToken) {
+          try {
+            const res = await fetch('/api/circle/wallet/balances', {
+              headers: { 'x-user-token': userToken }
+            })
+            if (res.ok) {
+              const data = await res.json()
+              if (data.success && data.balances) {
+                const usdcToken = data.balances.find((b: any) => 
+                  b.token?.symbol?.toUpperCase() === 'USDC' || 
+                  b.token?.address?.toLowerCase() === USDC_ADDRESS.toLowerCase()
+                )
+                if (usdcToken) {
+                  const amountNum = parseFloat(usdcToken.amount) || 0
+                  const formatted = amountNum.toFixed(2)
+                  setNativeBalance(formatted)
+                  cachedBalance[key] = { balance: formatted, timestamp: Date.now() }
+                  return formatted
+                }
+              }
+            }
+          } catch (circleErr) {
+            console.warn('[useUSDCBalance] Circle API balance fetch fallback to onchain RPC:', circleErr)
+          }
+        }
+      }
+
+      // Public on-chain read using active network RPC URLs
+      const rpcUrls = isArcTestnet ? ARC_TESTNET_RPC_URLS : ARC_MAINNET_RPC_URLS
       const client = createPublicClient({
-        chain: ARC_CHAIN,
-        transport: fallback(ACTIVE_RPC_URLS.map(url => http(url))),
+        chain: arcChain,
+        transport: fallback(rpcUrls.filter(Boolean).map((url: string) => http(url, { timeout: 4000 }))),
       })
 
       const [raw, nativeRaw] = await Promise.all([
@@ -87,9 +119,13 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
         client.getBalance({ address: activeAddress as `0x${string}` }).catch(() => 0n),
       ])
 
-      const formatted = (Number(raw) / 1_000_000).toFixed(2)
-      const nativeFormatted = (Number(nativeRaw) / 1_000_000).toFixed(2)
+      const erc20Formatted = (Number(raw) / 1_000_000).toFixed(2)
+      // Native Arc USDC has 18 decimals in wei
+      const nativeFormatted = (Number(nativeRaw) / 1e18).toFixed(2)
       setNativeBalance(nativeFormatted)
+
+      // Use erc20 balanceOf if available, else native balance if non-zero
+      const formatted = raw > 0n ? erc20Formatted : (nativeRaw > 0n ? nativeFormatted : erc20Formatted)
       cachedBalance[key] = { balance: formatted, timestamp: Date.now() }
       return formatted
     })()
@@ -107,7 +143,7 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
     } finally {
       delete pendingFetches[key]
     }
-  }, [activeAddress])
+  }, [activeAddress, isCircle, arcChain, isArcTestnet])
 
   useEffect(() => {
     fetchBalance()

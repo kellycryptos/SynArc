@@ -93,13 +93,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Messages array is required" }, { status: 400 });
     }
 
-    if (isMockKey) {
-      // High-fidelity fallback chat simulator
+    const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+
+    const getSimulatedReply = () => {
       const lastMessage = messages[messages.length - 1]?.content?.toLowerCase() || "";
       let reply = "Hello! I am your SynArc Companion. I can help you understand how to launch project workspaces, configure milestone escrows, query the SDK, or support project campaigns. What would you like to build today?";
- 
+
       if (lastMessage.includes("launch") || lastMessage.includes("create")) {
-        reply = "To launch a project workspace, head over to the **Launch Project Workspace** page under `/create-dao`. You will go through a simple 3-step wizard: select your template (Music, Artist, Writing, Gaming, Automated Project, or Open Source Builder), enter your goal and milestones, and click deploy! This compiles and deploys a custom `SynArcCrowdfund` smart contract directly to Arc Testnet.";
+        reply = "To launch a project workspace, head over to the **Launch Project Workspace** page under `/create-dao`. You will go through a simple 3-step wizard: select your template (Music, Artist, Writing, Gaming, Automated Project, or Open Source Builder), enter your goal and milestones, and click deploy! This compiles and deploys a custom `SynArcCrowdfund` smart contract directly to Arc.";
       } else if (lastMessage.includes("nanopayment") || lastMessage.includes("usdc") || lastMessage.includes("tip") || lastMessage.includes("micro")) {
         reply = "SynArc supports micro-funding contributions of any size. Because transaction fees are sub-penny, backers can support projects easily. Under workspace profiles, you can click presets ($0.01, $0.10, $1.00) or enter a custom amount. The transaction triggers a direct on-chain deposit to the campaign's milestone escrow contract.";
       } else if (lastMessage.includes("sdk") || lastMessage.includes("agent-sdk")) {
@@ -107,28 +108,36 @@ export async function POST(req: NextRequest) {
       } else if (lastMessage.includes("escrow") || lastMessage.includes("milestone") || lastMessage.includes("vote")) {
         reply = "Milestone Escrows secure backer capital. When contributors support a project workspace, funds go to a custom smart contract escrow instead of the creator's wallet. The creator claims funds by completing milestones (e.g., 'Alpha Launch'). Release of each milestone requires a community approval vote.";
       }
+      return reply;
+    };
 
+    if (isMockKey) {
       await new Promise(resolve => setTimeout(resolve, 800));
-      return NextResponse.json({ success: true, reply });
+      return NextResponse.json({ success: true, reply: getSimulatedReply() });
     }
 
-    // Call Groq API
-    const response = await groq.chat.completions.create({
-      model: "qwen/qwen3.6-27b",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        ...messages.map((m: any) => ({
-          role: m.role,
-          content: m.content
-        }))
-      ],
-      max_tokens: 600,
-      temperature: 0.6
-    });
+    try {
+      // Call Groq API
+      const response = await groq.chat.completions.create({
+        model: GROQ_MODEL,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          ...messages.map((m: any) => ({
+            role: m.role,
+            content: m.content
+          }))
+        ],
+        max_tokens: 600,
+        temperature: 0.6
+      });
 
-    let reply = response.choices[0].message.content || "Sorry, I couldn't formulate a response.";
-    reply = reply.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
-    return NextResponse.json({ success: true, reply });
+      let reply = response.choices[0].message.content || "Sorry, I couldn't formulate a response.";
+      reply = reply.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+      return NextResponse.json({ success: true, reply });
+    } catch (groqErr: any) {
+      console.warn("[AI Chat] Groq API call failed, using resilient fallback:", groqErr?.message || groqErr);
+      return NextResponse.json({ success: true, reply: getSimulatedReply() });
+    }
   } catch (err: any) {
     console.error("AI Chat API failed:", err);
     return NextResponse.json({ success: false, error: err?.message || "Internal server error" }, { status: 500 });

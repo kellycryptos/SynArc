@@ -8,6 +8,8 @@ const groq = new Groq({
   apiKey: isMockKey ? "mock_key" : process.env.GROQ_API_KEY
 });
 
+const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+
 function tolerantParse(str: string): any {
   let cleaned = str.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
   
@@ -261,7 +263,7 @@ export async function POST(req: NextRequest) {
       try {
         // Real Groq API completion call
         response = await groq.chat.completions.create({
-          model: "qwen/qwen3.6-27b",
+          model: GROQ_MODEL,
           messages: [
             {
               role: "system",
@@ -357,7 +359,7 @@ export async function POST(req: NextRequest) {
       try {
         // Real Groq API proposal generation call
         response = await groq.chat.completions.create({
-          model: "qwen/qwen3.6-27b",
+          model: GROQ_MODEL,
           messages: [
             {
               role: "system",
@@ -506,7 +508,7 @@ export async function POST(req: NextRequest) {
       try {
         // Real Groq API Completion call for Campaign Analysis (Upgraded Risk Engine!)
         response = await groq.chat.completions.create({
-          model: "qwen/qwen3.6-27b",
+          model: GROQ_MODEL,
           messages: [
             {
               role: "system",
@@ -675,7 +677,7 @@ export async function POST(req: NextRequest) {
       try {
         // Real Groq API Completion call for Campaign Generation
         response = await groq.chat.completions.create({
-          model: "qwen/qwen3.6-27b",
+          model: GROQ_MODEL,
           messages: [
             {
               role: "system",

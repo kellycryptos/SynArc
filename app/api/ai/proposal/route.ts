@@ -111,6 +111,41 @@ function fallbackGenerateCampaign(text: string): any {
   return { title, description, category, goal, duration, recipient, milestones };
 }
 
+const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+
+function generateFallbackCampaign(topic: string, context?: string) {
+  const goal = topic.toLowerCase().includes("large") ? 20000 : 8000;
+  const capitalizedTopic = topic.substring(0, 1).toUpperCase() + topic.substring(1);
+  return {
+    title: `AI: ${capitalizedTopic}`,
+    description: `This Creator DAO campaign outlines the implementation of a decentralized initiative for "${topic}". Built natively on Arc, this workspace coordinates capital pooling, transparent governance, and milestone-based escrow payouts to ensure backer security.`,
+    category: topic.toLowerCase().includes("music") ? "Music Creator" :
+              topic.toLowerCase().includes("art") ? "Artist" :
+              topic.toLowerCase().includes("game") ? "Game Developer" :
+              topic.toLowerCase().includes("writer") || topic.toLowerCase().includes("book") ? "Writer" :
+              topic.toLowerCase().includes("agent") || topic.toLowerCase().includes("ai") ? "AI Infrastructure" : "Ecosystem Grant",
+    goal,
+    duration: 30,
+    recipient: "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53",
+    milestones: [
+      { title: "Milestone 1 — Specification & Architecture", amount: Math.floor(goal * 0.25), description: "Establish high-fidelity designs, architectural specs, and initial system flows.", status: "pending" },
+      { title: "Milestone 2 — Implementation & Community Testing", amount: Math.floor(goal * 0.50), description: "Integrate core logic, build test suites, and deploy smart contract.", status: "pending" },
+      { title: "Milestone 3 — Public Launch & Verification", amount: Math.floor(goal * 0.25), description: "Deploy official contract, complete verification, and release documentation.", status: "pending" }
+    ]
+  };
+}
+
+function generateFallbackProposal(topic: string, context?: string) {
+  const capitalizedTopic = topic.substring(0, 1).toUpperCase() + topic.substring(1);
+  return {
+    title: `AI Generated: ${capitalizedTopic}`,
+    description: `This proposal details the design, execution parameters, and milestones to successfully implement the community initiative: "${topic}". \n\nBy leveraging Arc's high-throughput architecture, we aim to implement this within standard DAO timelines, boosting engagement metrics and establishing standard developer toolkits across all active delegates.\n\nWe request a USDC treasury allocation to fund core contributors and cover smart contract execution audits to ensure the stability of the deployment.`,
+    category: topic.toLowerCase().includes("grant") ? "Ecosystem" : "Governance",
+    treasuryImpact: topic.toLowerCase().includes("grant") ? "medium" : "none",
+    votingDuration: 7
+  };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -125,135 +160,124 @@ export async function POST(req: NextRequest) {
 
     if (type === "campaign") {
       if (isMockKey) {
-        const goal = topic.toLowerCase().includes("large") ? 20000 : 8000;
-        const generated = {
-          title: `AI: ${topic.substring(0, 1).toUpperCase() + topic.substring(1)}`,
-          description: `This Creator DAO campaign outlines the implementation of a decentralized solution for "${topic}". Built natively on the Arc Testnet, this project optimizes coordination, security, and smart contract architecture to enable frictionless stablecoin workflows. We request funding to coordinate developers, establish testing rigs, and deploy final production frameworks.`,
-          category: topic.toLowerCase().includes("infrastructure") ? "AI Infrastructure" : "Ecosystem Grant",
-          goal,
-          duration: 30,
-          recipient: "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53",
-          milestones: [
-            { title: "Milestone 1 — Alpha Specification", amount: Math.floor(goal * 0.25), description: "Establish high-fidelity designs, architectural specs, and initial system flows.", status: "pending" },
-            { title: "Milestone 2 — Implementation & Devnet", amount: Math.floor(goal * 0.50), description: "Integrate core logic, build test suites, and launch on internal devnet environments.", status: "pending" },
-            { title: "Milestone 3 — Verification & Mainnet Prep", amount: Math.floor(goal * 0.25), description: "Deploy official testnet contract, complete external audit logs, and release documentation.", status: "pending" }
-          ]
-        };
-        await new Promise((resolve) => setTimeout(resolve, 1200));
-        return NextResponse.json({ success: true, campaign: generated });
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        return NextResponse.json({ success: true, campaign: generateFallbackCampaign(topic, context) });
       }
 
-      // Real Groq campaign generation completion
-      const response = await groq.chat.completions.create({
-        model: "qwen/qwen3.6-27b",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert Creator DAO builder for the SynArc platform on Arc Network. Keep your reasoning and thinking process extremely concise. Your thinking process inside <think> tags MUST be under 100 words. Always respond with a single valid JSON object containing title, description, category, goal, duration, recipient, and milestones. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
-          },
-          {
-            role: "user",
-            content: `
-              Generate a Creator DAO configuration proposal based on:
-              Topic/Idea: "${topic}"
-              Context: ${context || "Creator DAO on Arc with USDC nanopayments"}
-              
-              Constraints:
-              1. Title must start with "AI: "
-              2. Category must be exactly one of: "Ecosystem Grant", "AI Infrastructure", "Product Development", "Protocol Upgrade", "Community Initiative", "Research"
-              3. Goal must be a number between 5000 and 25000 (USDC amount as number)
-              4. Duration must be a number between 14 and 60 (number of days)
-              5. Split it into 3 clear, logical milestones. The sum of the milestone amounts MUST equal the goal amount exactly.
-              6. Recipient must be a realistic Ethereum address.
-              
-              Respond in JSON format:
-              {
-                "title": "AI: Arcade Ecosystem Hub",
-                "description": "Provide a detailed 2-3 paragraph explanation of the value proposition, development milestones, and ecosystem benefits.",
-                "category": "Community Initiative",
-                "goal": 10000,
-                "duration": 30,
-                "recipient": "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53",
-                "milestones": [
-                  { "title": "Milestone 1: Prototype", "amount": 2500, "description": "Core interface and initial contracts.", "status": "pending" },
-                  { "title": "Milestone 2: Testnet Integration", "amount": 5000, "description": "Integrate USDC nanopayments and deploy testnets.", "status": "pending" },
-                  { "title": "Milestone 3: Mainnet Launch", "amount": 2500, "description": "Final audit and live public launch.", "status": "pending" }
-                ]
-              }
-            `
-          }
-        ],
-        max_tokens: 3000,
-        temperature: 0.7
-      });
-
-      const text = response.choices[0].message.content || "{}";
       try {
-        const data = tolerantParse(text);
-        return NextResponse.json({ success: true, campaign: data });
-      } catch (err) {
-        console.error("Failed to parse campaign JSON, trying fallback:", err);
-        const data = fallbackGenerateCampaign(text);
-        return NextResponse.json({ success: true, campaign: data });
+        const response = await groq.chat.completions.create({
+          model: GROQ_MODEL,
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert Creator DAO builder for the SynArc platform on Arc Network. Keep your reasoning and thinking process extremely concise. Your thinking process inside <think> tags MUST be under 100 words. Always respond with a single valid JSON object containing title, description, category, goal, duration, recipient, and milestones. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
+            },
+            {
+              role: "user",
+              content: `
+                Generate a Creator DAO configuration proposal based on:
+                Topic/Idea: "${topic}"
+                Context: ${context || "Creator DAO on Arc with USDC nanopayments"}
+                
+                Constraints:
+                1. Title must start with "AI: "
+                2. Category must be exactly one of: "Ecosystem Grant", "AI Infrastructure", "Product Development", "Protocol Upgrade", "Community Initiative", "Research"
+                3. Goal must be a number between 5000 and 25000 (USDC amount as number)
+                4. Duration must be a number between 14 and 60 (number of days)
+                5. Split it into 3 clear, logical milestones. The sum of the milestone amounts MUST equal the goal amount exactly.
+                6. Recipient must be a realistic Ethereum address.
+                
+                Respond in JSON format:
+                {
+                  "title": "AI: Arcade Ecosystem Hub",
+                  "description": "Provide a detailed 2-3 paragraph explanation of the value proposition, development milestones, and ecosystem benefits.",
+                  "category": "Community Initiative",
+                  "goal": 10000,
+                  "duration": 30,
+                  "recipient": "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53",
+                  "milestones": [
+                    { "title": "Milestone 1: Prototype", "amount": 2500, "description": "Core interface and initial contracts.", "status": "pending" },
+                    { "title": "Milestone 2: Testnet Integration", "amount": 5000, "description": "Integrate USDC nanopayments and deploy testnets.", "status": "pending" },
+                    { "title": "Milestone 3: Mainnet Launch", "amount": 2500, "description": "Final audit and live public launch.", "status": "pending" }
+                  ]
+                }
+              `
+            }
+          ],
+          max_tokens: 3000,
+          temperature: 0.7
+        });
+
+        const text = response.choices[0].message.content || "{}";
+        try {
+          const data = tolerantParse(text);
+          return NextResponse.json({ success: true, campaign: data });
+        } catch (parseErr) {
+          console.error("Failed to parse campaign JSON, trying fallback:", parseErr);
+          const data = fallbackGenerateCampaign(text);
+          return NextResponse.json({ success: true, campaign: data });
+        }
+      } catch (groqErr: any) {
+        console.warn("[AI Campaign] Groq API call failed, using resilient fallback:", groqErr?.message || groqErr);
+        const fallbackData = generateFallbackCampaign(topic, context);
+        return NextResponse.json({ success: true, campaign: fallbackData });
       }
     }
 
     if (type === "proposal") {
       if (isMockKey) {
-        const proposal = {
-          title: `AI Generated: ${topic.substring(0, 1).toUpperCase() + topic.substring(1)}`,
-          description: `This proposal details the design, execution parameters, and milestones to successfully implement the community initiative: "${topic}". \n\nBy leveraging Arc's high-throughput architecture, we aim to implement this within standard DAO timelines, boosting engagement metrics and establishing standard developer toolkits across all active delegates.\n\nWe request a USDC treasury allocation to fund core contributors and cover smart contract execution audits to ensure the stability of the deployment.`,
-          category: topic.toLowerCase().includes("grant") ? "Ecosystem" : "Governance",
-          treasuryImpact: topic.toLowerCase().includes("grant") ? "medium" : "none",
-          votingDuration: 7
-        };
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        return NextResponse.json({ success: true, proposal });
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        return NextResponse.json({ success: true, proposal: generateFallbackProposal(topic, context) });
       }
 
-      // Real Groq proposal generation completion
-      const response = await groq.chat.completions.create({
-        model: "qwen/qwen3.6-27b",
-        messages: [
-          {
-            role: "system",
-            content: "You are a DAO governance expert for SynArc on Arc Network. Keep your reasoning and thinking process extremely concise. Your thinking process inside <think> tags MUST be under 100 words. Generate professional governance proposals. Always respond with a single valid JSON object containing title, description, category, treasuryImpact, and votingDuration. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
-          },
-          {
-            role: "user",
-            content: `
-              Generate a complete governance proposal based on this idea:
-              "${topic}"
-              Context: ${context || "None"}
-              
-              Constraints:
-              1. Category must be one of: "Treasury", "Governance", "Ecosystem", "Protocol Upgrade"
-              2. TreasuryImpact must be one of: "none", "low", "medium", "high"
-              3. VotingDuration must be one of: 3, 5, 7
-              
-              Respond in JSON format:
-              {
-                "title": "Upgrade Governance Smart Contracts",
-                "description": "Provide a detailed 2-3 paragraph explanation of the proposal detailing value, execution path, and safety protocols.",
-                "category": "Governance",
-                "treasuryImpact": "none",
-                "votingDuration": 7
-              }
-            `
-          }
-        ],
-        max_tokens: 2048,
-        temperature: 0.7
-      });
-
-      const text = response.choices[0].message.content || "{}";
       try {
-        const data = tolerantParse(text);
-        return NextResponse.json({ success: true, proposal: data });
-      } catch (err) {
-        console.error("Failed to parse proposal JSON, trying fallback:", err);
-        const data = fallbackGenerate(text);
-        return NextResponse.json({ success: true, proposal: data });
+        const response = await groq.chat.completions.create({
+          model: GROQ_MODEL,
+          messages: [
+            {
+              role: "system",
+              content: "You are a DAO governance expert for SynArc on Arc Network. Keep your reasoning and thinking process extremely concise. Your thinking process inside <think> tags MUST be under 100 words. Generate professional governance proposals. Always respond with a single valid JSON object containing title, description, category, treasuryImpact, and votingDuration. Respond ONLY with valid JSON. Do not include markdown formatting or extra text."
+            },
+            {
+              role: "user",
+              content: `
+                Generate a complete governance proposal based on this idea:
+                "${topic}"
+                Context: ${context || "None"}
+                
+                Constraints:
+                1. Category must be one of: "Treasury", "Governance", "Ecosystem", "Protocol Upgrade"
+                2. TreasuryImpact must be one of: "none", "low", "medium", "high"
+                3. VotingDuration must be one of: 3, 5, 7
+                
+                Respond in JSON format:
+                {
+                  "title": "Upgrade Governance Smart Contracts",
+                  "description": "Provide a detailed 2-3 paragraph explanation of the proposal detailing value, execution path, and safety protocols.",
+                  "category": "Governance",
+                  "treasuryImpact": "none",
+                  "votingDuration": 7
+                }
+              `
+            }
+          ],
+          max_tokens: 2048,
+          temperature: 0.7
+        });
+
+        const text = response.choices[0].message.content || "{}";
+        try {
+          const data = tolerantParse(text);
+          return NextResponse.json({ success: true, proposal: data });
+        } catch (parseErr) {
+          console.error("Failed to parse proposal JSON, trying fallback:", parseErr);
+          const data = fallbackGenerate(text);
+          return NextResponse.json({ success: true, proposal: data });
+        }
+      } catch (groqErr: any) {
+        console.warn("[AI Proposal] Groq API call failed, using resilient fallback:", groqErr?.message || groqErr);
+        const fallbackData = generateFallbackProposal(topic, context);
+        return NextResponse.json({ success: true, proposal: fallbackData });
       }
     }
 

@@ -20,7 +20,6 @@ export function NetworkStatusBadge() {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { isHealthy, latency, message } = useRpcStatus();
   const {
     networkName,
     currentChainId,
@@ -33,6 +32,9 @@ export function NetworkStatusBadge() {
     switchToTestnet,
     isSwitching,
   } = useArcNetwork();
+
+  const activeNet: 'mainnet' | 'testnet' = isArcTestnet ? 'testnet' : 'mainnet';
+  const { isHealthy, latency, message, isLoading } = useRpcStatus(activeNet);
 
   // Close dropdown on outside click or Escape key
   useEffect(() => {
@@ -60,10 +62,16 @@ export function NetworkStatusBadge() {
 
   const statusColor = isHealthy
     ? "bg-[#0B111C] border-[#1B2536] text-[#F5F7FA] hover:border-[#2F6FFF]/40"
+    : isLoading
+    ? "bg-[#0B111C] border-amber-500/20 text-amber-400"
     : "bg-[#0B111C] border-negative/30 text-negative hover:border-negative/50";
 
-  const indicatorColor = isHealthy ? "bg-[#22C55E]" : "bg-[#EF4444]";
-  const animationClass = isHealthy ? "animate-pulse" : "animate-none";
+  const indicatorColor = isHealthy
+    ? "bg-[#22C55E]"
+    : isLoading
+    ? "bg-amber-400"
+    : "bg-[#EF4444]";
+  const animationClass = isHealthy || isLoading ? "animate-pulse" : "animate-none";
 
   const handleToggle = () => setIsOpen((prev) => !prev);
 
@@ -89,8 +97,12 @@ export function NetworkStatusBadge() {
         <span className={`w-1.5 h-1.5 rounded-full ${indicatorColor} ${animationClass}`} />
         <span className="font-medium">{networkName}</span>
         <span className="text-white/30">·</span>
-        <span className="hidden sm:inline">{isHealthy ? `${latency}ms` : "Reconnecting"}</span>
-        <span className="sm:hidden">{isHealthy ? "OK" : "ERR"}</span>
+        <span className="hidden sm:inline">
+          {isHealthy ? `${latency}ms` : isLoading ? "Connecting..." : "Reconnecting"}
+        </span>
+        <span className="sm:hidden">
+          {isHealthy ? "OK" : isLoading ? "..." : "ERR"}
+        </span>
         <ChevronDown
           className={`w-3.5 h-3.5 text-[#8A948E] transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""

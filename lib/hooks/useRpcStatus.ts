@@ -5,43 +5,56 @@ import { useQuery } from "@tanstack/react-query";
 import { checkRpcHealth, RpcHealthStatus, getRpcStatusMessage } from "@/lib/rpc/health";
 import { getArcRpcUrl, getArcRpcFallback } from "@/lib/rpc/config";
 
+import { getActiveNetwork, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS } from "@/lib/arc-config";
+
 /**
  * Hook: useRpcStatus
  * 
- * Monitors the health of the Arc RPC endpoint and provides connection status.
- * Automatically retries with fallback if primary RPC fails.
+ * Monitors the health of the active Arc RPC endpoint and provides connection status.
+ * Automatically checks fallback endpoints if primary RPC fails or times out.
  */
-export function useRpcStatus() {
-  const [rpcUrl, setRpcUrl] = useState<string>(() => getArcRpcUrl());
+export function useRpcStatus(network?: 'mainnet' | 'testnet') {
+  const activeNet = network || getActiveNetwork();
+  const urls = activeNet === 'testnet' ? ARC_TESTNET_RPC_URLS : ARC_MAINNET_RPC_URLS;
 
   const { data: status, isLoading, error } = useQuery({
-    queryKey: ["rpcHealth", rpcUrl],
+    queryKey: ["rpcHealth", activeNet],
     queryFn: async () => {
-      const result = await checkRpcHealth(rpcUrl);
-      
-      if (!result.isHealthy && rpcUrl !== getArcRpcFallback()) {
-        setRpcUrl(getArcRpcFallback());
+      let lastResult: RpcHealthStatus | null = null;
+      for (const url of urls) {
+        if (!url) continue;
+        const result = await checkRpcHealth(url, 4000);
+        if (result.isHealthy) {
+          return result;
+        }
+        lastResult = result;
       }
-      
-      return result;
+      return lastResult || {
+        isHealthy: false,
+        latency: 0,
+        url: urls[0] || "",
+        timestamp: Date.now(),
+        error: "All RPC endpoints unresponsive",
+      };
     },
     refetchInterval: 30000,
-    staleTime: 10000,
-    retry: 3,
+    staleTime: 15000,
+    retry: 2,
   });
 
   const isHealthy = status?.isHealthy ?? false;
   const latency = status?.latency ?? 0;
-  const message = status ? getRpcStatusMessage(status) : "Connecting...";
+  const isConnecting = isLoading && !status;
+  const message = isConnecting ? "Connecting..." : (status ? getRpcStatusMessage(status) : "Connecting...");
 
   return {
     isHealthy,
     latency,
     message,
     status,
-    isLoading,
+    isLoading: isConnecting,
     error,
-    rpcUrl,
+    rpcUrl: status?.url || urls[0],
   };
 }
 

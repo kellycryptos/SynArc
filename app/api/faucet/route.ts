@@ -1,7 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createWalletClient, createPublicClient, http, fallback } from 'viem'
+import { createWalletClient, createPublicClient, http, fallback, defineChain } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { ARC_CHAIN, ARC_RPC_URLS, ARC_GAS, CONTRACTS } from '@/lib/arc-config'
+import { ARC_GAS } from '@/lib/arc-config'
+
+// ─── Testnet-only config (faucet is always testnet) ─────────────────────────
+const TESTNET_RPC_URLS = [
+  process.env.ARC_TESTNET_RPC_URL?.trim() || '',
+  'https://rpc.testnet.arc.network',
+  'https://rpc.testnet.arc.io',
+].filter(Boolean)
+
+const arcTestnetChain = defineChain({
+  id: 5042002,
+  name: 'Arc Testnet',
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://rpc.testnet.arc.network', 'https://rpc.testnet.arc.io'] },
+    public:  { http: ['https://rpc.testnet.arc.network', 'https://rpc.testnet.arc.io'] },
+  },
+  blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
+})
+
+const TESTNET_TOKEN_ADDRESS = (
+  process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e'
+) as `0x${string}`
+
+// Native Arc USDC contract (6-decimal ERC20 balanceOf, but native gas token has 18-decimal wei)
+const TESTNET_NATIVE_USDC = '0x3600000000000000000000000000000000000000' as `0x${string}`
 
 const TOKEN_ABI = [
   {
@@ -132,28 +157,29 @@ export async function POST(req: NextRequest) {
       : (`0x${rawKey}` as `0x${string}`)
 
     const account = privateKeyToAccount(privateKey)
+    // ── Always use testnet RPCs directly (faucet is testnet-only) ─────────────
     const transport = fallback(
-      ARC_RPC_URLS.map(url =>
+      TESTNET_RPC_URLS.map(url =>
         http(url, {
-          timeout: 10000,
-          retryCount: 3,
-          retryDelay: 1000,
+          timeout: 12000,
+          retryCount: 2,
+          retryDelay: 800,
         })
       ),
       {
-        retryCount: 3,
-        retryDelay: 1000,
+        retryCount: 2,
+        retryDelay: 800,
       }
     )
 
     const walletClient = createWalletClient({
       account,
-      chain: ARC_CHAIN,
+      chain: arcTestnetChain,
       transport,
     })
 
     const publicClient = createPublicClient({
-      chain: ARC_CHAIN,
+      chain: arcTestnetChain,
       transport,
     })
 
@@ -176,7 +202,7 @@ export async function POST(req: NextRequest) {
     let finalGasLimit: bigint = ARC_GAS.faucet
     try {
       const estimatedGas = await publicClient.estimateContractGas({
-        address: CONTRACTS.token,
+        address: TESTNET_TOKEN_ADDRESS,
         abi: TOKEN_ABI,
         functionName: 'transfer',
         args: [walletAddress as `0x${string}`, BigInt(1000) * BigInt(1e18)],
@@ -189,7 +215,7 @@ export async function POST(req: NextRequest) {
 
     // 1. Send 1000 sARC (18 decimals)
     const txHash = await walletClient.writeContract({
-      address: CONTRACTS.token,
+      address: TESTNET_TOKEN_ADDRESS,
       abi: TOKEN_ABI,
       functionName: 'transfer',
       args: [walletAddress as `0x${string}`, BigInt(1000) * BigInt(1e18)],
@@ -207,14 +233,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'sARC transaction failed on-chain' }, { status: 500 })
     }
 
-    // 2. Send 2 Native USDC gas tokens (6 decimals) directly for EVM transaction fees
-    const USDC_ADDRESS = "0x3600000000000000000000000000000000000000"
+    // 2. Send native USDC gas tokens so users can pay EVM gas fees
+    // Arc native currency has 18-decimal wei (same as ETH), so 2 USDC = 2n * 10n**18n
     let usdcTxHash: string | undefined
     try {
-      // Send Native USDC gas for EVM execution fees
       usdcTxHash = await walletClient.sendTransaction({
         to: walletAddress as `0x${string}`,
-        value: BigInt(2 * 1e6),
+        value: 2n * 10n ** 18n,   // 2 native USDC in wei (18 decimals)
         gas: 21000n,
         ...gasParams,
       })
@@ -224,13 +249,13 @@ export async function POST(req: NextRequest) {
         timeout: 60_000
       })
 
-      // Also transfer ERC20 USDC for treasury deposits
+      // Also transfer ERC20 USDC (6 decimals) for treasury deposits — best effort
       try {
         await walletClient.writeContract({
-          address: USDC_ADDRESS,
+          address: TESTNET_NATIVE_USDC,
           abi: TOKEN_ABI,
           functionName: 'transfer',
-          args: [walletAddress as `0x${string}`, BigInt(2 * 1e6)],
+          args: [walletAddress as `0x${string}`, 2_000_000n],  // 2 USDC at 6 decimals
           gas: finalGasLimit,
           ...gasParams,
         })
@@ -238,10 +263,8 @@ export async function POST(req: NextRequest) {
         console.warn('Faucet ERC20 USDC transfer non-critical warning:', erc20Err)
       }
     } catch (usdcErr: any) {
-      console.error('Faucet Native USDC gas transfer failed:', usdcErr)
-      return NextResponse.json({
-        error: `sARC sent successfully, but USDC gas transfer failed: ${usdcErr?.shortMessage || usdcErr?.message || usdcErr}`
-      }, { status: 500 })
+      console.warn('Faucet native USDC gas transfer failed (non-fatal, sARC was sent):', usdcErr?.shortMessage || usdcErr?.message)
+      // Don't block success — sARC was already sent and confirmed
     }
 
     // Register claim time on success
