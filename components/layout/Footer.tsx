@@ -51,8 +51,16 @@ const DEVELOPER_LINKS: NavItem[] = [
   { label: "Documentation", href: "/docs" },
   { label: "Agent SDK Guide", href: "/docs/sdk", badge: "v0.1" },
   { label: "GitHub Repository", href: "https://github.com/kellycryptos/SynArc", external: true },
-  { label: "Treasury Contract", href: "#", badge: "Coming Soon" },
-  { label: "Governor Contract", href: "#", badge: "Coming Soon" },
+  {
+    label: "Treasury Contract",
+    href: `https://explorer.arc.io/address/${CONTRACTS_MAINNET.treasuryGovernance}`,
+    external: true,
+  },
+  {
+    label: "Governor Contract",
+    href: `https://explorer.arc.io/address/${CONTRACTS_MAINNET.governor}`,
+    external: true,
+  },
   { label: "Testnet Faucet", href: "/faucet" },
   { label: "Security & Audits", href: "#", badge: "Coming Soon" },
 ];
