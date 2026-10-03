@@ -9,7 +9,6 @@ import {
   Copy,
   Check,
   Send,
-  ShieldCheck,
   Terminal,
   Activity,
   Layers,
@@ -17,7 +16,6 @@ import {
   Github,
   Twitter,
   ChevronRight,
-  Database,
   Lock,
   Cpu,
   Globe,
@@ -53,18 +51,10 @@ const DEVELOPER_LINKS: NavItem[] = [
   { label: "Documentation", href: "/docs" },
   { label: "Agent SDK Guide", href: "/docs/sdk", badge: "v0.1" },
   { label: "GitHub Repository", href: "https://github.com/kellycryptos/SynArc", external: true },
-  {
-    label: "Treasury Contract",
-    href: `https://explorer.arc.io/address/${CONTRACTS_MAINNET.treasuryGovernance}`,
-    external: true,
-  },
-  {
-    label: "Governor Contract",
-    href: `https://explorer.arc.io/address/${CONTRACTS_MAINNET.governor}`,
-    external: true,
-  },
+  { label: "Treasury Contract", href: "#", badge: "Coming Soon" },
+  { label: "Governor Contract", href: "#", badge: "Coming Soon" },
   { label: "Testnet Faucet", href: "/faucet" },
-  { label: "Security & Audits", href: "/docs" },
+  { label: "Security & Audits", href: "#", badge: "Coming Soon" },
 ];
 
 const GOVERNANCE_LINKS: NavItem[] = [
@@ -72,7 +62,7 @@ const GOVERNANCE_LINKS: NavItem[] = [
   { label: "How It Works", href: "/#how-it-works" },
   { label: "DAO Leaderboard", href: "/leaderboard" },
   { label: "Protocol Analytics", href: "/analytics" },
-  { label: "Constitution & Charter", href: "/docs" },
+  { label: "Constitution & Charter", href: "#", badge: "Coming Soon" },
   { label: "Account Settings", href: "/settings" },
 ];
 
@@ -108,8 +98,57 @@ const LEGAL_LINKS: NavItem[] = [
   { label: "Terms of Service", href: "/terms" },
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Protocol Disclaimer", href: "/terms#disclaimer" },
-  { label: "Brand Assets", href: "/docs" },
+  { label: "Brand Assets", href: "#", badge: "Coming Soon" },
 ];
+
+function FooterNavLink({ item }: { item: NavItem }) {
+  if (item.badge === "Coming Soon") {
+    return (
+      <div className="inline-flex items-center gap-1.5 text-[#6B7385] cursor-default select-none">
+        <span>{item.label}</span>
+        <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider bg-[#0B111C] border border-[#1B2536] text-[#6B7385]">
+          Coming Soon
+        </span>
+      </div>
+    );
+  }
+
+  if (item.external) {
+    return (
+      <a
+        href={item.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group inline-flex items-center gap-1.5 text-[#9CA6B8] hover:text-[#F5F7FA] transition-colors"
+      >
+        <ChevronRight className="w-2.5 h-2.5 text-[#2F6FFF] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+        <span>{item.label}</span>
+        <ExternalLink className="w-2.5 h-2.5 text-[#6B7385] group-hover:text-[#4F8BFF]" />
+      </a>
+    );
+  }
+
+  return (
+    <Link
+      href={item.href}
+      className="group inline-flex items-center gap-1.5 text-[#9CA6B8] hover:text-[#F5F7FA] transition-colors"
+    >
+      <ChevronRight className="w-2.5 h-2.5 text-[#2F6FFF] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+      <span>{item.label}</span>
+      {item.badge && (
+        <span
+          className={`px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider ${
+            item.badge === "Live"
+              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+              : "bg-[#2F6FFF]/10 text-[#4F8BFF] border border-[#2F6FFF]/20"
+          }`}
+        >
+          {item.badge}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 /* ─────────────────────────────────────────────────────────────
    Main Pro Footer Component
@@ -358,31 +397,13 @@ export function Footer() {
                 The institutional coordination layer for humans and autonomous AI agents. Safe multi-sig treasuries, deliverable-hash verification, and automated settlement built natively on Arc.
               </p>
 
-              {/* Protocol Specs Badges */}
-              <div className="space-y-2 pt-2">
-                <div className="flex flex-wrap gap-2 text-[11px] font-mono">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#0B111C] border border-[#1B2536] text-[#9CA6B8]">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#2F6FFF]" />
-                    OpenZeppelin v5
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#0B111C] border border-[#1B2536] text-[#9CA6B8]">
-                    <Activity className="w-3.5 h-3.5 text-emerald-400" />
-                    Circle CCTP v2
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#0B111C] border border-[#1B2536] text-[#9CA6B8]">
-                    <Database className="w-3.5 h-3.5 text-cyan-400" />
-                    IPFS Anchored
-                  </span>
-                </div>
-              </div>
-
               {/* Social Icon Row */}
-              <div className="pt-2 flex items-center gap-3">
+              <div className="pt-2 flex flex-wrap items-center gap-3">
                 <a
                   href="https://x.com/syndaopro"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-lg border border-[#1B2536] bg-[#0B111C] flex items-center justify-center text-[#9CA6B8] hover:text-[#F5F7FA] hover:border-[#2F6FFF]/40 transition-colors"
+                  className="w-9 h-9 rounded-lg border border-[#1B2536] bg-[#0B111C] flex items-center justify-center text-[#9CA6B8] hover:text-[#F5F7FA] hover:border-[#2F6FFF]/40 transition-colors shrink-0"
                   aria-label="Syn DAO on X"
                 >
                   <Twitter className="w-4 h-4" />
@@ -391,23 +412,23 @@ export function Footer() {
                   href="https://github.com/kellycryptos/SynArc"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-lg border border-[#1B2536] bg-[#0B111C] flex items-center justify-center text-[#9CA6B8] hover:text-[#F5F7FA] hover:border-[#2F6FFF]/40 transition-colors"
+                  className="w-9 h-9 rounded-lg border border-[#1B2536] bg-[#0B111C] flex items-center justify-center text-[#9CA6B8] hover:text-[#F5F7FA] hover:border-[#2F6FFF]/40 transition-colors shrink-0"
                   aria-label="Syn DAO on GitHub"
                 >
                   <Github className="w-4 h-4" />
                 </a>
                 <Link
                   href="/dashboard"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#2F6FFF]/30 bg-[#2F6FFF]/10 text-xs font-mono font-medium text-[#4F8BFF] hover:bg-[#2F6FFF]/20 transition-colors"
+                  className="h-9 inline-flex items-center gap-1.5 px-3.5 rounded-lg border border-[#2F6FFF]/30 bg-[#2F6FFF]/10 text-xs font-mono font-medium text-[#4F8BFF] hover:bg-[#2F6FFF]/20 transition-colors shrink-0"
                 >
                   <Terminal className="w-3.5 h-3.5" />
-                  Launch App
+                  <span>Launch App</span>
                 </Link>
               </div>
             </div>
 
-            {/* ── Navigation Columns (8 cols on large, 4-column grid) ── */}
-            <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-8">
+            {/* ── Navigation Columns (8 cols on large, responsive grid) ── */}
+            <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {/* Col 1: Ecosystem */}
               <div className="space-y-4">
                 <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-[#F5F7FA] flex items-center gap-1.5">
@@ -417,24 +438,7 @@ export function Footer() {
                 <ul className="space-y-2.5 text-xs font-mono">
                   {ECOSYSTEM_LINKS.map((item) => (
                     <li key={item.label}>
-                      <Link
-                        href={item.href}
-                        className="group inline-flex items-center gap-1.5 text-[#9CA6B8] hover:text-[#F5F7FA] transition-colors"
-                      >
-                        <ChevronRight className="w-2.5 h-2.5 text-[#2F6FFF] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                        <span>{item.label}</span>
-                        {item.badge && (
-                          <span
-                            className={`px-1.5 py-0.2 rounded text-[9px] uppercase font-bold tracking-wider ${
-                              item.badge === "Live"
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                : "bg-[#2F6FFF]/10 text-[#4F8BFF] border border-[#2F6FFF]/20"
-                            }`}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
-                      </Link>
+                      <FooterNavLink item={item} />
                     </li>
                   ))}
                 </ul>
@@ -449,31 +453,7 @@ export function Footer() {
                 <ul className="space-y-2.5 text-xs font-mono">
                   {DEVELOPER_LINKS.map((item) => (
                     <li key={item.label}>
-                      {item.external ? (
-                        <a
-                          href={item.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group inline-flex items-center gap-1.5 text-[#9CA6B8] hover:text-[#F5F7FA] transition-colors"
-                        >
-                          <ChevronRight className="w-2.5 h-2.5 text-[#2F6FFF] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                          <span>{item.label}</span>
-                          <ExternalLink className="w-2.5 h-2.5 text-[#6B7385] group-hover:text-[#4F8BFF]" />
-                        </a>
-                      ) : (
-                        <Link
-                          href={item.href}
-                          className="group inline-flex items-center gap-1.5 text-[#9CA6B8] hover:text-[#F5F7FA] transition-colors"
-                        >
-                          <ChevronRight className="w-2.5 h-2.5 text-[#2F6FFF] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                          <span>{item.label}</span>
-                          {item.badge && (
-                            <span className="px-1.5 py-0.2 rounded text-[9px] uppercase font-bold tracking-wider bg-[#2F6FFF]/10 text-[#4F8BFF] border border-[#2F6FFF]/20">
-                              {item.badge}
-                            </span>
-                          )}
-                        </Link>
-                      )}
+                      <FooterNavLink item={item} />
                     </li>
                   ))}
                 </ul>
@@ -488,13 +468,7 @@ export function Footer() {
                 <ul className="space-y-2.5 text-xs font-mono">
                   {GOVERNANCE_LINKS.map((item) => (
                     <li key={item.label}>
-                      <Link
-                        href={item.href}
-                        className="group inline-flex items-center gap-1.5 text-[#9CA6B8] hover:text-[#F5F7FA] transition-colors"
-                      >
-                        <ChevronRight className="w-2.5 h-2.5 text-[#2F6FFF] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                        <span>{item.label}</span>
-                      </Link>
+                      <FooterNavLink item={item} />
                     </li>
                   ))}
                 </ul>
@@ -509,25 +483,7 @@ export function Footer() {
                 <ul className="space-y-2.5 text-xs font-mono">
                   {SOCIAL_LINKS.map((item) => (
                     <li key={item.label}>
-                      {item.badge ? (
-                        <div className="inline-flex items-center gap-1.5 text-[#6B7385] cursor-default">
-                          <span>{item.label}</span>
-                          <span className="px-1 py-0.2 rounded text-[9px] uppercase font-bold tracking-wider bg-[#0B111C] border border-[#1B2536] text-[#6B7385]">
-                            {item.badge}
-                          </span>
-                        </div>
-                      ) : (
-                        <a
-                          href={item.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group inline-flex items-center gap-1.5 text-[#9CA6B8] hover:text-[#F5F7FA] transition-colors"
-                        >
-                          <ChevronRight className="w-2.5 h-2.5 text-[#2F6FFF] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                          <span>{item.label}</span>
-                          <ExternalLink className="w-2.5 h-2.5 text-[#6B7385] group-hover:text-[#4F8BFF]" />
-                        </a>
-                      )}
+                      <FooterNavLink item={item} />
                     </li>
                   ))}
                 </ul>
@@ -537,15 +493,24 @@ export function Footer() {
                   <h5 className="text-[11px] font-mono font-semibold tracking-wider uppercase text-[#6B7385] mb-2.5">
                     Legal & Trust
                   </h5>
-                  <ul className="space-y-2 text-xs font-mono">
+                  <ul className="space-y-2.5 text-xs font-mono">
                     {LEGAL_LINKS.map((item) => (
                       <li key={item.label}>
-                        <Link
-                          href={item.href}
-                          className="text-[#6B7385] hover:text-[#9CA6B8] transition-colors"
-                        >
-                          {item.label}
-                        </Link>
+                        {item.badge === "Coming Soon" ? (
+                          <div className="inline-flex items-center gap-1.5 text-[#6B7385] cursor-default select-none">
+                            <span>{item.label}</span>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider bg-[#0B111C] border border-[#1B2536] text-[#6B7385]">
+                              Coming Soon
+                            </span>
+                          </div>
+                        ) : (
+                          <Link
+                            href={item.href}
+                            className="text-[#6B7385] hover:text-[#9CA6B8] transition-colors"
+                          >
+                            {item.label}
+                          </Link>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -562,7 +527,7 @@ export function Footer() {
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
             <span>&copy; {new Date().getFullYear()} Syn DAO. All rights reserved.</span>
             <span className="hidden sm:inline text-[#1B2536]">|</span>
-            <span>Built on Arc • Powered by Circle CCTP</span>
+            <span>Built on Arc</span>
           </div>
 
           <p className="text-[11px] text-[#6B7385] text-center md:text-right max-w-xl">
