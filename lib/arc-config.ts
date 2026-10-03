@@ -250,29 +250,40 @@ export function getCctpConfig(net?: 'mainnet' | 'testnet') {
   return target === 'mainnet' ? CIRCLE_CCTP_MAINNET : CIRCLE_CCTP_TESTNET;
 }
 
-export const CIRCLE_IRIS_API_URL = IS_MAINNET
-  ? CIRCLE_CCTP_MAINNET.irisApiUrl
-  : CIRCLE_CCTP_TESTNET.irisApiUrl;
+export function getArcRpcUrlsForNetwork(net?: 'mainnet' | 'testnet'): string[] {
+  return (net || getActiveNetwork()) === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS;
+}
 
-export const CIRCLE_ETH_CONFIG = IS_MAINNET
-  ? {
-      name: CIRCLE_CCTP_MAINNET.ethereum.name,
-      domain: CIRCLE_CCTP_MAINNET.ethereum.domain,
-      tokenMessenger: CIRCLE_CCTP_MAINNET.ethereum.tokenMessenger,
-      messageTransmitter: CIRCLE_CCTP_MAINNET.ethereum.messageTransmitter,
-      usdc: CIRCLE_CCTP_MAINNET.ethereum.usdc,
-      explorer: CIRCLE_CCTP_MAINNET.ethereum.explorer,
-      transmitterUrl: `${CIRCLE_CCTP_MAINNET.ethereum.explorer}/address/${CIRCLE_CCTP_MAINNET.ethereum.messageTransmitter}`,
+export function getIrisApiUrl(net?: 'mainnet' | 'testnet'): string {
+  return (net || getActiveNetwork()) === 'mainnet'
+    ? CIRCLE_CCTP_MAINNET.irisApiUrl
+    : CIRCLE_CCTP_TESTNET.irisApiUrl;
+}
+
+export const CIRCLE_IRIS_API_URL = {
+  toString: () => getIrisApiUrl(),
+  valueOf: () => getIrisApiUrl(),
+  [Symbol.toPrimitive]: () => getIrisApiUrl(),
+} as unknown as string;
+
+export const CIRCLE_ETH_CONFIG = new Proxy({} as {
+  name: string;
+  domain: number;
+  tokenMessenger: `0x${string}`;
+  messageTransmitter: `0x${string}`;
+  usdc: `0x${string}`;
+  explorer: string;
+  transmitterUrl: string;
+}, {
+  get(_target, prop) {
+    const cctp = getActiveNetwork() === 'mainnet' ? CIRCLE_CCTP_MAINNET : CIRCLE_CCTP_TESTNET;
+    const eth = cctp.ethereum;
+    if (prop === 'transmitterUrl') {
+      return `${eth.explorer}/address/${eth.messageTransmitter}`;
     }
-  : {
-      name: CIRCLE_CCTP_TESTNET.ethereum.name,
-      domain: CIRCLE_CCTP_TESTNET.ethereum.domain,
-      tokenMessenger: CIRCLE_CCTP_TESTNET.ethereum.tokenMessenger,
-      messageTransmitter: CIRCLE_CCTP_TESTNET.ethereum.messageTransmitter,
-      usdc: CIRCLE_CCTP_TESTNET.ethereum.usdc,
-      explorer: CIRCLE_CCTP_TESTNET.ethereum.explorer,
-      transmitterUrl: `${CIRCLE_CCTP_TESTNET.ethereum.explorer}/address/${CIRCLE_CCTP_TESTNET.ethereum.messageTransmitter}`,
-    };
+    return (eth as any)[prop];
+  }
+});
 
 export const CCTP_DOMAINS = {
   testnet: {

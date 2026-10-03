@@ -5,49 +5,64 @@ import { Campaign } from "@/types";
 
 const MOCK_CAMPAIGNS: Campaign[] = [];
 
-const DB_PATH = path.join(process.cwd(), "data/campaigns.json");
-
 // In-memory fallback if file writing fails or is restricted in some environments
-let inMemoryDb: Campaign[] = [];
+const inMemoryDbs: Record<string, Campaign[]> = {
+  mainnet: [],
+  testnet: []
+};
 
-function readDb(): Campaign[] {
+function getDbPath(network: 'mainnet' | 'testnet'): string {
+  if (network === 'testnet') {
+    const testnetPath = path.join(process.cwd(), "data/campaigns_testnet.json");
+    if (fs.existsSync(testnetPath)) return testnetPath;
+    return path.join(process.cwd(), "data/campaigns.json");
+  }
+  return path.join(process.cwd(), "data/campaigns_mainnet.json");
+}
+
+function readDb(network: 'mainnet' | 'testnet'): Campaign[] {
+  const dbPath = getDbPath(network);
   try {
-    if (fs.existsSync(DB_PATH)) {
-      const fileContent = fs.readFileSync(DB_PATH, "utf8");
+    if (fs.existsSync(dbPath)) {
+      const fileContent = fs.readFileSync(dbPath, "utf8");
       return JSON.parse(fileContent);
     } else {
-      // Initialize with mock campaigns
-      const dir = path.dirname(DB_PATH);
+      const dir = path.dirname(dbPath);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      fs.writeFileSync(DB_PATH, JSON.stringify(MOCK_CAMPAIGNS, null, 2), "utf8");
-      return MOCK_CAMPAIGNS;
+      const initial = network === 'testnet' ? MOCK_CAMPAIGNS : [];
+      fs.writeFileSync(dbPath, JSON.stringify(initial, null, 2), "utf8");
+      return initial;
     }
   } catch (err) {
-    console.warn("Failed to read campaigns DB from disk, using in-memory:", err);
-    return inMemoryDb;
+    console.warn(`Failed to read ${network} campaigns DB from disk, using in-memory:`, err);
+    return inMemoryDbs[network] || [];
   }
 }
 
-function writeDb(data: Campaign[]) {
+function writeDb(network: 'mainnet' | 'testnet', data: Campaign[]) {
+  const dbPath = getDbPath(network);
   try {
-    const dir = path.dirname(DB_PATH);
+    const dir = path.dirname(dbPath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), "utf8");
-    inMemoryDb = data;
+    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), "utf8");
+    inMemoryDbs[network] = data;
   } catch (err) {
-    console.warn("Failed to write campaigns DB to disk, using in-memory:", err);
-    inMemoryDb = data;
+    console.warn(`Failed to write ${network} campaigns DB to disk, using in-memory:`, err);
+    inMemoryDbs[network] = data;
   }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const campaigns = readDb();
-    return NextResponse.json({ success: true, campaigns });
+    const { searchParams } = new URL(req.url);
+    const netParam = searchParams.get("network")?.toLowerCase();
+    const network: 'mainnet' | 'testnet' = netParam === 'testnet' ? 'testnet' : 'mainnet';
+    const campaigns = readDb(network);
+    return NextResponse.json({ success: true, campaigns, network });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err?.message || "Internal server error" },
@@ -59,6 +74,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    const network: 'mainnet' | 'testnet' = body.network === 'testnet' ? 'testnet' : 'mainnet';
     const {
       title,
       description,
@@ -81,8 +97,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const campaigns = readDb();
-    const id = `camp-${String(campaigns.length + 1).padStart(3, "0")}`;
+    const campaigns = readDb(network);
+    const prefix = network === 'mainnet' ? 'camp-main' : 'camp';
+    const id = `${prefix}-${String(campaigns.length + 1).padStart(3, "0")}`;
 
     const newCampaign: Campaign = {
       id,
@@ -124,9 +141,9 @@ export async function POST(req: Request) {
     };
 
     campaigns.push(newCampaign);
-    writeDb(campaigns);
+    writeDb(network, campaigns);
 
-    return NextResponse.json({ success: true, campaign: newCampaign });
+    return NextResponse.json({ success: true, campaign: newCampaign, network });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err?.message || "Internal server error" },

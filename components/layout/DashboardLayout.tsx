@@ -5,6 +5,7 @@ import { Sidebar } from "../sidebar/Sidebar";
 import { DashboardNavbar } from "../navbar/DashboardNavbar";
 import { WalletGuard } from "../auth/WalletGuard";
 import { PageWrapper } from "@/components/layout/PageWrapper";
+import { DashboardFooter } from "@/components/layout/DashboardFooter";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, AlertTriangle } from "lucide-react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
@@ -89,13 +90,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           )}
         </AnimatePresence>
 
-        <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8 pb-20">
+        <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8 pb-12">
           <WalletGuard>
             <PageWrapper>
               {children}
             </PageWrapper>
           </WalletGuard>
         </main>
+        <DashboardFooter />
       </div>
     </div>
   );

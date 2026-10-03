@@ -4,7 +4,7 @@ import { TreasuryActivity } from "@/types";
 import { ethers, JsonRpcProvider, BrowserProvider, Contract, formatUnits, parseUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI, ProposalState, VoteType, ERC20ABI } from "@/lib/governance/contracts";
 import { getAggressiveGasParams, getAuthenticatedClient } from "@/lib/tx-helper";
-import { ARC_CHAIN, ARC_RPC_URLS, getActiveNetwork } from "@/lib/arc-config";
+import { ARC_CHAIN, ARC_RPC_URLS, getActiveNetwork, CONTRACTS_MAINNET, CONTRACTS_TESTNET } from "@/lib/arc-config";
 import { createPublicClient, fallback, http } from "viem";
 import { getCachedProvider } from "@/lib/rpc/provider-cache";
 import historicalProposals from "@/data/historical-proposals.json";
@@ -71,6 +71,7 @@ interface GovernanceState {
   userVotes: Record<string, { option: "For" | "Against" | "Abstain"; sig: string; vp: number }>;
   initialized: boolean;
   lastFetched: number | null;
+  currentNetwork: 'mainnet' | 'testnet' | null;
   currentDaoId: string | null;
   currentDao: { id: string; governorAddress: string; treasuryAddress: string; tokenAddress: string } | null;
   activeContracts: {
@@ -117,6 +118,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   userVotes: {},
   initialized: false,
   lastFetched: null,
+  currentNetwork: null,
   currentDaoId: null,
   currentDao: null,
   activeContracts: {
@@ -127,28 +129,32 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
   initializeStore: async (customDao, force) => {
     const activeDaoId = customDao?.id || 'synarc';
+    const currentNet = getActiveNetwork();
+    const isMainnet = currentNet === 'mainnet';
+    const netKey = isMainnet ? 'mainnet' : 'testnet';
     const STALE_MS = 180_000; // 3-minute cache — avoids redundant RPC round-trips
     const state = get();
     const now = Date.now();
 
-    // Skip re-fetch if data is fresh and DAO hasn't changed
+    // Skip re-fetch only if data is fresh, DAO hasn't changed, AND network hasn't changed
     if (
       !force &&
       state.initialized &&
       state.currentDaoId === activeDaoId &&
+      state.currentNetwork === currentNet &&
       state.lastFetched !== null &&
       now - state.lastFetched < STALE_MS
     ) return;
 
-    // Reset store state for new DAO load
+    // Reset store state for new DAO load or network switch
     const contracts = customDao ? {
       governor: customDao.governorAddress,
       treasury: customDao.treasuryAddress,
       token: customDao.tokenAddress
     } : {
-      governor: GOVERNANCE_CONTRACTS.governor,
-      treasury: GOVERNANCE_CONTRACTS.treasury,
-      token: GOVERNANCE_CONTRACTS.token
+      governor: isMainnet ? CONTRACTS_MAINNET.governor : CONTRACTS_TESTNET.governor,
+      treasury: isMainnet ? CONTRACTS_MAINNET.treasuryGovernance : CONTRACTS_TESTNET.treasuryGovernance,
+      token: isMainnet ? CONTRACTS_MAINNET.token : CONTRACTS_TESTNET.token
     };
 
     set({ 
@@ -156,6 +162,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       treasuryActivities: [],
       initialized: false, 
       currentDaoId: activeDaoId,
+      currentNetwork: currentNet,
       currentDao: customDao || null,
       activeContracts: contracts 
     });
@@ -163,8 +170,6 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     // --- Step 0: Eagerly pre-populate with cached live + historical + simulated proposals
     // For testnet, historical baseline (SIP-1..941) is loaded.
     // For mainnet, ONLY mainnet-specific cached/live proposals are loaded — NO testnet data.
-    const isMainnet = getActiveNetwork() === 'mainnet';
-    const netKey = isMainnet ? 'mainnet' : 'testnet';
 
     let simulatedProposalsEager: Proposal[] = [];
     let cachedLiveProposalsEager: Proposal[] = [];
@@ -560,3 +565,12 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     await get().initializeStore(currentDao || undefined, true);
   }
 }));
+
+// Automatically react to network switches across the app
+if (typeof window !== "undefined") {
+  window.addEventListener("synarc_network_changed", () => {
+    const currentDao = useGovernanceStore.getState().currentDao;
+    useGovernanceStore.getState().initializeStore(currentDao || undefined, true);
+  });
+}
+

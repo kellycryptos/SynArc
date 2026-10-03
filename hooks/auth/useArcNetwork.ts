@@ -11,7 +11,7 @@ import {
   setActiveNetwork 
 } from '@/lib/arc-config';
 import { useDeferredWeb3 } from '@/providers/DeferredWeb3Provider';
-import { useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export const ARC_TESTNET_CHAIN_ID = 5042002;
 export const ARC_MAINNET_CHAIN_ID = 5042;
@@ -74,11 +74,21 @@ function useActiveArcNetwork(): ArcNetworkState {
   const { isConnected } = useAccount();
   const { switchChain, switchChainAsync, isPending: isSwitching } = useSwitchChain();
 
+  const [unconnectedNetwork, setUnconnectedNetwork] = useState<'mainnet' | 'testnet'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('synarc_active_network_mode');
+      if (saved === 'testnet' || saved === 'mainnet') return saved;
+    }
+    return ACTIVE_NETWORK;
+  });
+
   const isWalletConnected = Boolean(isConnected);
 
-  // If a wallet is connected, reflect its actual Arc network
-  // If no wallet is connected, default network on any fresh page load is always mainnet
-  const isArcTestnet = isWalletConnected && chainId === ARC_TESTNET_CHAIN_ID;
+  // If a wallet is connected, reflect its actual Arc network.
+  // If no wallet is connected, default network on any fresh page load is mainnet (or user's unconnected selection).
+  const isArcTestnet = isWalletConnected 
+    ? chainId === ARC_TESTNET_CHAIN_ID 
+    : unconnectedNetwork === 'testnet';
   const isArcMainnet = !isArcTestnet && (!isWalletConnected || chainId === ARC_MAINNET_CHAIN_ID);
 
   // Both 5042 (Mainnet) and 5042002 (Testnet) are valid Arc networks
@@ -94,47 +104,62 @@ function useActiveArcNetwork(): ArcNetworkState {
   const faucetUrl = isArcTestnet ? 'https://faucet.circle.com' : undefined;
   const arcChain = isArcTestnet ? arcTestnet : arcMainnet;
 
-  // Sync active network in arc-config for non-React callers
+  // Sync active network in arc-config for non-React callers & notify stores
   useEffect(() => {
     setActiveNetwork(activeNetwork);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork } }));
+    }
   }, [activeNetwork]);
 
   const switchToMainnet = useCallback(async () => {
     try {
-      if (switchChainAsync) {
-        await switchChainAsync({ chainId: ARC_MAINNET_CHAIN_ID });
-      } else if (switchChain) {
-        switchChain({ chainId: ARC_MAINNET_CHAIN_ID });
+      if (isWalletConnected) {
+        if (switchChainAsync) {
+          await switchChainAsync({ chainId: ARC_MAINNET_CHAIN_ID });
+        } else if (switchChain) {
+          switchChain({ chainId: ARC_MAINNET_CHAIN_ID });
+        }
+      } else {
+        setUnconnectedNetwork('mainnet');
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('synarc_active_network_mode', 'mainnet');
+        }
+        setActiveNetwork('mainnet');
       }
     } catch (error) {
       console.error('Failed to switch to Arc Mainnet:', error);
     }
-  }, [switchChain, switchChainAsync]);
+  }, [isWalletConnected, switchChain, switchChainAsync]);
 
   const switchToTestnet = useCallback(async () => {
     try {
-      if (switchChainAsync) {
-        await switchChainAsync({ chainId: ARC_TESTNET_CHAIN_ID });
-      } else if (switchChain) {
-        switchChain({ chainId: ARC_TESTNET_CHAIN_ID });
+      if (isWalletConnected) {
+        if (switchChainAsync) {
+          await switchChainAsync({ chainId: ARC_TESTNET_CHAIN_ID });
+        } else if (switchChain) {
+          switchChain({ chainId: ARC_TESTNET_CHAIN_ID });
+        }
+      } else {
+        setUnconnectedNetwork('testnet');
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('synarc_active_network_mode', 'testnet');
+        }
+        setActiveNetwork('testnet');
       }
     } catch (error) {
       console.error('Failed to switch to Arc Testnet:', error);
     }
-  }, [switchChain, switchChainAsync]);
+  }, [isWalletConnected, switchChain, switchChainAsync]);
 
   const switchNetwork = useCallback(async (targetChainId?: number) => {
     const target = targetChainId || (isArcTestnet ? ARC_MAINNET_CHAIN_ID : ARC_TESTNET_CHAIN_ID);
-    try {
-      if (switchChainAsync) {
-        await switchChainAsync({ chainId: target });
-      } else if (switchChain) {
-        switchChain({ chainId: target });
-      }
-    } catch (error) {
-      console.error('Failed to switch network:', error);
+    if (target === ARC_MAINNET_CHAIN_ID) {
+      await switchToMainnet();
+    } else {
+      await switchToTestnet();
     }
-  }, [isArcTestnet, switchChain, switchChainAsync]);
+  }, [isArcTestnet, switchToMainnet, switchToTestnet]);
 
   return {
     chainId: chainId || ARC_MAINNET_CHAIN_ID,

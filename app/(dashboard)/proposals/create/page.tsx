@@ -20,10 +20,12 @@ import { CONTRACTS, ARC_CHAIN } from "@/lib/arc-config";
 import { GovernorABI } from "@/lib/governance/contracts";
 import { createWalletClient, createPublicClient, custom, fallback, http } from "viem";
 import { validateAttestationURI } from "@/lib/attestation";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 export default function CreateProposalPage() {
   const router = useRouter();
   const { walletAddress, isAuthenticated, login, isCircle } = useAuth();
+  const { activeNetwork } = useArcNetwork();
   // Safe: Circle wallet does not register with Privy wallets list
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
@@ -332,10 +334,12 @@ export default function CreateProposalPage() {
         };
 
         if (typeof window !== "undefined") {
-          const stored = localStorage.getItem("synarc_simulated_proposals");
+          const netKey = activeNetwork === "mainnet" ? "mainnet" : "testnet";
+          const storageKey = `synarc_simulated_proposals_${netKey}`;
+          const stored = localStorage.getItem(storageKey);
           const list = stored ? JSON.parse(stored) : [];
           const updated = [newProposalObj, ...list.filter((p: any) => p.id !== finalProposalId)];
-          localStorage.setItem("synarc_simulated_proposals", JSON.stringify(updated));
+          localStorage.setItem(storageKey, JSON.stringify(updated));
         }
       } catch (backupErr) {
         console.warn("Could not save proposal to local backup:", backupErr);

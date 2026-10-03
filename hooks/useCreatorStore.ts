@@ -6,7 +6,7 @@
 import { create } from "zustand";
 import { Creator, Campaign } from "@/types";
 import { createPublicClient, http } from "viem";
-import { arcTestnet } from "@/lib/arc-config";
+import { ARC_CHAIN, getActiveNetwork } from "@/lib/arc-config";
 import { getArcRpcUrl } from "@/lib/rpc/config";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 
@@ -23,21 +23,24 @@ interface CreatorStoreState {
   creators: Creator[];
   supporters: Record<string, Supporter[]>;
   initialized: boolean;
-  initializeStore: () => Promise<void>;
+  currentNetwork: 'mainnet' | 'testnet' | null;
+  initializeStore: (force?: boolean) => Promise<void>;
   addCreator: (creatorData: Omit<Creator, "raised" | "supporters" | "daysLeft" | "slug">) => string;
   supportCreator: (creatorId: string, amount: number, senderAddress: string, txHash: string) => void;
 }
 
-// Reuse a single client instance to prevent redundant RPC connections and connection overhead
-let globalPublicClient: any = null;
+// Reuse client instances keyed by network
+let publicClients: Record<string, any> = {};
 function getSharedPublicClient() {
-  if (!globalPublicClient) {
-    globalPublicClient = createPublicClient({
-      chain: arcTestnet,
+  const currentNet = getActiveNetwork();
+  const netKey = currentNet === 'mainnet' ? 'mainnet' : 'testnet';
+  if (!publicClients[netKey]) {
+    publicClients[netKey] = createPublicClient({
+      chain: ARC_CHAIN,
       transport: http(getArcRpcUrl())
     });
   }
-  return globalPublicClient;
+  return publicClients[netKey];
 }
 
 let lastFetchTime = 0;
@@ -89,19 +92,27 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
   creators: [],
   supporters: {},
   initialized: false,
+  currentNetwork: null,
 
-  initializeStore: async () => {
+  initializeStore: async (force = false) => {
     if (typeof window === "undefined") return;
 
+    const currentNet = getActiveNetwork();
+    const netKey = currentNet === 'mainnet' ? 'mainnet' : 'testnet';
+
+    if (force || get().currentNetwork !== netKey) {
+      lastFetchTime = 0;
+    }
+
     // 15-second cache limit to avoid redundant RPC/REST requests
-    if (get().initialized && Date.now() - lastFetchTime < CACHE_DURATION) {
+    if (get().initialized && get().currentNetwork === netKey && Date.now() - lastFetchTime < CACHE_DURATION) {
       return;
     }
 
     try {
       let mappedCreators: Creator[] = [...MOCK_CREATORS];
 
-      const response = await fetch("/api/campaigns");
+      const response = await fetch(`/api/campaigns?network=${netKey}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -147,7 +158,8 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
           // Unblock immediately with base DB values
           set({
             creators: [...mappedCreators],
-            initialized: true
+            initialized: true,
+            currentNetwork: netKey
           });
           lastFetchTime = Date.now();
 
@@ -183,10 +195,10 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
         }
       }
 
-      // Merge custom creators from localStorage (synarc_creators)
+      // Merge custom creators from localStorage (synarc_creators_${netKey})
       let localCreators: Creator[] = [];
       try {
-        const stored = localStorage.getItem("synarc_creators");
+        const stored = localStorage.getItem(`synarc_creators_${netKey}`) || (netKey === 'testnet' ? localStorage.getItem("synarc_creators") : null);
         if (stored) {
           localCreators = JSON.parse(stored);
         }
@@ -201,10 +213,10 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
         }
       });
 
-      // Merge simulated campaigns from localStorage (synarc_simulated_campaigns)
+      // Merge simulated campaigns from localStorage (synarc_simulated_campaigns_${netKey})
       let simulatedCampaigns: Campaign[] = [];
       try {
-        const stored = localStorage.getItem("synarc_simulated_campaigns");
+        const stored = localStorage.getItem(`synarc_simulated_campaigns_${netKey}`) || (netKey === 'testnet' ? localStorage.getItem("synarc_simulated_campaigns") : null);
         if (stored) {
           simulatedCampaigns = JSON.parse(stored);
         }
@@ -256,7 +268,8 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
       // Load supporters for each creator
       const supportersMap: Record<string, Supporter[]> = {};
       mappedCreators.forEach((c) => {
-        const storedSuppsRaw = localStorage.getItem(`synarc_creator_supporters_${c.id}`);
+        const storedSuppsRaw = localStorage.getItem(`synarc_creator_supporters_${netKey}_${c.id}`) ||
+          (netKey === 'testnet' ? localStorage.getItem(`synarc_creator_supporters_${c.id}`) : null);
         if (storedSuppsRaw) {
           supportersMap[c.id] = JSON.parse(storedSuppsRaw);
         } else {
@@ -270,19 +283,21 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
         creators: mappedCreators,
         supporters: supportersMap,
         initialized: true,
+        currentNetwork: netKey,
       });
 
     } catch (err) {
       console.error("useCreatorStore: Failed to initialize store:", err);
       // Fallback
       let fallbackCreators = [...MOCK_CREATORS];
-      const storedCreatorsRaw = localStorage.getItem("synarc_creators");
+      const storedCreatorsRaw = localStorage.getItem(`synarc_creators_${netKey}`) || (netKey === 'testnet' ? localStorage.getItem("synarc_creators") : null);
       if (storedCreatorsRaw) {
         try { fallbackCreators = JSON.parse(storedCreatorsRaw); } catch {}
       }
       const supportersMap: Record<string, Supporter[]> = {};
       fallbackCreators.forEach((c) => {
-        const storedSuppsRaw = localStorage.getItem(`synarc_creator_supporters_${c.id}`);
+        const storedSuppsRaw = localStorage.getItem(`synarc_creator_supporters_${netKey}_${c.id}`) ||
+          (netKey === 'testnet' ? localStorage.getItem(`synarc_creator_supporters_${c.id}`) : null);
         if (storedSuppsRaw) {
           supportersMap[c.id] = JSON.parse(storedSuppsRaw);
         } else {
@@ -293,11 +308,15 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
         creators: fallbackCreators,
         supporters: supportersMap,
         initialized: true,
+        currentNetwork: netKey,
       });
     }
   },
 
   addCreator: (creatorData) => {
+    const currentNet = getActiveNetwork();
+    const netKey = currentNet === 'mainnet' ? 'mainnet' : 'testnet';
+
     // Generate unique ID and slug
     const slug = creatorData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
     const id = slug || `creator-${Date.now()}`;
@@ -314,8 +333,8 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
     set((state) => {
       const updatedCreators = [...state.creators, newCreator];
       if (typeof window !== "undefined") {
-        localStorage.setItem("synarc_creators", JSON.stringify(updatedCreators));
-        localStorage.setItem(`synarc_creator_supporters_${id}`, JSON.stringify([]));
+        localStorage.setItem(`synarc_creators_${netKey}`, JSON.stringify(updatedCreators));
+        localStorage.setItem(`synarc_creator_supporters_${netKey}_${id}`, JSON.stringify([]));
       }
       return {
         creators: updatedCreators,
@@ -327,6 +346,9 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
   },
 
   supportCreator: (creatorId, amount, senderAddress, txHash) => {
+    const currentNet = getActiveNetwork();
+    const netKey = currentNet === 'mainnet' ? 'mainnet' : 'testnet';
+
     const newSupporter: Supporter = {
       address: senderAddress,
       amount,
@@ -352,8 +374,8 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
       const updatedSupporters = [newSupporter, ...currentSupporters].slice(0, 10); // Keep last 10
 
       if (typeof window !== "undefined") {
-        localStorage.setItem("synarc_creators", JSON.stringify(updatedCreators));
-        localStorage.setItem(`synarc_creator_supporters_${creatorId}`, JSON.stringify(updatedSupporters));
+        localStorage.setItem(`synarc_creators_${netKey}`, JSON.stringify(updatedCreators));
+        localStorage.setItem(`synarc_creator_supporters_${netKey}_${creatorId}`, JSON.stringify(updatedSupporters));
       }
 
       return {
@@ -366,3 +388,10 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
     });
   },
 }));
+
+// Automatically react to network switches across the app
+if (typeof window !== "undefined") {
+  window.addEventListener("synarc_network_changed", () => {
+    useCreatorStore.getState().initializeStore(true);
+  });
+}

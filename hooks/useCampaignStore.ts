@@ -1,15 +1,16 @@
 import { create } from "zustand";
 import { Campaign, Milestone, CampaignAIAnalysis } from "@/types";
 import { createPublicClient, http } from "viem";
-import { ARC_CHAIN } from "@/lib/arc-config";
+import { ARC_CHAIN, getActiveNetwork } from "@/lib/arc-config";
 import { getArcRpcUrl } from "@/lib/rpc/config";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 
 interface CampaignState {
   campaigns: Campaign[];
   initialized: boolean;
-  initializeStore: () => Promise<void>;
-  addCampaign: (campaignData: Omit<Campaign, 'id' | 'raised' | 'contributors' | 'state' | 'votes' | 'aiAnalysis' | 'agentType' | 'executionScope' | 'strategy' | 'fundingSources' | 'proposalNumber' | 'escrowAddress' | 'sybilProtection'> & { escrowAddress: string }) => Promise<string>;
+  currentNetwork: 'mainnet' | 'testnet' | null;
+  initializeStore: (force?: boolean) => Promise<void>;
+  addCampaign: (campaignData: Omit<Campaign, 'id' | 'raised' | 'contributors' | 'state' | 'votes' | 'aiAnalysis' | 'agentType' | 'executionScope' | 'strategy' | 'fundingSources' | 'proposalNumber' | 'escrowAddress' | 'sybilProtection'> & { escrowAddress: string; network?: 'mainnet' | 'testnet' }) => Promise<string>;
   contribute: (campaignId: string, amount: number) => Promise<void>;
   castVote: (campaignId: string, choice: 'FOR' | 'AGAINST' | 'ABSTAIN', count?: number) => Promise<void>;
   setAIAnalysis: (campaignId: string, analysis: CampaignAIAnalysis) => void;
@@ -89,27 +90,33 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
 export const useCampaignStore = create<CampaignState>((set, get) => ({
   campaigns: [],
   initialized: false,
+  currentNetwork: null,
 
-  initializeStore: async () => {
+  initializeStore: async (force?: boolean) => {
     // Prevent server-side crash
     if (typeof window === "undefined") return;
 
-    // 15-second cache limit to avoid redundant RPC/REST requests
-    if (get().initialized && Date.now() - lastFetchTime < CACHE_DURATION) {
+    const currentNet = getActiveNetwork();
+    const isMainnet = currentNet === 'mainnet';
+    const netKey = isMainnet ? 'mainnet' : 'testnet';
+
+    // 15-second cache limit to avoid redundant RPC/REST requests unless forced or network changed
+    if (!force && get().initialized && get().currentNetwork === currentNet && Date.now() - lastFetchTime < CACHE_DURATION) {
       return;
     }
 
     try {
-      const response = await fetch("/api/campaigns");
+      const response = await fetch(`/api/campaigns?network=${netKey}`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && Array.isArray(data.campaigns)) {
           const rawCampaigns: Campaign[] = data.campaigns;
 
-          // Get simulated campaigns from localStorage
+          // Get network-isolated simulated campaigns from localStorage
           let simulatedCampaigns: Campaign[] = [];
           try {
-            const stored = localStorage.getItem("synarc_simulated_campaigns");
+            const storageKey = `synarc_simulated_campaigns_${netKey}`;
+            const stored = localStorage.getItem(storageKey) || (!isMainnet ? localStorage.getItem("synarc_simulated_campaigns") : null);
             if (stored) {
               simulatedCampaigns = JSON.parse(stored);
             }
@@ -120,7 +127,8 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
           // Unblock page shell immediately with raw DB & local simulated campaigns
           set({
             campaigns: [...simulatedCampaigns, ...rawCampaigns],
-            initialized: true
+            initialized: true,
+            currentNetwork: currentNet
           });
           lastFetchTime = Date.now();
 
@@ -165,12 +173,16 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
 
   addCampaign: async (campaignData) => {
     try {
+      const currentNet = getActiveNetwork();
+      const isMainnet = currentNet === 'mainnet';
+      const netKey = isMainnet ? 'mainnet' : 'testnet';
+
       // Strip base64 data URLs from the API payload — they can be several MB
       // and Next.js has a 1MB body size limit. We keep the image only in localStorage.
       const isBase64Image = typeof campaignData.image === "string" && campaignData.image.startsWith("data:");
       const apiPayload = isBase64Image
-        ? { ...campaignData, image: undefined }
-        : campaignData;
+        ? { ...campaignData, image: undefined, network: netKey }
+        : { ...campaignData, network: netKey };
 
       const response = await fetch("/api/campaigns", {
         method: "POST",
@@ -190,13 +202,14 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
           ? { ...data.campaign, image: campaignData.image }
           : data.campaign;
 
-        // Persist to localStorage to survive serverless restarts
+        // Persist to network-isolated localStorage to survive serverless restarts
         if (typeof window !== "undefined") {
           try {
-            const stored = localStorage.getItem("synarc_simulated_campaigns");
+            const storageKey = `synarc_simulated_campaigns_${netKey}`;
+            const stored = localStorage.getItem(storageKey);
             const list = stored ? JSON.parse(stored) : [];
             list.push(campaignWithImage);
-            localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(list));
+            localStorage.setItem(storageKey, JSON.stringify(list));
           } catch (err) {
             console.warn("Failed to write new campaign to local storage:", err);
           }
@@ -204,7 +217,7 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
 
         // Bust the cache so initializeStore always re-fetches
         lastFetchTime = 0;
-        await get().initializeStore();
+        await get().initializeStore(true);
         return data.campaign.id;
       }
 
@@ -217,9 +230,13 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
 
   contribute: async (campaignId, amount) => {
     let isSimulated = false;
+    const currentNet = getActiveNetwork();
+    const netKey = currentNet === 'mainnet' ? 'mainnet' : 'testnet';
+    const storageKey = `synarc_simulated_campaigns_${netKey}`;
+
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("synarc_simulated_campaigns");
+        const stored = localStorage.getItem(storageKey) || localStorage.getItem("synarc_simulated_campaigns");
         if (stored) {
           const list = JSON.parse(stored);
           const found = list.find((c: any) => c.id === campaignId);
@@ -236,7 +253,7 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
               if (found.raised >= found.goal && found.state === "Active") {
                 found.state = "Voting";
               }
-              localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(list));
+              localStorage.setItem(storageKey, JSON.stringify(list));
             }
           }
         }
@@ -270,9 +287,13 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
 
   castVote: async (campaignId, choice, count = 1000) => {
     let isSimulated = false;
+    const currentNet = getActiveNetwork();
+    const netKey = currentNet === 'mainnet' ? 'mainnet' : 'testnet';
+    const storageKey = `synarc_simulated_campaigns_${netKey}`;
+
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("synarc_simulated_campaigns");
+        const stored = localStorage.getItem(storageKey) || localStorage.getItem("synarc_simulated_campaigns");
         if (stored) {
           const list = JSON.parse(stored);
           const found = list.find((c: any) => c.id === campaignId);
@@ -294,7 +315,7 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
             if (choice === 'FOR') found.votes.for += count;
             if (choice === 'AGAINST') found.votes.against += count;
             if (choice === 'ABSTAIN') found.votes.abstain += count;
-            localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(list));
+            localStorage.setItem(storageKey, JSON.stringify(list));
           }
         }
       } catch (e) {
@@ -371,13 +392,16 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
       // Write updated campaign metrics back to localStorage to keep offline fallback sync'd
       if (typeof window !== "undefined") {
         try {
-          const stored = localStorage.getItem("synarc_simulated_campaigns");
+          const currentNet = getActiveNetwork();
+          const netKey = currentNet === 'mainnet' ? 'mainnet' : 'testnet';
+          const storageKey = `synarc_simulated_campaigns_${netKey}`;
+          const stored = localStorage.getItem(storageKey) || localStorage.getItem("synarc_simulated_campaigns");
           if (stored) {
             const list = JSON.parse(stored);
             const idx = list.findIndex((c: any) => c.id === campaignId);
             if (idx !== -1) {
               list[idx] = { ...list[idx], ...updatedCampaign };
-              localStorage.setItem("synarc_simulated_campaigns", JSON.stringify(list));
+              localStorage.setItem(storageKey, JSON.stringify(list));
             }
           }
         } catch (e) {
@@ -387,3 +411,10 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
     }
   }
 }));
+
+// Automatically react to network switches across the app
+if (typeof window !== "undefined") {
+  window.addEventListener("synarc_network_changed", () => {
+    useCampaignStore.getState().initializeStore(true);
+  });
+}
