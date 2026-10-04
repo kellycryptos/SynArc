@@ -31,28 +31,40 @@ const TESTNET_RPC =
   process.env.NEXT_PUBLIC_ARC_RPC_URL ||
   'https://rpc.testnet.arc.network';
 
-async function rpcCall(rpcUrl: string, method: string, params: any[]): Promise<any> {
-  const res = await fetch(rpcUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: Math.floor(Math.random() * 100000),
-      method,
-      params,
-    }),
-    signal: AbortSignal.timeout(10000),
-  });
+async function rpcCall(rpcUrl: string, method: string, params: any[], retries = 2): Promise<any> {
+  let lastErr: any;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: Math.floor(Math.random() * 100000),
+          method,
+          params,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
 
-  if (!res.ok) {
-    throw new Error(`RPC HTTP error ${res.status}: ${res.statusText}`);
-  }
+      if (!res.ok) {
+        throw new Error(`RPC HTTP error ${res.status}: ${res.statusText}`);
+      }
 
-  const json = await res.json();
-  if (json.error) {
-    throw new Error(`RPC JSON error: ${json.error.message || JSON.stringify(json.error)}`);
+      const json = await res.json();
+      if (json.error) {
+        throw new Error(`RPC JSON error: ${json.error.message || JSON.stringify(json.error)}`);
+      }
+      return json.result;
+    } catch (err: any) {
+      lastErr = err;
+      if (attempt < retries) {
+        // Small backoff before retrying
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+      }
+    }
   }
-  return json.result;
+  throw lastErr;
 }
 
 async function getBytecode(rpcUrl: string, address: string): Promise<number> {
@@ -225,35 +237,33 @@ async function main() {
     { name: 'crowdfund', address: CONTRACTS_TESTNET.crowdfund, type: 'CONTRACT', isCriticalContract: true },
   ];
 
-  await Promise.all(
-    testnetItems.map(async (item) => {
-      try {
-        const byteCount = await getBytecode(TESTNET_RPC, item.address);
-        const hasCode = byteCount > 0;
+  for (const item of testnetItems) {
+    try {
+      const byteCount = await getBytecode(TESTNET_RPC, item.address);
+      const hasCode = byteCount > 0;
 
-        results.push({
-          network: 'testnet',
-          target: item.name,
-          address: item.address,
-          type: item.type,
-          expected: 'HAS CODE (>0 bytes)',
-          actual: hasCode ? `HAS CODE (${byteCount} B)` : 'NO CODE (0 B)',
-          status: hasCode ? 'PASS' : 'FAIL',
-          details: hasCode ? `${byteCount} bytes deployed` : 'Contract not deployed on testnet',
-        });
-      } catch (err: any) {
-        results.push({
-          network: 'testnet',
-          target: item.name,
-          address: item.address,
-          type: item.type,
-          expected: 'HAS CODE',
-          actual: `RPC ERROR: ${err.message}`,
-          status: 'FAIL',
-        });
-      }
-    })
-  );
+      results.push({
+        network: 'testnet',
+        target: item.name,
+        address: item.address,
+        type: item.type,
+        expected: 'HAS CODE (>0 bytes)',
+        actual: hasCode ? `HAS CODE (${byteCount} B)` : 'NO CODE (0 B)',
+        status: hasCode ? 'PASS' : 'FAIL',
+        details: hasCode ? `${byteCount} bytes deployed` : 'Contract not deployed on testnet',
+      });
+    } catch (err: any) {
+      results.push({
+        network: 'testnet',
+        target: item.name,
+        address: item.address,
+        type: item.type,
+        expected: 'HAS CODE',
+        actual: `RPC ERROR: ${err.message}`,
+        status: 'FAIL',
+      });
+    }
+  }
 
   // Summary Table
   console.log('\n' + '='.repeat(110));

@@ -81,6 +81,7 @@ Platform Highlights:
   - Treasury: 0x8205e9782Fe54fD2aaD895b436B695db169F3d7B
   - sARC Token: 0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4
   - USDC: 0x3600000000000000000000000000000000000000
+  - EURC: 0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1
 
 Format responses cleanly in Markdown with bold titles, concise bullet points, and code snippets when helpful.`;
 
