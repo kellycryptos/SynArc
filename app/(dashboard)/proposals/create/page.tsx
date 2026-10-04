@@ -25,7 +25,7 @@ import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 export default function CreateProposalPage() {
   const router = useRouter();
   const { walletAddress, isAuthenticated, login, isCircle } = useAuth();
-  const { activeNetwork } = useArcNetwork();
+  const { activeNetwork, isArcMainnet } = useArcNetwork();
   // Safe: Circle wallet does not register with Privy wallets list
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
@@ -359,7 +359,7 @@ export default function CreateProposalPage() {
       setError(
         <div className="flex flex-col gap-2">
           <span>{parsedMsg}</span>
-          {parsedMsg.toLowerCase().includes("faucet") && (
+          {parsedMsg.toLowerCase().includes("faucet") && !isArcMainnet && (
             <Link 
               href="/faucet" 
               className="self-start text-xs font-bold text-primary hover:underline flex items-center gap-1 mt-1"
@@ -388,7 +388,7 @@ export default function CreateProposalPage() {
             </div>
             <div className="space-y-2">
               <h2 className="text-2xl font-bold text-white">Proposal created successfully</h2>
-              <p className="text-muted text-sm">Your governance action has been broadcast and confirmed on the Arc Testnet.</p>
+              <p className="text-muted text-sm">Your governance action has been broadcast and confirmed on {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}.</p>
             </div>
             <div className="bg-surface-elevated/40 border border-border-thin rounded-xl p-4 font-mono text-sm text-text-primary">
               <span className="text-text-tertiary">Proposal ID: </span>
@@ -467,15 +467,17 @@ export default function CreateProposalPage() {
                       <AlertCircle className="w-5 h-5 shrink-0 text-danger animate-pulse" />
                       <div>
                         <span className="font-bold">Insufficient USDC for gas.</span>
-                        <p className="text-xs text-muted/80 mt-0.5 font-semibold">You need at least 0.05 USDC to pay for gas fees on Arc Testnet.</p>
+                        <p className="text-xs text-muted/80 mt-0.5 font-semibold">You need at least 0.05 USDC to pay for gas fees on {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}.</p>
                       </div>
                     </div>
-                    <Link 
-                      href="/faucet" 
-                      className="px-3.5 py-1.5 rounded-lg bg-danger/20 border border-danger/30 hover:bg-danger/30 text-xs font-bold text-danger transition-colors text-center cursor-pointer shrink-0"
-                    >
-                      Claim Faucet USDC →
-                    </Link>
+                    {!isArcMainnet && (
+                      <Link 
+                        href="/faucet" 
+                        className="px-3.5 py-1.5 rounded-lg bg-danger/20 border border-danger/30 hover:bg-danger/30 text-xs font-bold text-danger transition-colors text-center cursor-pointer shrink-0"
+                      >
+                        Claim Faucet USDC →
+                      </Link>
+                    )}
                   </div>
                 ) : (
                   <div className="p-4 bg-success/10 border border-success/20 rounded-xl flex items-center gap-3 text-sm text-success animate-fade-in-up">

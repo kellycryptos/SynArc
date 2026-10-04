@@ -2,6 +2,7 @@
 
 import { GlassCard } from "@/components/ui/GlassCard";
 import { TrendingUp, Shield, Droplets, ArrowUpRight, CheckCircle2, AlertTriangle } from "lucide-react";
+import { TokenIcon } from "@/components/ui/TokenIcon";
 import type { EarnVault, EarnPosition } from "@/types/earn";
 
 interface VaultCardProps {
@@ -42,8 +43,8 @@ export function VaultCard({
       <div>
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/10 border border-primary/30 flex items-center justify-center font-bold text-primary">
-              {vault.asset === "EURC" ? "€" : "$"}
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/10 border border-primary/30 flex items-center justify-center p-1.5 shrink-0">
+              <TokenIcon symbol={vault.asset} size={28} />
             </div>
             <div>
               <h4 className="font-semibold text-sm text-[#F8FAFC] group-hover:text-primary transition-colors flex items-center gap-1.5">
@@ -65,8 +66,9 @@ export function VaultCard({
 
         {/* Status / Badges */}
         <div className="flex flex-wrap items-center gap-1.5 mb-4">
-          <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-[#151C29] text-[#94A3B8] border border-[#1E293B]">
-            {vault.asset}
+          <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-[#151C29] text-[#94A3B8] border border-[#1E293B] flex items-center gap-1">
+            <TokenIcon symbol={vault.asset} size={12} />
+            <span>{vault.asset}</span>
           </span>
           {vault.circleGuarded && (
             <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center gap-1">

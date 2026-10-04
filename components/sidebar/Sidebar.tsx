@@ -23,6 +23,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
+import { TokenIcon } from "@/components/ui/TokenIcon";
 import { WalletConnectButton } from "@/components/ui/WalletConnectButton";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
@@ -60,9 +61,9 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
   const { balance, isLoading, isError } = useUSDCBalance(walletAddress);
   const { isArcTestnet, networkName } = useArcNetwork();
 
-  // On mainnet, hide testnet-only nav items (Faucet, Docs). Settings stays per exception.
+  // On mainnet, hide testnet-only nav items (Faucet, Settings, Docs).
   const visibleLinks = activeLinks.filter((link) => {
-    if (link.href === "/faucet" || link.href === "/docs") {
+    if (link.href === "/faucet" || link.href === "/settings" || link.href === "/docs") {
       return isArcTestnet;
     }
     return true;
@@ -262,7 +263,10 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
 
           {/* USDC Balance Display */}
           <div className="flex items-center justify-between text-xs">
-            <span className="text-muted">USDC Balance</span>
+            <span className="text-muted flex items-center gap-1.5">
+              <TokenIcon symbol="USDC" size={14} />
+              USDC Balance
+            </span>
             {isLoading ? (
               <div className="h-6 w-20 bg-surface-elevated animate-pulse rounded-full border border-border-thin" />
             ) : isError ? (

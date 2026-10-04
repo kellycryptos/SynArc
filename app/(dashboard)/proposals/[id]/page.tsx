@@ -906,10 +906,15 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                         </div>
                       ) : sarcBalance > 0 && !delegateSuccess ? null : (
                         <p className="text-red-400 text-xs font-semibold text-center mb-2">
-                          You need USDC or sARC on Arc Testnet to vote.{" "}
-                          <a href="/faucet" className="text-primary hover:underline font-bold">
-                            Get sARC from faucet
-                          </a>
+                          You need USDC or sARC on {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"} to vote.
+                          {!isArcMainnet && (
+                            <>
+                              {" "}
+                              <a href="/faucet" className="text-primary hover:underline font-bold">
+                                Get sARC from faucet
+                              </a>
+                            </>
+                          )}
                         </p>
                       )}
 

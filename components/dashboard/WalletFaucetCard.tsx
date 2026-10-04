@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { BridgeModal } from "@/components/BridgeModal";
+import { TokenIcon } from "@/components/ui/TokenIcon";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { BorderBeam } from "border-beam";
 import { ThinkingOrb } from "thinking-orbs";
@@ -350,7 +351,10 @@ export function WalletFaucetCard() {
                   {activeBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </h1>
               )}
-              <span className="text-2xl font-bold text-brand font-heading">USDC</span>
+              <span className="text-2xl font-bold text-brand font-heading flex items-center gap-2">
+                <TokenIcon symbol="USDC" size={28} />
+                <span>USDC</span>
+              </span>
             </div>
 
             {/* sARC Voting Power Row */}
@@ -465,7 +469,7 @@ export function WalletFaucetCard() {
           {/* Option 1 — Syn DAO Token (sARC) */}
           <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-brand/30 transition-all duration-300">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-bold text-blue-400 select-none">ETH</span>
+              <TokenIcon symbol="sARC" size={24} />
               <div>
                 <h4 className="font-bold text-white text-sm">Syn DAO Token</h4>
                 <p className="text-[10px] text-muted font-mono">sARC · 1000 per claim</p>
@@ -513,7 +517,7 @@ export function WalletFaucetCard() {
                     </>
                   ) : (
                     <>
-                      <Coins className="w-3.5 h-3.5" />
+                      <TokenIcon symbol="sARC" size={16} />
                       Claim 1000 sARC Tokens
                     </>
                   )}
@@ -525,7 +529,7 @@ export function WalletFaucetCard() {
           {/* Option 2 — USDC Testnet */}
           <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-brand/30 transition-all duration-300">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-bold text-primary select-none">USDC</span>
+              <TokenIcon symbol="USDC" size={24} />
               <div>
                 <h4 className="font-bold text-white text-sm">USDC Testnet</h4>
                 <p className="text-[10px] text-muted font-mono">Circle Faucet</p>
@@ -549,7 +553,7 @@ export function WalletFaucetCard() {
           {/* Option 3 — EURC Testnet */}
           <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-brand/30 transition-all duration-300">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-bold text-purple-400 select-none">sARC</span>
+              <TokenIcon symbol="EURC" size={24} />
               <div>
                 <h4 className="font-bold text-white text-sm">EURC Testnet</h4>
                 <p className="text-[10px] text-muted font-mono">Circle Faucet</p>
@@ -573,7 +577,7 @@ export function WalletFaucetCard() {
           {/* Option 4 — Bridge USDC */}
           <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-brand/30 transition-all duration-300">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-bold text-amber-400 select-none">CCTP</span>
+              <TokenIcon symbol="USDC" size={24} />
               <div>
                 <h4 className="font-bold text-white text-sm">Bridge USDC</h4>
                 <p className="text-[10px] text-muted font-mono">Circle Bridge Kit</p>

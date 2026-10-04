@@ -6,6 +6,7 @@ import { OverviewCards } from "@/components/dashboard/OverviewCards";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { TokenIcon } from "@/components/ui/TokenIcon";
 import { ArrowRight, Rocket, Plus, Coins, Users, Trophy, Zap, Bot, Activity } from "lucide-react";
 import Link from "next/link";
 import { useCreatorStore } from "@/hooks/useCreatorStore";
@@ -178,7 +179,7 @@ export default function DashboardOverview() {
                         </div>
                         <div className="flex items-center justify-between text-[10px] text-text-tertiary">
                           <span className="flex items-center gap-1 font-semibold text-text-secondary">
-                            <Coins className="w-3 h-3 text-brand" />
+                            <TokenIcon symbol="USDC" size={12} />
                             {c.raised.toLocaleString()} / {c.goal.toLocaleString()} USDC
                           </span>
                           <span className="flex items-center gap-1">

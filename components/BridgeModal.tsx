@@ -8,7 +8,7 @@ import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useSwitchChain } from "wagmi";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
 import { selectActiveWallet } from "@/lib/tx-helper";
-import { IS_MAINNET } from "@/lib/arc-config";
+import { IS_MAINNET, getActiveNetwork } from "@/lib/arc-config";
 import {
   X,
   Coins,
@@ -23,6 +23,8 @@ import {
   Zap
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { TokenIcon } from "@/components/ui/TokenIcon";
+import { ChainIcon } from "@/components/ui/ChainIcon";
 
 // ABI for ERC20 balanceOf
 const erc20Abi = parseAbi([
@@ -82,6 +84,9 @@ interface BridgeModalProps {
 
 export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   const { isAuthenticated, login, walletAddress } = useAuth();
+  const isMainnet = getActiveNetwork() === 'mainnet';
+  const arcNetworkLabel = isMainnet ? "Arc Mainnet" : "Arc Testnet";
+  const arcExplorerUrl = isMainnet ? "https://explorer.arc.io" : "https://testnet.arcscan.app";
   const [selectedChain, setSelectedChain] = useState(SOURCE_CHAINS[0]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [amount, setAmount] = useState("");
@@ -368,7 +373,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   className="w-full flex items-center justify-between px-4 py-3 bg-surface border border-border-thin rounded-xl text-text-primary text-sm font-semibold hover:border-primary/50 transition-all cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="text-base select-none">{selectedChain.icon}</span>
+                    <ChainIcon chain={selectedChain.id} size={20} />
                     <span>{selectedChain.name}</span>
                   </div>
                   <ChevronDown className={`w-4 h-4 text-muted transition-transform duration-300 ${dropdownOpen ? "rotate-180 text-text-primary" : ""}`} />
@@ -390,7 +395,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                           selectedChain.id === chain.id ? "bg-primary/10 text-text-primary font-bold" : "text-muted hover:text-text-primary"
                         }`}
                       >
-                        <span className="text-base select-none">{chain.icon}</span>
+                        <ChainIcon chain={chain.id} size={20} />
                         <span>{chain.name}</span>
                       </button>
                     ))}
@@ -404,7 +409,10 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                 <div className="px-3 py-1 rounded-full bg-surface-elevated border border-border-thin flex items-center gap-1.5 text-[10px] font-bold text-primary shadow-sm uppercase tracking-wider">
                   <span>Transfer Route</span>
                   <ArrowRight className="w-3 h-3" />
-                  <span className="text-text-primary">Arc Testnet</span>
+                  <span className="text-text-primary flex items-center gap-1">
+                    <ChainIcon chain="arc" size={14} />
+                    {arcNetworkLabel}
+                  </span>
                 </div>
                 <div className="h-px bg-border-thin flex-1" />
               </div>
@@ -424,7 +432,10 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                 </div>
 
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-bold text-sm">USDC</div>
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-muted font-bold text-sm">
+                    <TokenIcon symbol="USDC" size={18} />
+                    <span>USDC</span>
+                  </div>
                   <input
                     type="number"
                     value={amount}
@@ -433,7 +444,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                       if (bridgeState.status === "error") resetState();
                     }}
                     placeholder="0.00"
-                    className="w-full pl-16 pr-20 py-3.5 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-text-primary font-mono text-sm"
+                    className="w-full pl-24 pr-20 py-3.5 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-text-primary font-mono text-sm"
                   />
                   <button
                     type="button"
@@ -458,7 +469,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                 </div>
                 <div className="text-right">
                   <span className="text-success font-bold text-sm block">~20–60 sec</span>
-                  <span className="text-[10px] text-success/80">Arc Testnet native</span>
+                  <span className="text-[10px] text-success/80">{isMainnet ? "Arc native" : "Arc Testnet native"}</span>
                 </div>
               </div>
 
@@ -509,7 +520,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   <div>
                     <h3 className="text-xl font-bold text-text-primary">Bridge complete</h3>
                     <p className="text-xs text-text-tertiary mt-1.5 max-w-sm mx-auto leading-relaxed">
-                      Your USDC has successfully arrived on Arc Testnet and is ready to use.
+                      Your USDC has successfully arrived on {arcNetworkLabel} and is ready to use.
                     </p>
                   </div>
 
@@ -520,7 +531,10 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-muted">Destination</span>
-                      <span className="font-bold text-success">Arc Testnet</span>
+                      <span className="font-bold text-success flex items-center gap-1.5">
+                        <ChainIcon chain="arc" size={14} />
+                        <span>{arcNetworkLabel}</span>
+                      </span>
                     </div>
                     {bridgeState.burnTxHash && (
                       <div className="flex justify-between items-center text-xs border-t border-border-thin pt-2 mt-2">
@@ -540,7 +554,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-muted">Mint Tx (Arc)</span>
                         <a
-                          href={`https://testnet.arcscan.app/tx/${bridgeState.txHash}`}
+                          href={`${arcExplorerUrl}/tx/${bridgeState.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary hover:underline font-mono font-bold flex items-center gap-1"
@@ -568,7 +582,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     <div className="absolute inset-0 rounded-full border-4 border-primary/10 border-t-primary animate-spin" />
                     <div className="absolute inset-1 rounded-full border-2 border-purple-500/5 border-b-purple-500/30 animate-spin" style={{ animationDuration: "2s", animationDirection: "reverse" }} />
                     <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center">
-                      <Coins className="w-5 h-5 text-primary animate-pulse" />
+                      <TokenIcon symbol="USDC" size={24} className="animate-pulse" />
                     </div>
                   </div>
 
@@ -578,7 +592,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                       {bridgeState.status === "approving"           && "Approving USDC…"}
                       {bridgeState.status === "burning"             && `Burning on ${selectedChain.name}…`}
                       {bridgeState.status === "waiting-attestation" && "Waiting for Attestation…"}
-                      {bridgeState.status === "minting"             && "Minting on Arc Testnet…"}
+                      {bridgeState.status === "minting"             && `Minting on ${arcNetworkLabel}…`}
                     </h3>
                     <p className="text-xs text-text-tertiary max-w-xs mx-auto min-h-[1.25rem]">
                       {bridgeState.stepDetail || (

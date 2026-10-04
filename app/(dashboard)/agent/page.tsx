@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionErrorBoundary } from "@/components/ErrorBoundary";
+import { TokenIcon } from "@/components/ui/TokenIcon";
+import { ChainIcon } from "@/components/ui/ChainIcon";
 import {
   Bot, Zap, Activity, Play, RotateCw, ExternalLink,
   BrainCircuit, Coins, ArrowRight, CheckCircle, XCircle,
@@ -392,6 +394,7 @@ export default function AgentPage() {
       const gasParams = await getAggressiveGasParams(publicClient);
       
       const decimals = withdrawalToken.toLowerCase() === "0x3600000000000000000000000000000000000000" || 
+                       withdrawalToken.toLowerCase() === CONTRACTS.eurc.toLowerCase() ||
                        withdrawalToken.toLowerCase() === "0x89b50855aa3be2f677cd6303cec089b5f319d72a" ? 6 : 18;
       const amountInUnits = parseUnits(withdrawalAmount, decimals);
       
@@ -850,19 +853,23 @@ export default function AgentPage() {
       <SectionErrorBoundary sectionName="Agent Treasury Stats">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
-          { label: "Agent Treasury (USDC)", value: demoUSDCBalance !== null ? `${demoUSDCBalance.toFixed(2)}` : `${((treasury?.usdc && treasury.usdc > 0) ? treasury.usdc : 25.00).toFixed(2)}`, isLoading: loading, unit: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", isBalance: true },
-          { label: "Agent Treasury (EURC)", value: `${((treasury?.eurc && treasury.eurc > 0) ? treasury.eurc : 20.00).toFixed(2)}`, isLoading: loading, unit: "EURC", icon: Coins, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", isBalance: true },
-          { label: "Governance Treasury (USDC)", value: `${(govUsdcBalance > 0 ? govUsdcBalance : 2450000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, isLoading: govLoading, unit: "USDC", icon: Landmark, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", isBalance: true },
-          { label: "Actions Today", value: actions.length > 0 ? actions.length.toString() : "12", isLoading: loading, unit: "actions", icon: Zap, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", isBalance: false },
-          { label: "Inference Paid", value: (payments?.totalSpent && payments.totalSpent > 0 ? payments.totalSpent : 0.0142).toFixed(4), isLoading: loading, unit: "USDC", icon: CreditCard, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", isBalance: false },
+          { label: "Agent Treasury (USDC)", value: demoUSDCBalance !== null ? `${demoUSDCBalance.toFixed(2)}` : `${((treasury?.usdc && treasury.usdc > 0) ? treasury.usdc : (isArcMainnet ? 0.00 : 25.00)).toFixed(2)}`, isLoading: loading, unit: "USDC", tokenSymbol: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", isBalance: true },
+          { label: "Agent Treasury (EURC)", value: `${((treasury?.eurc && treasury.eurc > 0) ? treasury.eurc : (isArcMainnet ? 0.00 : 20.00)).toFixed(2)}`, isLoading: loading, unit: "EURC", tokenSymbol: "EURC", icon: Coins, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", isBalance: true },
+          { label: "Governance Treasury (USDC)", value: `${(govUsdcBalance > 0 ? govUsdcBalance : (isArcMainnet ? 0 : 2450000)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, isLoading: govLoading, unit: "USDC", tokenSymbol: "USDC", icon: Landmark, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", isBalance: true },
+          { label: "Actions Today", value: actions.length > 0 ? actions.length.toString() : (isArcMainnet ? "0" : "12"), isLoading: loading, unit: "actions", icon: Zap, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", isBalance: false },
+          { label: "Inference Paid", value: (payments?.totalSpent && payments.totalSpent > 0 ? payments.totalSpent : (isArcMainnet ? 0 : 0.0142)).toFixed(4), isLoading: loading, unit: "USDC", tokenSymbol: "USDC", icon: CreditCard, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", isBalance: false },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
             <motion.div key={stat.label} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
               <GlassCard className="p-4 space-y-3" hover={false}>
                 <div className="flex items-center justify-between">
-                  <div className={`p-2 rounded-lg ${stat.bg} border ${stat.border}`}>
-                    <Icon className={`w-4 h-4 ${stat.color}`} />
+                  <div className={`p-2 rounded-lg ${stat.bg} border ${stat.border} flex items-center justify-center`}>
+                    {stat.tokenSymbol ? (
+                      <TokenIcon symbol={stat.tokenSymbol} size={16} />
+                    ) : (
+                      <Icon className={`w-4 h-4 ${stat.color}`} />
+                    )}
                   </div>
                   {stat.isBalance && !stat.isLoading && (
                     <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded border ${
@@ -1142,8 +1149,8 @@ export default function AgentPage() {
             </div>
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-col items-center gap-1 flex-1">
-                <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
-                  <span className="text-xs font-bold text-amber-400">ARC</span>
+                <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center p-1.5">
+                  <ChainIcon chain="arc" size={24} />
                 </div>
                 <span className="text-[10px] text-muted text-center">{isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}</span>
               </div>
@@ -1152,8 +1159,8 @@ export default function AgentPage() {
                 <span className="text-[9px] text-blue-400 font-bold">CCTP</span>
               </div>
               <div className="flex flex-col items-center gap-1 flex-1">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/25 flex items-center justify-center">
-                  <span className="text-xs font-bold text-blue-400">ETH</span>
+                <div className="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/25 flex items-center justify-center p-1.5">
+                  <ChainIcon chain="ethereum" size={24} />
                 </div>
                 <span className="text-[10px] text-muted text-center">{isArcMainnet ? "Ethereum Mainnet" : "Eth Sepolia"}</span>
               </div>
@@ -1816,7 +1823,10 @@ export default function AgentPage() {
                 { name: "Base",              status: "planned" },
               ]).map(c => (
                 <div key={c.name} className="flex items-center justify-between text-xs py-1.5 border-b border-border-thin/50 last:border-0">
-                  <span className="text-text-secondary font-medium">{c.name}</span>
+                  <span className="text-text-secondary font-medium flex items-center gap-2">
+                    <ChainIcon chain={c.name} size={16} />
+                    <span>{c.name}</span>
+                  </span>
                   <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
                     c.status === "live" ? "bg-emerald-500/15 border-emerald-500/25 text-emerald-400" : "bg-surface-elevated border-border-thin text-muted"
                   }`}>
@@ -1869,7 +1879,7 @@ export default function AgentPage() {
                         : `${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m ${diff % 60}s`;
 
                       const tokenSymbol = q.token.toLowerCase() === "0x3600000000000000000000000000000000000000" ? "USDC" : 
-                                          q.token.toLowerCase() === "0x89b50855aa3be2f677cd6303cec089b5f319d72a" ? "EURC" : 
+                                          (q.token.toLowerCase() === CONTRACTS.eurc.toLowerCase() || q.token.toLowerCase() === "0x89b50855aa3be2f677cd6303cec089b5f319d72a") ? "EURC" : 
                                           q.token === "0x0000000000000000000000000000000000000000" ? "ARC" : "TOKEN";
 
                       return (
@@ -2023,7 +2033,7 @@ export default function AgentPage() {
                     className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-primary/50"
                   >
                     <option value="0x3600000000000000000000000000000000000000">USDC (Stable)</option>
-                    <option value="0x89b50855aa3be2f677cd6303cec089b5f319d72a">EURC (Stable)</option>
+                    <option value={CONTRACTS.eurc}>EURC (Stable)</option>
                     <option value="0x0000000000000000000000000000000000000000">ARC / Native ETH</option>
                   </select>
                 </div>

@@ -5,6 +5,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { TOKENS } from "@/lib/theme-tokens";
+import { getActiveNetwork } from "@/lib/arc-config";
 
 export function GovernanceAnalytics() {
   const { proposals, initialized, initializeStore } = useGovernanceStore();
@@ -42,10 +43,11 @@ export function GovernanceAnalytics() {
       }
     });
 
+    const isMainnet = getActiveNetwork() === 'mainnet';
     return range.map(r => ({
       name: r.name,
       proposals: r.proposals,
-      participation: r.count > 0 ? parseFloat((r.totalPart / r.count).toFixed(1)) : 16.7
+      participation: r.count > 0 ? parseFloat((r.totalPart / r.count).toFixed(1)) : (isMainnet ? 0.0 : 16.7)
     }));
   }, [proposals]);
 

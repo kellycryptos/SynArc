@@ -8,6 +8,7 @@ import { useCreatorStore, Supporter } from "@/hooks/useCreatorStore";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { TokenIcon } from "@/components/ui/TokenIcon";
 import { getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
 import { ARC_CHAIN } from "@/lib/arc-config";
 import { useWallets } from "@/hooks/useWallets";
@@ -32,6 +33,7 @@ import {
 import { toast } from "react-hot-toast";
 import { parseAbi } from "viem";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -40,6 +42,7 @@ interface PageProps {
 export default function CreatorProfilePage({ params }: PageProps) {
   const { id } = use(params);
   const { isAuthenticated, walletAddress, isCircle, login } = useAuth();
+  const { isArcMainnet, explorerUrl } = useArcNetwork();
   const { wallets } = useWallets();
   const { balance: walletUSDC, refetch: refetchUSDC } = useUSDCBalance(walletAddress);
 
@@ -541,7 +544,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
                     <div className="flex items-center gap-3">
                       <span className="font-extrabold text-success">+{s.amount.toFixed(2)} USDC</span>
                       <a 
-                        href={`https://testnet.arcscan.app/tx/${s.txHash}`} 
+                        href={`${explorerUrl}/tx/${s.txHash}`} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="p-1 rounded bg-surface-elevated hover:bg-primary/20 border border-border-thin hover:border-primary/30 text-text-tertiary hover:text-primary transition-all"
@@ -564,7 +567,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
           <GlassCard className="p-6 space-y-5 border border-primary/25 bg-gradient-to-br from-primary/[0.01] to-transparent" hover={false}>
             <div className="space-y-1">
               <h3 className="text-base font-extrabold font-heading text-white flex items-center gap-2">
-                <Coins className="w-5 h-5 text-primary animate-pulse" />
+                <TokenIcon symbol="USDC" size={20} />
                 Support with USDC
               </h3>
               <p className="text-xs text-text-secondary">
@@ -636,7 +639,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
                   <div className="flex justify-between items-center gap-2 pt-0.5">
                     <span className="font-mono text-[9px] opacity-80 block truncate select-all">{latestTxHash}</span>
                     <a 
-                      href={`https://testnet.arcscan.app/tx/${latestTxHash}`} 
+                      href={`${explorerUrl}/tx/${latestTxHash}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-primary hover:underline font-bold shrink-0 flex items-center gap-0.5"
@@ -659,7 +662,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
 
             <div className="pt-2 border-t border-border-thin text-[10px] text-text-tertiary/60 flex items-center justify-center gap-1 font-mono">
               <ShieldCheck className="w-3.5 h-3.5 text-success" />
-              <span>USDC Native · Powered by Arc Testnet</span>
+              <span>USDC Native · Powered by {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}</span>
             </div>
           </GlassCard>
 

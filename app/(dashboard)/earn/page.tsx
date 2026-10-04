@@ -10,6 +10,7 @@ import { VaultCard } from "@/components/earn/VaultCard";
 import { MyPositionsCard } from "@/components/earn/MyPositionsCard";
 import { DepositModal } from "@/components/earn/DepositModal";
 import { WithdrawModal } from "@/components/earn/WithdrawModal";
+import { TokenIcon } from "@/components/ui/TokenIcon";
 import {
   TrendingUp,
   Percent,
@@ -184,8 +185,9 @@ export default function EarnPage() {
             <span>Wallet Available</span>
             <ShieldCheck className="w-4 h-4 text-blue-400" />
           </div>
-          <div className="text-2xl font-bold font-mono text-[#F8FAFC]">
-            {usdcBalance || "0.00"} USDC
+          <div className="text-2xl font-bold font-mono text-[#F8FAFC] flex items-center gap-2">
+            <TokenIcon symbol="USDC" size={20} />
+            <span>{usdcBalance || "0.00"} USDC</span>
           </div>
           <span className="text-[11px] text-[#8F9CAE] block mt-0.5">Ready to deploy into vaults</span>
         </GlassCard>
@@ -241,13 +243,14 @@ export default function EarnPage() {
                 <button
                   key={asset}
                   onClick={() => setSelectedAsset(asset)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
                     selectedAsset === asset
                       ? "bg-primary text-white"
                       : "bg-[#05080F] text-[#8F9CAE] hover:text-[#F8FAFC] border border-[#1E293B]"
                   }`}
                 >
-                  {asset}
+                  {asset !== "ALL" && <TokenIcon symbol={asset} size={14} />}
+                  <span>{asset}</span>
                 </button>
               ))}
 

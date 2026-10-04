@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { TokenIcon } from "@/components/ui/TokenIcon";
 import { 
   ShieldCheck, 
   Lock, 
@@ -223,7 +224,7 @@ export function EscrowReleaseValve({ treasuryUsdcBalance = 0 }: EscrowReleaseVal
           <div className="p-4 rounded-xl bg-surface/80 border border-border-thin space-y-2">
             <div className="flex items-center justify-between">
               <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <Coins className="w-4 h-4 text-blue-400" />
+                <TokenIcon symbol="USDC" size={18} />
               </div>
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                 100% Backed

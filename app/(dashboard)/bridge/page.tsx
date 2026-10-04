@@ -35,6 +35,8 @@ import {
 import { GlassCard } from "@/components/ui/GlassCard";
 import { CctpStepVisualizer } from "@/components/dashboard/CctpStepVisualizer";
 import { SectionErrorBoundary } from "@/components/ErrorBoundary";
+import { TokenIcon } from "@/components/ui/TokenIcon";
+import { ChainIcon } from "@/components/ui/ChainIcon";
 
 // ABI for ERC20 balanceOf & decimals
 const erc20Abi = parseAbi([
@@ -681,7 +683,7 @@ export default function BridgePage() {
                               onClick={() => setDropdownOpen(!dropdownOpen)}
                               className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-elevated border border-border-thin rounded-xl text-white text-xs font-bold hover:border-primary/50 transition-all cursor-pointer"
                             >
-                              <span className="text-sm select-none">{fromChain.icon}</span>
+                              <ChainIcon chain={fromChain.id} size={18} />
                               <span>{fromChain.name}</span>
                               <ChevronDown className={`w-3.5 h-3.5 text-muted transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
                             </button>
@@ -702,7 +704,7 @@ export default function BridgePage() {
                                       selectedChain.id === chain.id ? "bg-primary/10 text-white font-bold" : "text-muted hover:text-white"
                                     }`}
                                   >
-                                    <span className="text-sm select-none">{chain.icon}</span>
+                                    <ChainIcon chain={chain.id} size={18} />
                                     <span>{chain.name}</span>
                                     {(chain.id === "SOL_DEVNET" || chain.id === "SOL_MAINNET") && (
                                       <span className="ml-auto text-[9px] font-extrabold text-muted-foreground bg-surface-elevated px-1.5 py-0.5 rounded border border-border-thin select-none">SOON</span>
@@ -714,7 +716,7 @@ export default function BridgePage() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-elevated border border-border-thin rounded-xl text-white text-xs font-bold">
-                            <span className="text-sm select-none">{fromChain.icon}</span>
+                            <ChainIcon chain={fromChain.id} size={18} />
                             <span>{fromChain.name}</span>
                           </div>
                         )}
@@ -732,8 +734,8 @@ export default function BridgePage() {
                           placeholder="0.00"
                           className="text-2xl sm:text-3xl font-semibold font-mono text-text-primary placeholder-text-muted bg-transparent border-none focus:outline-none w-full p-0 py-1"
                         />
-                        <div className="flex items-center gap-1 bg-[#1e133d]/70 px-3 py-1.5 rounded-xl border border-border-thin shrink-0 select-none">
-                          <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary font-bold">$</span>
+                        <div className="flex items-center gap-1.5 bg-[#1e133d]/70 px-3 py-1.5 rounded-xl border border-border-thin shrink-0 select-none">
+                          <TokenIcon symbol="USDC" size={20} />
                           <span className="text-xs font-extrabold text-white">USDC</span>
                         </div>
                       </div>
@@ -786,7 +788,7 @@ export default function BridgePage() {
                               onClick={() => setDropdownOpen(!dropdownOpen)}
                               className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-elevated border border-border-thin rounded-xl text-white text-xs font-bold hover:border-primary/50 transition-all cursor-pointer"
                             >
-                              <span className="text-sm select-none">{toChain.icon}</span>
+                              <ChainIcon chain={toChain.id} size={18} />
                               <span>{toChain.name}</span>
                               <ChevronDown className={`w-3.5 h-3.5 text-muted transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
                             </button>
@@ -807,7 +809,7 @@ export default function BridgePage() {
                                       selectedChain.id === chain.id ? "bg-primary/10 text-white font-bold" : "text-muted hover:text-white"
                                     }`}
                                   >
-                                    <span className="text-sm select-none">{chain.icon}</span>
+                                    <ChainIcon chain={chain.id} size={18} />
                                     <span>{chain.name}</span>
                                   </button>
                                 ))}
@@ -816,7 +818,7 @@ export default function BridgePage() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-elevated border border-border-thin rounded-xl text-white text-xs font-bold">
-                            <span className="text-sm select-none">{toChain.icon}</span>
+                            <ChainIcon chain={toChain.id} size={18} />
                             <span>{toChain.name}</span>
                           </div>
                         )}
@@ -827,8 +829,8 @@ export default function BridgePage() {
                         <div className="text-2xl sm:text-3xl font-semibold font-mono text-text-primary/50 select-none w-full py-1">
                           {amount || "0.00"}
                         </div>
-                        <div className="flex items-center gap-1 bg-[#1e133d]/70 px-3 py-1.5 rounded-xl border border-border-thin shrink-0 select-none">
-                          <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary font-bold">$</span>
+                        <div className="flex items-center gap-1.5 bg-[#1e133d]/70 px-3 py-1.5 rounded-xl border border-border-thin shrink-0 select-none">
+                          <TokenIcon symbol="USDC" size={20} />
                           <span className="text-xs font-extrabold text-white">USDC</span>
                         </div>
                       </div>
@@ -973,14 +975,16 @@ export default function BridgePage() {
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-muted">Origin Chain</span>
-                            <span className="font-bold text-white flex items-center gap-1">
-                              <span>{fromChain.icon}</span> {fromChain.name}
+                            <span className="font-bold text-white flex items-center gap-1.5">
+                              <ChainIcon chain={fromChain.id} size={16} />
+                              <span>{fromChain.name}</span>
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-muted">Destination Chain</span>
-                            <span className="font-bold text-white flex items-center gap-1">
-                              <span>{toChain.icon}</span> {toChain.name}
+                            <span className="font-bold text-white flex items-center gap-1.5">
+                              <ChainIcon chain={toChain.id} size={16} />
+                              <span>{toChain.name}</span>
                             </span>
                           </div>
                           
@@ -1104,13 +1108,17 @@ export default function BridgePage() {
                     bridgeHistory.map((tx) => (
                       <tr key={tx.id} className="border-b border-border-thin/40 hover:bg-surface-elevated/20 transition-colors">
                         <td className="py-3.5 pl-2 font-semibold text-white">
-                          <span className="mr-1.5 select-none text-sm">{tx.sourceIcon}</span>
-                          {tx.sourceChain}
+                          <span className="inline-flex items-center gap-1.5">
+                            <ChainIcon chain={tx.sourceChain} size={16} />
+                            <span>{tx.sourceChain}</span>
+                          </span>
                         </td>
                         <td className="py-3.5 text-text-secondary">
                           <div className="flex items-center gap-1.5 font-medium">
+                            <ChainIcon chain={tx.sourceChain} size={14} />
                             <span>{tx.sourceChain}</span>
                             <ArrowRight className="w-3.5 h-3.5 text-text-tertiary" />
+                            <ChainIcon chain={tx.destChain || activeArcChain.name} size={14} />
                             <span className="text-primary font-bold">{tx.destChain || activeArcChain.name}</span>
                           </div>
                         </td>

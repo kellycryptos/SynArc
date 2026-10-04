@@ -8,6 +8,7 @@ import { BarChart3, TrendingUp, Users, Activity, AlertCircle, RefreshCw } from "
 import { useState, useEffect, useMemo } from "react";
 import { ethers, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
+import { CONTRACTS } from "@/lib/arc-config";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { getLogsResiliently } from "@/lib/rpc/config";
 
@@ -87,7 +88,7 @@ export default function AnalyticsPage() {
 
       try {
         setVotersLoading(true);
-        const governorAddress = GOVERNANCE_CONTRACTS?.governor || '0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e';
+        const governorAddress = GOVERNANCE_CONTRACTS.governor || CONTRACTS.governor;
 
         const events = await getLogsResiliently(async (rpcUrl) => {
           const provider = new ethers.JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });

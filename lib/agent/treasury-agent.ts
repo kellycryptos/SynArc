@@ -6,7 +6,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') })
 import Groq from 'groq-sdk'
 import { createPublicClient, createWalletClient, http, fallback, parseAbi, parseUnits, keccak256, toHex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS, ARC_GAS, IS_MAINNET, CIRCLE_ETH_CONFIG, CIRCLE_IRIS_API_URL } from '../arc-config'
+import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS, ARC_GAS, IS_MAINNET, getActiveNetwork, CIRCLE_ETH_CONFIG, CIRCLE_IRIS_API_URL } from '../arc-config'
 import { CCTPExecutor } from './cctp-executor'
 import { pinJSONToIPFS } from '../attestation'
 import { ForensicAuditor } from './forensic-auditor'
@@ -180,10 +180,12 @@ export class TreasuryAgent {
       ])
       const u = Number(usdc) / 1_000_000
       const e = Number(eurc) / 1_000_000
-      return { usdc: u > 0 ? u : 25.0, eurc: e > 0 ? e : 20.0, usedFallback: u === 0 }
+      const isMainnet = getActiveNetwork() === 'mainnet';
+      return { usdc: u > 0 ? u : (isMainnet ? 0 : 25.0), eurc: e > 0 ? e : (isMainnet ? 0 : 20.0), usedFallback: u === 0 }
     } catch (err: any) {
       console.warn('[TreasuryAgent] Could not read treasury balances on-chain, using baseline:', err)
-      return { usdc: 25.0, eurc: 20.0, usedFallback: true }
+      const isMainnet = getActiveNetwork() === 'mainnet';
+      return { usdc: isMainnet ? 0 : 25.0, eurc: isMainnet ? 0 : 20.0, usedFallback: true }
     }
   }
 

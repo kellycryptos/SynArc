@@ -1,5 +1,5 @@
 import { createWalletClient, createPublicClient, http, custom, fallback, getAddress } from 'viem'
-import { ARC_CHAIN, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_GAS } from './arc-config'
+import { ARC_CHAIN, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_GAS, CONTRACTS, getActiveNetwork } from './arc-config'
 import { BrowserProvider, Contract, ZeroAddress } from 'ethers'
 import { getCircleClient } from './circle/client'
 
@@ -35,7 +35,7 @@ class CircleEthereumProvider {
     }
 
     // Pass-through other RPC requests
-    const rpcUrl = ARC_RPC_URLS[0] || 'https://rpc.testnet.arc.io';
+    const rpcUrl = ARC_RPC_URLS[0] || (getActiveNetwork() === 'mainnet' ? 'https://rpc.mainnet.arc.io' : 'https://rpc.testnet.arc.io');
     const res = await fetch(rpcUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -719,7 +719,7 @@ export const checkAndDelegate = async (wallets: any[], activeAddress?: string) =
     ];
 
     const tokenContract = new Contract(
-      process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e',
+      CONTRACTS.token,
       TOKEN_ABI,
       signer
     );
@@ -731,7 +731,7 @@ export const checkAndDelegate = async (wallets: any[], activeAddress?: string) =
     if (balance > 0n && currentDelegate === ZeroAddress) {
       console.log('Auto-delegating voting power to self...');
       
-      // Get gas parameters for fast inclusion on Arc Testnet
+      // Get gas parameters for fast inclusion on Arc
       const minMaxFeePerGas = 20000000000n; // 20 Gwei/units
       
       const tx = await tokenContract.delegate(address, {

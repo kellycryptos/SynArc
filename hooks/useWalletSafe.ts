@@ -13,7 +13,7 @@ export type WalletType = 'external' | 'embedded' | 'circle' | null;
 
 export function useWalletSafe() {
   const { isAuthenticated, walletAddress, isCircle, ready } = useAuth();
-  const { isArcTestnet, switchNetwork } = useArcNetwork();
+  const { isArcTestnet, isArcMainnet, switchNetwork } = useArcNetwork();
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   const activeWallet = selectActiveWallet(wallets, walletAddress);
@@ -97,7 +97,7 @@ export function useWalletSafe() {
         }
 
         // Fallback: public contract read
-        const rpcUrl = ARC_RPC_URLS[0] || 'https://rpc.testnet.arc.io';
+        const rpcUrl = ARC_RPC_URLS[0] || (isArcMainnet ? 'https://rpc.mainnet.arc.io' : 'https://rpc.testnet.arc.io');
         const client = createPublicClient({
           transport: http(rpcUrl)
         });

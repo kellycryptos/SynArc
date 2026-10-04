@@ -4,12 +4,14 @@ import { useEffect, useState, use } from "react";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { Milestone } from "@/types";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { TokenIcon } from "@/components/ui/TokenIcon";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { getSigner, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 import { ARC_CHAIN } from "@/lib/arc-config";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { parseAbi } from "viem";
 import { 
   ArrowLeft, 
@@ -81,6 +83,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
+  const { isArcMainnet } = useArcNetwork();
   const { campaigns, initialized, initializeStore, contribute, castVote, setAIAnalysis, syncOnChainCampaign } = useCampaignStore();
   const { balance: walletUSDC } = useUSDCBalance();
 
@@ -624,13 +627,13 @@ export default function CampaignDetailPage({ params }: PageProps) {
             {/* Quick Metrics grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
               <div className="p-4 rounded-xl bg-surface/30 border border-border-thin/60">
-                <Coins className="w-5 h-5 text-primary mx-auto mb-1.5" />
+                <TokenIcon symbol="USDC" size={20} className="mx-auto mb-1.5" />
                 <span className="text-xs text-muted block">Raised</span>
                 <span className="text-lg font-bold text-text-primary mt-0.5 block">{campaign.raised.toLocaleString()} USDC</span>
               </div>
 
               <div className="p-4 rounded-xl bg-surface/30 border border-border-thin/60">
-                <Coins className="w-5 h-5 text-accent mx-auto mb-1.5" />
+                <TokenIcon symbol="USDC" size={20} className="mx-auto mb-1.5" />
                 <span className="text-xs text-muted block">Target Goal</span>
                 <span className="text-lg font-bold text-text-primary mt-0.5 block">{campaign.goal.toLocaleString()} USDC</span>
               </div>
@@ -765,7 +768,10 @@ export default function CampaignDetailPage({ params }: PageProps) {
                       disabled={contributing}
                       className="w-full bg-surface border border-border-thin rounded-xl pl-4 pr-16 py-3 text-sm text-white outline-none focus:border-primary/50"
                     />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-extrabold text-muted">USDC</span>
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-extrabold text-muted flex items-center gap-1.5 pointer-events-none">
+                      <TokenIcon symbol="USDC" size={14} />
+                      USDC
+                    </span>
                   </div>
 
                   <button
@@ -780,7 +786,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
                       </>
                     ) : (
                       <>
-                        <Coins className="w-4 h-4" />
+                        <TokenIcon symbol="USDC" size={16} />
                         Contribute USDC
                       </>
                     )}
@@ -1105,7 +1111,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
               <FundingSourceItem
                 icon=""
                 title="Individual Contributors"
-                description="Anyone on Arc Testnet can back Creator DAOs directly using stablecoins."
+                description={`Anyone on ${isArcMainnet ? "Arc Mainnet" : "Arc Testnet"} can back Creator DAOs directly using stablecoins.`}
                 status="Active"
               />
               <FundingSourceItem

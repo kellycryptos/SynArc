@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRpcStatus } from "@/lib/hooks/useRpcStatus";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { ChevronDown, ExternalLink, RefreshCw, AlertCircle } from "lucide-react";
+import { ChainIcon } from "@/components/ui/ChainIcon";
 
 /**
  * Network Status Badge Component
@@ -94,6 +95,7 @@ export function NetworkStatusBadge() {
         className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-mono border ${statusColor} transition-all cursor-pointer select-none`}
         title={`${networkName}: ${message} (Click for network details)`}
       >
+        <ChainIcon chain="arc" size={14} />
         <span className={`w-1.5 h-1.5 rounded-full ${indicatorColor} ${animationClass}`} />
         <span className="font-medium">{networkName}</span>
         <span className="text-white/30">·</span>
@@ -135,7 +137,10 @@ export function NetworkStatusBadge() {
             {/* Network Name */}
             <div className="flex items-center justify-between">
               <span className="text-[#8A948E]">Network</span>
-              <span className="text-white font-medium">{networkName}</span>
+              <span className="text-white font-medium flex items-center gap-1.5">
+                <ChainIcon chain="arc" size={14} />
+                {networkName}
+              </span>
             </div>
 
             {/* Chain ID */}

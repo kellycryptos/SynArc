@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { CONTRACTS } from "@/lib/arc-config";
 
 const DB_PATH = path.join(process.cwd(), "data/agents.json");
 
@@ -34,7 +35,7 @@ const INITIAL_AGENTS: RegisteredAgent[] = [
     id: "agent_gov",
     name: "SynDAO Governance Agent",
     avatar: "",
-    address: "0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e",
+    get address() { return (CONTRACTS.governor || "0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025") as string; },
     model: "Groq AI Engine",
     capabilities: "On-chain risk scans, automated treasury sanity audits, voting recommendations",
     metadataURI: "ipfs://QmGovernanceAgentERC8004Metadata",
@@ -74,7 +75,7 @@ const INITIAL_AGENTS: RegisteredAgent[] = [
     id: "agent_allocation",
     name: "Ecosystem Allocation Agent",
     avatar: "",
-    address: "0xFE0F6bF45D363d34CD5fC1781594a7471736dC18",
+    get address() { return (CONTRACTS.treasury || "0x8205e9782Fe54fD2aaD895b436B695db169F3d7B") as string; },
     model: "Groq AI Engine",
     capabilities: "Milestone escrow disburse auditing, gas optimization recommendations",
     metadataURI: "ipfs://QmAllocationAgentERC8004Metadata",
@@ -107,7 +108,7 @@ const INITIAL_AGENTS: RegisteredAgent[] = [
     id: "agent_guardian",
     name: "Emergency Guardian Agent",
     avatar: "",
-    address: "0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e",
+    get address() { return (CONTRACTS.token || "0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4") as string; },
     model: "Groq AI",
     capabilities: "Spam proposal identification, autonomous veto scoring",
     metadataURI: "ipfs://QmGuardianAgentERC8004Metadata",

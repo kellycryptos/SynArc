@@ -6,6 +6,7 @@ import { DAO_REGISTRY, DAOInfo } from "@/data/daos";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useTreasury } from "@/hooks/useTreasury";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { TokenIcon } from "@/components/ui/TokenIcon";
 import { 
   Building, 
   Users, 
@@ -734,14 +735,14 @@ export default function DAODetailsPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                      <TokenIcon symbol="USDC" size={16} />
                       USDC Balance
                     </span>
                     <span className="font-mono font-bold text-white">{usdcBalance.toLocaleString()} USDC</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+                      <TokenIcon symbol="EURC" size={16} />
                       EURC Balance
                     </span>
                     <span className="font-mono font-bold text-white">{eurcBalance.toLocaleString()} EURC</span>
@@ -970,12 +971,13 @@ export default function DAODetailsPage() {
                     key={tok}
                     type="button"
                     onClick={() => setDepositToken(tok as any)}
-                    className={`flex-1 py-2 rounded-xl font-extrabold text-xs border transition-all cursor-pointer ${
+                    className={`flex-1 py-2 rounded-xl font-extrabold text-xs border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       depositToken === tok
                         ? "bg-accent-purple border-accent-purple text-white-keep"
                         : "bg-surface border-border-thin text-muted hover:text-white"
                     }`}
                   >
+                    <TokenIcon symbol={tok} size={16} />
                     {tok}
                   </button>
                 ))}

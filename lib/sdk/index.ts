@@ -55,7 +55,10 @@ export class SynArcClient {
         const CROWDFUND_HUB_ABI = parseAbi([
           "function deployCampaign(string title, string description, string category, uint256 goalAmount, string[] milestoneTitles, uint256[] milestoneBudgets) returns (address)"
         ]);
-        const hubAddress = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a"; // Crowdfund Hub address
+        const hubAddress = (CONTRACTS.crowdfund || process.env.NEXT_PUBLIC_CROWDFUND_ADDRESS) as `0x${string}`;
+        if (!hubAddress || hubAddress === "0x") {
+          throw new Error("Crowdfund Hub contract is not deployed on this network");
+        }
         const goalRaw = parseUnits(params.goal.toString(), 6);
         const titles = params.milestones.map(m => m.title);
         const budgets = params.milestones.map(m => parseUnits(m.budget.toString(), 6));

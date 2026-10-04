@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { TokenIcon } from "@/components/ui/TokenIcon";
 import {
   Coins,
   ExternalLink,
@@ -236,8 +237,8 @@ export default function FaucetPage() {
           <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/20 rounded-full blur-2xl pointer-events-none" />
 
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/20 flex items-center justify-center text-xs font-extrabold text-purple-300 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
-              sARC
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/20 flex items-center justify-center p-2 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
+              <TokenIcon symbol="sARC" size={32} />
             </div>
             <div>
               <h2 className="font-extrabold text-white text-lg leading-tight">Syn DAO Token</h2>
@@ -372,8 +373,8 @@ export default function FaucetPage() {
           <div className="absolute -top-12 -right-12 w-32 h-32 bg-arc-blue/10 rounded-full blur-2xl pointer-events-none" />
 
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-400/20 flex items-center justify-center text-xl shadow-[0_0_20px_rgba(59,130,246,0.15)]">
-              USDC
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-400/20 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.15)]">
+              <TokenIcon symbol="USDC" size={32} />
             </div>
             <div>
               <h2 className="font-extrabold text-white text-lg leading-tight">USDC Testnet</h2>
@@ -413,8 +414,8 @@ export default function FaucetPage() {
           <div className="absolute -top-12 -right-12 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
 
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 border border-purple-400/20 flex items-center justify-center text-xl shadow-[0_0_20px_rgba(168,85,247,0.15)]">
-              sARC
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 border border-purple-400/20 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.15)]">
+              <TokenIcon symbol="EURC" size={32} />
             </div>
             <div>
               <h2 className="font-extrabold text-white text-lg leading-tight">EURC Testnet</h2>

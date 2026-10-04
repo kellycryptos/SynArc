@@ -6,6 +6,7 @@ import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 import { Bell, Search, Menu, LogOut, Wallet, Flame } from "lucide-react";
 import { useMemo } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
+import { TokenIcon } from "@/components/ui/TokenIcon";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 
@@ -97,7 +98,8 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 -- USDC
               </span>
             ) : balance !== null ? (
-              <span className="inline-flex items-center px-3 py-2 rounded-lg text-xs font-mono bg-[#0B111C] border border-[#1B2536] text-[#F5F7FA] shrink-0">
+              <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono bg-[#0B111C] border border-[#1B2536] text-[#F5F7FA] shrink-0">
+                <TokenIcon symbol="USDC" size={14} />
                 {parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
               </span>
             ) : null}

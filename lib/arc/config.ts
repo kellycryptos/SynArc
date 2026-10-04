@@ -13,7 +13,7 @@ import {
 export { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_RPC_URLS, arcTestnet, arcMainnet, ARC_CHAIN };
 
 // Primary RPC URL — first in the ACTIVE_RPC_URLS priority array (Arc official on mainnet)
-export const ARC_RPC_URL = ARC_RPC_URLS[0] || 'https://rpc.testnet.arc.network';
+export const ARC_RPC_URL = ARC_RPC_URLS[0] || (ACTIVE_NETWORK === 'mainnet' ? 'https://rpc.mainnet.arc.io' : 'https://rpc.testnet.arc.io');
 // Active-network RPC array (respects ACTIVE_NETWORK: mainnet or testnet)
 const ACTIVE_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS;
 

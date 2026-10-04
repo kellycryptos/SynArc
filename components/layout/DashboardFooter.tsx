@@ -44,6 +44,15 @@ export function DashboardFooter() {
             <span>Treasury</span>
             <ExternalLink className="w-3 h-3 text-[#2F6FFF]" />
           </a>
+          <a
+            href={`${explorerUrl}/address/${contracts.governor}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-[#F5F7FA] inline-flex items-center gap-1 transition-colors"
+          >
+            <span>Governor</span>
+            <ExternalLink className="w-3 h-3 text-[#2F6FFF]" />
+          </a>
           <Link href="/terms" className="hover:text-[#F5F7FA] transition-colors">
             Terms
           </Link>

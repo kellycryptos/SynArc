@@ -57,6 +57,7 @@ const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string
 const getEurcAddress = () => (CONTRACTS.eurc || '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1') as `0x${string}`;
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
 import { BridgeModal } from "@/components/BridgeModal";
+import { TokenIcon } from "@/components/ui/TokenIcon";
 import Link from "next/link";
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -631,8 +632,8 @@ function TreasuryPageContent() {
           <GlassCard className="p-6 relative overflow-hidden group">
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
             <div className="flex justify-between items-start mb-4">
-              <div className="p-2.5 bg-[#2775CA]/10 border border-[#2775CA]/20 rounded-xl">
-                <Coins className="w-5 h-5 text-[#2775CA]" />
+              <div className="p-2 bg-[#2775CA]/10 border border-[#2775CA]/20 rounded-xl flex items-center justify-center">
+                <TokenIcon symbol="USDC" size={24} />
               </div>
               <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted">Stable</span>
             </div>
@@ -650,8 +651,8 @@ function TreasuryPageContent() {
           <GlassCard className="p-6 relative overflow-hidden group">
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
             <div className="flex justify-between items-start mb-4">
-              <div className="p-2.5 bg-pink-500/10 border border-pink-500/20 rounded-xl">
-                <Coins className="w-5 h-5 text-pink-400" />
+              <div className="p-2 bg-pink-500/10 border border-pink-500/20 rounded-xl flex items-center justify-center">
+                <TokenIcon symbol="EURC" size={24} />
               </div>
               <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted">Stable</span>
             </div>
@@ -985,7 +986,7 @@ function TreasuryPageContent() {
                           : "bg-surface border-border-thin text-muted hover:text-foreground hover:bg-surface-elevated"
                       }`}
                     >
-                      <Coins className={`w-4 h-4 ${token === "USDC" ? "text-[#2775CA]" : "text-pink-400"}`} />
+                      <TokenIcon symbol={token} size={18} />
                       {token}
                     </button>
                   ))}
