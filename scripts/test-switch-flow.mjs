@@ -60,7 +60,7 @@ async function run() {
 
   await new Promise(r => browserWs.onopen = r);
 
-  const target = await send(browserWs, 'Target.createTarget', { url: 'http://localhost:3000' });
+  const target = await send(browserWs, 'Target.createTarget', { url: 'http://localhost:3000/dashboard' });
   const pageWs = new WebSocket(`ws://127.0.0.1:9222/devtools/page/${target.targetId}`);
   await new Promise(r => pageWs.onopen = r);
 
@@ -116,8 +116,21 @@ async function run() {
   await send(pageWs, 'Page.enable');
   await send(pageWs, 'Network.enable');
 
-  console.log("Waiting 5s for page to settle...");
-  await new Promise(r => setTimeout(r, 5000));
+  console.log("Waiting for page buttons to render...");
+  let buttonsFound = false;
+  for (let i = 0; i < 30; i++) {
+    const check = await send(pageWs, 'Runtime.evaluate', {
+      expression: `document.querySelectorAll('button').length`,
+      returnByValue: true
+    });
+    if (check.result?.value > 0) {
+      buttonsFound = true;
+      console.log(`Page rendered with ${check.result.value} buttons after ${i * 500}ms`);
+      break;
+    }
+    await new Promise(r => setTimeout(r, 500));
+  }
+  await new Promise(r => setTimeout(r, 1000));
 
   console.log("\nAttempting to find and click the NetworkStatusBadge...");
   const clickBadgeRes = await send(pageWs, 'Runtime.evaluate', {
@@ -126,7 +139,15 @@ async function run() {
       const buttons = Array.from(document.querySelectorAll('button'));
       const badgeBtn = buttons.find(b => b.getAttribute('aria-haspopup') === 'true' || (b.textContent && (b.textContent.includes('Arc') || b.textContent.includes('ms'))));
       if (!badgeBtn) {
-        return { success: false, reason: "Badge button not found. Total buttons: " + buttons.length };
+        return { 
+          success: false, 
+          reason: "Badge button not found. Total buttons: " + buttons.length,
+          allButtons: buttons.map(b => ({
+            text: b.textContent?.trim()?.slice(0, 50),
+            aria: b.getAttribute('aria-haspopup'),
+            title: b.title
+          }))
+        };
       }
       badgeBtn.click();
       return { success: true, text: badgeBtn.textContent };
