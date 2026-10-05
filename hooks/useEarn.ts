@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 import { useConnectorClient } from "wagmi";
 import { toast } from "react-hot-toast";
+import { invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
 import type { ArcEarnChain, EarnVault, DepositQuote, WithdrawalQuote, EarnPosition } from "@/types/earn";
 
 // Helper to load SDK dynamically
@@ -321,6 +322,9 @@ function useActiveEarn() {
 
       toast.success(`Successfully deposited ${amount} USDC into vault!`, { id: toastId });
 
+      // Invalidate wallet USDC balance cache so navbar/sidebar refresh immediately
+      invalidateUSDCBalance();
+
       setTimeout(() => {
         fetchPositions();
       }, 1500);
@@ -372,6 +376,9 @@ function useActiveEarn() {
       });
 
       toast.success(`Successfully redeemed ${result?.amount || amount} USDC!`, { id: toastId });
+
+      // Invalidate wallet USDC balance cache so navbar/sidebar refresh immediately
+      invalidateUSDCBalance();
 
       setTimeout(() => {
         fetchPositions();

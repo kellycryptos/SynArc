@@ -23,6 +23,21 @@ const ERC20_ABI = [
 const cachedBalance: { [address: string]: { balance: string; timestamp: number } | undefined } = {}
 const pendingFetches: { [address: string]: Promise<string> | undefined } = {}
 
+/**
+ * Dispatch this event anywhere in the app after a transaction that changes a
+ * wallet's USDC balance (earn deposit/withdraw, etc.). All active instances
+ * of useUSDCBalance will clear their cache and re-fetch immediately.
+ */
+export function invalidateUSDCBalance() {
+  if (typeof window !== 'undefined') {
+    // Clear the entire module-level cache so the next fetch is live
+    for (const key in cachedBalance) {
+      delete cachedBalance[key]
+    }
+    window.dispatchEvent(new CustomEvent('synarc_usdc_changed'))
+  }
+}
+
 export const useUSDCBalance = (walletAddress?: string | undefined) => {
   const { walletAddress: authAddress, isCircle } = useAuth()
   const activeAddress = walletAddress || authAddress
@@ -34,6 +49,7 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
 
   const [nativeBalance, setNativeBalance] = useState<string>('0.00')
 
+  /** Internal: fetch, respecting the 5-second deduplication cache. */
   const fetchBalance = useCallback(async () => {
     if (!activeAddress) {
       setBalance('0.00')
@@ -145,16 +161,44 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
     }
   }, [activeAddress, isCircle, arcChain, isArcTestnet])
 
+  /**
+   * Public refetch — always bypasses the 5-second cache.
+   * Use this after a transaction that changes the balance.
+   */
+  const refetch = useCallback(async () => {
+    if (!activeAddress) return
+    const key = `${activeAddress.toLowerCase()}_${arcChain?.id || (isArcTestnet ? 5042002 : 5042)}`
+    delete cachedBalance[key]
+    await fetchBalance()
+  }, [activeAddress, arcChain, isArcTestnet, fetchBalance])
+
   useEffect(() => {
     fetchBalance()
     
-    // Refresh every 60 seconds (reduced from 30s) and only if visible
+    // Refresh every 60 seconds and only if tab is visible
     const interval = setInterval(() => {
       if (typeof document === "undefined" || document.visibilityState === "visible") {
         fetchBalance()
       }
     }, 60_000)
-    return () => clearInterval(interval)
+
+    // Respond to synarc_usdc_changed events fired after earn deposits/withdraws etc.
+    // The module-level cache is already cleared by invalidateUSDCBalance() before the
+    // event is dispatched, so fetchBalance() will go live.
+    const handleUsdcChanged = () => {
+      fetchBalance()
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('synarc_usdc_changed', handleUsdcChanged)
+    }
+
+    return () => {
+      clearInterval(interval)
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('synarc_usdc_changed', handleUsdcChanged)
+      }
+    }
     
   }, [fetchBalance])
 
@@ -167,7 +211,7 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
     isLoading: loading && balance === '0.00',
     isFetching: loading,
     isError: !!error,
-    refetch: fetchBalance,
+    refetch,
   }
 }
 

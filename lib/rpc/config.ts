@@ -1,7 +1,10 @@
-import { JsonRpcProvider } from "ethers";
+import { JsonRpcProvider, Network } from "ethers";
 import { checkRpcHealth } from "./health";
 
 import { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK, ARC_RPC_URLS, getActiveNetwork } from "@/lib/arc-config";
+
+export const ARC_MAINNET_NETWORK = Network.from({ name: 'arc', chainId: 5042 });
+export const ARC_TESTNET_NETWORK = Network.from({ name: 'arc-testnet', chainId: 5042002 });
 
 /**
  * Arc RPC Configuration
@@ -69,10 +72,12 @@ export async function initializeResilientRpc(chain: any) {
  */
 export async function getResilientProvider(): Promise<JsonRpcProvider> {
   const TIMEOUT_MS = 4000; // Slightly more generous — Alchemy connects fast
+  const isMainnet = getActiveNetwork() === 'mainnet';
+  const network = isMainnet ? ARC_MAINNET_NETWORK : ARC_TESTNET_NETWORK;
 
   for (const rpcUrl of RPC_URLS) {
     try {
-      const provider = new JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true, batchMaxCount: 1 });
+      const provider = new JsonRpcProvider(rpcUrl, network, { staticNetwork: true, batchMaxCount: 1 });
 
       // Race the health check against a timeout so a hanging URL fails fast
       await Promise.race([

@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
-import { Bell, Search, Menu, LogOut, Wallet, Flame } from "lucide-react";
+import { Bell, Search, Menu, LogOut, Wallet } from "lucide-react";
 import { useMemo } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { TokenIcon } from "@/components/ui/TokenIcon";
@@ -81,12 +81,6 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="hidden md:flex items-center gap-3 sm:gap-4 font-mono text-xs">
         {isAuthenticated ? (
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Streak Flame Pill */}
-            <div className="tabular flex h-8 items-center gap-1.5 rounded-full border border-[#1B2536] bg-[#0B111C] px-2.5 text-xs font-medium text-[#8A948E] hover:border-[#2F6FFF]/40 transition-colors">
-              <Flame className="w-3.5 h-3.5 text-[#4F8BFF]" />
-              <span className="text-[#F5F7FA] font-bold">3</span>
-            </div>
-
             {/* Arc Network Status Badge with RPC Health */}
             <NetworkStatusBadge />
 

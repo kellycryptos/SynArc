@@ -54,3 +54,4 @@ gitbook-export/
 export/
 *.export/
 tsconfig.tsbuildinfo
+.edge-debug-profile/

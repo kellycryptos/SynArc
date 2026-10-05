@@ -78,7 +78,7 @@ export default function DashboardOverview() {
       {/* Auth-aware header: banner + Create Proposal button */}
       <DashboardHeader />
 
-      {/* Governance Spotlight 3-Card Hero Row */}
+      {/* Governance Spotlight Hero Row */}
       <SectionErrorBoundary sectionName="Hero Spotlight">
         <GovernanceHeroSection />
       </SectionErrorBoundary>
