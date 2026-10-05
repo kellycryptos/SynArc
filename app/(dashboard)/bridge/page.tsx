@@ -517,6 +517,12 @@ export default function BridgePage() {
     setAmount(fromBalance);
   };
 
+  const hasInsufficientArcGas = useMemo(() => {
+    if (direction !== "in" || !isAuthenticated) return false;
+    const arcGas = parseFloat(arcUSDCBalance || "0");
+    return arcGas < 0.01;
+  }, [direction, isAuthenticated, arcUSDCBalance]);
+
   const handleBridgeConfirm = async () => {
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) {
@@ -535,6 +541,20 @@ export default function BridgePage() {
       setErrorMessage("Please connect your wallet to bridge.");
       setProgressState("error");
       return;
+    }
+
+    // Pre-flight check: Arc uses USDC as its native gas token.
+    // When bridging into Arc, the destination wallet MUST hold sufficient native USDC
+    // to pay gas for the destination mint (receiveMessage) transaction.
+    if (direction === "in") {
+      const arcGas = parseFloat(arcUSDCBalance || "0");
+      if (arcGas < 0.01) {
+        setErrorMessage(
+          `Insufficient Arc gas: Arc uses USDC as its native gas token. Your wallet on ${activeArcChain.name} currently holds ${arcGas.toFixed(4)} USDC, but requires at least 0.01 USDC to pay gas for claiming/minting this transfer.`
+        );
+        setProgressState("error");
+        return;
+      }
     }
 
     setErrorMessage("");
@@ -898,6 +918,19 @@ export default function BridgePage() {
                       )}
                     </div>
 
+                    {/* Arc Gas Pre-flight Warning Banner */}
+                    {hasInsufficientArcGas && (
+                      <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs flex items-start gap-2.5">
+                        <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                        <div className="space-y-1">
+                          <p className="font-semibold text-amber-200">Arc Gas Notice: USDC is the Native Gas Token</p>
+                          <p className="text-[11px] text-amber-300/80 leading-relaxed">
+                            Arc uses native USDC to pay network transaction gas. Your wallet on {activeArcChain.name} currently holds {parseFloat(arcUSDCBalance || "0").toFixed(4)} USDC, but requires at least 0.01 USDC to pay gas for claiming and minting this transfer on Arc.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Action Button */}
                     {!isAuthenticated ? (
                       <button
@@ -937,12 +970,14 @@ export default function BridgePage() {
                       <button
                         type="button"
                         onClick={handleBridgeConfirm}
-                        disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(fromBalance)}
+                        disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(fromBalance) || hasInsufficientArcGas}
                         className="w-full py-4 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary-hover transition-all shadow-[0_0_24px_rgba(124,58,237,0.25)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none active:scale-[0.99]"
                       >
-                        {parseFloat(amount) > parseFloat(fromBalance) 
-                          ? "Insufficient Balance" 
-                          : `Bridge USDC to ${toChain.name}`
+                        {hasInsufficientArcGas
+                          ? "Insufficient Arc Gas (min 0.01 USDC on Arc)"
+                          : parseFloat(amount) > parseFloat(fromBalance) 
+                            ? "Insufficient Balance" 
+                            : `Bridge USDC to ${toChain.name}`
                         }
                       </button>
                     )}

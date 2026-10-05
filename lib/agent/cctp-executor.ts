@@ -45,12 +45,14 @@ export class CCTPExecutor {
   private ethWalletClient: any
   private ethPublicClient: any
   private account: any
+  private privateKey: `0x${string}`
 
   // Backward compatibility aliases
   public get sepoliaWalletClient() { return this.ethWalletClient }
   public get sepoliaPublicClient() { return this.ethPublicClient }
 
   constructor(privateKey: `0x${string}`) {
+    this.privateKey = privateKey
     this.account = privateKeyToAccount(privateKey)
     const arcTransport = fallback(
       ARC_RPC_URLS.map(url => http(url, { timeout: 10000 }))
@@ -349,6 +351,52 @@ export class CCTPExecutor {
     const mintRecipient = `0x000000000000000000000000${recipientAddress.slice(2)}` as `0x${string}`
     const sourceChainName = CIRCLE_ETH_CONFIG.name
     const destChainName = IS_MAINNET ? 'Arc' : 'Arc Testnet'
+
+    // 0. Pre-flight check: Arc uses USDC as its native gas token.
+    // Confirm recipient holds enough Arc native USDC to pay gas for the destination mint.
+    const arcGasBalance = await this.arcPublicClient.getBalance({ address: recipientAddress }).catch(() => 0n)
+    const MIN_ARC_GAS = 10_000_000_000_000_000n // 0.01 USDC (18 decimals)
+    if (arcGasBalance < MIN_ARC_GAS) {
+      const formatted = (Number(arcGasBalance) / 1e18).toFixed(4)
+      throw new Error(`[CCTP Pre-flight] Insufficient Arc gas: Destination wallet ${recipientAddress} has ${formatted} USDC on Arc. At least 0.01 USDC is required to pay destination mint gas fees on Arc.`)
+    }
+
+    // Try Circle BridgeKit first
+    try {
+      const { BridgeKit } = await import('@circle-fin/bridge-kit')
+      const { createViemAdapterFromPrivateKey } = await import('@circle-fin/adapter-viem-v2')
+      const adapter = createViemAdapterFromPrivateKey({ privateKey: this.privateKey })
+      const kit = new BridgeKit()
+      const fromChain = IS_MAINNET ? 'Ethereum' : 'Ethereum_Sepolia'
+      const toChain = IS_MAINNET ? 'Arc' : 'Arc_Testnet'
+
+      if (onProgress) onProgress(`[BridgeKit] Initiating bridge of ${amountUSDC} USDC from ${fromChain} to ${toChain}...`)
+
+      const result = await kit.bridge({
+        from: { adapter, chain: fromChain },
+        to: { adapter, chain: toChain, recipientAddress },
+        amount: amountUSDC.toString(),
+        config: { transferSpeed: 'FAST' }
+      })
+
+      const burnStep = result?.steps?.find((s: any) => s.name === 'burn' || s.name === 'depositForBurn')
+      const mintStep = result?.steps?.find((s: any) => s.name === 'mint')
+
+      if (onProgress) onProgress(`[BridgeKit Success] Bridged ${amountUSDC} USDC to ${destChainName}. Burn Tx: ${burnStep?.txHash}, Mint Tx: ${mintStep?.txHash}`)
+
+      return {
+        burnTxHash: burnStep?.txHash || '',
+        mintTxHash: mintStep?.txHash || '',
+        messageHash: ((burnStep?.data as any)?.messageHash || '') as string,
+        attestationUrl: '',
+        attestationSignature: '',
+        status: 'success',
+        amount: amountUSDC,
+        destinationChain: destChainName,
+      }
+    } catch (kitErr) {
+      console.warn('[CCTPExecutor] BridgeKit failed, falling back to direct contract flow:', kitErr)
+    }
 
     const msgText = `[CCTP Step 1/3] Approving TokenMessenger to spend ${amountUSDC} USDC on ${sourceChainName}...`
     console.log(`[CCTPExecutor] ${msgText}`)

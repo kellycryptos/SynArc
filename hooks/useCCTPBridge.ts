@@ -563,6 +563,31 @@ async function sendBridgeTx(
   return await walletClient.sendTransaction(txParams);
 }
 
+// Check if an address has enough native USDC on Arc to pay for minting gas
+export async function checkArcGasBalance(
+  address: string,
+  isTestnet: boolean
+): Promise<{ hasEnoughGas: boolean; balanceWei: bigint; balanceFormatted: string }> {
+  try {
+    const rpcUrls = isTestnet ? ARC_TESTNET_RPC_URLS : ARC_MAINNET_RPC_URLS;
+    const client = createPublicClient({
+      transport: fallback(rpcUrls.map(u => http(u, { timeout: 10_000, retryCount: 2 })))
+    });
+    const balanceWei = await client.getBalance({ address: address as `0x${string}` });
+    // Require at least 0.01 USDC (10^16 wei on Arc where native token has 18 decimals)
+    const MIN_GAS_WEI = 10_000_000_000_000_000n; // 0.01 USDC
+    const balanceFormatted = (Number(balanceWei) / 1e18).toFixed(4);
+    return {
+      hasEnoughGas: balanceWei >= MIN_GAS_WEI,
+      balanceWei,
+      balanceFormatted
+    };
+  } catch (err) {
+    console.warn("[CCTP] Failed to check Arc gas balance:", err);
+    return { hasEnoughGas: true, balanceWei: 0n, balanceFormatted: "0.00" };
+  }
+}
+
 // ============================================================
 // Hook
 // ============================================================
@@ -635,7 +660,22 @@ export function useCCTPBridge() {
       return;
     }
 
-    // Try Circle Bridge Kit first (fast path)
+    // Pre-flight check: Arc uses USDC as its native gas token (18 decimals).
+    // When bridging into Arc, the destination wallet MUST hold enough Arc-side USDC
+    // to pay for the destination mint (receiveMessage) transaction.
+    if (direction === "in") {
+      const gasCheck = await checkArcGasBalance(activeWallet.address, isTestnetRoute);
+      if (!gasCheck.hasEnoughGas) {
+        setState(prev => ({
+          ...prev,
+          status: "error",
+          errorMessage: `Insufficient Arc Gas: Destination wallet has ${gasCheck.balanceFormatted} USDC on ${arcConfig.name}. At least 0.01 USDC is required to pay destination mint gas fees.`
+        }));
+        return;
+      }
+    }
+
+    // Try Circle Bridge Kit first (primary path)
     try {
       await bridgeWithKit(
         activeWallet,
@@ -646,19 +686,35 @@ export function useCCTPBridge() {
       );
       return;
     } catch (kitErr: any) {
-      console.warn("[CCTP] Bridge Kit failed, falling back to manual flow:", kitErr?.message);
-      // Don't surface Kit errors to user if we can retry manually
+      console.warn("[CCTP] Bridge Kit failed:", kitErr?.message);
+      const errMsg = (kitErr?.message || "").toLowerCase();
+      // If user rejected in wallet, abort without retrying in manual flow
       if (
-        kitErr?.message?.includes("unsupported") ||
-        kitErr?.message?.includes("adapter") ||
-        kitErr?.message?.includes("not installed")
+        errMsg.includes("user rejected") ||
+        errMsg.includes("user denied") ||
+        errMsg.includes("user_rejected") ||
+        errMsg.includes("cancelled") ||
+        errMsg.includes("rejected the request") ||
+        kitErr?.code === 4001
       ) {
-        console.info("[CCTP] Adapter unavailable — using manual CCTP flow");
+        setState(prev => ({
+          ...prev,
+          status: "error",
+          errorMessage: "Transaction rejected by user."
+        }));
+        return;
       }
+      if (errMsg.includes("insufficient") && (errMsg.includes("gas") || errMsg.includes("funds"))) {
+        setState(prev => ({
+          ...prev,
+          status: "error",
+          errorMessage: kitErr.message || "Insufficient funds for transaction gas."
+        }));
+        return;
+      }
+      console.info("[CCTP] Fallback: attempting manual CCTP flow...");
+      await bridgeManual(activeWallet, chainConfig, arcConfig, irisApiUrl, irisFeeUrl, amountString, direction);
     }
-
-    // Manual CCTP fallback
-    await bridgeManual(activeWallet, chainConfig, arcConfig, irisApiUrl, irisFeeUrl, amountString, direction);
   };
 
   // -------------------------------------------------------
@@ -786,15 +842,16 @@ export function useCCTPBridge() {
     }
 
     const mintStep = result?.steps?.find((s: any) => s.name === "mint");
-    const burnStep = result?.steps?.find((s: any) => s.name === "depositForBurn");
+    const burnStep = result?.steps?.find((s: any) => s.name === "burn" || s.name === "depositForBurn");
+    const destChainName = direction === "in" ? arcConfig.name : chainConfig.name;
 
     setState(prev => ({
       ...prev,
       status: "success",
       progress: 100,
-      txHash: mintStep?.txHash || "",
+      txHash: mintStep?.txHash || prev.txHash,
       burnTxHash: burnStep?.txHash || prev.burnTxHash,
-      stepDetail: `Bridge complete! Funds arrived on ${arcConfig.name}.`
+      stepDetail: `Bridge complete! Funds arrived on ${destChainName}.`
     }));
 
     console.log("[Kit] Bridge complete:", result);

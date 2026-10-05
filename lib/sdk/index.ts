@@ -14,8 +14,10 @@ export class SynArcClient {
   public publicClient: any;
   public walletClient: any;
   public account: any;
+  public privateKey?: string;
 
   constructor(config: SDKConfig) {
+    this.privateKey = config.privateKey;
     const rpcUrls = config.rpcUrl ? [config.rpcUrl] : ARC_RPC_URLS;
     const transport = fallback(rpcUrls.map((url) => http(url)));
     const targetChain = (config.network === "arc-mainnet" || IS_MAINNET) ? arcMainnet : arcTestnet;
@@ -323,7 +325,41 @@ export class SynArcClient {
         });
         await this.publicClient.waitForTransactionReceipt({ hash: execTx });
 
-        // 2. Approve TokenMessenger
+        // 2. Try Circle BridgeKit for the cross-chain rebalance
+        if (this.privateKey) {
+          try {
+            const { BridgeKit } = await import("@circle-fin/bridge-kit");
+            const { createViemAdapterFromPrivateKey } = await import("@circle-fin/adapter-viem-v2");
+            const formattedKey = this.privateKey.startsWith("0x") ? (this.privateKey as `0x${string}`) : (`0x${this.privateKey}` as `0x${string}`);
+            const adapter = createViemAdapterFromPrivateKey({ privateKey: formattedKey });
+            const kit = new BridgeKit();
+            const fromChain = IS_MAINNET ? "Arc" : "Arc_Testnet";
+            const toChain = IS_MAINNET ? "Ethereum" : "Ethereum_Sepolia";
+
+            console.log(`[SynArc SDK] Executing BridgeKit transfer of ${params.amount} USDC from ${fromChain} to ${toChain}...`);
+            const bridgeResult = await kit.bridge({
+              from: { adapter, chain: fromChain },
+              to: { adapter, chain: toChain, recipientAddress: params.recipient },
+              amount: params.amount.toString(),
+              config: { transferSpeed: "FAST" }
+            });
+
+            const burnStep = bridgeResult?.steps?.find((s: any) => s.name === "burn" || s.name === "depositForBurn");
+            const mintStep = bridgeResult?.steps?.find((s: any) => s.name === "mint");
+
+            return {
+              proposalTx: execTx,
+              burnTx: burnStep?.txHash || "",
+              mintTx: mintStep?.txHash,
+              attestation: "",
+              status: "success",
+            };
+          } catch (kitErr) {
+            console.warn("[SynArc SDK] BridgeKit rebalance attempt failed, falling back to direct contract flow:", kitErr);
+          }
+        }
+
+        // 3. Fallback: Manual CCTP flow
         const amountRaw = parseUnits(params.amount.toString(), 6);
         const appTx = await this.walletClient.writeContract({
           address: usdcAddress,

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useCCTPBridge } from "@/hooks/useCCTPBridge";
+import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useSwitchChain } from "wagmi";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
@@ -94,6 +95,8 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   const [balanceLoading, setBalanceLoading] = useState(false);
 
   const { state: bridgeState, bridgeUSDC, resetState } = useCCTPBridge();
+  const { balance: arcUSDCBalance } = useUSDCBalance(walletAddress);
+  const hasInsufficientArcGas = isAuthenticated && parseFloat(arcUSDCBalance || "0") < 0.01;
 
   const [switchingNetwork, setSwitchingNetwork] = useState(false);
   const switchChainResult = useSwitchChain();
@@ -238,6 +241,7 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) return;
     if (amountNum > parseFloat(sourceBalance)) return;
+    if (hasInsufficientArcGas) return;
     await bridgeUSDC(selectedChain.id as any, amount);
   };
 
@@ -473,6 +477,19 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                 </div>
               </div>
 
+              {/* Arc Gas Pre-flight Warning Banner */}
+              {hasInsufficientArcGas && (
+                <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-semibold text-amber-200">Arc Gas Notice: USDC is the Native Gas Token</p>
+                    <p className="text-[11px] text-amber-300/80 leading-relaxed">
+                      Arc uses native USDC to pay network gas. Your wallet on {arcNetworkLabel} currently holds {parseFloat(arcUSDCBalance || "0").toFixed(4)} USDC, but requires at least 0.01 USDC to pay gas for claiming and minting this transfer on Arc.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Actions */}
               <div className="flex gap-4 pt-2">
                 <button
@@ -487,10 +504,12 @@ export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   <button
                     type="button"
                     onClick={handleBridgeConfirm}
-                    disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(sourceBalance)}
+                    disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(sourceBalance) || hasInsufficientArcGas}
                     className="flex-1 py-3 bg-accent-purple text-white-keep font-bold text-sm rounded-xl hover:bg-accent-purple/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span className="text-white-keep">Bridge USDC</span>
+                    <span className="text-white-keep">
+                      {hasInsufficientArcGas ? "Insufficient Arc Gas (min 0.01 USDC)" : "Bridge USDC"}
+                    </span>
                   </button>
                 ) : (
                   <button
