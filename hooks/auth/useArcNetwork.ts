@@ -8,7 +8,8 @@ import {
   ARC_CHAIN, 
   CONTRACTS_MAINNET, 
   CONTRACTS_TESTNET,
-  setActiveNetwork 
+  setActiveNetwork,
+  getActiveNetwork 
 } from '@/lib/arc-config';
 import { useDeferredWeb3 } from '@/providers/DeferredWeb3Provider';
 import { useState, useEffect, useCallback } from 'react';
@@ -43,25 +44,49 @@ export function useArcNetwork(): ArcNetworkState {
   const deferred = useDeferredWeb3();
 
   if (deferred && !deferred.isMounted) {
+    const net = getActiveNetwork();
+    const isTestnet = net === 'testnet';
+    const chainId = isTestnet ? ARC_TESTNET_CHAIN_ID : ARC_MAINNET_CHAIN_ID;
+    const arcChain = isTestnet ? arcTestnet : arcMainnet;
+    const contracts = isTestnet ? CONTRACTS_TESTNET : CONTRACTS_MAINNET;
+    const explorerUrl = isTestnet ? 'https://testnet.arcscan.app' : 'https://explorer.arc.io';
+    const faucetUrl = isTestnet ? 'https://faucet.circle.com' : undefined;
+
     return {
-      chainId: ARC_MAINNET_CHAIN_ID,
-      currentChainId: ARC_MAINNET_CHAIN_ID,
-      isArcTestnet: false,
-      isArcMainnet: true,
+      chainId,
+      currentChainId: chainId,
+      isArcTestnet: isTestnet,
+      isArcMainnet: !isTestnet,
       isArc: true,
       isUnsupported: false,
       isSwitching: false,
-      switchNetwork: async () => {},
-      switchToMainnet: async () => {},
-      switchToTestnet: async () => {},
-      arcChain: arcMainnet,
+      switchNetwork: async (targetChainId?: number) => {
+        const target = (targetChainId === ARC_TESTNET_CHAIN_ID || (!targetChainId && !isTestnet)) ? 'testnet' : 'mainnet';
+        setActiveNetwork(target);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork: target } }));
+        }
+      },
+      switchToMainnet: async () => {
+        setActiveNetwork('mainnet');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork: 'mainnet' } }));
+        }
+      },
+      switchToTestnet: async () => {
+        setActiveNetwork('testnet');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork: 'testnet' } }));
+        }
+      },
+      arcChain,
       targetChainId: ARC_MAINNET_CHAIN_ID,
-      networkName: 'Arc',
-      activeNetwork: 'mainnet',
-      contractSetLabel: 'mainnet',
-      contracts: CONTRACTS_MAINNET,
-      explorerUrl: 'https://explorer.arc.io',
-      faucetUrl: undefined,
+      networkName: isTestnet ? 'Arc Testnet' : 'Arc',
+      activeNetwork: net,
+      contractSetLabel: net,
+      contracts,
+      explorerUrl,
+      faucetUrl,
       isConnected: false,
     };
   }

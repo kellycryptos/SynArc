@@ -79,10 +79,11 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
       
       {/* Right side (Desktop Only) */}
       <div className="hidden md:flex items-center gap-3 sm:gap-4 font-mono text-xs">
+        {/* Arc Network Status Badge with RPC Health */}
+        <NetworkStatusBadge />
+
         {isAuthenticated ? (
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Arc Network Status Badge with RPC Health */}
-            <NetworkStatusBadge />
 
             {/* USDC Balance Display */}
             {loading ? (

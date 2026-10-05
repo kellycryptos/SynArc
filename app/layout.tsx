@@ -64,6 +64,7 @@ export default function RootLayout({
         {/* Blocking script — must run before first paint to avoid theme flash on refresh.
             Reads localStorage synchronously and applies the theme class to <html>. */}
         <script
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('synarc-theme');document.documentElement.classList.add(t==='light'?'light':'dark')}catch(e){document.documentElement.classList.add('dark')}})();`,
           }}
