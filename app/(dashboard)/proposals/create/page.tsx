@@ -9,7 +9,7 @@ import { useToken } from "@/hooks/useToken";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown, Wallet, Check } from "lucide-react";
+import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown, Wallet, Check, ExternalLink } from "lucide-react";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { BrowserProvider, Interface } from "ethers";
 import { parseArcError } from "@/lib/utils";
@@ -25,7 +25,7 @@ import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 export default function CreateProposalPage() {
   const router = useRouter();
   const { walletAddress, isAuthenticated, login, isCircle } = useAuth();
-  const { activeNetwork, isArcMainnet } = useArcNetwork();
+  const { activeNetwork, isArcMainnet, explorerUrl } = useArcNetwork();
   // Safe: Circle wallet does not register with Privy wallets list
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
@@ -33,6 +33,9 @@ export default function CreateProposalPage() {
   const { votingPower, loading: tokenLoading } = useToken(walletAddress);
   const { balance: usdcBalance } = useUSDCBalance();
 
+  type SubmitStage = "idle" | "wallet_prompt" | "confirming_chain" | "success";
+  const [submitStage, setSubmitStage] = useState<SubmitStage>("idle");
+  const [broadcastTxHash, setBroadcastTxHash] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successProposalId, setSuccessProposalId] = useState<string | null>(null);
   const [error, setError] = useState<React.ReactNode | null>(null);
@@ -269,6 +272,7 @@ export default function CreateProposalPage() {
         console.warn('Propose gas estimation failed:', e)
       }
 
+      setSubmitStage("wallet_prompt");
       const txHash = await walletClient.writeContract({
         address: governorAddress,
         abi: GovernorABI,
@@ -277,10 +281,14 @@ export default function CreateProposalPage() {
         account: address,
         gas: estimatedProposeGas,
         ...gasParams,
-      })
+      });
+
+      setBroadcastTxHash(txHash);
+      setSubmitStage("confirming_chain");
 
       // Wait for on-chain confirmation and parse the actual proposalId from logs
       const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 60_000 });
+      setSubmitStage("success");
 
       let finalProposalId = `SIP-${txHash.slice(0, 6)}`; // fallback
       try {
@@ -355,6 +363,8 @@ export default function CreateProposalPage() {
         router.push(`/proposals/${finalProposalId}`);
       }, 3000);
     } catch (err: any) {
+      setSubmitStage("idle");
+      setBroadcastTxHash(null);
       const parsedMsg = parseArcError(err);
       setError(
         <div className="flex flex-col gap-2">
@@ -787,6 +797,38 @@ export default function CreateProposalPage() {
               )}
             </div>
 
+            {submitStage === "wallet_prompt" && (
+              <div className="p-4 bg-primary/10 border border-primary/30 rounded-xl flex items-center gap-3 text-xs text-text-primary mb-4 animate-fade-in">
+                <Loader2 className="w-4.5 h-4.5 text-primary animate-spin shrink-0" />
+                <div>
+                  <span className="font-bold text-primary">Awaiting Wallet Signature: </span>
+                  Please review and approve the proposal creation transaction in your connected wallet.
+                </div>
+              </div>
+            )}
+
+            {submitStage === "confirming_chain" && (
+              <div className="p-4 bg-accent-purple/10 border border-accent-purple/30 rounded-xl flex items-center justify-between gap-3 text-xs text-text-primary mb-4 animate-fade-in">
+                <div className="flex items-center gap-2.5">
+                  <Loader2 className="w-4.5 h-4.5 text-accent-purple animate-spin shrink-0" />
+                  <div>
+                    <span className="font-bold text-purple-400">Confirming on Arc: </span>
+                    Transaction broadcast! Waiting for block inclusion...
+                  </div>
+                </div>
+                {broadcastTxHash && (
+                  <a
+                    href={`${explorerUrl}/tx/${broadcastTxHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-primary hover:underline font-mono text-[11px] shrink-0 font-bold"
+                  >
+                    View Tx <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            )}
+
             <div className="pt-6 border-t border-border-subtle flex justify-end">
               {!isAuthenticated ? (
                 <button
@@ -803,7 +845,17 @@ export default function CreateProposalPage() {
                   disabled={isSubmitting || (!tokenLoading && !hasEnoughBalance)}
                   className="px-6 py-3 rounded-xl bg-accent-purple text-white-keep font-bold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  {isSubmitting ? (
+                  {submitStage === "wallet_prompt" ? (
+                    <>
+                      <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                      Confirm in Wallet...
+                    </>
+                  ) : submitStage === "confirming_chain" ? (
+                    <>
+                      <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                      Mining on Arc...
+                    </>
+                  ) : isSubmitting ? (
                     <>
                       <Loader2 className="w-4.5 h-4.5 animate-spin" />
                       Deploying Proposal...

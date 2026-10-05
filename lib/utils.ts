@@ -21,8 +21,35 @@ export function parseArcError(err: any): string {
     return "Insufficient native USDC for gas. Arc is a stablecoin-native network where transaction fees are paid directly in USDC. Please visit the Faucet to claim testnet gas tokens.";
   }
   
-  if (errMsg.includes("user rejected") || errMsg.includes("action rejected") || errMsg.includes("rejected the request") || errMsg.includes("user denied")) {
+  if (
+    errMsg.includes("user rejected") ||
+    errMsg.includes("action rejected") ||
+    errMsg.includes("rejected the request") ||
+    errMsg.includes("user denied") ||
+    errMsg.includes("user_rejected") ||
+    errMsg.includes("cancelled") ||
+    err?.code === 4001
+  ) {
     return "Transaction signature request was cancelled or rejected in your wallet.";
+  }
+
+  if (
+    errMsg.includes("wrong network") ||
+    errMsg.includes("chain mismatch") ||
+    errMsg.includes("unrecognized chain") ||
+    errMsg.includes("switch chain") ||
+    errMsg.includes("unsupported chain") ||
+    err?.code === 4902
+  ) {
+    return "Wrong network detected. Please switch your connected wallet to Arc.";
+  }
+
+  if (errMsg.includes("vote already cast") || errMsg.includes("already voted")) {
+    return "You have already cast a vote on this proposal.";
+  }
+
+  if (errMsg.includes("voting is closed") || errMsg.includes("proposal not active") || errMsg.includes("proposal closed")) {
+    return "Voting has ended or is not active for this proposal.";
   }
   
   if (errMsg.includes("capacity exceeded") || errMsg.includes("rate limit") || errMsg.includes("429") || errMsg.includes("too many requests") || errMsg.includes("unauthorized")) {

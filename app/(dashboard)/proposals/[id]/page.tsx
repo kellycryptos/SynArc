@@ -42,7 +42,8 @@ import {
   Info,
   Loader2,
   Wallet,
-  Zap
+  Zap,
+  ExternalLink
 } from "lucide-react";
 
 export default function ProposalDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -187,6 +188,10 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     return totalDisplayPower;
   }, [walletAddress, totalDisplayPower]);
   const [voting, setVoting] = useState(false);
+  type VoteStage = "idle" | "wallet_prompt" | "confirming_chain";
+  const [voteStage, setVoteStage] = useState<VoteStage>("idle");
+  const [activeVoteType, setActiveVoteType] = useState<number | null>(null);
+  const [isExecuting, setIsExecuting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [votingError, setVotingError] = useState<string | null>(null);
@@ -363,6 +368,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     if (isSimulated) {
       try {
         setVoting(true);
+        setActiveVoteType(supportValue);
+        setVoteStage("confirming_chain");
         setVotingError(null);
         setTxHash(null);
         setStatus('Confirming vote on Arc blockchain...');
@@ -400,17 +407,23 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         setHasUserVotedOnChain(true);
         setOptimisticHasVoted(true);
         setVoting(false);
+        setVoteStage("idle");
+        setActiveVoteType(null);
         return;
       } catch (err: any) {
         setVoting(false);
-        setVotingError(err);
-        toast.error(err.message || 'Failed to cast vote');
+        setVoteStage("idle");
+        setActiveVoteType(null);
+        setVotingError(err?.message || "Failed to cast vote");
+        toast.error(err?.message || 'Failed to cast vote');
         return;
       }
     }
 
     try {
       setVoting(true);
+      setActiveVoteType(supportValue);
+      setVoteStage("wallet_prompt");
       setVotingError(null);
       setTxHash(null);
       setStatus('Confirming vote on Arc blockchain...');
@@ -493,7 +506,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         console.warn('Vote gas estimation failed:', e)
       }
 
-      setStatus('Sending transaction...');
+      setVoteStage("wallet_prompt");
+      setStatus('Please sign the vote transaction in your wallet...');
       const voteTx = await walletClient.writeContract({
         address: CONTRACTS.governor,
         abi: GOVERNOR_ABI,
@@ -502,10 +516,11 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         account: address,
         gas: estimatedVoteGas,
         ...gasParams,
-      })
+      });
 
       setTxHash(voteTx);
-      setStatus('⏳ Waiting for confirmation...');
+      setVoteStage("confirming_chain");
+      setStatus('Waiting for confirmation on Arc...');
 
       await waitForTransaction(publicClient, voteTx);
 
@@ -531,6 +546,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       toast.error(parsedMsg);
     } finally {
       setVoting(false);
+      setVoteStage("idle");
+      setActiveVoteType(null);
     }
   };
 
@@ -561,7 +578,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     const isSimulated = proposal.id.includes("-") && isNaN(Number(proposal.id.replace("SIP-", "")));
     if (isSimulated) {
       try {
-        toast.success("Initiating proposal execution...");
+        setIsExecuting(true);
+        toast.loading("Initiating proposal execution...", { id: "exec-prop" });
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         if (typeof window !== "undefined") {
@@ -585,20 +603,24 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         }
 
         // Force store re-initialization (bypasses staleness cache)
-        useGovernanceStore.getState().initializeStore(undefined, true);
-        toast.success("Proposal executed successfully!");
+        await useGovernanceStore.getState().initializeStore(undefined, true);
+        toast.success("Proposal executed successfully!", { id: "exec-prop" });
       } catch (err: any) {
-        toast.error(err.message || "Failed to execute proposal");
+        toast.error(err?.message || "Failed to execute proposal", { id: "exec-prop" });
+      } finally {
+        setIsExecuting(false);
       }
       return;
     }
 
     try {
+      setIsExecuting(true);
       const activeWallet = selectActiveWallet(wallets, walletAddress);
       if (!activeWallet) {
-        throw new Error("Active wallet not found");
+        throw new Error("Active wallet not found. Please connect your wallet.");
       }
 
+      toast.loading("Please approve execution in your wallet...", { id: "exec-prop" });
       // Enforce active Arc chain before transaction with robust switching
       const ethereumProvider = await enforceChain(activeWallet, ARC_CHAIN.id);
       const browserProvider = new BrowserProvider(ethereumProvider, {
@@ -607,9 +629,16 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       });
       const signer = await browserProvider.getSigner(activeWallet.address);
 
+      toast.loading("Executing proposal on Arc... Waiting for block confirmation...", { id: "exec-prop" });
       await executeProposal(proposal.id, signer);
-    } catch (err) {
+      toast.success("Proposal executed successfully!", { id: "exec-prop" });
+      await initializeStore(undefined, true);
+    } catch (err: any) {
       console.error("Proposal execution failed", err);
+      const parsed = parseArcError(err);
+      toast.error(parsed || "Failed to execute proposal", { id: "exec-prop" });
+    } finally {
+      setIsExecuting(false);
     }
   };
 
@@ -648,10 +677,20 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
             {(isProposalPassed || proposal.status === "Active") && !isProposalActive && proposal.status !== "Executed" && (
               <button 
                 onClick={handleExecute}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-success text-black font-bold text-sm hover:bg-success/90 transition-all shadow-[0_0_15px_rgba(34,197,94,0.3)] shrink-0 cursor-pointer"
+                disabled={isExecuting}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-success text-black font-bold text-sm hover:bg-success/90 transition-all shadow-[0_0_15px_rgba(34,197,94,0.3)] shrink-0 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <Play className="w-4 h-4 fill-current" />
-                Execute Proposal
+                {isExecuting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-black" />
+                    Executing Proposal...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 fill-current" />
+                    Execute Proposal
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -922,45 +961,70 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                         <button
                           onClick={() => handleCastVote(1)}
                           disabled={!hasVotingPower || voting}
-                          className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-success/10 hover:border-success/30 hover:text-success text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                          className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-success/10 hover:border-success/30 hover:text-success text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <ThumbsUp className="w-4 h-4" />
-                          {voting ? 'Submitting...' : 'For'}
+                          {voting && activeVoteType === 1 ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-success" />
+                          ) : (
+                            <ThumbsUp className="w-4 h-4" />
+                          )}
+                          {voting && activeVoteType === 1
+                            ? (voteStage === "wallet_prompt" ? "Sign..." : "Mining...")
+                            : "For"}
                         </button>
                         <button
                           onClick={() => handleCastVote(0)}
                           disabled={!hasVotingPower || voting}
-                          className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-danger/10 hover:border-danger/30 hover:text-danger text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                          className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-danger/10 hover:border-danger/30 hover:text-danger text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <ThumbsDown className="w-4 h-4" />
-                          {voting ? 'Submitting...' : 'Against'}
+                          {voting && activeVoteType === 0 ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-danger" />
+                          ) : (
+                            <ThumbsDown className="w-4 h-4" />
+                          )}
+                          {voting && activeVoteType === 0
+                            ? (voteStage === "wallet_prompt" ? "Sign..." : "Mining...")
+                            : "Against"}
                         </button>
                         <button
                           onClick={() => handleCastVote(2)}
                           disabled={!hasVotingPower || voting}
-                          className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-surface-elevated hover:text-foreground text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                          className="py-3 rounded-xl border border-border-thin bg-surface hover:bg-surface-elevated hover:text-foreground text-xs font-extrabold transition-all flex flex-col items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <CircleDot className="w-4 h-4" />
-                          {voting ? 'Submitting...' : 'Abstain'}
+                          {voting && activeVoteType === 2 ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-text-primary" />
+                          ) : (
+                            <CircleDot className="w-4 h-4" />
+                          )}
+                          {voting && activeVoteType === 2
+                            ? (voteStage === "wallet_prompt" ? "Sign..." : "Mining...")
+                            : "Abstain"}
                         </button>
                       </div>
 
                       {voting && (
-                        <div className="p-3 bg-primary/10 border border-primary/20 rounded-xl text-xs text-purple-300 animate-pulse flex items-center gap-2 justify-center">
-                          <Loader2 className="w-4.5 h-4.5 animate-spin" />
-                          <span>{status || 'Submitting vote on-chain...'}</span>
+                        <div className="p-3.5 bg-primary/10 border border-primary/30 rounded-xl text-xs text-text-primary flex flex-col gap-1.5 animate-fade-in">
+                          <div className="flex items-center gap-2 font-bold text-primary">
+                            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                            <span>{voteStage === "wallet_prompt" ? "Awaiting Wallet Signature" : "Confirming on Arc"}</span>
+                          </div>
+                          <p className="text-[11px] text-text-secondary leading-snug">
+                            {voteStage === "wallet_prompt"
+                              ? "Please review and confirm the vote transaction in your connected wallet..."
+                              : "Transaction broadcast. Waiting for block confirmation on Arc..."}
+                          </p>
                         </div>
                       )}
 
                       {txHash && (
-                        <div className="text-center">
+                        <div className="text-center pt-1">
                           <a 
                             href={`${explorerUrl}/tx/${txHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-bold"
                           >
-                            View on {isArcMainnet ? "Arc Explorer" : "ArcScan"}
+                            View on {isArcMainnet ? "Arc Explorer" : "ArcScan"} <ExternalLink className="w-3 h-3" />
                           </a>
                         </div>
                       )}
