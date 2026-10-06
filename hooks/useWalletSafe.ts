@@ -5,7 +5,7 @@ import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useState, useEffect } from "react";
 import { createPublicClient, http, parseAbi } from "viem";
-import { ARC_RPC_URLS, ARC_CHAIN } from "@/lib/arc-config";
+import { ARC_RPC_URLS, ARC_CHAIN, getMainnetProxyUrl, getTestnetProxyUrl } from "@/lib/arc-config";
 import { selectActiveWallet, enforceChain } from "@/lib/tx-helper";
 import { toast } from "react-hot-toast";
 
@@ -97,7 +97,7 @@ export function useWalletSafe() {
         }
 
         // Fallback: public contract read
-        const rpcUrl = ARC_RPC_URLS[0] || (isArcMainnet ? 'https://rpc.mainnet.arc.io' : 'https://rpc.testnet.arc.io');
+        const rpcUrl = ARC_RPC_URLS[0] || (isArcMainnet ? getMainnetProxyUrl() : getTestnetProxyUrl());
         const client = createPublicClient({
           transport: http(rpcUrl)
         });

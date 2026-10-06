@@ -8,13 +8,15 @@ import {
   arcMainnet,
   ARC_CHAIN,
   ACTIVE_NETWORK,
+  getMainnetProxyUrl,
+  getTestnetProxyUrl,
 } from "@/lib/arc-config";
 import { ARC_MAINNET_NETWORK, ARC_TESTNET_NETWORK } from "@/lib/rpc/config";
 
 export { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_RPC_URLS, arcTestnet, arcMainnet, ARC_CHAIN };
 
 // Primary RPC URL — first in the ACTIVE_RPC_URLS priority array (Arc official on mainnet)
-export const ARC_RPC_URL = ARC_RPC_URLS[0] || (ACTIVE_NETWORK === 'mainnet' ? 'https://rpc.mainnet.arc.io' : 'https://rpc.testnet.arc.io');
+export const ARC_RPC_URL = ARC_RPC_URLS[0] || (ACTIVE_NETWORK === 'mainnet' ? getMainnetProxyUrl() : getTestnetProxyUrl());
 // Active-network RPC array (respects ACTIVE_NETWORK: mainnet or testnet)
 const ACTIVE_RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS;
 
@@ -53,9 +55,18 @@ export async function ensureArcNetwork(ethereumProvider: any, targetChainId: num
   const isMainnet = targetChainId === 5042;
   const chainIdHex = `0x${targetChainId.toString(16)}`;
   const chainName = isMainnet ? "Arc" : "Arc Testnet";
-  const rpcUrls = isMainnet 
-    ? ARC_MAINNET_RPC_URLS.filter((url: string) => url.startsWith("http"))
-    : ARC_TESTNET_RPC_URLS.filter((url: string) => url.startsWith("http"));
+  const rawRpcUrls = isMainnet 
+    ? [
+        process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL,
+        'https://rpc.mainnet.arc.io',
+        ...ARC_MAINNET_RPC_URLS.filter((url: string) => url.startsWith("http"))
+      ]
+    : [
+        'https://rpc.testnet.arc.network',
+        'https://rpc.testnet.arc.io',
+        ...ARC_TESTNET_RPC_URLS.filter((url: string) => url.startsWith("http"))
+      ];
+  const rpcUrls = Array.from(new Set(rawRpcUrls.filter(Boolean))) as string[];
   const explorerUrl = isMainnet ? "https://explorer.arc.io" : "https://testnet.arcscan.app";
 
   try {

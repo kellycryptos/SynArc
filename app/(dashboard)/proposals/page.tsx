@@ -133,8 +133,21 @@ export default function ProposalsPage() {
                   {sarcVotes > 0
                     ? <>{sarcVotes.toLocaleString(undefined, { maximumFractionDigits: 0 })} sARC</>
                     : <>0 sARC</>}
-                  {needsDelegation && <span className="text-amber-400 ml-1">(delegate!)</span>}
+                  {needsDelegation && (
+                    <Link href="/faucet" className="text-amber-400 underline ml-1 hover:text-amber-300">
+                      (activate votes!)
+                    </Link>
+                  )}
                 </span>
+              )}
+              {isAuthenticated && totalDisplayPower === 0 && (
+                <Link
+                  href="/faucet"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-all"
+                >
+                  <Zap className="w-3 h-3" />
+                  Claim 10 sARC to Vote & Propose →
+                </Link>
               )}
             </div>
           </div>

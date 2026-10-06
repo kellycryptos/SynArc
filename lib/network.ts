@@ -1,5 +1,6 @@
 import { NetworkConfig } from "@/types";
 import { ARC_RPC_URL } from "@/lib/arc/config";
+import { getMainnetProxyUrl } from "@/lib/arc-config";
 
 export const arcTestnet: NetworkConfig = {
   chainId: 5042002,
@@ -13,7 +14,7 @@ export const arcTestnet: NetworkConfig = {
 export const arcMainnet: NetworkConfig = {
   chainId: 5042,
   name: "Arc",
-  rpcUrl: process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || "https://rpc.mainnet.arc.io",
+  get rpcUrl() { return getMainnetProxyUrl(); },
   currencySymbol: "USDC",
   blockExplorer: "https://explorer.arc.io",
 };

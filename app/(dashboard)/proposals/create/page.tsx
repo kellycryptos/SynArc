@@ -9,7 +9,7 @@ import { useToken } from "@/hooks/useToken";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown, Wallet, Check, ExternalLink } from "lucide-react";
+import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown, Wallet, Check, ExternalLink, Coins, Zap, RefreshCw } from "lucide-react";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { BrowserProvider, Interface } from "ethers";
 import { parseArcError } from "@/lib/utils";
@@ -30,8 +30,11 @@ export default function CreateProposalPage() {
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   const { submitProposal } = useGovernanceStore();
-  const { votingPower, loading: tokenLoading } = useToken(walletAddress);
+  const { votingPower, sarcBalance, needsDelegation, loading: tokenLoading, refetch: refetchToken } = useToken(walletAddress);
   const { balance: usdcBalance } = useUSDCBalance();
+
+  const [isClaimingSarc, setIsClaimingSarc] = useState(false);
+  const [isQuickDelegating, setIsQuickDelegating] = useState(false);
 
   type SubmitStage = "idle" | "wallet_prompt" | "confirming_chain" | "success";
   const [submitStage, setSubmitStage] = useState<SubmitStage>("idle");
@@ -39,6 +42,77 @@ export default function CreateProposalPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successProposalId, setSuccessProposalId] = useState<string | null>(null);
   const [error, setError] = useState<React.ReactNode | null>(null);
+
+  const handleQuickClaimSarc = async () => {
+    if (!walletAddress) {
+      login();
+      return;
+    }
+    setIsClaimingSarc(true);
+    try {
+      const res = await fetch("/api/faucet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          walletAddress,
+          wallet: walletAddress,
+          network: isArcMainnet ? "mainnet" : "testnet",
+        }),
+      });
+      const data = await res.json();
+      if (res.status === 429) {
+        toast.error(data.cooldown ? `Already claimed today. Next claim in ${data.cooldown}` : "Already claimed today.");
+        return;
+      }
+      if (!res.ok) {
+        throw new Error(data.error || "Claim failed");
+      }
+      toast.success(data.message || (isArcMainnet ? "10 sARC claimed successfully!" : "1000 sARC claimed successfully!"));
+      await refetchToken();
+    } catch (err: any) {
+      console.error("Quick claim failed:", err);
+      toast.error(err.message || "Failed to claim sARC");
+    } finally {
+      setIsClaimingSarc(false);
+    }
+  };
+
+  const handleQuickDelegate = async () => {
+    if (!walletAddress) return;
+    setIsQuickDelegating(true);
+    try {
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
+      const SARC_DELEGATE_ABI = [{
+        name: "delegate",
+        type: "function",
+        stateMutability: "nonpayable",
+        inputs: [{ name: "delegatee", type: "address" }],
+        outputs: []
+      }] as const;
+
+      const gasParams = await getAggressiveGasParams(publicClient);
+      toast.loading("Activating voting power (self-delegating)...");
+      const tx = await walletClient.writeContract({
+        address: CONTRACTS.token,
+        abi: SARC_DELEGATE_ABI,
+        functionName: "delegate",
+        args: [address],
+        gas: 150000n,
+        ...gasParams
+      });
+
+      await waitForTransaction(publicClient, tx);
+      toast.dismiss();
+      toast.success("Voting power activated! You can now submit proposals and vote.");
+      await refetchToken();
+    } catch (err: any) {
+      console.error("Delegation failed:", err);
+      toast.dismiss();
+      toast.error(err.message || "Failed to delegate voting power");
+    } finally {
+      setIsQuickDelegating(false);
+    }
+  };
 
   // AI proposal generator states
   const [userIdea, setUserIdea] = useState("");
@@ -202,7 +276,23 @@ export default function CreateProposalPage() {
     }
 
     if (votingPower < proposalThreshold) {
-      setError(`You require a minimum of ${proposalThreshold.toLocaleString()} tokens to submit a proposal.`);
+      if (sarcBalance >= proposalThreshold) {
+        setError(
+          <span>
+            You hold {sarcBalance.toLocaleString()} sARC, but haven&apos;t activated your voting power yet. Please click &quot;Activate Voting Power&quot; above to self-delegate before submitting.
+          </span>
+        );
+      } else {
+        setError(
+          <span>
+            You require a minimum of {proposalThreshold.toLocaleString()} tokens to submit a proposal.{" "}
+            <Link href="/faucet" className="underline font-bold text-primary hover:text-purple-300">
+              Claim 10 sARC here
+            </Link>{" "}
+            first.
+          </span>
+        );
+      }
       return;
     }
 
@@ -462,9 +552,79 @@ export default function CreateProposalPage() {
             )}
 
             {!tokenLoading && !hasEnoughBalance && (
-              <div className="p-4 bg-warning/10 border border-warning/20 rounded-xl flex items-center gap-3 text-sm text-warning">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>You require a minimum of {proposalThreshold.toLocaleString()} tokens to submit a proposal. Your current balance is {votingPower.toLocaleString()} tokens.</span>
+              <div className="p-4 bg-warning/10 border border-warning/20 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-warning animate-fade-in-up">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-warning" />
+                  <div>
+                    {sarcBalance >= proposalThreshold && needsDelegation ? (
+                      <>
+                        <span className="font-bold text-amber-300">
+                          Activate Voting Power to Submit Proposal
+                        </span>
+                        <p className="text-xs text-muted/80 mt-0.5">
+                          You hold {sarcBalance.toLocaleString()} sARC, but haven&apos;t self-delegated yet. Run 1-click activation so the Governor contract can count your votes.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-bold text-amber-300">
+                          Proposal Threshold: 1 sARC Token Required
+                        </span>
+                        <p className="text-xs text-muted/80 mt-0.5">
+                          You currently have {votingPower.toLocaleString()} voting tokens. {isArcMainnet ? "Claim 10 sARC on Arc Mainnet to start proposing and voting." : "Claim free testnet sARC to get started."}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                  {sarcBalance >= proposalThreshold && needsDelegation ? (
+                    <button
+                      type="button"
+                      onClick={handleQuickDelegate}
+                      disabled={isQuickDelegating}
+                      className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
+                    >
+                      {isQuickDelegating ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          Activating...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="w-3.5 h-3.5" />
+                          Activate Voting Power
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleQuickClaimSarc}
+                      disabled={isClaimingSarc}
+                      className="px-4 py-2 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white font-bold text-xs flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
+                    >
+                      {isClaimingSarc ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          Claiming 10 sARC...
+                        </>
+                      ) : (
+                        <>
+                          <Coins className="w-3.5 h-3.5" />
+                          Claim 10 sARC
+                        </>
+                      )}
+                    </button>
+                  )}
+                  <Link
+                    href="/faucet"
+                    className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-muted hover:text-white text-xs font-semibold transition-colors"
+                  >
+                    Faucet Page →
+                  </Link>
+                </div>
               </div>
             )}
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -66,55 +67,87 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
   const { balance, isLoading, isError } = useUSDCBalance(walletAddress);
   const { isArcTestnet, networkName } = useArcNetwork();
 
-  // On mainnet, hide testnet-only nav items (Faucet, Settings, Docs).
-  const visibleLinks = activeLinks.filter((link) => {
-    if (link.href === "/faucet" || link.href === "/settings" || link.href === "/docs") {
-      return isArcTestnet;
-    }
-    return true;
-  });
+  // On mainnet, show Claim 10 sARC; hide settings/docs if testnet-only.
+  const visibleLinks = activeLinks
+    .map((link) => {
+      if (link.href === "/faucet") {
+        return {
+          ...link,
+          label: isArcTestnet ? "Faucet" : "Claim sARC",
+        };
+      }
+      return link;
+    })
+    .filter((link) => {
+      if (link.href === "/settings" || link.href === "/docs") {
+        return isArcTestnet;
+      }
+      return true;
+    });
 
-  // Navigate first, then close the mobile drawer so the drawer unmount
-  // doesn't cancel the in-flight route change.
-  const handleNavClick = (href: string) => {
-    if (href.startsWith("http")) {
-      window.open(href, "_blank", "noopener,noreferrer");
-    } else {
-      router.push(href);
-    }
-    // Small defer allows Next.js to start the navigation before the sidebar
-    // overlay is removed from the DOM, preventing the route change from
-    // being swallowed on mobile browsers.
+  // Proactively prefetch all primary routes on mount and whenever
+  // the tab regains focus or visibility (e.g. user returns after leaving the site).
+  useEffect(() => {
+    const warmRoutes = () => {
+      visibleLinks.forEach((link) => {
+        if (!link.href.startsWith("http")) {
+          router.prefetch(link.href);
+        }
+      });
+      router.prefetch("/agent");
+      router.prefetch("/dashboard");
+    };
+
+    warmRoutes();
+
+    const handleFocus = () => {
+      if (typeof document === "undefined" || document.visibilityState === "visible") {
+        warmRoutes();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+    };
+  }, [visibleLinks, router]);
+
+  const handleLinkClick = () => {
     if (onClick) {
       setTimeout(onClick, 50);
     }
   };
 
   return (
-    <aside className={cn("w-64 bg-[#05080F] border-r border-[#151C29] flex flex-col h-full", className)}>
+    <aside className={cn("w-64 bg-background border-r border-border flex flex-col h-full", className)}>
       {/* Logo */}
-      <div className="h-16 flex items-center px-5 border-b border-[#151C29] shrink-0">
-        <button
-          onClick={() => handleNavClick("/")}
+      <div className="h-16 flex items-center px-5 border-b border-border shrink-0">
+        <Link
+          href="/"
+          prefetch={true}
+          onClick={handleLinkClick}
           className="flex items-center gap-2.5 group cursor-pointer"
         >
           <SynArcLogo size={28} animated={false} />
-          <span className="text-[16px] font-bold font-space tracking-tight text-[#F5F7FA]">
+          <span className="text-[16px] font-bold font-space tracking-tight text-foreground">
             Syn DAO
           </span>
-        </button>
+        </Link>
       </div>
 
       {/* Quick Search Pill */}
       <div className="px-3.5 pt-3 pb-1">
-        <div className="flex h-9 w-full items-center gap-2 rounded-xl border border-[#1B2536] bg-[#0B111C] text-xs text-[#8A948E] transition-colors hover:border-[#2F6FFF]/40 hover:text-[#F5F7FA] px-2.5">
-          <Search className="w-3.5 h-3.5 text-[#6B7385]" />
+        <div className="flex h-9 w-full items-center gap-2 rounded-xl border border-border bg-surface text-xs text-muted transition-colors hover:border-primary/40 hover:text-foreground px-2.5">
+          <Search className="w-3.5 h-3.5 text-muted" />
           <input
             type="text"
             placeholder="Search…"
-            className="flex-1 bg-transparent border-none outline-none text-xs font-space text-[#F5F7FA] placeholder:text-[#6B7385]"
+            className="flex-1 bg-transparent border-none outline-none text-xs font-space text-foreground placeholder:text-muted"
           />
-          <kbd className="font-mono rounded border border-[#1B2536] bg-[#05080F] px-1.5 py-0.5 text-[9px] text-[#6B7385]">⌘K</kbd>
+          <kbd className="font-mono rounded border border-border bg-background px-1.5 py-0.5 text-[9px] text-muted">⌘K</kbd>
         </div>
       </div>
 
@@ -124,14 +157,16 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
           const href = "/agent";
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
-            <button
-              onClick={() => handleNavClick(href)}
+            <Link
+              href={href}
+              prefetch={true}
+              onClick={handleLinkClick}
               className={cn(
-                "w-full flex items-center justify-between border border-[#1B2536] bg-[#0B111C] rounded-lg px-3 py-2.5 text-xs font-medium transition-all group cursor-pointer text-left mb-4 hover:border-[#2F6FFF]/40",
-                active && "border-[#2F6FFF]/40 bg-[#0F1620]"
+                "w-full flex items-center justify-between border border-border bg-surface rounded-lg px-3 py-2.5 text-xs font-medium transition-all group cursor-pointer text-left mb-4 hover:border-primary/40",
+                active && "border-primary/40 bg-surface-elevated"
               )}
             >
-              <span className="text-[13px] font-medium text-[#F5F7FA] flex items-center gap-2.5 font-space">
+              <span className="text-[13px] font-medium text-foreground flex items-center gap-2.5 font-space">
                 <div className="w-6 h-6 flex items-center justify-center shrink-0">
                   <BotAvatar type="ghost" size={24} state="working" />
                 </div>
@@ -140,12 +175,12 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
               <div className="shrink-0 flex items-center">
                 <MetalBadge>LIVE</MetalBadge>
               </div>
-            </button>
+            </Link>
           );
         })()}
 
         {/* Section label */}
-        <p className="px-1.5 pb-2 text-[11px] uppercase tracking-[0.1em] font-mono text-[#4E566A]">
+        <p className="px-1.5 pb-2 text-[11px] uppercase tracking-[0.1em] font-mono text-muted">
           Governance
         </p>
 
@@ -158,32 +193,34 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
 
           const Icon = link.icon;
           return (
-            <button
+            <Link
               key={link.href}
-              onClick={() => handleNavClick(link.href)}
+              href={link.href}
+              prefetch={true}
+              onClick={handleLinkClick}
               className={cn(
                 "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-space transition-all group cursor-pointer text-left border",
                 active
-                  ? "bg-[#2F6FFF]/10 border-[#2F6FFF]/25 text-[#F5F7FA] font-medium shadow-[0_0_12px_rgba(47,111,255,0.06)]"
-                  : "border-transparent text-[#8A948E] hover:text-[#F5F7FA] hover:bg-[#0B111C]"
+                  ? "bg-primary/10 border-primary/25 text-foreground font-medium shadow-[0_0_12px_rgba(47,111,255,0.06)]"
+                  : "border-transparent text-muted hover:text-foreground hover:bg-surface"
               )}
             >
               <Icon
                 className={cn(
                   "w-[17px] h-[17px] shrink-0 transition-colors",
-                  active ? "stroke-[#4F8BFF]" : "stroke-[#6B7385] group-hover:stroke-[#9CA6B8]"
+                  active ? "stroke-primary" : "stroke-muted group-hover:stroke-foreground"
                 )}
               />
               <span>{link.label}</span>
               {link.isNew && !active && (
-                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-mono bg-[#05080F] border border-[#1B2536] text-[#4F8BFF]">
+                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-mono bg-background border border-border text-primary">
                   NEW
                 </span>
               )}
               {active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#4F8BFF]" />
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />
               )}
-            </button>
+            </Link>
           );
         })}
 
@@ -303,7 +340,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
 
 
       {/* Connect Button */}
-      <div className="p-4 border-t border-[#151C29] mt-auto">
+      <div className="p-4 border-t border-border mt-auto">
         <WalletConnectButton />
       </div>
     </aside>

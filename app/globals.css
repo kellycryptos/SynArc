@@ -576,11 +576,11 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 .light .glass-card:hover {
-  background: #FAFBFF !important;
-  border-color: var(--accent-purple) !important;
+  background: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
   box-shadow: 
-    0 10px 24px rgba(15, 23, 42, 0.06),
-    0 0 0 1px var(--accent-purple),
+    0 10px 25px -5px rgba(15, 23, 42, 0.08),
+    0 8px 10px -6px rgba(15, 23, 42, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 1) !important;
 }
 
@@ -593,7 +593,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 
 /* Global text contrast fix: maps hardcoded text-white to readable dark gray/black,
    excluding elements on purple/accent/dark banners, gradients, and custom keeping rules. */
-.light .text-white:not(.bg-primary):not(.bg-accent):not(.bg-danger):not(.bg-success):not(.bg-purple-deep):not([class*="bg-gradient"]):not(a.bg-primary):not(.text-white-keep) {
+.light .text-white:not(.bg-primary):not(.bg-accent):not(.bg-danger):not(.bg-success):not(.bg-purple-deep):not([class*="bg-gradient"]):not([class*="bg-[#2F6FFF]"]):not([class*="bg-primary"]):not([class*="bg-brand"]):not([class*="bg-accent"]):not(a.bg-primary):not(button.bg-primary):not(.text-white-keep) {
   color: var(--text-primary) !important;
 }
 
@@ -629,10 +629,13 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   border-color: rgba(0, 0, 0, 0.08) !important;
 }
 
-/* Override glass header navigation wrapper to keep links visible */
+/* Override glass header navigation wrapper to keep links visible and block background bleed */
 .light .glass {
-  background: rgba(255, 255, 255, 0.8) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
 }
 
 /* ── Premium Scroll & Touch Optimization ── */
@@ -768,8 +771,15 @@ a:focus-visible, button:focus-visible {
   color: #0F172A !important;
 }
 
-.light aside .text-\[\#9CA6B8\] {
+.light aside .text-\[\#9CA6B8\],
+.light aside .text-\[\#8A948E\],
+.light aside .text-\[\#8F9CAE\] {
   color: #475569 !important;
+}
+
+.light aside .text-\[\#6B7385\],
+.light aside .text-\[\#4E566A\] {
+  color: #64748B !important;
 }
 
 .light aside .bg-\[\#0F1620\] {
@@ -782,30 +792,81 @@ a:focus-visible, button:focus-visible {
   border-color: #E2E8F0 !important;
 }
 
-.light .bg-\[\#080C14\] {
-  background-color: #FFFFFF !important;
+.light aside .bg-\[\#05080F\] {
+  background-color: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
 }
 
-.light .border-\[\#151C29\],
-.light .border-\[\#1B2536\],
-.light .border-\[\#232E42\] {
-  border-color: #E2E8F0 !important;
+/* Global Light Mode Hardcoded Hex Remapping */
+.light .bg-\[\#05080F\],
+.light .bg-\[\#0A0E17\],
+.light .bg-\[\#04060B\],
+.light .bg-\[\#070D18\] {
+  background-color: #F8FAFC !important;
+}
+
+.light .bg-\[\#05080F\]\/60 {
+  background-color: rgba(248, 250, 252, 0.8) !important;
+}
+
+.light .bg-\[\#05080F\]\/80 {
+  background-color: rgba(248, 250, 252, 0.88) !important;
+}
+
+.light .bg-\[\#05080F\]\/90 {
+  background-color: rgba(248, 250, 252, 0.95) !important;
+}
+
+.light .bg-\[\#080C14\] {
+  background-color: #FFFFFF !important;
 }
 
 .light .bg-\[\#0B111C\] {
   background-color: #FFFFFF !important;
 }
 
-.light .text-\[\#F5F7FA\] {
+.light .bg-\[\#0B111C\]\/80 {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.light .bg-\[\#0B111C\]\/90 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.light .bg-\[\#0F1620\] {
+  background-color: #F1F5F9 !important;
+}
+
+.light .bg-\[\#151C29\] {
+  background-color: #F1F5F9 !important;
+}
+
+.light .border-\[\#151C29\],
+.light .border-\[\#1B2536\],
+.light .border-\[\#232E42\],
+.light .border-\[\#1E293B\] {
+  border-color: #E2E8F0 !important;
+}
+
+.light .border-\[\#1B2536\]\/70,
+.light .border-\[\#1B2536\]\/60 {
+  border-color: rgba(226, 232, 240, 0.7) !important;
+}
+
+.light .text-\[\#F5F7FA\],
+.light .text-\[\#F8FAFC\] {
   color: #0F172A !important;
 }
 
 .light .text-\[\#8B93A5\],
-.light .text-\[\#9CA6B8\] {
+.light .text-\[\#9CA6B8\],
+.light .text-\[\#8F9CAE\],
+.light .text-\[\#8A948E\] {
   color: #475569 !important;
 }
 
-.light .text-\[\#6B7385\] {
+.light .text-\[\#6B7385\],
+.light .text-\[\#4E566A\] {
   color: #64748B !important;
 }
 

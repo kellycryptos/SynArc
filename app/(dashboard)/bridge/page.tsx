@@ -8,7 +8,7 @@ import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useSwitchChain, useAccount } from "wagmi";
-import { createPublicClient, http, parseAbi, formatUnits } from "viem";
+import { createPublicClient, http, fallback, getAddress, parseAbi, formatUnits } from "viem";
 import { selectActiveWallet } from "@/lib/tx-helper";
 import { IS_MAINNET, ACTIVE_NETWORK } from "@/lib/arc-config";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
@@ -50,6 +50,10 @@ const TESTNET_SOURCE_CHAINS = [
     name: "Ethereum Sepolia", 
     tokenAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", 
     rpcUrl: "https://rpc.ankr.com/eth_sepolia",
+    rpcUrls: [
+      "https://rpc.ankr.com/eth_sepolia",
+      "https://ethereum-sepolia-rpc.publicnode.com",
+    ],
     icon: "ETH",
     color: "bg-blue-500/10 border-blue-500/20 text-blue-400",
     chainId: 11155111,
@@ -62,6 +66,10 @@ const TESTNET_SOURCE_CHAINS = [
     name: "Base Sepolia", 
     tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dcf7e", 
     rpcUrl: "https://sepolia.base.org",
+    rpcUrls: [
+      "https://sepolia.base.org",
+      "https://base-sepolia-rpc.publicnode.com",
+    ],
     icon: "BASE",
     color: "bg-blue-600/10 border-blue-600/20 text-blue-500",
     chainId: 84532,
@@ -74,6 +82,9 @@ const TESTNET_SOURCE_CHAINS = [
     name: "Avalanche Fuji", 
     tokenAddress: "0x5425890298aed601595a70AB815c96711a31Bc65", 
     rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc",
+    rpcUrls: [
+      "https://api.avax-test.network/ext/bc/C/rpc",
+    ],
     icon: "AVAX",
     color: "bg-red-500/10 border-red-500/20 text-red-500",
     chainId: 43113,
@@ -86,6 +97,7 @@ const TESTNET_SOURCE_CHAINS = [
     name: "Solana Devnet", 
     tokenAddress: "4zMMC9SRGx2txA24js12jccVwMAwFFdp47rFZ5y76hA3", 
     rpcUrl: "https://api.devnet.solana.com",
+    rpcUrls: ["https://api.devnet.solana.com"],
     icon: "SOL",
     color: "bg-purple-500/10 border-purple-500/20 text-purple-400",
     chainId: 103,
@@ -100,7 +112,13 @@ const MAINNET_SOURCE_CHAINS = [
     id: "ETH_MAINNET", 
     name: "Ethereum", 
     tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 
-    rpcUrl: "https://eth.llamarpc.com",
+    rpcUrl: "https://cloudflare-eth.com",
+    rpcUrls: [
+      "https://cloudflare-eth.com",
+      "https://ethereum-rpc.publicnode.com",
+      "https://rpc.ankr.com/eth",
+      "https://eth.llamarpc.com",
+    ],
     icon: "ETH",
     color: "bg-blue-500/10 border-blue-500/20 text-blue-400",
     chainId: 1,
@@ -113,6 +131,11 @@ const MAINNET_SOURCE_CHAINS = [
     name: "Base", 
     tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", 
     rpcUrl: "https://mainnet.base.org",
+    rpcUrls: [
+      "https://mainnet.base.org",
+      "https://base-rpc.publicnode.com",
+      "https://base.llamarpc.com",
+    ],
     icon: "BASE",
     color: "bg-blue-600/10 border-blue-600/20 text-blue-500",
     chainId: 8453,
@@ -125,6 +148,10 @@ const MAINNET_SOURCE_CHAINS = [
     name: "Avalanche", 
     tokenAddress: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E", 
     rpcUrl: "https://api.avax.network/ext/bc/C/rpc",
+    rpcUrls: [
+      "https://api.avax.network/ext/bc/C/rpc",
+      "https://avalanche-c-chain-rpc.publicnode.com",
+    ],
     icon: "AVAX",
     color: "bg-red-500/10 border-red-500/20 text-red-500",
     chainId: 43114,
@@ -137,6 +164,7 @@ const MAINNET_SOURCE_CHAINS = [
     name: "Solana", 
     tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", 
     rpcUrl: "https://api.mainnet-beta.solana.com",
+    rpcUrls: ["https://api.mainnet-beta.solana.com"],
     icon: "SOL",
     color: "bg-purple-500/10 border-purple-500/20 text-purple-400",
     chainId: 101,
@@ -455,34 +483,52 @@ export default function BridgePage() {
     }
 
     if (selectedChain.id === "SOL_DEVNET" || selectedChain.id === "SOL_MAINNET") {
-      setSourceBalance("640.00");
+      setSourceBalance("0.00");
       return;
     }
 
-    const targetAddress = activeWallet?.address || walletAddress;
-    if (!targetAddress) {
+    const rawTarget = activeWallet?.address || walletAddress;
+    if (!rawTarget) {
+      setSourceBalance("0.00");
+      return;
+    }
+
+    let targetAddress: `0x${string}`;
+    try {
+      targetAddress = getAddress(rawTarget.toLowerCase());
+    } catch {
       setSourceBalance("0.00");
       return;
     }
 
     setBalanceLoading(true);
     try {
+      const urls: string[] = (selectedChain as any).rpcUrls || [selectedChain.rpcUrl];
       const client = createPublicClient({
-        transport: http(selectedChain.rpcUrl),
+        transport: fallback(
+          urls.map((u: string) => http(u, { timeout: 6000, retryCount: 2 }))
+        ),
       });
 
+      let tokenAddr: `0x${string}`;
+      try {
+        tokenAddr = getAddress(selectedChain.tokenAddress.toLowerCase());
+      } catch {
+        tokenAddr = selectedChain.tokenAddress as `0x${string}`;
+      }
+
       const rawBalance = await client.readContract({
-        address: selectedChain.tokenAddress as `0x${string}`,
+        address: tokenAddr,
         abi: erc20Abi,
         functionName: "balanceOf",
-        args: [targetAddress as `0x${string}`],
+        args: [targetAddress],
       });
 
       const formatted = formatUnits(rawBalance, 6);
       setSourceBalance(parseFloat(formatted).toFixed(2));
     } catch (err) {
-      console.error(`Failed to fetch balance on ${selectedChain.name}:`, err);
-      setSourceBalance("180.00"); 
+      console.warn(`Failed to fetch balance on ${selectedChain.name}:`, err);
+      setSourceBalance("0.00"); 
     } finally {
       setBalanceLoading(false);
     }

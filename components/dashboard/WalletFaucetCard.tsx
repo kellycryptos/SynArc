@@ -94,8 +94,9 @@ export function WalletFaucetCard() {
   // Load persistent override and history on mount & address change
   useEffect(() => {
     if (typeof window !== "undefined" && walletAddress) {
-      // 1. Check local storage cooldown
-      const stored = localStorage.getItem(`${COOLDOWN_KEY}_${walletAddress.toLowerCase()}`);
+      // 1. Check local storage cooldown (network-aware)
+      const networkKey = isArcTestnet ? "testnet" : "mainnet";
+      const stored = localStorage.getItem(`${COOLDOWN_KEY}_${networkKey}_${walletAddress.toLowerCase()}`);
       if (stored) {
         const nextAt = new Date(parseInt(stored) + COOLDOWN_MS).toISOString();
         if (new Date(nextAt).getTime() > Date.now()) {
@@ -110,24 +111,21 @@ export function WalletFaucetCard() {
         setNextClaimAt(null);
       }
 
-      // 2. Transaction History (Faucet history only relevant on Testnet)
-      if (isArcTestnet) {
-        const savedHistory = localStorage.getItem(`synarc_sarc_faucet_history_${walletAddress}`);
-        if (savedHistory) {
-          setTxHistory(JSON.parse(savedHistory));
-        } else {
-          setTxHistory([]);
-        }
+      // 2. Transaction History
+      const savedHistory = localStorage.getItem(`synarc_sarc_faucet_history_${networkKey}_${walletAddress}`);
+      if (savedHistory) {
+        setTxHistory(JSON.parse(savedHistory));
       } else {
         setTxHistory([]);
       }
     }
   }, [walletAddress, isArcTestnet]);
 
-  // Check server-side cooldown on mount & address change (Testnet only)
+  // Check server-side cooldown on mount & address change (Mainnet & Testnet)
   useEffect(() => {
-    if (!walletAddress || !isArcTestnet) return;
-    fetch(`/api/faucet?wallet=${walletAddress}`)
+    if (!walletAddress) return;
+    const networkKey = isArcTestnet ? "testnet" : "mainnet";
+    fetch(`/api/faucet?wallet=${walletAddress}&network=${networkKey}`)
       .then((r) => r.json())
       .then((data) => {
         if (!data.eligible && data.nextClaimAt) {
@@ -173,10 +171,16 @@ export function WalletFaucetCard() {
     setCurrentTxHash("");
 
     try {
+      const networkKey = isArcTestnet ? "testnet" : "mainnet";
+      const expectedAmount = isArcTestnet ? 1000 : 10;
       const res = await fetch("/api/faucet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ walletAddress: walletAddress, wallet: walletAddress }),
+        body: JSON.stringify({
+          walletAddress: walletAddress,
+          wallet: walletAddress,
+          network: networkKey,
+        }),
       });
       const data = await res.json();
 
@@ -197,7 +201,7 @@ export function WalletFaucetCard() {
 
       // Success — store timestamp in localStorage
       localStorage.setItem(
-        `${COOLDOWN_KEY}_${walletAddress.toLowerCase()}`,
+        `${COOLDOWN_KEY}_${networkKey}_${walletAddress.toLowerCase()}`,
         String(Date.now())
       );
       const nextAt = new Date(Date.now() + COOLDOWN_MS).toISOString();
@@ -207,17 +211,17 @@ export function WalletFaucetCard() {
 
       const newTx: FaucetTx = {
         hash: txHashValue,
-        amount: 1,
+        amount: expectedAmount,
         timestamp: new Date().toISOString(),
         status: "success"
       };
 
       const updatedHistory = [newTx, ...txHistory].slice(0, 5); // Keep last 5 transactions
       setTxHistory(updatedHistory);
-      localStorage.setItem(`synarc_sarc_faucet_history_${walletAddress}`, JSON.stringify(updatedHistory));
+      localStorage.setItem(`synarc_sarc_faucet_history_${networkKey}_${walletAddress}`, JSON.stringify(updatedHistory));
 
       setFaucetStatus("success");
-      setSynMsg(data.message || "1000 sARC Tokens sent to your wallet!");
+      setSynMsg(data.message || `${expectedAmount} sARC Tokens sent to your wallet!`);
 
       // Refetch sARC token balance
       try {
@@ -369,9 +373,12 @@ export function WalletFaucetCard() {
                     : "0"} sARC
                 </span>
                 {needsDelegation && (
-                  <span className="text-[9px] font-bold text-muted bg-white/[0.04] border border-border-thin px-1.5 py-0.5 rounded-full ml-1">
-                    Not delegated
-                  </span>
+                  <a
+                    href="/faucet"
+                    className="text-[9px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full ml-1 hover:bg-amber-500/20 transition-colors"
+                  >
+                    Activate Voting →
+                  </a>
                 )}
               </div>
               <span className="text-[10px] text-text-tertiary">
@@ -451,17 +458,18 @@ export function WalletFaucetCard() {
         )}
       </GlassCard>
 
-      {/* Get Testnet Tokens Faucet Section */}
-      {isArcTestnet && (
-        <GlassCard className="lg:col-span-3 p-6 flex flex-col gap-6 relative overflow-hidden group border border-brand/20 bg-gradient-to-br from-brand/[0.02] to-transparent">
+      {/* Get Tokens Faucet Section (Mainnet & Testnet) */}
+      <GlassCard className="lg:col-span-3 p-6 flex flex-col gap-6 relative overflow-hidden group border border-brand/20 bg-gradient-to-br from-brand/[0.02] to-transparent">
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-brand/10 rounded-full blur-2xl pointer-events-none" />
         
         <div className="space-y-1">
           <h3 className="text-xl font-bold font-heading text-white flex items-center gap-2">
-            Get Testnet Tokens
+            {isArcTestnet ? "Get Testnet Tokens" : "Get Governance Tokens"}
           </h3>
           <p className="text-xs text-text-tertiary">
-            Claim testnet assets once per day to build delegation reputation, participate in voting, and interact with the treasury.
+            {isArcTestnet
+              ? "Claim testnet assets once per day to build delegation reputation, participate in voting, and interact with the treasury."
+              : "Claim 10 sARC tokens once per day to create proposals, activate voting power, and participate in Syn DAO Mainnet governance."}
           </p>
         </div>
 
@@ -472,12 +480,12 @@ export function WalletFaucetCard() {
               <TokenIcon symbol="sARC" size={24} />
               <div>
                 <h4 className="font-bold text-white text-sm">Syn DAO Token</h4>
-                <p className="text-[10px] text-muted font-mono">sARC · 1000 per claim</p>
+                <p className="text-[10px] text-muted font-mono">sARC · {isArcTestnet ? "1000" : "10"} per claim</p>
               </div>
             </div>
             
             <p className="text-xs text-text-tertiary leading-relaxed flex-grow">
-              Claim 1000 sARC tokens daily for governance and voting power.
+              Claim {isArcTestnet ? "1000" : "10"} sARC tokens daily for governance and voting power.
             </p>
 
             {faucetStatus === "cooldown" && nextClaimAt ? (
@@ -518,7 +526,7 @@ export function WalletFaucetCard() {
                   ) : (
                     <>
                       <TokenIcon symbol="sARC" size={16} />
-                      Claim 1000 sARC Tokens
+                      Claim {isArcTestnet ? "1000" : "10"} sARC Tokens
                     </>
                   )}
                 </button>
@@ -526,52 +534,77 @@ export function WalletFaucetCard() {
             )}
           </div>
 
-          {/* Option 2 — USDC Testnet */}
+          {/* Option 2 — USDC */}
           <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-brand/30 transition-all duration-300">
             <div className="flex items-center gap-3">
               <TokenIcon symbol="USDC" size={24} />
               <div>
-                <h4 className="font-bold text-white text-sm">USDC Testnet</h4>
-                <p className="text-[10px] text-muted font-mono">Circle Faucet</p>
+                <h4 className="font-bold text-white text-sm">{isArcTestnet ? "USDC Testnet" : "Arc Native USDC"}</h4>
+                <p className="text-[10px] text-muted font-mono">{isArcTestnet ? "Circle Faucet" : "Gas Token"}</p>
               </div>
             </div>
             
             <p className="text-xs text-text-tertiary leading-relaxed flex-grow">
-              Get free testnet USDC from Circle to deposit into treasury and vote.
+              {isArcTestnet
+                ? "Get free testnet USDC from Circle to deposit into treasury and vote."
+                : "USDC is the native gas token on Arc Mainnet used for all transaction fees."}
             </p>
 
-            <a
-              href="https://faucet.circle.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-2.5 px-4 rounded-xl bg-brand/10 border border-brand/20 text-brand-light hover:bg-brand/20 hover:border-brand/40 text-center font-bold text-xs flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(47,111,255,0.2)] transition-all duration-300"
-            >
-              Claim USDC &rarr;
-            </a>
+            {isArcTestnet ? (
+              <a
+                href="https://faucet.circle.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 px-4 rounded-xl bg-brand/10 border border-brand/20 text-brand-light hover:bg-brand/20 hover:border-brand/40 text-center font-bold text-xs flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(47,111,255,0.2)] transition-all duration-300"
+              >
+                Claim USDC &rarr;
+              </a>
+            ) : (
+              <button
+                onClick={() => {
+                  if (!isAuthenticated) login();
+                  else setShowBridge(true);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-brand/10 border border-brand/20 text-brand-light hover:bg-brand/20 hover:border-brand/40 text-center font-bold text-xs flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(47,111,255,0.2)] transition-all duration-300 cursor-pointer"
+              >
+                Bridge USDC &rarr;
+              </button>
+            )}
           </div>
 
-          {/* Option 3 — EURC Testnet */}
+          {/* Option 3 — EURC */}
           <div className="p-5 bg-surface-elevated/40 border border-border-subtle rounded-2xl flex flex-col gap-4 relative overflow-hidden hover:border-brand/30 transition-all duration-300">
             <div className="flex items-center gap-3">
               <TokenIcon symbol="EURC" size={24} />
               <div>
-                <h4 className="font-bold text-white text-sm">EURC Testnet</h4>
-                <p className="text-[10px] text-muted font-mono">Circle Faucet</p>
+                <h4 className="font-bold text-white text-sm">{isArcTestnet ? "EURC Testnet" : "EURC Stablecoin"}</h4>
+                <p className="text-[10px] text-muted font-mono">{isArcTestnet ? "Circle Faucet" : "Treasury Asset"}</p>
               </div>
             </div>
             
             <p className="text-xs text-text-tertiary leading-relaxed flex-grow">
-              Get free testnet EURC from Circle for treasury deposits.
+              {isArcTestnet
+                ? "Get free testnet EURC from Circle for treasury deposits."
+                : "Euro-pegged stablecoin accepted by the Syn DAO Treasury."}
             </p>
 
-            <a
-              href="https://faucet.circle.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-2.5 px-4 rounded-xl bg-brand/10 border border-brand/20 text-brand-light hover:bg-brand/20 hover:border-brand/40 text-center font-bold text-xs flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(47,111,255,0.2)] transition-all duration-300"
-            >
-              Claim EURC &rarr;
-            </a>
+            {isArcTestnet ? (
+              <a
+                href="https://faucet.circle.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 px-4 rounded-xl bg-brand/10 border border-brand/20 text-brand-light hover:bg-brand/20 hover:border-brand/40 text-center font-bold text-xs flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(47,111,255,0.2)] transition-all duration-300"
+              >
+                Claim EURC &rarr;
+              </a>
+            ) : (
+              <a
+                href="/treasury"
+                className="w-full py-2.5 px-4 rounded-xl bg-brand/10 border border-brand/20 text-brand-light hover:bg-brand/20 hover:border-brand/40 text-center font-bold text-xs flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(47,111,255,0.2)] transition-all duration-300"
+              >
+                View Treasury &rarr;
+              </a>
+            )}
           </div>
 
           {/* Option 4 — Bridge USDC */}
@@ -625,9 +658,7 @@ export function WalletFaucetCard() {
             </motion.div>
           )}
         </AnimatePresence>
-
-        </GlassCard>
-      )}
+      </GlassCard>
 
       {/* Bridge Modal */}
       {showBridge && (

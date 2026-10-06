@@ -99,30 +99,30 @@ export function WalletConnectButton() {
     <div className="relative w-full" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full p-2.5 rounded-lg bg-[#0B111C] border border-[#1B2536] hover:border-[#2F6FFF]/40 hover:bg-[#0F1620] transition-all cursor-pointer group"
+        className="flex items-center justify-between w-full p-2.5 rounded-lg bg-surface border border-border hover:border-primary/40 hover:bg-surface-elevated transition-all cursor-pointer group shadow-xs"
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#2F6FFF] to-[#4F8BFF] flex items-center justify-center relative overflow-hidden shrink-0">
             <span className="text-[10px] font-bold text-white font-mono">
               {walletAddress.slice(2, 4).toUpperCase()}
             </span>
-            <div className="w-2 h-2 rounded-full bg-[#22C55E] absolute bottom-0 right-0 border border-[#0B111C]" />
+            <div className="w-2 h-2 rounded-full bg-[#22C55E] absolute bottom-0 right-0 border border-surface" />
           </div>
           <div className="flex flex-col text-left truncate">
-            <span className="font-mono text-xs font-medium text-[#F5F7FA] truncate">{truncatedAddress}</span>
-            <span className="text-[10px] text-[#4F8BFF] font-mono flex items-center gap-1">
+            <span className="font-mono text-xs font-medium text-foreground truncate">{truncatedAddress}</span>
+            <span className="text-[10px] text-primary font-mono flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" /> Connected
             </span>
           </div>
         </div>
-        {isOpen ? <ChevronUp className="w-4 h-4 text-[#6B7385]" /> : <ChevronDown className="w-4 h-4 text-[#6B7385] group-hover:text-[#9CA6B8]" />}
+        {isOpen ? <ChevronUp className="w-4 h-4 text-muted" /> : <ChevronDown className="w-4 h-4 text-muted group-hover:text-foreground" />}
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 w-full mb-2 bg-[#0B111C] border border-[#1B2536] rounded-xl shadow-2xl overflow-hidden animate-fade-in-up origin-bottom z-50 p-1.5 backdrop-blur-md">
+        <div className="absolute bottom-full left-0 w-full mb-2 bg-surface border border-border rounded-xl shadow-2xl overflow-hidden animate-fade-in-up origin-bottom z-50 p-1.5 backdrop-blur-md">
           <button 
             onClick={copyAddress}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-mono text-[#F5F7FA] hover:bg-[#0F1620] rounded-lg transition-colors cursor-pointer"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-mono text-foreground hover:bg-surface-elevated rounded-lg transition-colors cursor-pointer"
           >
             {copied ? (
               <>
@@ -131,18 +131,18 @@ export function WalletConnectButton() {
               </>
             ) : (
               <>
-                <Copy className="w-3.5 h-3.5 text-[#6B7385]" />
+                <Copy className="w-3.5 h-3.5 text-muted" />
                 <span>Copy Address</span>
               </>
             )}
           </button>
           <button 
             onClick={openExplorer}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-mono text-[#F5F7FA] hover:bg-[#0F1620] rounded-lg transition-colors cursor-pointer"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-mono text-foreground hover:bg-surface-elevated rounded-lg transition-colors cursor-pointer"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-[#6B7385]" /> View on Explorer
+            <ExternalLink className="w-3.5 h-3.5 text-muted" /> View on Explorer
           </button>
-          <div className="h-px bg-[#151C29] my-1 mx-1.5" />
+          <div className="h-px bg-border my-1 mx-1.5" />
           <button 
             onClick={() => { logout(); setIsOpen(false); }}
             className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-mono text-[#ef4444] hover:bg-[#ef4444]/10 rounded-lg transition-colors cursor-pointer"

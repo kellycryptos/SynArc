@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
       : false,
   },
   experimental: {
+    staleTimes: {
+      dynamic: 60,
+      static: 300,
+    },
     optimizeCss: true,
     optimizePackageImports: ["lucide-react", "framer-motion", "@radix-ui/react-icons", "recharts", "@rainbow-me/rainbowkit", "viem", "ethers"],
   },

@@ -1,5 +1,5 @@
 import { createWalletClient, createPublicClient, http, custom, fallback, getAddress } from 'viem'
-import { ARC_CHAIN, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_GAS, CONTRACTS, getActiveNetwork } from './arc-config'
+import { ARC_CHAIN, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_GAS, CONTRACTS, getActiveNetwork, getMainnetProxyUrl, getTestnetProxyUrl } from './arc-config'
 import { BrowserProvider, Contract, ZeroAddress } from 'ethers'
 import { getCircleClient } from './circle/client'
 
@@ -35,7 +35,7 @@ class CircleEthereumProvider {
     }
 
     // Pass-through other RPC requests
-    const rpcUrl = ARC_RPC_URLS[0] || (getActiveNetwork() === 'mainnet' ? 'https://rpc.mainnet.arc.io' : 'https://rpc.testnet.arc.io');
+    const rpcUrl = ARC_RPC_URLS[0] || (getActiveNetwork() === 'mainnet' ? getMainnetProxyUrl() : getTestnetProxyUrl());
     const res = await fetch(rpcUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

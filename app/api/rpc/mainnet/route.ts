@@ -99,13 +99,16 @@ function isAllowedUrl(urlString: string, host: string): boolean {
     const cleanHost = host.split(":")[0].toLowerCase().replace(/^www\./, "");
     const cleanDomain = domain.replace(/^www\./, "");
 
-    // 1. Direct host match (with or without port, with or without www)
+    // 1. Browser extension wallets (Rabby, MetaMask, etc.)
+    if (parsed.protocol === "chrome-extension:" || parsed.protocol === "moz-extension:") return true;
+
+    // 2. Direct host match (with or without port, with or without www)
     if (parsed.host === host || cleanDomain === cleanHost) return true;
 
-    // 2. Local development
+    // 3. Local development
     if (domain === "localhost" || domain === "127.0.0.1") return true;
 
-    // 3. Vercel deployment preview and production domains
+    // 4. Vercel deployment preview and production domains
     if (domain.endsWith(".vercel.app")) return true;
 
     // 4. Official project domains (apex syndaopro.xyz and any subdomains like www)
@@ -174,6 +177,16 @@ export async function POST(req: NextRequest) {
   const clientIp = getClientIp(req);
   const isAllowed = await checkRateLimit(clientIp);
   if (!isAllowed) {
+    const rateLimitHeaders: Record<string, string> = {
+      "Retry-After": "10",
+    };
+    const origin = req.headers.get("origin");
+    const host = req.headers.get("host") || "";
+    if (origin && isAllowedUrl(origin, host)) {
+      rateLimitHeaders["Access-Control-Allow-Origin"] = origin;
+      rateLimitHeaders["Vary"] = "Origin";
+    }
+
     return NextResponse.json(
       {
         jsonrpc: "2.0",
@@ -185,9 +198,7 @@ export async function POST(req: NextRequest) {
       },
       {
         status: 429,
-        headers: {
-          "Retry-After": "10",
-        },
+        headers: rateLimitHeaders,
       }
     );
   }
@@ -236,13 +247,32 @@ export async function POST(req: NextRequest) {
     }
 
     const responseBody = await response.text();
+    const responseHeaders: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    const origin = req.headers.get("origin");
+    const host = req.headers.get("host") || "";
+    if (origin && isAllowedUrl(origin, host)) {
+      responseHeaders["Access-Control-Allow-Origin"] = origin;
+      responseHeaders["Vary"] = "Origin";
+    }
+
     return new NextResponse(responseBody, {
       status: response.status,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: responseHeaders,
     });
   } catch (error: any) {
+    const errorHeaders: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    const origin = req.headers.get("origin");
+    const host = req.headers.get("host") || "";
+    if (origin && isAllowedUrl(origin, host)) {
+      errorHeaders["Access-Control-Allow-Origin"] = origin;
+      errorHeaders["Vary"] = "Origin";
+    }
+
     return NextResponse.json(
       {
         jsonrpc: "2.0",
@@ -252,7 +282,10 @@ export async function POST(req: NextRequest) {
         },
         id: null,
       },
-      { status: 500 }
+      {
+        status: 500,
+        headers: errorHeaders,
+      }
     );
   }
 }

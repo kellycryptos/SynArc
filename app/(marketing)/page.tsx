@@ -35,21 +35,21 @@ function StepCard({
   return (
     <GlassCard
       delay={delay}
-      className="relative p-6 border border-[#1B2536] flex flex-col gap-4"
+      className="relative p-6 border border-border flex flex-col gap-4"
     >
       {/* Step number */}
       <div className="flex items-center gap-3">
-        <span className="font-mono text-xs font-semibold text-[#2F6FFF] border border-[#2F6FFF]/30 bg-[#2F6FFF]/10 rounded px-2 py-0.5 select-none">
+        <span className="font-mono text-xs font-semibold text-primary border border-primary/30 bg-primary/10 rounded px-2 py-0.5 select-none">
           {String(step).padStart(2, "0")}
         </span>
-        <div className="w-8 h-8 rounded-lg bg-[#2F6FFF]/10 border border-[#2F6FFF]/20 flex items-center justify-center shrink-0">
-          <Icon className="w-4 h-4 text-[#2F6FFF]" />
+        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+          <Icon className="w-4 h-4 text-primary" />
         </div>
       </div>
-      <h3 className="font-mono text-base font-semibold text-[#F5F7FA] tracking-tight">
+      <h3 className="font-mono text-base font-semibold text-foreground tracking-tight">
         {title}
       </h3>
-      <p className="text-sm text-[#9CA6B8] leading-relaxed">{body}</p>
+      <p className="text-sm text-muted leading-relaxed">{body}</p>
     </GlassCard>
   );
 }
@@ -69,16 +69,16 @@ function DiffCard({
   return (
     <GlassCard
       delay={delay}
-      className="p-6 border border-[#1B2536] flex flex-col gap-4"
+      className="p-6 border border-border flex flex-col gap-4"
     >
-      <div className="w-10 h-10 rounded-xl bg-[#0B111C] border border-[#1B2536] flex items-center justify-center shrink-0">
-        <Icon className="w-5 h-5 text-[#2F6FFF]" />
+      <div className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center shrink-0">
+        <Icon className="w-5 h-5 text-primary" />
       </div>
       <div>
-        <h3 className="font-mono text-sm font-semibold text-[#F5F7FA] mb-2">
+        <h3 className="font-mono text-sm font-semibold text-foreground mb-2">
           {title}
         </h3>
-        <p className="text-sm text-[#9CA6B8] leading-relaxed">{body}</p>
+        <p className="text-sm text-muted leading-relaxed">{body}</p>
       </div>
     </GlassCard>
   );
@@ -95,35 +95,35 @@ export default function LandingPage() {
       {/* ══════════════════════════════════════════════════════
           §1  HERO
           ══════════════════════════════════════════════════════ */}
-      <section className="relative pt-28 pb-20 md:pt-40 md:pb-28 overflow-hidden px-4 bg-[#05080F] hero-dark">
+      <section className="relative pt-28 pb-20 md:pt-40 md:pb-28 overflow-hidden px-4">
         {/* Background glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] opacity-[0.15] bg-[#2F6FFF] blur-[130px] rounded-full" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] opacity-[0.15] dark:opacity-[0.15] opacity-[0.06] bg-[#2F6FFF] blur-[130px] rounded-full" />
         </div>
 
         <div className="max-w-4xl mx-auto relative z-10 text-center">
 
           {/* Network badge — no fake stats */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-8 rounded-full border border-[#1B2536] bg-[#0B111C]/80 text-xs font-mono text-[#9CA6B8]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#2F6FFF] animate-pulse shrink-0" />
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-8 rounded-full border border-border bg-surface/80 text-xs font-mono text-muted shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
             Live on Arc Mainnet
           </div>
 
           {/* Headline — monospace, per brief */}
-          <h1 className="font-mono text-4xl sm:text-5xl md:text-[56px] font-bold tracking-tight leading-[1.1] text-[#F5F7FA] mb-6">
+          <h1 className="font-mono text-4xl sm:text-5xl md:text-[56px] font-bold tracking-tight leading-[1.1] text-foreground mb-6">
             Funding and governance{" "}
             <span
-              className="text-[#2F6FFF]"
+              className="text-primary"
               style={{ WebkitTextStroke: "0px" }}
             >
               for humans and agents
             </span>
             ,{" "}
-            <span className="text-[#F5F7FA]">built on Arc.</span>
+            <span className="text-foreground">built on Arc.</span>
           </h1>
 
           {/* Sub-headline — the core loop sentence, verbatim from brief */}
-          <p className="font-mono text-base sm:text-lg text-[#9CA6B8] max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="font-mono text-base sm:text-lg text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
             Fund USDC into the DAO treasury → vote on a proposal → release to a
             human or agent once the three-way match clears.
           </p>
@@ -132,14 +132,14 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/dashboard"
-              className="w-full sm:w-auto px-7 py-3.5 rounded-lg bg-[#2F6FFF] hover:bg-[#4F8BFF] text-white font-mono font-semibold text-sm transition-colors shadow-[0_0_24px_rgba(47,111,255,0.25)] flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-7 py-3.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-mono font-semibold text-sm transition-colors shadow-[0_0_24px_rgba(47,111,255,0.25)] flex items-center justify-center gap-2"
             >
               Launch App
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/docs"
-              className="w-full sm:w-auto px-7 py-3.5 rounded-lg border border-[#1B2536] bg-[#0B111C] hover:border-[#2F6FFF]/40 text-[#F5F7FA] font-mono font-medium text-sm transition-colors flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-7 py-3.5 rounded-lg border border-border bg-surface hover:border-primary/40 text-foreground font-mono font-medium text-sm transition-colors flex items-center justify-center gap-2 shadow-xs"
             >
               Read the docs
             </Link>
@@ -152,17 +152,17 @@ export default function LandingPage() {
           ══════════════════════════════════════════════════════ */}
       <section
         id="how-it-works"
-        className="py-24 px-4 border-t border-[#151C29] hero-dark"
+        className="py-24 px-4 border-t border-border"
       >
         <div className="max-w-5xl mx-auto">
           <div className="mb-12 text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#1B2536] bg-[#0B111C] text-xs font-mono font-medium text-[#9CA6B8] uppercase tracking-wider mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-surface text-xs font-mono font-medium text-muted uppercase tracking-wider mb-4">
               Mechanism
             </div>
-            <h2 className="font-mono text-2xl sm:text-3xl font-semibold text-[#F5F7FA] tracking-tight">
+            <h2 className="font-mono text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
               How it works
             </h2>
-            <p className="mt-3 text-sm text-[#6B7385] max-w-xl mx-auto">
+            <p className="mt-3 text-sm text-muted max-w-xl mx-auto">
               Four concrete steps from USDC deposit to release — no intermediaries.
             </p>
           </div>
@@ -205,17 +205,17 @@ export default function LandingPage() {
           ══════════════════════════════════════════════════════ */}
       <section
         id="why"
-        className="py-24 px-4 border-t border-[#151C29] hero-dark"
+        className="py-24 px-4 border-t border-border"
       >
         <div className="max-w-5xl mx-auto">
           <div className="mb-12 text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#1B2536] bg-[#0B111C] text-xs font-mono font-medium text-[#9CA6B8] uppercase tracking-wider mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-surface text-xs font-mono font-medium text-muted uppercase tracking-wider mb-4">
               Differentiators
             </div>
-            <h2 className="font-mono text-2xl sm:text-3xl font-semibold text-[#F5F7FA] tracking-tight">
+            <h2 className="font-mono text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
               Why Syn DAO
             </h2>
-            <p className="mt-3 text-sm text-[#6B7385] max-w-xl mx-auto">
+            <p className="mt-3 text-sm text-muted max-w-xl mx-auto">
               Each mechanism named the way you would explain it to an engineer.
             </p>
           </div>
@@ -257,26 +257,26 @@ export default function LandingPage() {
       {/* ══════════════════════════════════════════════════════
           §5  FINAL CTA
           ══════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 border-t border-[#151C29] hero-dark">
+      <section className="py-24 px-4 border-t border-border">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="font-mono text-2xl sm:text-3xl font-semibold text-[#F5F7FA] mb-4 tracking-tight">
+          <h2 className="font-mono text-2xl sm:text-3xl font-semibold text-foreground mb-4 tracking-tight">
             Ready to participate?
           </h2>
-          <p className="text-sm text-[#9CA6B8] mb-10 max-w-lg mx-auto leading-relaxed">
+          <p className="text-sm text-muted mb-10 max-w-lg mx-auto leading-relaxed">
             Connect your wallet, fund USDC into the treasury, and vote on the
             first proposals — or submit one yourself.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/dashboard"
-              className="w-full sm:w-auto px-8 py-3.5 rounded-lg bg-[#2F6FFF] hover:bg-[#4F8BFF] text-white font-mono font-semibold text-sm transition-colors shadow-[0_0_24px_rgba(47,111,255,0.2)] flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-mono font-semibold text-sm transition-colors shadow-[0_0_24px_rgba(47,111,255,0.2)] flex items-center justify-center gap-2"
             >
               Launch App
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/docs"
-              className="w-full sm:w-auto px-8 py-3.5 rounded-lg border border-[#1B2536] bg-[#0B111C] hover:border-[#2F6FFF]/40 text-[#F5F7FA] font-mono font-medium text-sm transition-colors"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-lg border border-border bg-surface hover:border-primary/40 text-foreground font-mono font-medium text-sm transition-colors shadow-xs"
             >
               Docs
             </Link>
@@ -284,7 +284,7 @@ export default function LandingPage() {
               href="https://github.com/kellycryptos/SynArc"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto px-8 py-3.5 rounded-lg border border-[#1B2536] bg-[#0B111C] hover:border-[#2F6FFF]/40 text-[#F5F7FA] font-mono font-medium text-sm transition-colors"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-lg border border-border bg-surface hover:border-primary/40 text-foreground font-mono font-medium text-sm transition-colors shadow-xs"
             >
               GitHub
             </a>

@@ -50,19 +50,19 @@ export function LandingActivitySection() {
   return (
     <section
       id="activity"
-      className="py-24 px-4 border-t border-[#151C29] hero-dark"
+      className="py-24 px-4 border-t border-border"
     >
       <div className="max-w-5xl mx-auto">
         {/* Section header */}
         <div className="mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#1B2536] bg-[#0B111C] text-xs font-mono font-medium text-[#9CA6B8] uppercase tracking-wider mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#2F6FFF] animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-surface text-xs font-mono font-medium text-muted uppercase tracking-wider mb-4 shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             On-chain activity
           </div>
-          <h2 className="text-2xl sm:text-3xl font-mono font-semibold text-[#F5F7FA] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-mono font-semibold text-foreground tracking-tight">
             Real proposals, real votes
           </h2>
-          <p className="mt-2 text-sm text-[#6B7385] max-w-xl">
+          <p className="mt-2 text-sm text-muted max-w-xl">
             Every entry here is sourced directly from the Arc Mainnet governor
             contract — no fabricated history.
           </p>
@@ -75,7 +75,7 @@ export function LandingActivitySection() {
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className="h-20 rounded-xl border border-[#151C29] bg-[#0B111C] animate-pulse"
+                className="h-20 rounded-xl border border-border bg-surface animate-pulse"
               />
             ))}
           </div>
@@ -87,19 +87,19 @@ export function LandingActivitySection() {
                 <GlassCard
                   key={p.id}
                   delay={i * 0.05}
-                  className="p-4 sm:p-5 border border-[#1B2536]"
+                  className="p-4 sm:p-5 border border-border"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
                     <div className="flex items-start gap-3 min-w-0">
-                      <span className="font-mono text-xs text-[#6B7385] mt-0.5 shrink-0">
+                      <span className="font-mono text-xs text-muted mt-0.5 shrink-0">
                         #{i + 1}
                       </span>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-[#F5F7FA] truncate">
+                        <p className="text-sm font-medium text-foreground truncate">
                           {p.title}
                         </p>
                         {p.createdAt && (
-                          <p className="flex items-center gap-1 text-xs text-[#6B7385] mt-0.5">
+                          <p className="flex items-center gap-1 text-xs text-muted mt-0.5">
                             <Clock className="w-3 h-3" />
                             {new Date(p.createdAt).toLocaleDateString(undefined, {
                               year: "numeric",
@@ -112,7 +112,7 @@ export function LandingActivitySection() {
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       {p.treasuryImpact && (
-                        <span className="font-mono text-xs text-[#9CA6B8]">
+                        <span className="font-mono text-xs text-muted">
                           {p.treasuryImpact}
                         </span>
                       )}
@@ -129,23 +129,23 @@ export function LandingActivitySection() {
           </div>
         ) : (
           /* Honest empty state */
-          <div className="rounded-2xl border border-dashed border-[#1B2536] bg-[#0B111C]/60 px-8 py-16 text-center">
+          <div className="rounded-2xl border border-dashed border-border bg-surface/60 px-8 py-16 text-center">
             <div className="flex justify-center mb-5">
-              <div className="w-14 h-14 rounded-2xl border border-[#1B2536] bg-[#080C14] flex items-center justify-center">
-                <Inbox className="w-6 h-6 text-[#2F6FFF]" />
+              <div className="w-14 h-14 rounded-2xl border border-border bg-background flex items-center justify-center">
+                <Inbox className="w-6 h-6 text-primary" />
               </div>
             </div>
-            <h3 className="font-mono text-base font-semibold text-[#F5F7FA] mb-2">
+            <h3 className="font-mono text-base font-semibold text-foreground mb-2">
               No proposals yet on Arc Mainnet
             </h3>
-            <p className="text-sm text-[#6B7385] max-w-sm mx-auto mb-8 leading-relaxed">
+            <p className="text-sm text-muted max-w-sm mx-auto mb-8 leading-relaxed">
               The governor contract is live. Be among the first to submit a
               funded proposal — fund USDC into the DAO treasury and create one
               from the dashboard.
             </p>
             <Link
               href="/proposals/create"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#2F6FFF] text-white text-sm font-mono font-medium hover:bg-[#4F8BFF] transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white text-sm font-mono font-medium hover:bg-primary/90 transition-colors shadow-xs"
             >
               Submit first proposal
               <ArrowRight className="w-4 h-4" />
@@ -158,7 +158,7 @@ export function LandingActivitySection() {
           <div className="mt-6 text-center">
             <Link
               href="/proposals"
-              className="inline-flex items-center gap-1.5 text-sm font-mono text-[#2F6FFF] hover:text-[#4F8BFF] transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm font-mono text-primary hover:underline transition-colors"
             >
               View all proposals
               <ArrowRight className="w-3.5 h-3.5" />

@@ -61,7 +61,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         {/* Syn DAO Logo & Name (Mobile Only) */}
         <div className="flex items-center gap-2.5 md:hidden">
           {onMenuClick && (
-            <button onClick={onMenuClick} className="p-1 text-[#8A948E] hover:text-[#F5F7FA]">
+            <button onClick={onMenuClick} className="p-1 text-muted hover:text-foreground">
               <Menu className="w-5 h-5" />
             </button>
           )}
@@ -73,7 +73,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
         {/* Desktop Breadcrumb */}
         <div className="hidden md:flex items-center gap-2">
-          <span className="text-sm font-medium font-space text-[#8A948E]">Dashboard</span>
+          <span className="text-sm font-medium font-space text-muted">Dashboard</span>
         </div>
       </div>
       
@@ -87,20 +87,20 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
             {/* USDC Balance Display */}
             {loading ? (
-              <div className="h-8 w-24 bg-[#0B111C] animate-pulse rounded-lg border border-[#1B2536] shrink-0" />
+              <div className="h-8 w-24 bg-surface animate-pulse rounded-lg border border-border shrink-0" />
             ) : error ? (
               <span className="hidden xs:inline-flex items-center px-3 py-2 rounded-lg text-xs font-mono bg-negative/10 border border-negative/20 text-negative shrink-0">
                 -- USDC
               </span>
             ) : balance !== null ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono bg-[#0B111C] border border-[#1B2536] text-[#F5F7FA] shrink-0">
+              <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono bg-surface border border-border text-foreground shrink-0">
                 <TokenIcon symbol="USDC" size={14} />
                 {parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
               </span>
             ) : null}
 
             {/* User Profile Card */}
-            <div className="flex items-center gap-2 bg-[#0B111C] border border-[#1B2536] rounded-lg px-3 py-2 text-[#4F8BFF] font-mono">
+            <div className="flex items-center gap-2 bg-surface border border-border rounded-lg px-3 py-2 text-primary font-mono">
               <span className="text-xs font-mono flex items-center gap-1.5">
                 {isCircle ? (
                   <>

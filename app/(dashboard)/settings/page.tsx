@@ -140,7 +140,7 @@ export default function SettingsPage() {
           <GlassCard className="p-6 space-y-6">
             <div className="flex items-center gap-3 border-b border-border-thin pb-4">
               <Wallet className="w-5 h-5 text-primary" />
-              <h3 className="font-bold text-lg text-white">Connected Wallet Info</h3>
+              <h3 className="font-bold text-lg text-foreground">Connected Wallet Info</h3>
             </div>
 
             {!isAuthenticated ? (
@@ -151,11 +151,11 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-muted uppercase tracking-wider">Connected Address</p>
-                  <div className="flex items-center gap-2 font-mono text-sm text-white bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin">
+                  <div className="flex items-center gap-2 font-mono text-sm text-foreground bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin">
                     <span className="truncate flex-1">{walletAddress}</span>
                     <button 
                       onClick={() => copyToClipboard(walletAddress || "", "wallet")}
-                      className="p-1 text-muted hover:text-white transition-colors cursor-pointer"
+                      className="p-1 text-muted hover:text-foreground transition-colors cursor-pointer"
                     >
                       {copiedContract === "wallet" ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
                     </button>
@@ -190,18 +190,18 @@ export default function SettingsPage() {
 
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-muted uppercase tracking-wider">USDC Balance</p>
-                  <div className="font-semibold font-mono text-base text-white bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin">
+                  <div className="font-semibold font-mono text-base text-foreground bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin">
                     {usdcLoading ? "Loading..." : `${parseFloat(usdcBalance || "0.0").toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC`}
                   </div>
                 </div>
 
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-muted uppercase tracking-wider">sARC TOKEN (VOTING POWER)</p>
-                  <div className="font-semibold font-mono text-base text-white bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin flex justify-between items-center">
+                  <div className="font-semibold font-mono text-base text-foreground bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin flex justify-between items-center">
                     <span>{tokenLoading ? "Loading..." : `${tokenBalance} sARC`}</span>
                     <button 
                       onClick={fetchTokenBalance}
-                      className="p-1 text-muted hover:text-white transition-colors cursor-pointer"
+                      className="p-1 text-muted hover:text-foreground transition-colors cursor-pointer"
                     >
                       <RefreshCw className="w-4 h-4" />
                     </button>
@@ -219,7 +219,7 @@ export default function SettingsPage() {
             <GlassCard className="p-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
-                  <h3 className="font-extrabold text-lg text-white">Appearance</h3>
+                  <h3 className="font-extrabold text-lg text-foreground">Appearance</h3>
                   <p className="text-sm text-muted">Choose your preferred theme</p>
                 </div>
                 <div className="flex gap-2 bg-surface-elevated p-1.5 rounded-xl border border-border-thin">
@@ -228,7 +228,7 @@ export default function SettingsPage() {
                     className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                       theme === 'dark' 
                         ? 'bg-accent-purple text-white-keep shadow-md' 
-                        : 'text-muted hover:text-white hover:bg-white/5'
+                        : 'text-muted hover:text-foreground hover:bg-surface'
                     }`}
                   >
                     Dark
@@ -238,7 +238,7 @@ export default function SettingsPage() {
                     className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                       theme === 'light' 
                         ? 'bg-accent-purple text-white-keep shadow-md' 
-                        : 'text-muted hover:text-white hover:bg-white/5'
+                        : 'text-muted hover:text-foreground hover:bg-surface'
                     }`}
                   >
                     Light
@@ -252,7 +252,7 @@ export default function SettingsPage() {
               <div>
                 <div className="flex items-center gap-3 border-b border-border-thin pb-4 mb-4">
                   <Bell className="w-5 h-5 text-accent" />
-                  <h3 className="font-bold text-lg text-white">Notification Alerts</h3>
+                  <h3 className="font-bold text-lg text-foreground">Notification Alerts</h3>
                 </div>
                 <p className="text-sm text-muted mb-4">
                   Receive instant email alerts whenever new governance proposals are submitted.
@@ -276,7 +276,7 @@ export default function SettingsPage() {
                       value={emailInput}
                       onChange={handleEmailChange}
                       disabled={subscribeLoading}
-                      className="w-full px-4 py-2.5 bg-surface border border-border-thin rounded-xl text-sm text-white placeholder:text-text-tertiary focus:border-primary outline-none transition-colors"
+                      className="w-full px-4 py-2.5 bg-surface border border-border-thin rounded-xl text-sm text-foreground placeholder:text-muted focus:border-primary outline-none transition-colors"
                     />
                     <button 
                       onClick={handleSubscribe}
@@ -297,7 +297,7 @@ export default function SettingsPage() {
           <GlassCard className="p-6 space-y-6">
           <div className="flex items-center gap-3 border-b border-border-thin pb-4">
             <Shield className="w-5 h-5 text-accent" />
-            <h3 className="font-bold text-lg text-white">Transparency Contract Addresses</h3>
+            <h3 className="font-bold text-lg text-foreground">Transparency Contract Addresses</h3>
           </div>
           
           <div className="space-y-4">
@@ -317,14 +317,14 @@ export default function SettingsPage() {
                 <div key={contract.id} className="flex items-center justify-between gap-3 p-4 bg-surface-elevated rounded-xl border border-border-thin w-full">
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-muted uppercase tracking-wider">{contract.name}</p>
-                    <span className="font-mono text-xs sm:text-sm text-white block truncate" title={contract.address}>
+                    <span className="font-mono text-xs sm:text-sm text-foreground block truncate" title={contract.address}>
                       {contract.address.slice(0, 6)}...{contract.address.slice(-4)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => copyToClipboard(contract.address, contract.id)}
-                      className="p-2 bg-surface hover:bg-surface-elevated rounded-lg border border-border-thin text-muted hover:text-white transition-colors cursor-pointer flex items-center justify-center"
+                      className="p-2 bg-surface hover:bg-surface-elevated rounded-lg border border-border-thin text-muted hover:text-foreground transition-colors cursor-pointer flex items-center justify-center"
                       title="Copy Address"
                     >
                       {copiedContract === contract.id ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
@@ -333,7 +333,7 @@ export default function SettingsPage() {
                       href={`${explorerUrl}/address/${contract.address}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 bg-surface hover:bg-surface-elevated rounded-lg border border-border-thin text-muted hover:text-white transition-colors flex items-center justify-center"
+                      className="p-2 bg-surface hover:bg-surface-elevated rounded-lg border border-border-thin text-muted hover:text-foreground transition-colors flex items-center justify-center"
                       title="Inspect on Explorer"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -346,16 +346,16 @@ export default function SettingsPage() {
             {/* Network Info Footer */}
             <div className="mt-6 pt-4 border-t border-border-thin grid grid-cols-2 gap-4 text-xs">
               <div className="space-y-1">
-                <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Network</span>
-                <span className="text-white font-medium">{networkName}</span>
+                <span className="text-muted block font-semibold uppercase tracking-wider text-[10px]">Network</span>
+                <span className="text-foreground font-medium">{networkName}</span>
               </div>
               <div className="space-y-1">
-                <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Chain ID</span>
-                <span className="text-white font-medium">{currentChainId}</span>
+                <span className="text-muted block font-semibold uppercase tracking-wider text-[10px]">Chain ID</span>
+                <span className="text-foreground font-medium">{currentChainId}</span>
               </div>
 
               <div className="space-y-1 col-span-2">
-                <span className="text-text-tertiary block font-semibold uppercase tracking-wider text-[10px]">Block Explorer</span>
+                <span className="text-muted block font-semibold uppercase tracking-wider text-[10px]">Block Explorer</span>
                 <a 
                   href={explorerUrl} 
                   target="_blank" 

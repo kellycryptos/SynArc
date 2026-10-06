@@ -36,9 +36,33 @@ const makeProviderFromClient = (connectorClient: any) => {
 
 const buildAdapter = async (provider: any) => {
   const { createViemAdapterFromProvider } = await import("@circle-fin/adapter-viem-v2");
+  const { createPublicClient, http } = await import("viem");
+  const { getMainnetProxyUrl, getTestnetProxyUrl } = await import("@/lib/arc-config");
+
   return await createViemAdapterFromProvider({
     provider,
     capabilities: { addressContext: "user-controlled" },
+    getPublicClient: ({ chain }) => {
+      // Route Arc Mainnet (5042) and Arc Testnet (5042002) through same-origin proxy to eliminate browser CORS
+      const rpcUrl =
+        chain.id === 5042
+          ? getMainnetProxyUrl()
+          : chain.id === 5042002
+            ? getTestnetProxyUrl()
+            : chain.rpcUrls?.default?.http?.[0] || getMainnetProxyUrl();
+
+      return createPublicClient({
+        chain,
+        transport: http(rpcUrl, {
+          timeout: 15000,
+          fetchOptions: {
+            headers: {
+              "x-synarc-source": "app-client",
+            },
+          },
+        }),
+      });
+    },
   });
 };
 

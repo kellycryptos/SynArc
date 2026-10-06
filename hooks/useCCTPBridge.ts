@@ -17,9 +17,8 @@ import {
   type Hex
 } from "viem";
 
-import { ARC_RPC_URL, ARC_RPC_URLS } from "@/lib/arc/config";
 import { getSigner, selectActiveWallet } from "@/lib/tx-helper";
-import { EVM_BRIDGE_CHAINS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS } from "@/lib/arc-config";
+import { EVM_BRIDGE_CHAINS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS, getMainnetProxyUrl } from "@/lib/arc-config";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 
@@ -258,8 +257,8 @@ export const ARC_CHAIN_TESTNET_CONFIG = {
   usdcAddress: "0x3600000000000000000000000000000000000000" as `0x${string}`,
   tokenMessenger: CCTP_TESTNET_MESSENGER,
   messageTransmitter: CCTP_TESTNET_TRANSMITTER,
-  rpcUrl: ARC_RPC_URL,
-  rpcUrls: ARC_RPC_URLS,
+  rpcUrl: ARC_TESTNET_RPC_URLS[0] || 'https://rpc.testnet.arc.network',
+  rpcUrls: ARC_TESTNET_RPC_URLS,
   icon: "ARC",
   isTestnet: true,
   blockExplorerUrl: "https://testnet.arcscan.app"

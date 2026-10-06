@@ -6,6 +6,7 @@
  */
 
 import { ARC_RPC_URL } from "@/lib/arc/config";
+import { getMainnetProxyUrl } from "@/lib/arc-config";
 
 export const ARC_CONFIG = {
   // Active Network indicator ('testnet' | 'mainnet')
@@ -35,8 +36,8 @@ export const ARC_CONFIG = {
     primary: process.env.NEXT_PUBLIC_ARC_RPC_URL || '/api/rpc/testnet',
     // Fallback — uses the same centralized URL
     fallback: ARC_RPC_URL,
-    // Mainnet RPC endpoint — official Arc Mainnet endpoint
-    mainnet: process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL || 'https://rpc.mainnet.arc.io',
+    // Mainnet RPC endpoint — proxied same-origin
+    get mainnet() { return getMainnetProxyUrl(); },
     // Health check timeout (ms)
     healthCheckTimeout: 5000,
     // Health check interval (ms)

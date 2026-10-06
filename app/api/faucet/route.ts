@@ -3,11 +3,18 @@ import { createWalletClient, createPublicClient, http, fallback, defineChain } f
 import { privateKeyToAccount } from 'viem/accounts'
 import { ARC_GAS } from '@/lib/arc-config'
 
-// ─── Testnet-only config (faucet is always testnet) ─────────────────────────
+// ─── Network Definitions ───────────────────────────────────────────────────
 const TESTNET_RPC_URLS = [
   process.env.ARC_TESTNET_RPC_URL?.trim() || '',
   'https://rpc.testnet.arc.network',
   'https://rpc.testnet.arc.io',
+].filter(Boolean)
+
+const MAINNET_RPC_URLS = [
+  process.env.ARC_MAINNET_RPC_URL?.trim() || '',
+  process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL?.trim() || '',
+  'https://rpc.mainnet.arc.network',
+  'https://rpc.mainnet.arc.io',
 ].filter(Boolean)
 
 const arcTestnetChain = defineChain({
@@ -21,11 +28,26 @@ const arcTestnetChain = defineChain({
   blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
 })
 
+const arcMainnetChain = defineChain({
+  id: 5042,
+  name: 'Arc',
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://rpc.mainnet.arc.io'] },
+    public:  { http: ['https://rpc.mainnet.arc.io'] },
+  },
+  blockExplorers: { default: { name: 'Arc Explorer', url: 'https://explorer.arc.io' } },
+})
+
 const TESTNET_TOKEN_ADDRESS = (
   process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e'
 ) as `0x${string}`
 
-// Native Arc USDC contract (6-decimal ERC20 balanceOf, but native gas token has 18-decimal wei)
+const MAINNET_TOKEN_ADDRESS = (
+  process.env.NEXT_PUBLIC_MAINNET_TOKEN_ADDRESS || '0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4'
+) as `0x${string}`
+
+// Native Arc USDC contract (6-decimal ERC20)
 const TESTNET_NATIVE_USDC = '0x3600000000000000000000000000000000000000' as `0x${string}`
 
 const TOKEN_ABI = [
@@ -42,6 +64,7 @@ const TOKEN_ABI = [
 ] as const
 
 const COOLDOWN_MS = 24 * 60 * 60 * 1000 // 24 hours
+// Track claims keyed by `${network}:${address}` and `${network}:${ip}`
 const claims = new Map<string, number>()
 const ipClaims = new Map<string, number>()
 
@@ -56,18 +79,33 @@ function getClientIp(req: NextRequest): string {
   return 'unknown-ip'
 }
 
+function resolveNetwork(req: NextRequest, explicitNetwork?: string | null): 'mainnet' | 'testnet' {
+  if (explicitNetwork === 'mainnet' || explicitNetwork === 'testnet') {
+    return explicitNetwork
+  }
+  const referer = req.headers.get('referer') || ''
+  if (referer.includes('network=testnet')) return 'testnet'
+  if (referer.includes('network=mainnet')) return 'mainnet'
+  // Default to mainnet as requested for production governance
+  return 'mainnet'
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const walletAddress = searchParams.get('wallet')?.toLowerCase()
+    const network = resolveNetwork(req, searchParams.get('network'))
     const ip = getClientIp(req)
 
     if (!walletAddress || !walletAddress.startsWith('0x')) {
       return NextResponse.json({ error: 'Invalid wallet address' }, { status: 400 })
     }
 
-    const lastClaim = claims.get(walletAddress)
-    const lastIpClaim = ipClaims.get(ip)
+    const claimKey = `${network}:${walletAddress}`
+    const ipClaimKey = `${network}:${ip}`
+
+    const lastClaim = claims.get(claimKey)
+    const lastIpClaim = ipClaims.get(ipClaimKey)
     const now = Date.now()
 
     if (lastClaim && now - lastClaim < COOLDOWN_MS) {
@@ -78,7 +116,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         eligible: false,
         nextClaimAt,
-        cooldown: `${hours}h ${minutes}m`
+        cooldown: `${hours}h ${minutes}m`,
+        network,
+        amount: network === 'mainnet' ? 10 : 1000,
       })
     }
 
@@ -90,11 +130,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         eligible: false,
         nextClaimAt,
-        cooldown: `${hours}h ${minutes}m (IP cooldown)`
+        cooldown: `${hours}h ${minutes}m (IP cooldown)`,
+        network,
+        amount: network === 'mainnet' ? 10 : 1000,
       })
     }
 
-    return NextResponse.json({ eligible: true })
+    return NextResponse.json({
+      eligible: true,
+      network,
+      amount: network === 'mainnet' ? 10 : 1000,
+    })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
@@ -104,14 +150,18 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const walletAddress = (body.walletAddress || body.wallet)?.toLowerCase()
+    const network = resolveNetwork(req, body.network)
     const ip = getClientIp(req)
 
     if (!walletAddress || !walletAddress.startsWith('0x')) {
       return NextResponse.json({ error: 'Invalid wallet address' }, { status: 400 })
     }
 
-    const lastClaim = claims.get(walletAddress)
-    const lastIpClaim = ipClaims.get(ip)
+    const claimKey = `${network}:${walletAddress}`
+    const ipClaimKey = `${network}:${ip}`
+
+    const lastClaim = claims.get(claimKey)
+    const lastIpClaim = ipClaims.get(ipClaimKey)
     const now = Date.now()
 
     if (lastClaim && now - lastClaim < COOLDOWN_MS) {
@@ -124,7 +174,8 @@ export async function POST(req: NextRequest) {
           error: 'Already claimed today',
           eligible: false,
           nextClaimAt,
-          cooldown: `${hours}h ${minutes}m`
+          cooldown: `${hours}h ${minutes}m`,
+          network,
         },
         { status: 429 }
       )
@@ -140,28 +191,41 @@ export async function POST(req: NextRequest) {
           error: 'IP address already claimed today',
           eligible: false,
           nextClaimAt,
-          cooldown: `${hours}h ${minutes}m`
+          cooldown: `${hours}h ${minutes}m`,
+          network,
         },
         { status: 429 }
       )
     }
 
-    const rawKey = process.env.FAUCET_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY
+    // On Mainnet, use DEPLOYER_PRIVATE_KEY (owner of 15,000,000 sARC)
+    // On Testnet, use FAUCET_PRIVATE_KEY or DEPLOYER_PRIVATE_KEY
+    const rawKey = network === 'mainnet'
+      ? (process.env.DEPLOYER_PRIVATE_KEY || process.env.FAUCET_PRIVATE_KEY || '')
+      : (process.env.FAUCET_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY || '')
 
-    if (!rawKey || rawKey === '""' || rawKey === "''") {
-      return NextResponse.json({ error: 'Faucet not configured' }, { status: 500 })
+    const sanitizedKey = rawKey.trim().replace(/^['"]|['"]$/g, '')
+
+    if (!sanitizedKey || sanitizedKey.length < 10) {
+      return NextResponse.json({ error: 'Faucet not configured for this network' }, { status: 500 })
     }
 
-    const privateKey = rawKey.startsWith('0x')
-      ? (rawKey as `0x${string}`)
-      : (`0x${rawKey}` as `0x${string}`)
+    const privateKey = sanitizedKey.startsWith('0x')
+      ? (sanitizedKey as `0x${string}`)
+      : (`0x${sanitizedKey}` as `0x${string}`)
 
     const account = privateKeyToAccount(privateKey)
-    // ── Always use testnet RPCs directly (faucet is testnet-only) ─────────────
+    const isMainnet = network === 'mainnet'
+    const targetChain = isMainnet ? arcMainnetChain : arcTestnetChain
+    const tokenAddress = isMainnet ? MAINNET_TOKEN_ADDRESS : TESTNET_TOKEN_ADDRESS
+    const rpcUrls = isMainnet ? MAINNET_RPC_URLS : TESTNET_RPC_URLS
+    const tokenAmount = isMainnet ? 10n * 10n ** 18n : 1000n * 10n ** 18n
+    const tokenDisplay = isMainnet ? '10' : '1000'
+
     const transport = fallback(
-      TESTNET_RPC_URLS.map(url =>
+      rpcUrls.map(url =>
         http(url, {
-          timeout: 12000,
+          timeout: 15000,
           retryCount: 2,
           retryDelay: 800,
         })
@@ -174,12 +238,12 @@ export async function POST(req: NextRequest) {
 
     const walletClient = createWalletClient({
       account,
-      chain: arcTestnetChain,
+      chain: targetChain,
       transport,
     })
 
     const publicClient = createPublicClient({
-      chain: arcTestnetChain,
+      chain: targetChain,
       transport,
     })
 
@@ -202,28 +266,29 @@ export async function POST(req: NextRequest) {
     let finalGasLimit: bigint = ARC_GAS.faucet
     try {
       const estimatedGas = await publicClient.estimateContractGas({
-        address: TESTNET_TOKEN_ADDRESS,
+        address: tokenAddress,
         abi: TOKEN_ABI,
         functionName: 'transfer',
-        args: [walletAddress as `0x${string}`, BigInt(1000) * BigInt(1e18)],
+        args: [walletAddress as `0x${string}`, tokenAmount],
         account,
       })
-      finalGasLimit = (estimatedGas * 120n) / 100n
+      finalGasLimit = (estimatedGas * 130n) / 100n
     } catch (e) {
-      console.warn('Failed to estimate gas for faucet:', e)
+      console.warn('Failed to estimate gas for faucet transfer:', e)
+      finalGasLimit = 100000n
     }
 
-    // 1. Send 1000 sARC (18 decimals)
+    // Transfer sARC tokens
     const txHash = await walletClient.writeContract({
-      address: TESTNET_TOKEN_ADDRESS,
+      address: tokenAddress,
       abi: TOKEN_ABI,
       functionName: 'transfer',
-      args: [walletAddress as `0x${string}`, BigInt(1000) * BigInt(1e18)],
+      args: [walletAddress as `0x${string}`, tokenAmount],
       gas: finalGasLimit,
       ...gasParams,
     })
 
-    // Wait for sARC confirmation
+    // Wait for confirmation
     const receipt = await publicClient.waitForTransactionReceipt({
       hash: txHash,
       timeout: 60_000
@@ -233,58 +298,64 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'sARC transaction failed on-chain' }, { status: 500 })
     }
 
-    // 2. Send native USDC gas tokens so users can pay EVM gas fees
-    // Arc native currency has 18-decimal wei (same as ETH), so 2 USDC = 2n * 10n**18n
+    // If testnet, optionally send testnet native USDC gas tokens
     let usdcTxHash: string | undefined
-    try {
-      usdcTxHash = await walletClient.sendTransaction({
-        to: walletAddress as `0x${string}`,
-        value: 2n * 10n ** 18n,   // 2 native USDC in wei (18 decimals)
-        gas: 21000n,
-        ...gasParams,
-      })
-
-      await publicClient.waitForTransactionReceipt({
-        hash: usdcTxHash as `0x${string}`,
-        timeout: 60_000
-      })
-
-      // Also transfer ERC20 USDC (6 decimals) for treasury deposits — best effort
+    if (!isMainnet) {
       try {
-        await walletClient.writeContract({
-          address: TESTNET_NATIVE_USDC,
-          abi: TOKEN_ABI,
-          functionName: 'transfer',
-          args: [walletAddress as `0x${string}`, 2_000_000n],  // 2 USDC at 6 decimals
-          gas: finalGasLimit,
+        usdcTxHash = await walletClient.sendTransaction({
+          to: walletAddress as `0x${string}`,
+          value: 2n * 10n ** 18n,   // 2 native USDC in wei
+          gas: 21000n,
           ...gasParams,
         })
-      } catch (erc20Err) {
-        console.warn('Faucet ERC20 USDC transfer non-critical warning:', erc20Err)
+
+        await publicClient.waitForTransactionReceipt({
+          hash: usdcTxHash as `0x${string}`,
+          timeout: 60_000
+        })
+
+        // Also transfer ERC20 USDC for testnet deposits — best effort
+        try {
+          await walletClient.writeContract({
+            address: TESTNET_NATIVE_USDC,
+            abi: TOKEN_ABI,
+            functionName: 'transfer',
+            args: [walletAddress as `0x${string}`, 2_000_000n],
+            gas: finalGasLimit,
+            ...gasParams,
+          })
+        } catch (erc20Err) {
+          console.warn('Testnet ERC20 USDC transfer non-critical warning:', erc20Err)
+        }
+      } catch (usdcErr: any) {
+        console.warn('Testnet native USDC gas transfer non-critical warning:', usdcErr?.shortMessage || usdcErr?.message)
       }
-    } catch (usdcErr: any) {
-      console.warn('Faucet native USDC gas transfer failed (non-fatal, sARC was sent):', usdcErr?.shortMessage || usdcErr?.message)
-      // Don't block success — sARC was already sent and confirmed
     }
 
     // Register claim time on success
-    claims.set(walletAddress, Date.now())
+    claims.set(claimKey, Date.now())
     if (ip !== 'unknown-ip') {
-      ipClaims.set(ip, Date.now())
+      ipClaims.set(ipClaimKey, Date.now())
     }
+
+    const explorerUrl = isMainnet
+      ? `https://explorer.arc.io/tx/${txHash}`
+      : `https://testnet.arcscan.app/tx/${txHash}`
 
     return NextResponse.json({
       success: true,
-      message: "1000 sARC and 2 USDC gas claimed successfully!",
+      message: `${tokenDisplay} sARC claimed successfully on ${isMainnet ? 'Arc Mainnet' : 'Arc Testnet'}!`,
       txHash,
       usdcTxHash,
-      explorerUrl: `https://testnet.arcscan.app/tx/${txHash}`
+      explorerUrl,
+      amount: Number(tokenDisplay),
+      network,
     })
 
   } catch (error: any) {
     console.error('Faucet error:', error)
     return NextResponse.json(
-      { error: error?.shortMessage || error?.message || 'Faucet failed' },
+      { error: error?.shortMessage || error?.message || 'Faucet claim failed' },
       { status: 500 }
     )
   }

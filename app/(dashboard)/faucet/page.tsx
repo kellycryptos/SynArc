@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { TokenIcon } from "@/components/ui/TokenIcon";
 import {
@@ -12,7 +13,9 @@ import {
   Zap,
   RefreshCw,
   ArrowRight,
-  AlertTriangle,
+  ShieldCheck,
+  FilePlus2,
+  Vote,
 } from "lucide-react";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useToken } from "@/hooks/useToken";
@@ -20,8 +23,8 @@ import { useWallets } from "@/hooks/useWallets";
 import { getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
 import { ARC_CHAIN, CONTRACTS } from "@/lib/arc-config";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { BridgeModal } from "@/components/BridgeModal";
 import { toast } from "react-hot-toast";
-
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const COOLDOWN_KEY = "synarc_faucet_last_claim";
@@ -62,23 +65,27 @@ function CooldownTimer({ nextClaimAt }: { nextClaimAt: string }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function FaucetPage() {
   const { isAuthenticated, walletAddress, login } = useAuth();
-  const { isArcMainnet, switchToTestnet } = useArcNetwork();
+  const { isArcMainnet, isArcTestnet, explorerUrl, networkName } = useArcNetwork();
 
   const [sarcStatus, setSarcStatus] = useState<ClaimStatus>("idle");
   const [sarcMsg, setSarcMsg] = useState("");
   const [sarcTxHash, setSarcTxHash] = useState("");
   const [nextClaimAt, setNextClaimAt] = useState<string | null>(null);
+  const [showBridgeModal, setShowBridgeModal] = useState(false);
 
-  const { needsDelegation, sarcBalance, refetch: refetchToken } = useToken(walletAddress);
+  const { needsDelegation, sarcBalance, votingPower, refetch: refetchToken } = useToken(walletAddress);
   const { wallets } = useWallets();
   const [delegating, setDelegating] = useState(false);
+
+  const currentNetwork = isArcMainnet ? "mainnet" : "testnet";
+  const claimAmount = isArcMainnet ? 10 : 1000;
 
   const handleDelegate = async () => {
     if (!walletAddress) return;
     setDelegating(true);
     try {
       const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
-      
+
       const SARC_DELEGATE_ABI = [{
         name: "delegate",
         type: "function",
@@ -88,10 +95,9 @@ export default function FaucetPage() {
       }] as const;
 
       const SARC_ADDRESS = CONTRACTS.token;
-
       const gasParams = await getAggressiveGasParams(publicClient);
 
-      toast.loading("Activating voting power...");
+      toast.loading("Activating voting power (self-delegating)...");
       const tx = await walletClient.writeContract({
         address: SARC_ADDRESS,
         abi: SARC_DELEGATE_ABI,
@@ -103,7 +109,7 @@ export default function FaucetPage() {
 
       await waitForTransaction(publicClient, tx);
       toast.dismiss();
-      toast.success("Voting power activated! You are ready to vote.");
+      toast.success("Voting power activated! You are ready to create proposals and vote.");
       await refetchToken();
     } catch (err: any) {
       console.error("Delegation failed:", err);
@@ -114,24 +120,30 @@ export default function FaucetPage() {
     }
   };
 
-
   // ─── Check localStorage cooldown on mount ─────────────────────────────────
   useEffect(() => {
     if (!walletAddress) return;
-    const stored = localStorage.getItem(`${COOLDOWN_KEY}_${walletAddress.toLowerCase()}`);
+    const storageKey = `${COOLDOWN_KEY}_${currentNetwork}_${walletAddress.toLowerCase()}`;
+    const stored = localStorage.getItem(storageKey);
     if (stored) {
       const nextAt = new Date(parseInt(stored) + COOLDOWN_MS).toISOString();
       if (new Date(nextAt).getTime() > Date.now()) {
         setSarcStatus("cooldown");
         setNextClaimAt(nextAt);
+      } else {
+        setSarcStatus("idle");
+        setNextClaimAt(null);
       }
+    } else {
+      setSarcStatus("idle");
+      setNextClaimAt(null);
     }
-  }, [walletAddress]);
+  }, [walletAddress, currentNetwork]);
 
-  // ─── Also fetch server-side cooldown status ────────────────────────────────
+  // ─── Fetch server-side cooldown status ────────────────────────────────────
   useEffect(() => {
     if (!walletAddress) return;
-    fetch(`/api/faucet?wallet=${walletAddress}`)
+    fetch(`/api/faucet?wallet=${walletAddress}&network=${currentNetwork}`)
       .then((r) => r.json())
       .then((data) => {
         if (!data.eligible && data.nextClaimAt) {
@@ -140,7 +152,7 @@ export default function FaucetPage() {
         }
       })
       .catch(() => {});
-  }, [walletAddress]);
+  }, [walletAddress, currentNetwork]);
 
   // ─── Claim sARC Token ──────────────────────────────────────────────────────
   const handleClaimSarc = async () => {
@@ -156,12 +168,15 @@ export default function FaucetPage() {
       const res = await fetch("/api/faucet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ walletAddress, wallet: walletAddress }),
+        body: JSON.stringify({
+          walletAddress,
+          wallet: walletAddress,
+          network: currentNetwork,
+        }),
       });
       const data = await res.json();
 
       if (res.status === 429) {
-        // Already claimed
         setSarcStatus("cooldown");
         setNextClaimAt(data.nextClaimAt || null);
         setSarcMsg(data.cooldown ? `Next claim in ${data.cooldown}` : "Already claimed today.");
@@ -169,64 +184,66 @@ export default function FaucetPage() {
       }
 
       if (!res.ok) {
-        throw new Error(data.error || "Faucet request failed.");
+        throw new Error(data.error || "Faucet claim failed.");
       }
 
-      // Success — store timestamp in localStorage
-      localStorage.setItem(
-        `${COOLDOWN_KEY}_${walletAddress.toLowerCase()}`,
-        String(Date.now())
-      );
+      // Store in localStorage
+      const storageKey = `${COOLDOWN_KEY}_${currentNetwork}_${walletAddress.toLowerCase()}`;
+      localStorage.setItem(storageKey, String(Date.now()));
       setNextClaimAt(new Date(Date.now() + COOLDOWN_MS).toISOString());
       setSarcStatus("success");
-      setSarcMsg(data.message || "1000 sARC Tokens sent to your wallet!");
+      setSarcMsg(data.message || `${claimAmount} sARC sent to your wallet!`);
       setSarcTxHash(data.txHash || "");
+      toast.success(`${claimAmount} sARC claimed successfully!`);
       await refetchToken().catch(() => {});
 
     } catch (err: any) {
       setSarcStatus("error");
       setSarcMsg(err.message || "Something went wrong. Please try again.");
+      toast.error(err.message || "Failed to claim sARC");
     }
   };
 
-  // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 max-w-7xl mx-auto">
       {/* Page Header */}
       <div className="space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
           <Zap className="w-3.5 h-3.5" />
-          <span>Testnet Faucet</span>
+          <span>{isArcMainnet ? "Arc Mainnet Community Faucet" : "Arc Testnet Faucet"}</span>
         </div>
         <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-          Get Testnet Tokens
+          {isArcMainnet ? "Claim 10 sARC for Mainnet Governance" : "Get Testnet Tokens"}
         </h1>
         <p className="text-muted leading-relaxed max-w-2xl">
-          Fund your wallet with testnet tokens to participate in Syn DAO governance.
-          sARC tokens give you voting power; USDC and EURC let you deposit into the treasury.
+          {isArcMainnet
+            ? "Claim 10 sARC tokens to create proposals and vote on Arc Mainnet. Hold and delegate sARC to unlock full DAO participation."
+            : "Fund your wallet with testnet tokens to participate in Syn DAO governance on Arc Testnet."}
         </p>
       </div>
 
       {/* Mainnet Active Notice */}
-      {isArcMainnet && (
-        <div className="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
+      {isArcMainnet ? (
+        <div className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
+            <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-amber-300">You are viewing Arc Mainnet (Chain 5042)</p>
-              <p className="text-xs text-amber-200/80">
-                Faucets distribute free test tokens for Arc Testnet only. Switch to Testnet to claim sARC, USDC, and gas tokens.
+              <p className="text-sm font-semibold text-emerald-300">Arc Mainnet (Chain 5042) Active</p>
+              <p className="text-xs text-emerald-200/80">
+                You can claim 10 sARC tokens once every 24 hours to participate in mainnet governance, open proposals, and vote.
               </p>
             </div>
           </div>
-          <button
-            onClick={() => switchToTestnet()}
-            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs font-mono transition-colors shrink-0 flex items-center gap-1.5 justify-center"
-          >
-            Switch to Testnet <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href="/proposals/create"
+              className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs transition-colors flex items-center gap-1"
+            >
+              <FilePlus2 className="w-3.5 h-3.5" /> Create Proposal
+            </Link>
+          </div>
         </div>
-      )}
+      ) : null}
 
       {/* Token Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -242,13 +259,30 @@ export default function FaucetPage() {
             </div>
             <div>
               <h2 className="font-extrabold text-white text-lg leading-tight">Syn DAO Token</h2>
-              <p className="text-xs text-muted font-mono">sARC · 1000 per claim</p>
+              <p className="text-xs text-muted font-mono">
+                sARC · {claimAmount} per claim ({isArcMainnet ? "Mainnet" : "Testnet"})
+              </p>
             </div>
           </div>
 
           <p className="text-sm text-muted leading-relaxed flex-1">
-            sARC is the governance token for Syn DAO. Hold sARC to earn voting power on proposals.
+            sARC is the governance token for Syn DAO. Hold and self-delegate sARC to unlock voting power and proposal creation rights.
           </p>
+
+          {/* Current balance indicator */}
+          {isAuthenticated && (
+            <div className="p-3 rounded-xl bg-surface border border-border-thin flex items-center justify-between text-xs">
+              <span className="text-muted">Your Holdings:</span>
+              <span className="font-mono font-bold text-white">
+                {sarcBalance.toLocaleString()} sARC
+                {votingPower > 0 ? (
+                  <span className="text-emerald-400 ml-1.5 font-sans font-semibold">({votingPower} votes active)</span>
+                ) : sarcBalance > 0 ? (
+                  <span className="text-amber-400 ml-1.5 font-sans font-semibold">(Not delegated)</span>
+                ) : null}
+              </span>
+            </div>
+          )}
 
           {/* Status messages */}
           {sarcStatus === "success" && (
@@ -258,7 +292,7 @@ export default function FaucetPage() {
                 <p>{sarcMsg}</p>
                 {sarcTxHash && (
                   <a
-                    href={`https://testnet.arcscan.app/tx/${sarcTxHash}`}
+                    href={`${explorerUrl}/tx/${sarcTxHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 text-success/80 hover:text-success underline underline-offset-2"
@@ -287,22 +321,22 @@ export default function FaucetPage() {
             </div>
           )}
 
-          {/* Delegation Check Notice */}
+          {/* Delegation Action Notice */}
           {sarcBalance > 0 && needsDelegation && (
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold flex flex-col gap-2 animate-fade-in-up">
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-semibold flex flex-col gap-2.5 animate-fade-in-up">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 animate-pulse animate-duration-1000" />
+                <Zap className="w-4 h-4 mt-0.5 shrink-0 text-amber-400" />
                 <div className="space-y-0.5">
                   <p className="font-bold text-amber-300">Activate Voting Power</p>
-                  <p className="text-[10px] text-muted leading-relaxed font-medium">
-                    Holdings: {sarcBalance.toLocaleString()} sARC. You need to self-delegate to unlock voting.
+                  <p className="text-[11px] text-muted leading-relaxed font-medium">
+                    You have {sarcBalance.toLocaleString()} sARC! Run 1-click self-delegation so the Governor contract can count your votes.
                   </p>
                 </div>
               </div>
               <button
                 onClick={handleDelegate}
                 disabled={delegating}
-                className="w-full py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-background font-bold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer"
+                className="w-full py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
               >
                 {delegating ? (
                   <>
@@ -312,15 +346,32 @@ export default function FaucetPage() {
                 ) : (
                   <>
                     <Zap className="w-3 h-3" />
-                    Activate Voting Power
+                    Activate Voting Power (Self-Delegate)
                   </>
                 )}
               </button>
             </div>
           )}
 
-          {/* CTA Button */}
+          {/* Quick Actions if already has voting power */}
+          {votingPower > 0 && (
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <Link
+                href="/proposals/create"
+                className="py-2 px-3 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 text-primary font-bold text-xs flex items-center justify-center gap-1 text-center transition-all"
+              >
+                <FilePlus2 className="w-3.5 h-3.5" /> New Proposal
+              </Link>
+              <Link
+                href="/proposals"
+                className="py-2 px-3 rounded-lg bg-surface border border-border-thin hover:border-primary/40 text-text-primary font-bold text-xs flex items-center justify-center gap-1 text-center transition-all"
+              >
+                <Vote className="w-3.5 h-3.5" /> Vote Now
+              </Link>
+            </div>
+          )}
 
+          {/* CTA Button */}
           {sarcStatus === "cooldown" ? (
             <button
               disabled
@@ -330,22 +381,13 @@ export default function FaucetPage() {
               Claimed Today
             </button>
           ) : sarcStatus === "success" ? (
-            <div className="space-y-2">
-              <button
-                disabled
-                className="w-full py-3 rounded-xl bg-success/10 border border-success/20 text-success font-bold text-sm flex items-center justify-center gap-2 cursor-not-allowed"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                Token Sent!
-              </button>
-              {/* Next step: delegation */}
-              <a
-                href="/proposals"
-                className="w-full py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-amber-500/20 transition-all"
-              >
-                Activate voting power to open a proposal &amp; delegate
-              </a>
-            </div>
+            <button
+              disabled
+              className="w-full py-3 rounded-xl bg-success/10 border border-success/20 text-success font-bold text-sm flex items-center justify-center gap-2 cursor-not-allowed"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              {claimAmount} sARC Sent!
+            </button>
           ) : (
             <button
               id="faucet-sarc-btn"
@@ -356,19 +398,19 @@ export default function FaucetPage() {
               {sarcStatus === "loading" ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  Sending Token...
+                  Sending {claimAmount} sARC...
                 </>
               ) : (
                 <>
                   <Coins className="w-4 h-4" />
-                  {isAuthenticated ? "Claim 1000 sARC Tokens" : "Connect Wallet to Claim"}
+                  {isAuthenticated ? `Claim ${claimAmount} sARC Tokens` : "Connect Wallet to Claim"}
                 </>
               )}
             </button>
           )}
         </GlassCard>
 
-        {/* ── USDC Testnet ────────────────────────────────────────────────── */}
+        {/* ── USDC Card ────────────────────────────────────────────────── */}
         <GlassCard className="p-6 flex flex-col gap-5 border border-arc-blue/20 bg-gradient-to-br from-arc-blue/[0.03] to-transparent relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-32 h-32 bg-arc-blue/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -377,29 +419,47 @@ export default function FaucetPage() {
               <TokenIcon symbol="USDC" size={32} />
             </div>
             <div>
-              <h2 className="font-extrabold text-white text-lg leading-tight">USDC Testnet</h2>
-              <p className="text-xs text-muted font-mono">Circle Faucet</p>
+              <h2 className="font-extrabold text-white text-lg leading-tight">
+                {isArcMainnet ? "USDC Gas & Treasury" : "USDC Testnet"}
+              </h2>
+              <p className="text-xs text-muted font-mono">
+                {isArcMainnet ? "Arc Native Currency" : "Circle Faucet"}
+              </p>
             </div>
           </div>
 
           <p className="text-sm text-muted leading-relaxed flex-1">
-            Get free testnet USDC from Circle's official faucet. Use it to deposit into the
-            Syn DAO treasury and participate in treasury governance.
+            {isArcMainnet
+              ? "On Arc Mainnet, USDC functions as the native gas token. You can bridge USDC seamlessly to fund proposal execution or treasury deposits."
+              : "Get free testnet USDC from Circle's official faucet. Use it to deposit into the Syn DAO treasury and participate in treasury governance."}
           </p>
 
-          <a
-            id="faucet-usdc-btn"
-            href="https://faucet.circle.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-3 rounded-xl bg-blue-500/10 border border-blue-400/20 text-blue-300 font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-500/20 hover:border-blue-400/40 transition-all cursor-pointer"
-          >
-            Claim USDC
-            <ArrowRight className="w-4 h-4" />
-          </a>
+          {isArcMainnet ? (
+            <button
+              onClick={() => {
+                if (!isAuthenticated) login();
+                else setShowBridgeModal(true);
+              }}
+              className="w-full py-3 rounded-xl bg-blue-500/10 border border-blue-400/20 text-blue-300 font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-500/20 hover:border-blue-400/40 transition-all cursor-pointer"
+            >
+              Bridge USDC to Arc
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <a
+              id="faucet-usdc-btn"
+              href="https://faucet.circle.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3 rounded-xl bg-blue-500/10 border border-blue-400/20 text-blue-300 font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-500/20 hover:border-blue-400/40 transition-all cursor-pointer"
+            >
+              Claim USDC from Circle
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          )}
         </GlassCard>
 
-        {/* ── EURC Testnet ─────────────────────────────────────────────────── */}
+        {/* ── EURC Card ─────────────────────────────────────────────────── */}
         <GlassCard className="p-6 flex flex-col gap-5 border border-purple-400/20 bg-gradient-to-br from-purple-500/[0.03] to-transparent relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -408,26 +468,37 @@ export default function FaucetPage() {
               <TokenIcon symbol="EURC" size={32} />
             </div>
             <div>
-              <h2 className="font-extrabold text-white text-lg leading-tight">EURC Testnet</h2>
-              <p className="text-xs text-muted font-mono">Circle Faucet</p>
+              <h2 className="font-extrabold text-white text-lg leading-tight">EURC Stablecoin</h2>
+              <p className="text-xs text-muted font-mono">{isArcMainnet ? "Treasury Currency" : "Circle Faucet"}</p>
             </div>
           </div>
 
           <p className="text-sm text-muted leading-relaxed flex-1">
-            Get free testnet EURC from Circle's official faucet. EURC is the Euro-pegged stablecoin
-            accepted by the Syn DAO treasury.
+            {isArcMainnet
+              ? "EURC is the Euro-pegged stablecoin accepted by the Syn DAO Treasury for multi-currency grants and international payouts."
+              : "Get free testnet EURC from Circle's official faucet. EURC is the Euro-pegged stablecoin accepted by the Syn DAO treasury."}
           </p>
 
-          <a
-            id="faucet-eurc-btn"
-            href="https://faucet.circle.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-3 rounded-xl bg-purple-500/10 border border-purple-400/20 text-purple-300 font-bold text-sm flex items-center justify-center gap-2 hover:bg-purple-500/20 hover:border-purple-400/40 transition-all cursor-pointer"
-          >
-            Claim EURC
-            <ArrowRight className="w-4 h-4" />
-          </a>
+          {isArcMainnet ? (
+            <Link
+              href="/treasury"
+              className="w-full py-3 rounded-xl bg-purple-500/10 border border-purple-400/20 text-purple-300 font-bold text-sm flex items-center justify-center gap-2 hover:bg-purple-500/20 hover:border-purple-400/40 transition-all cursor-pointer"
+            >
+              View Treasury Holdings
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <a
+              id="faucet-eurc-btn"
+              href="https://faucet.circle.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3 rounded-xl bg-purple-500/10 border border-purple-400/20 text-purple-300 font-bold text-sm flex items-center justify-center gap-2 hover:bg-purple-500/20 hover:border-purple-400/40 transition-all cursor-pointer"
+            >
+              Claim EURC from Circle
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          )}
         </GlassCard>
       </div>
 
@@ -438,15 +509,26 @@ export default function FaucetPage() {
             <AlertCircle className="w-5 h-5 text-primary" />
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-bold text-white">These are testnet tokens only</p>
+            <p className="text-sm font-bold text-white">
+              {isArcMainnet ? "Arc Mainnet Governance Rules" : "These are testnet tokens only"}
+            </p>
             <p className="text-sm text-muted leading-relaxed">
-              All tokens here are for Arc Testnet and have no real-world monetary value.
-              They exist purely for testing and governance participation during the testnet phase.
-              sARC tokens reset whenever the contracts are redeployed.
+              {isArcMainnet
+                ? "A minimum of 1 sARC token is required to submit a governance proposal. To vote on an active proposal, your voting power must be delegated. Use the 'Activate Voting Power' button after claiming 10 sARC to ensure your votes are counted on-chain."
+                : "All tokens here are for Arc Testnet and have no real-world monetary value. They exist purely for testing and governance participation during the testnet phase."}
             </p>
           </div>
         </div>
       </GlassCard>
+
+      {/* Bridge Modal */}
+      {showBridgeModal && (
+        <BridgeModal
+          isOpen={showBridgeModal}
+          onClose={() => setShowBridgeModal(false)}
+          onSuccess={refetchToken}
+        />
+      )}
     </div>
   );
 }

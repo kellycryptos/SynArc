@@ -45,14 +45,24 @@ export const ARC_TESTNET_RPC_URLS = [
 ];
 
 // Arc Mainnet list (chain 5042)
-// Priority: Same-Origin Proxy → Official Arc Mainnet RPC (https://rpc.mainnet.arc.io) → Alchemy
-export const ARC_MAINNET_RPC_URLS = Array.from(new Set([
-  getMainnetProxyUrl(),
-  process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL,
-  'https://rpc.mainnet.arc.io',
-  process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC,
-  process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC,
-].filter(Boolean) as string[]))
+// Priority: Same-Origin Proxy → Official Arc Mainnet RPC (https://rpc.mainnet.arc.network / https://rpc.mainnet.arc.io) → Alchemy
+export function getMainnetRpcUrls(): string[] {
+  return Array.from(new Set([
+    getMainnetProxyUrl(),
+    'https://rpc.mainnet.arc.network',
+    process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL,
+    'https://rpc.mainnet.arc.io',
+    process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC,
+    process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC,
+  ].filter(Boolean) as string[]));
+}
+
+export const ARC_MAINNET_RPC_URLS = new Proxy([] as string[], {
+  get(_target, prop) {
+    const urls = getMainnetRpcUrls();
+    return (urls as any)[prop];
+  }
+});
 
 // Default network on any fresh page load with no wallet connected
 export const ACTIVE_NETWORK: 'mainnet' | 'testnet' = 
@@ -94,7 +104,7 @@ export const arcTestnet = defineChain({
   name: 'Arc Testnet',
   nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
   rpcUrls: {
-    default: { http: [getTestnetProxyUrl(), ARC_TESTNET_FALLBACK_RPC] },
+    default: { http: [ARC_TESTNET_FALLBACK_RPC, getTestnetProxyUrl()] },
     public: { http: [ARC_TESTNET_FALLBACK_RPC] }
   },
   blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },

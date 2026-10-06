@@ -6,7 +6,7 @@ import {
   walletConnectWallet,
 } from '@rainbow-me/rainbowkit/wallets'
 import { http, fallback } from 'wagmi'
-import { arcTestnet, arcMainnet, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK, getTestnetProxyUrl } from '@/lib/arc-config'
+import { arcTestnet, arcMainnet, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK, getTestnetProxyUrl, getMainnetProxyUrl } from '@/lib/arc-config'
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 
 // Documented public fallback constant for Arc Testnet
@@ -57,15 +57,30 @@ export const wagmiConfig = getDefaultConfig({
       }
     ),
     [arcMainnet.id]: fallback(
-      ARC_MAINNET_RPC_URLS.map(url =>
-        http(url, {
+      [
+        http(getMainnetProxyUrl(), {
           timeout: 10000,
-          retryCount: 3,
+          retryCount: 2,
           retryDelay: 1000,
-        })
-      ),
+          fetchOptions: {
+            headers: {
+              'x-synarc-source': 'app-client',
+            },
+          },
+        }),
+        http('https://rpc.mainnet.arc.network', {
+          timeout: 10000,
+          retryCount: 2,
+          retryDelay: 1000,
+        }),
+        http('https://rpc.mainnet.arc.io', {
+          timeout: 10000,
+          retryCount: 2,
+          retryDelay: 1000,
+        }),
+      ],
       {
-        retryCount: 3,
+        retryCount: 2,
         retryDelay: 1000,
       }
     ),

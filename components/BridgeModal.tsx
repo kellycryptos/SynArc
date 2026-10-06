@@ -7,7 +7,7 @@ import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useSwitchChain } from "wagmi";
-import { createPublicClient, http, parseAbi, formatUnits } from "viem";
+import { createPublicClient, http, fallback, getAddress, parseAbi, formatUnits } from "viem";
 import { selectActiveWallet } from "@/lib/tx-helper";
 import { IS_MAINNET, getActiveNetwork } from "@/lib/arc-config";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
@@ -41,6 +41,10 @@ const SOURCE_CHAINS = [
     name: "Ethereum Sepolia",
     tokenAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
     rpcUrl: "https://rpc.ankr.com/eth_sepolia",
+    rpcUrls: [
+      "https://rpc.ankr.com/eth_sepolia",
+      "https://ethereum-sepolia-rpc.publicnode.com"
+    ],
     icon: "ETH",
     color: "text-blue-400"
   },
@@ -49,6 +53,10 @@ const SOURCE_CHAINS = [
     name: "Base Sepolia",
     tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dcf7e",
     rpcUrl: "https://sepolia.base.org",
+    rpcUrls: [
+      "https://sepolia.base.org",
+      "https://base-sepolia-rpc.publicnode.com"
+    ],
     icon: "BASE",
     color: "text-blue-500"
   },
@@ -57,6 +65,9 @@ const SOURCE_CHAINS = [
     name: "Avalanche Fuji",
     tokenAddress: "0x5425890298aed601595a70AB815c96711a31Bc65",
     rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc",
+    rpcUrls: [
+      "https://api.avax-test.network/ext/bc/C/rpc"
+    ],
     icon: "AVAX",
     color: "text-red-500"
   },
@@ -65,6 +76,7 @@ const SOURCE_CHAINS = [
     name: "Solana Devnet",
     tokenAddress: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
     rpcUrl: "https://api.devnet.solana.com",
+    rpcUrls: ["https://api.devnet.solana.com"],
     icon: "SOL",
     color: "text-purple-400"
   },
@@ -203,32 +215,47 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
 
   // Load USDC balance on source chain
   const fetchSourceBalance = async () => {
-    if (!activeWallet?.address) {
+    const rawTarget = activeWallet?.address || walletAddress;
+    if (!rawTarget) {
       setSourceBalance("0.00");
       return;
     }
-    if (selectedChain.id === "SOL_DEVNET") {
-      setSourceBalance("500.00");
+    if (selectedChain.id === "SOL_DEVNET" || (selectedChain as any).id === "SOL_MAINNET") {
+      setSourceBalance("0.00");
+      return;
+    }
+    let targetAddress: `0x${string}`;
+    try {
+      targetAddress = getAddress(rawTarget.toLowerCase());
+    } catch {
+      setSourceBalance("0.00");
       return;
     }
     setBalanceLoading(true);
     try {
+      const urls: string[] = (selectedChain as any).rpcUrls || [selectedChain.rpcUrl];
       const client = createPublicClient({
-        transport: http(selectedChain.rpcUrl, {
-          timeout: 10000,
-          retryCount: 3,
-          retryDelay: 1000,
-        }),
+        transport: fallback(
+          urls.map((u: string) => http(u, { timeout: 8000, retryCount: 2 }))
+        ),
       });
+
+      let tokenAddr: `0x${string}`;
+      try {
+        tokenAddr = getAddress(selectedChain.tokenAddress.toLowerCase());
+      } catch {
+        tokenAddr = selectedChain.tokenAddress as `0x${string}`;
+      }
+
       const rawBalance = await client.readContract({
-        address: selectedChain.tokenAddress as `0x${string}`,
+        address: tokenAddr,
         abi: erc20Abi,
         functionName: "balanceOf",
-        args: [activeWallet.address as `0x${string}`],
+        args: [targetAddress],
       });
       setSourceBalance(parseFloat(formatUnits(rawBalance, 6)).toFixed(2));
     } catch (err) {
-      console.error(`Failed to fetch balance on ${selectedChain.name}:`, err);
+      console.warn(`Failed to fetch balance on ${selectedChain.name}:`, err);
       setSourceBalance("0.00");
     } finally {
       setBalanceLoading(false);

@@ -53,8 +53,10 @@ export function useRpcStatus(network?: 'mainnet' | 'testnet') {
       return primaryResult;
     },
     refetchInterval: 30000,
-    staleTime: 15000,
-    retry: 2,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
+    staleTime: 30000,
+    retry: 1,
   });
 
   const isHealthy = status?.isHealthy ?? false;

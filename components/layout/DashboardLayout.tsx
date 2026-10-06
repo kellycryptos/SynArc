@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Sidebar } from "../sidebar/Sidebar";
 import { DashboardNavbar } from "../navbar/DashboardNavbar";
 import { WalletGuard } from "../auth/WalletGuard";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { DashboardFooter } from "@/components/layout/DashboardFooter";
+import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, AlertTriangle } from "lucide-react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
@@ -25,6 +26,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background text-foreground relative z-10">
+      {/* 0ms Instant Navigation Indicator */}
+      <Suspense fallback={null}>
+        <NavigationProgress />
+      </Suspense>
+
       {/* Desktop Sidebar */}
       <div className="hidden md:block fixed inset-y-0 left-0 z-40">
         <Sidebar />

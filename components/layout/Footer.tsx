@@ -61,7 +61,7 @@ const DEVELOPER_LINKS: NavItem[] = [
     href: `https://explorer.arc.io/address/${CONTRACTS_MAINNET.governor}`,
     external: true,
   },
-  { label: "Testnet Faucet", href: "/faucet" },
+  { label: "Claim sARC Faucet", href: "/faucet" },
   { label: "Security & Audits", href: "#", badge: "Coming Soon" },
 ];
 
@@ -199,25 +199,26 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative overflow-hidden border-t border-[#151C29] bg-[#05080F] text-[#9CA6B8] transition-colors duration-200">
+    <footer className="relative overflow-hidden border-t border-border bg-background text-muted transition-colors duration-200">
       {/* ── Glowing Top Border Accent Beam ── */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#2F6FFF]/60 to-transparent" />
       <div className="absolute top-0 inset-x-1/4 h-[2px] bg-gradient-to-r from-transparent via-[#4F8BFF]/40 to-transparent blur-sm" />
 
       {/* ── Ambient Background Lighting & Grid ── */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#05080F] via-[#070D18] to-[#04060B] pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#05080F] via-[#070D18] to-[#04060B] dark:block hidden pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-surface/40 to-background dark:hidden pointer-events-none" />
       <div className="absolute inset-0 grid-overlay opacity-25 pointer-events-none" />
 
       {/* Dynamic Glow Orbs */}
       <GlowOrb
-        className="-top-32 left-1/4"
+        className="-top-32 left-1/4 opacity-30 dark:opacity-100"
         color="purple"
         size={360}
         blur={120}
         animate
       />
       <GlowOrb
-        className="bottom-10 right-10"
+        className="bottom-10 right-10 opacity-30 dark:opacity-100"
         color="cyan"
         size={300}
         blur={110}
@@ -228,23 +229,23 @@ export function Footer() {
         {/* ══════════════════════════════════════════════════════
             §1 PRO DISPATCH / NEWSLETTER CARD
             ══════════════════════════════════════════════════════ */}
-        <div className="pt-16 pb-12 border-b border-[#1B2536]">
-          <div className="relative rounded-2xl border border-[#1B2536] bg-[#0B111C]/90 p-6 sm:p-8 lg:p-10 backdrop-blur-xl overflow-hidden shadow-2xl">
+        <div className="pt-16 pb-12 border-b border-border">
+          <div className="relative rounded-2xl border border-border bg-surface/90 p-6 sm:p-8 lg:p-10 backdrop-blur-xl overflow-hidden shadow-2xl">
             {/* Subtle inner card accent gradients */}
-            <div className="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-[#2F6FFF]/10 blur-[80px] pointer-events-none" />
-            <div className="absolute -left-20 -bottom-20 w-64 h-64 rounded-full bg-[#4F8BFF]/5 blur-[70px] pointer-events-none" />
+            <div className="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
+            <div className="absolute -left-20 -bottom-20 w-64 h-64 rounded-full bg-primary/5 blur-[70px] pointer-events-none" />
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               {/* Left text */}
               <div className="lg:col-span-6 space-y-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#2F6FFF]/30 bg-[#2F6FFF]/10 text-xs font-mono text-[#4F8BFF]">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-mono text-primary">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Autonomous Governance Dispatches</span>
                 </div>
-                <h3 className="font-mono text-2xl sm:text-3xl font-bold tracking-tight text-[#F5F7FA]">
+                <h3 className="font-mono text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                   Stay ahead of on-chain intelligence.
                 </h3>
-                <p className="text-sm text-[#9CA6B8] max-w-xl leading-relaxed">
+                <p className="text-sm text-muted max-w-xl leading-relaxed">
                   Weekly intelligence on AI verifier milestones, Circle CCTP rebalances, and verified deliverable payouts across the Arc ecosystem.
                 </p>
               </div>
@@ -259,7 +260,7 @@ export function Footer() {
                   >
                     <Check className="w-5 h-5 text-emerald-400 shrink-0" />
                     <div>
-                      <p className="font-semibold text-[#F5F7FA]">You are subscribed to Syn DAO Dispatches.</p>
+                      <p className="font-semibold text-foreground">You are subscribed to Syn DAO Dispatches.</p>
                       <p className="text-xs text-emerald-300/80">Check your inbox for the next governance briefing.</p>
                     </div>
                   </motion.div>
@@ -273,13 +274,13 @@ export function Footer() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="Enter your developer or DAO email..."
-                          className="w-full px-4 py-3 rounded-xl border border-[#1B2536] bg-[#05080F]/90 text-sm font-mono text-[#F5F7FA] placeholder-[#6B7385] focus:outline-none focus:border-[#2F6FFF] focus:ring-1 focus:ring-[#2F6FFF] transition-all shadow-inner"
+                          className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm font-mono text-foreground placeholder:text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-inner"
                         />
                       </div>
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-6 py-3 rounded-xl bg-[#2F6FFF] hover:bg-[#4F8BFF] disabled:opacity-50 text-white font-mono font-semibold text-xs tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(47,111,255,0.3)] hover:shadow-[0_0_28px_rgba(47,111,255,0.5)] flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                        className="px-6 py-3 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-mono font-semibold text-xs tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(47,111,255,0.3)] hover:shadow-[0_0_28px_rgba(47,111,255,0.5)] flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                       >
                         {isSubmitting ? (
                           <span>Subscribing...</span>
@@ -291,9 +292,9 @@ export function Footer() {
                         )}
                       </button>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-[#6B7385]">
+                    <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-muted">
                       <span className="flex items-center gap-1.5">
-                        <Lock className="w-3 h-3 text-[#2F6FFF]" />
+                        <Lock className="w-3 h-3 text-primary" />
                         Zero spam • One-click unsubscribe
                       </span>
                       <span>•</span>
@@ -303,18 +304,18 @@ export function Footer() {
                 )}
 
                 {/* Micro Protocol Metrics Bar */}
-                <div className="mt-6 pt-5 border-t border-[#1B2536]/70 grid grid-cols-3 gap-2 text-center sm:text-left">
+                <div className="mt-6 pt-5 border-t border-border/70 grid grid-cols-3 gap-2 text-center sm:text-left">
                   <div>
-                    <span className="block font-mono text-base font-bold text-[#F5F7FA]">48h</span>
-                    <span className="text-[11px] font-mono text-[#6B7385]">Cooldown Guard</span>
+                    <span className="block font-mono text-base font-bold text-foreground">48h</span>
+                    <span className="text-[11px] font-mono text-muted">Cooldown Guard</span>
                   </div>
                   <div>
-                    <span className="block font-mono text-base font-bold text-[#2F6FFF]">100%</span>
-                    <span className="text-[11px] font-mono text-[#6B7385]">On-Chain Match</span>
+                    <span className="block font-mono text-base font-bold text-primary">100%</span>
+                    <span className="text-[11px] font-mono text-muted">On-Chain Match</span>
                   </div>
                   <div>
                     <span className="block font-mono text-base font-bold text-emerald-400">USDC</span>
-                    <span className="text-[11px] font-mono text-[#6B7385]">Native Settlement</span>
+                    <span className="text-[11px] font-mono text-muted">Native Settlement</span>
                   </div>
                 </div>
               </div>
@@ -325,27 +326,27 @@ export function Footer() {
         {/* ══════════════════════════════════════════════════════
             §2 TELEMETRY & LIVE NETWORK STATUS BAR
             ══════════════════════════════════════════════════════ */}
-        <div className="py-6 border-b border-[#1B2536] flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
+        <div className="py-6 border-b border-border flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
           {/* Left: Network Status Pill */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#1B2536] bg-[#0B111C]">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </span>
-              <span className="text-[#F5F7FA] font-medium">Arc Mainnet</span>
-              <span className="text-[#6B7385]">ID: 5042</span>
+              <span className="text-foreground font-medium">Arc Mainnet</span>
+              <span className="text-muted">ID: 5042</span>
               <span className="text-emerald-400 font-semibold">• Operational</span>
             </div>
 
             {/* Quick Copy Treasury Address */}
-            <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#1B2536] bg-[#0B111C]">
-              <span className="text-[#6B7385]">Treasury:</span>
-              <code className="text-[#F5F7FA]">{shortTreasury}</code>
+            <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface">
+              <span className="text-muted">Treasury:</span>
+              <code className="text-foreground">{shortTreasury}</code>
               <button
                 onClick={handleCopy}
                 aria-label="Copy Treasury Contract Address"
-                className="p-1 hover:text-[#4F8BFF] text-[#9CA6B8] transition-colors rounded"
+                className="p-1 hover:text-primary text-muted transition-colors rounded"
                 title="Copy full Treasury address"
               >
                 {copied ? (
@@ -363,19 +364,19 @@ export function Footer() {
               href={`https://explorer.arc.io/address/${treasuryAddress}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#1B2536] bg-[#0B111C] hover:border-[#2F6FFF]/40 text-[#9CA6B8] hover:text-[#F5F7FA] transition-all"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface hover:border-primary/40 text-muted hover:text-foreground transition-all shadow-xs"
             >
               <span>Arc Explorer</span>
-              <ExternalLink className="w-3 h-3 text-[#2F6FFF]" />
+              <ExternalLink className="w-3 h-3 text-primary" />
             </a>
 
             <button
               onClick={scrollToTop}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#1B2536] bg-[#0B111C] hover:border-[#2F6FFF]/40 text-[#9CA6B8] hover:text-[#F5F7FA] transition-all cursor-pointer group"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface hover:border-primary/40 text-muted hover:text-foreground transition-all cursor-pointer group shadow-xs"
               title="Back to top of page"
             >
               <span>Back to Top</span>
-              <ArrowUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform text-[#2F6FFF]" />
+              <ArrowUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform text-primary" />
             </button>
           </div>
         </div>
@@ -392,16 +393,16 @@ export function Footer() {
                   <SynArcLogo size={42} animated />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-2xl font-bold font-space tracking-tight text-[#F5F7FA] group-hover:text-[#4F8BFF] transition-colors">
-                    Syn <span className="text-[#2F6FFF]">DAO</span>
+                  <span className="text-2xl font-bold font-space tracking-tight text-foreground group-hover:text-primary transition-colors">
+                    Syn <span className="text-primary">DAO</span>
                   </span>
-                  <span className="text-[10px] font-mono tracking-widest text-[#6B7385] uppercase">
+                  <span className="text-[10px] font-mono tracking-widest text-muted uppercase">
                     Institutional Governance Engine
                   </span>
                 </div>
               </Link>
 
-              <p className="text-sm text-[#9CA6B8] leading-relaxed max-w-sm">
+              <p className="text-sm text-muted leading-relaxed max-w-sm">
                 The institutional coordination layer for humans and autonomous AI agents. Safe multi-sig treasuries, deliverable-hash verification, and automated settlement built natively on Arc.
               </p>
 
@@ -411,7 +412,7 @@ export function Footer() {
                   href="https://x.com/syndaopro"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-lg border border-[#1B2536] bg-[#0B111C] flex items-center justify-center text-[#9CA6B8] hover:text-[#F5F7FA] hover:border-[#2F6FFF]/40 transition-colors shrink-0"
+                  className="w-9 h-9 rounded-lg border border-border bg-surface flex items-center justify-center text-muted hover:text-foreground hover:border-primary/40 transition-colors shrink-0 shadow-xs"
                   aria-label="Syn DAO on X"
                 >
                   <Twitter className="w-4 h-4" />
@@ -420,14 +421,14 @@ export function Footer() {
                   href="https://github.com/kellycryptos/SynArc"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-lg border border-[#1B2536] bg-[#0B111C] flex items-center justify-center text-[#9CA6B8] hover:text-[#F5F7FA] hover:border-[#2F6FFF]/40 transition-colors shrink-0"
+                  className="w-9 h-9 rounded-lg border border-border bg-surface flex items-center justify-center text-muted hover:text-foreground hover:border-primary/40 transition-colors shrink-0 shadow-xs"
                   aria-label="Syn DAO on GitHub"
                 >
                   <Github className="w-4 h-4" />
                 </a>
                 <Link
                   href="/dashboard"
-                  className="h-9 inline-flex items-center gap-1.5 px-3.5 rounded-lg border border-[#2F6FFF]/30 bg-[#2F6FFF]/10 text-xs font-mono font-medium text-[#4F8BFF] hover:bg-[#2F6FFF]/20 transition-colors shrink-0"
+                  className="h-9 inline-flex items-center gap-1.5 px-3.5 rounded-lg border border-primary/30 bg-primary/10 text-xs font-mono font-medium text-primary hover:bg-primary/20 transition-colors shrink-0"
                 >
                   <Terminal className="w-3.5 h-3.5" />
                   <span>Launch App</span>
@@ -439,8 +440,8 @@ export function Footer() {
             <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {/* Col 1: Ecosystem */}
               <div className="space-y-4">
-                <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-[#F5F7FA] flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-[#2F6FFF]" />
+                <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-foreground flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-primary" />
                   Ecosystem
                 </h4>
                 <ul className="space-y-2.5 text-xs font-mono">
@@ -454,8 +455,8 @@ export function Footer() {
 
               {/* Col 2: Developers */}
               <div className="space-y-4">
-                <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-[#F5F7FA] flex items-center gap-1.5">
-                  <Cpu className="w-3.5 h-3.5 text-[#2F6FFF]" />
+                <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-foreground flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-primary" />
                   Developers
                 </h4>
                 <ul className="space-y-2.5 text-xs font-mono">
@@ -469,8 +470,8 @@ export function Footer() {
 
               {/* Col 3: Governance */}
               <div className="space-y-4">
-                <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-[#F5F7FA] flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 text-[#2F6FFF]" />
+                <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-foreground flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-primary" />
                   Governance
                 </h4>
                 <ul className="space-y-2.5 text-xs font-mono">
@@ -484,8 +485,8 @@ export function Footer() {
 
               {/* Col 4: Community & Legal */}
               <div className="space-y-4">
-                <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-[#F5F7FA] flex items-center gap-1.5">
-                  <Globe className="w-3.5 h-3.5 text-[#2F6FFF]" />
+                <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-foreground flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-primary" />
                   Community
                 </h4>
                 <ul className="space-y-2.5 text-xs font-mono">
@@ -497,24 +498,24 @@ export function Footer() {
                 </ul>
 
                 {/* Sub-section: Legal */}
-                <div className="pt-4 border-t border-[#1B2536]/60">
-                  <h5 className="text-[11px] font-mono font-semibold tracking-wider uppercase text-[#6B7385] mb-2.5">
+                <div className="pt-4 border-t border-border/60">
+                  <h5 className="text-[11px] font-mono font-semibold tracking-wider uppercase text-muted mb-2.5">
                     Legal & Trust
                   </h5>
                   <ul className="space-y-2.5 text-xs font-mono">
                     {LEGAL_LINKS.map((item) => (
                       <li key={item.label}>
                         {item.badge === "Coming Soon" ? (
-                          <div className="inline-flex items-center gap-1.5 text-[#6B7385] cursor-default select-none">
+                          <div className="inline-flex items-center gap-1.5 text-muted cursor-default select-none">
                             <span>{item.label}</span>
-                            <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider bg-[#0B111C] border border-[#1B2536] text-[#6B7385]">
+                            <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider bg-surface border border-border text-muted">
                               Coming Soon
                             </span>
                           </div>
                         ) : (
                           <Link
                             href={item.href}
-                            className="text-[#6B7385] hover:text-[#9CA6B8] transition-colors"
+                            className="text-muted hover:text-foreground transition-colors"
                           >
                             {item.label}
                           </Link>
@@ -531,14 +532,14 @@ export function Footer() {
         {/* ══════════════════════════════════════════════════════
             §4 BOTTOM BAR & DISCLAIMER
             ══════════════════════════════════════════════════════ */}
-        <div className="py-8 border-t border-[#1B2536] flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-[#6B7385]">
+        <div className="py-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-muted">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
             <span>&copy; {new Date().getFullYear()} Syn DAO. All rights reserved.</span>
-            <span className="hidden sm:inline text-[#1B2536]">|</span>
+            <span className="hidden sm:inline text-border">|</span>
             <span>Built on Arc</span>
           </div>
 
-          <p className="text-[11px] text-[#6B7385] text-center md:text-right max-w-xl">
+          <p className="text-[11px] text-muted text-center md:text-right max-w-xl">
             Syn DAO is an autonomous, open-source governance protocol. Code is law; on-chain contracts enforce treasury safety rules and 48-hour timelocks.
           </p>
         </div>
