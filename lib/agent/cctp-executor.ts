@@ -120,6 +120,47 @@ export class CCTPExecutor {
 
     const zeroBytes32 = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`
 
+    // 1. Primary execution path: Circle BridgeKit for fast event-driven lifecycle
+    if (!agentAddress && this.privateKey) {
+      try {
+        const { BridgeKit } = await import('@circle-fin/bridge-kit')
+        const { createViemAdapterFromPrivateKey } = await import('@circle-fin/adapter-viem-v2')
+        const adapter = createViemAdapterFromPrivateKey({ privateKey: this.privateKey })
+        const kit = new BridgeKit()
+        const fromChain = IS_MAINNET ? 'Arc' : 'Arc_Testnet'
+        const toChain = IS_MAINNET ? 'Ethereum' : 'Ethereum_Sepolia'
+        const targetChainName = CIRCLE_ETH_CONFIG.name
+
+        if (onProgress) onProgress(`[BridgeKit] Initiating CCTP transfer of ${amountUSDC} USDC from ${fromChain} to ${toChain}...`)
+
+        const bridgeResult = await kit.bridge({
+          from: { adapter, chain: fromChain },
+          to: { adapter, chain: toChain, recipientAddress },
+          amount: amountUSDC.toString(),
+          config: { transferSpeed: 'FAST' }
+        })
+
+        const burnStep = bridgeResult?.steps?.find((s: any) => s.name === 'burn' || s.name === 'depositForBurn')
+        const mintStep = bridgeResult?.steps?.find((s: any) => s.name === 'mint')
+        const msgHash = (burnStep?.data as any)?.messageHash || ''
+
+        if (onProgress) onProgress(`[BridgeKit Success] Bridged ${amountUSDC} USDC to ${targetChainName}.`)
+
+        return {
+          burnTxHash: burnStep?.txHash || '',
+          mintTxHash: mintStep?.txHash || '',
+          messageHash: msgHash,
+          attestationUrl: `${CIRCLE_IRIS_API_URL}/${msgHash}`,
+          attestationSignature: '',
+          status: 'success',
+          amount: amountUSDC,
+          destinationChain: targetChainName,
+        }
+      } catch (kitErr) {
+        console.warn('[CCTPExecutor] BridgeKit execution failed, falling back to direct contract flow:', kitErr)
+      }
+    }
+
     if (agentAddress) {
       const treasuryAgentAddress = process.env.NEXT_PUBLIC_TREASURY_AGENT_ADDRESS as `0x${string}` | undefined
       if (treasuryAgentAddress) {
@@ -253,8 +294,8 @@ export class CCTPExecutor {
     const attestationUrl = `${CIRCLE_IRIS_API_URL}/${messageHash}`
     let attestation: string | null = null
 
-    // Poll up to 30 times (2.5 minutes)
-    for (let i = 0; i < 30; i++) {
+    // Fallback: Poll Circle Iris API every 2.5 seconds (up to 40 attempts / 100 seconds)
+    for (let i = 0; i < 40; i++) {
       try {
         const response = await fetch(attestationUrl)
         if (response.ok) {
@@ -267,7 +308,7 @@ export class CCTPExecutor {
       } catch (pollErr) {
         console.error('[CCTPExecutor] Error polling Circle Iris API:', pollErr)
       }
-      await new Promise((resolve) => setTimeout(resolve, 5000))
+      await new Promise((resolve) => setTimeout(resolve, 2500))
     }
 
     if (!attestation) {

@@ -24,7 +24,23 @@ const SARC_ADDRESS = CONTRACTS.token as `0x${string}`;
 const GOVERNOR_ABI = GovernorABI;
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+
+const VotersTransparencyCard = dynamic(
+  () => import("@/components/proposals/VotersTransparencyCard").then((m) => m.VotersTransparencyCard),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-48 rounded-2xl bg-white/[0.02] border border-border-thin animate-pulse" />
+    ),
+  }
+);
+
+const ArcDebugPanel = dynamic(
+  () => import("@/components/proposals/ArcDebugPanel").then((m) => m.ArcDebugPanel),
+  { ssr: false }
+);
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { BrowserProvider, Contract } from "ethers";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
@@ -785,48 +801,12 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
                 ))}
               </div>
             </div>
-            {/* Voters List */}
-            <GlassCard className="p-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center justify-between">
-                <span>Voters Transparency</span>
-                <span className="text-xs text-text-tertiary bg-surface-elevated px-2.5 py-0.5 rounded-full border border-border-thin font-bold">
-                  {voters.length} {voters.length === 1 ? 'voter' : 'voters'}
-                </span>
-              </h3>
-              
-              {loadingVoters ? (
-                <div className="py-4 text-center">
-                  <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
-                </div>
-              ) : voters.length > 0 ? (
-                <div className="space-y-3.5 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                  {voters.map((v, i) => (
-                    <div key={i} className="flex justify-between items-center text-xs border-b border-border-thin/40 pb-3 last:border-b-0 last:pb-0">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <a href={`${explorerUrl}/address/${v.voter}`} target="_blank" rel="noopener noreferrer" className="font-mono text-primary hover:underline">
-                            {v.voter.slice(0, 6)}...{v.voter.slice(-4)}
-                          </a>
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${
-                            v.support === 1 ? "bg-success/15 text-success border border-success/20" :
-                            v.support === 0 ? "bg-danger/15 text-danger border border-danger/20" :
-                            "bg-surface-elevated text-text-tertiary border border-border-thin"
-                          }`}>
-                            {v.support === 1 ? "FOR" : v.support === 0 ? "AGAINST" : "ABSTAIN"}
-                          </span>
-                        </div>
-                        {v.reason && (
-                          <p className="text-text-tertiary italic text-[11px] leading-relaxed">&quot;{v.reason}&quot;</p>
-                        )}
-                      </div>
-                      <span className="font-mono font-bold text-white text-[11px]">{v.weight.toLocaleString(undefined, { maximumFractionDigits: 0 })} VP</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-text-tertiary text-center py-4">No votes cast yet.</p>
-              )}
-            </GlassCard>
+            {/* Voters List (Code-split) */}
+            <VotersTransparencyCard
+              voters={voters}
+              loadingVoters={loadingVoters}
+              explorerUrl={explorerUrl}
+            />
           </div>
 
           {/* Sidebar - Voting & Metrics */}
@@ -1213,25 +1193,14 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
 
-        {/* Developer Debug Panel (Phase 8) */}
+        {/* Developer Debug Panel (Code-split) */}
         {(process.env.NODE_ENV === "development" || (typeof window !== "undefined" && window.location.search.includes("debug=true"))) && (
-          <GlassCard className="p-6 border border-warning/20 bg-warning/5 rounded-2xl mt-8">
-            <div className="flex items-center gap-2 mb-4 text-warning font-bold text-sm">
-              <ShieldCheck className="w-5 h-5 text-warning animate-pulse" />
-              <span>Arc Developer Debug Panel</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-              <div className="space-y-1.5">
-                <div><span className="text-text-tertiary">RPC Proxy:</span> <span className="text-white">/api/rpc/testnet (server-side)</span></div>
-                <div><span className="text-text-tertiary">Current Block:</span> <span className="text-primary font-bold">{currentBlock || "Loading..."}</span></div>
-              </div>
-              <div className="space-y-1.5">
-                <div><span className="text-text-tertiary">Wallet Address:</span> <span className="text-white">{walletAddress || "Not Connected"}</span></div>
-                <div><span className="text-text-tertiary">Voting Power:</span> <span className="text-success font-bold">{activeBalance.toFixed(2)} USDC/sARC</span></div>
-                <div><span className="text-text-tertiary">Proposal State:</span> <span className="text-white font-bold">{proposal.status}</span></div>
-              </div>
-            </div>
-          </GlassCard>
+          <ArcDebugPanel
+            currentBlock={currentBlock}
+            walletAddress={walletAddress}
+            activeBalance={activeBalance}
+            proposalStatus={proposal.status}
+          />
         )}
       </div>
     </div>

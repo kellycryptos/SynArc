@@ -21,22 +21,36 @@ export function useRpcStatus(network?: 'mainnet' | 'testnet') {
   const { data: status, isLoading, error } = useQuery({
     queryKey: ["rpcHealth", activeNet],
     queryFn: async () => {
-      let lastResult: RpcHealthStatus | null = null;
-      for (const url of urls) {
-        if (!url) continue;
-        const result = await checkRpcHealth(url, 4000);
-        if (result.isHealthy) {
-          return result;
-        }
-        lastResult = result;
+      const validUrls = urls.filter(Boolean);
+      if (validUrls.length === 0) {
+        return {
+          isHealthy: false,
+          latency: 0,
+          url: "",
+          timestamp: Date.now(),
+          error: "No RPC endpoints configured",
+        };
       }
-      return lastResult || {
-        isHealthy: false,
-        latency: 0,
-        url: urls[0] || "",
-        timestamp: Date.now(),
-        error: "All RPC endpoints unresponsive",
-      };
+
+      // 1. Fast-path: Check primary endpoint first (fast return under 100ms when healthy)
+      const primaryResult = await checkRpcHealth(validUrls[0], 2500);
+      if (primaryResult.isHealthy) {
+        return primaryResult;
+      }
+
+      // 2. Resilient fallback: Test remaining backup endpoints concurrently (avoids sequential 12s stall)
+      if (validUrls.length > 1) {
+        const fallbackResults = await Promise.all(
+          validUrls.slice(1).map((url) => checkRpcHealth(url, 3000))
+        );
+        const healthyFallback = fallbackResults.find((r) => r.isHealthy);
+        if (healthyFallback) {
+          return healthyFallback;
+        }
+        return fallbackResults[0] || primaryResult;
+      }
+
+      return primaryResult;
     },
     refetchInterval: 30000,
     staleTime: 15000,
