@@ -785,14 +785,6 @@ export default function CreateProposalPage() {
                     </div>
                     <p className="text-xs font-mono text-muted break-all">{formData.deliverableURI}</p>
                   </div>
-
-                  <div className="p-4 bg-amber-500/5 border border-amber-500/15 rounded-xl flex items-start gap-3 text-xs text-amber-300 leading-normal">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 animate-pulse" />
-                    <div>
-                      <span className="font-bold">Timelock Notice: </span>
-                      Since the destination contract is the Agent Operating Treasury, this transfer will not bypass the timelock. Upon proposal passage, it will undergo the standard 24-hour timelock queue before execution is finalized.
-                    </div>
-                  </div>
                 </>
               )}
             </div>

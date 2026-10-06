@@ -85,7 +85,6 @@ export function WalletConnectButton() {
           </button>
         )}
         <p className="text-[10px] text-center text-[#6B7385] px-1 leading-relaxed font-mono">
-          Wallet required for governance.{" "}
           <a href="/terms" className="text-[#4F8BFF] hover:underline transition-all">Terms</a>
           {" "}&amp;{" "}
           <a href="/privacy" className="text-[#4F8BFF] hover:underline transition-all">Privacy</a>

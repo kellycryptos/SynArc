@@ -651,15 +651,6 @@ export default function CreatorProfilePage({ params }: PageProps) {
               )}
             </AnimatePresence>
 
-            {/* Escrow Explanation Info Box */}
-            <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex gap-2.5 text-[11px] leading-relaxed text-text-secondary">
-              <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold text-text-primary">How it works:</span>{" "}
-                Your USDC is sent to a secure <span className="font-semibold text-text-primary">on-chain escrow contract</span>. Funds are locked and released to the creator <span className="font-semibold text-text-primary">only after</span> community/governance approves the milestones. This protects both supporters and creators.
-              </div>
-            </div>
-
             <div className="pt-2 border-t border-border-thin text-[10px] text-text-tertiary/60 flex items-center justify-center gap-1 font-mono">
               <ShieldCheck className="w-3.5 h-3.5 text-success" />
               <span>USDC Native · Powered by {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}</span>

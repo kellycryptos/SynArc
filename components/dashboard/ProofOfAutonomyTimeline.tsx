@@ -79,7 +79,6 @@ export function ProofOfAutonomyTimeline({ limit = 10 }: { limit?: number }) {
           </div>
           <div>
             <h3 className="font-bold text-sm text-text-primary">Proof of Autonomy</h3>
-            <p className="text-[10px] text-text-tertiary">Real-time chronological feed of autonomous agent actions</p>
           </div>
         </div>
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-brand/10 border border-brand/20 text-brand-light uppercase tracking-widest animate-pulse">
@@ -94,7 +93,7 @@ export function ProofOfAutonomyTimeline({ limit = 10 }: { limit?: number }) {
               <Clock className="w-6 h-6 text-muted" />
             </div>
             <p className="text-xs text-text-secondary max-w-xs mx-auto leading-relaxed">
-              Agent checks treasury conditions every 5 minutes — new autonomous actions will appear here.
+              No autonomous agent actions recorded.
             </p>
           </div>
         ) : !initialized && proposals.length === 0 ? (

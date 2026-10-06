@@ -387,16 +387,6 @@ export default function FaucetPage() {
             Syn DAO treasury and participate in treasury governance.
           </p>
 
-          <div className="p-3 rounded-xl bg-surface-elevated border border-border-thin text-xs text-muted space-y-1">
-            <p className="font-semibold text-foreground/70">How to claim USDC:</p>
-            <ol className="list-decimal list-inside space-y-0.5 text-muted/80">
-              <li>Visit faucet.circle.com</li>
-              <li>Connect your wallet</li>
-              <li>Select Arc Testnet &amp; USDC</li>
-              <li>Request tokens</li>
-            </ol>
-          </div>
-
           <a
             id="faucet-usdc-btn"
             href="https://faucet.circle.com/"
@@ -427,16 +417,6 @@ export default function FaucetPage() {
             Get free testnet EURC from Circle's official faucet. EURC is the Euro-pegged stablecoin
             accepted by the Syn DAO treasury.
           </p>
-
-          <div className="p-3 rounded-xl bg-surface-elevated border border-border-thin text-xs text-muted space-y-1">
-            <p className="font-semibold text-foreground/70">How to claim EURC:</p>
-            <ol className="list-decimal list-inside space-y-0.5 text-muted/80">
-              <li>Visit faucet.circle.com</li>
-              <li>Connect your wallet</li>
-              <li>Select Arc Testnet &amp; EURC</li>
-              <li>Request tokens</li>
-            </ol>
-          </div>
 
           <a
             id="faucet-eurc-btn"

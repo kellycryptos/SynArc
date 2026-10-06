@@ -1096,32 +1096,6 @@ export default function AgentPage() {
                 </div>
               )}
 
-              {/* ── Two-Treasury Architecture Note ─────────────────────── */}
-              <div className="pt-3 border-t border-border-thin">
-                <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/15">
-                  <Layers className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                  <div className="space-y-1.5">
-                    <p className="text-xs font-bold text-amber-300">Two-Treasury Architecture</p>
-                    <p className="text-[10px] text-text-secondary leading-relaxed">
-                      The agent operates from a dedicated <span className="text-amber-300 font-semibold">Agent Operating Treasury</span> — a fast-access contract that allows instant CCTP rebalances without a 24-hour timelock.
-                    </p>
-                    <p className="text-[10px] text-text-secondary leading-relaxed">
-                      Community balances, governance proposals, and all user-facing displays read from the <span className="text-primary font-semibold">Governance Treasury</span>, which enforces the full timelock for security.
-                    </p>
-                    <div className="flex flex-col gap-1 mt-1.5">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                        <a href={`${explorerUrl}/address/${CONTRACTS.treasuryGovernance}#code`} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-primary hover:underline">Governance Treasury ↗</a>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                        <a href={`${explorerUrl}/address/${CONTRACTS.treasuryAgent}#code`} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-amber-300 hover:underline">Agent Operating Treasury ↗</a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {isAuthenticated && (
                 <div className="pt-2 border-t border-border-thin">
                   <button
@@ -1187,9 +1161,6 @@ export default function AgentPage() {
                 Return Funds from Ethereum
               </button>
             )}
-            <p className="text-xs text-muted">
-              The agent bridges USDC once a community vote passes. Transfers are fully secure and direct.
-            </p>
           </GlassCard>
 
           {/* Agent Controls */}
@@ -1405,9 +1376,6 @@ export default function AgentPage() {
               if (!activeCctp) {
                 return (
                   <div className="space-y-4">
-                    <p className="text-xs text-muted leading-relaxed">
-                      The Treasury Guard is actively running on the server. It monitors the treasury and executes rules on-chain when thresholds are met.
-                    </p>
                     {onChainPaused ? (
                       <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -2347,10 +2315,6 @@ export default function AgentPage() {
                     <span className="text-muted">Voting Duration</span>
                     <span className="text-text-primary font-medium">5 minutes (300s)</span>
                   </div>
-                </div>
-
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-[11px] text-amber-400 leading-relaxed">
-                  <strong>Security Note:</strong> Once created, the community must vote to pass the proposal. Upon success, the agent will autonomously trigger CCTP and complete the deposit securely.
                 </div>
 
                 <div className="flex gap-3 pt-2">

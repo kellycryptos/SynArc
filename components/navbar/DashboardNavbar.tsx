@@ -125,10 +125,6 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0B111C] border border-[#1B2536] text-xs font-mono text-[#6B7385]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4F8BFF] animate-pulse" />
-              Browsing as Guest
-            </span>
             {deferred?.isMounted ? (
               <ConnectButton.Custom>
                 {({ openConnectModal, connectModalOpen }) => (
