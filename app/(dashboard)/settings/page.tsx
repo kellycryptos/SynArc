@@ -231,7 +231,8 @@ export default function SettingsPage() {
                         : 'text-muted hover:text-foreground hover:bg-surface'
                     }`}
                   >
-                    Dark
+                    <Moon className="w-3.5 h-3.5" />
+                    <span>Dark</span>
                   </button>
                   <button 
                     onClick={() => setTheme('light')}
@@ -241,7 +242,8 @@ export default function SettingsPage() {
                         : 'text-muted hover:text-foreground hover:bg-surface'
                     }`}
                   >
-                    Light
+                    <Sun className="w-3.5 h-3.5" />
+                    <span>Light</span>
                   </button>
                 </div>
               </div>

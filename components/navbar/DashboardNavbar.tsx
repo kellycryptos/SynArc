@@ -9,6 +9,7 @@ import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { TokenIcon } from "@/components/ui/TokenIcon";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 /**
  * DashboardNavbar Component
@@ -149,19 +150,31 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </div>
         )}
 
-        <button className="relative p-2 text-muted hover:text-foreground transition-colors rounded-full hover:bg-surface-elevated border border-transparent hover:border-border-thin cursor-pointer">
+        {/* Theme Toggle (Light / Dark mode) */}
+        <ThemeToggle />
+
+        {/* Notifications */}
+        <button 
+          aria-label="View notifications"
+          title="Notifications"
+          className="relative p-2 text-muted hover:text-foreground transition-colors rounded-full hover:bg-surface-elevated border border-transparent hover:border-border-thin cursor-pointer"
+        >
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-accent-purple rounded-full border-2 border-background" />
         </button>
       </div>
 
-      {/* Hamburger Menu (Mobile Only) */}
-      <button 
-        className="md:hidden p-2 text-muted hover:text-foreground transition-colors cursor-pointer" 
-        onClick={onMenuClick}
-      >
-        <Menu className="w-6 h-6" />
-      </button>
+      {/* Mobile Controls (Mobile Only) */}
+      <div className="flex items-center gap-1 md:hidden">
+        <ThemeToggle />
+        <button 
+          className="p-2 text-muted hover:text-foreground transition-colors cursor-pointer" 
+          onClick={onMenuClick}
+          aria-label="Toggle navigation menu"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
     </header>
   );
 }

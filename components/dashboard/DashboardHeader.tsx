@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import Link from "next/link";
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
 import { Plus, Bookmark } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 /**
  * Isolated client CTA button that subscribes to useAuth().
@@ -39,8 +40,10 @@ export function DashboardHeader() {
     <div className="space-y-4">
       {/* Action Pills & CTA */}
       <div className="flex items-center justify-end gap-2 flex-wrap pt-1">
-        <div className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#1B2536] bg-[#0B111C] text-xs font-mono text-[#8A948E]">
-          <Bookmark className="w-3.5 h-3.5 text-[#6B7385]" />
+        <ThemeToggle variant="pill" className="hidden sm:inline-flex" />
+
+        <div className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-border bg-surface text-xs font-mono text-muted">
+          <Bookmark className="w-3.5 h-3.5 text-muted" />
           <span>Saved 0</span>
         </div>
 
