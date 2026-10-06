@@ -62,10 +62,10 @@ export function NetworkStatusBadge() {
   }, [isOpen]);
 
   const statusColor = isHealthy
-    ? "bg-[#0B111C] border-[#1B2536] text-[#F5F7FA] hover:border-[#2F6FFF]/40"
+    ? "bg-surface border-border text-foreground hover:border-primary/40"
     : isLoading
-    ? "bg-[#0B111C] border-amber-500/20 text-amber-400"
-    : "bg-[#0B111C] border-negative/30 text-negative hover:border-negative/50";
+    ? "bg-surface border-amber-500/20 text-amber-500 dark:text-amber-400"
+    : "bg-surface border-negative/30 text-negative hover:border-negative/50";
 
   const indicatorColor = isHealthy
     ? "bg-[#22C55E]"
@@ -102,7 +102,7 @@ export function NetworkStatusBadge() {
         <ChainIcon chain="arc" size={14} />
         <span className={`w-1.5 h-1.5 rounded-full ${indicatorColor} ${animationClass}`} />
         <span className="font-medium">{networkName}</span>
-        <span className="text-white/30">·</span>
+        <span className="opacity-30">·</span>
         <span className="hidden sm:inline">
           {isHealthy ? `${latency}ms` : isLoading ? "Connecting..." : "Reconnecting"}
         </span>
@@ -110,7 +110,7 @@ export function NetworkStatusBadge() {
           {isHealthy ? "OK" : isLoading ? "..." : "ERR"}
         </span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-[#8A948E] transition-transform duration-200 ${
+          className={`w-3.5 h-3.5 text-muted transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -118,18 +118,18 @@ export function NetworkStatusBadge() {
 
       {/* Expandable Network Details Panel */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 rounded-xl border border-[#1B2536] bg-[#0B111C] p-4 shadow-2xl z-50 text-xs font-mono text-[#F5F7FA]">
+        <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 rounded-xl border border-border bg-surface p-4 shadow-2xl z-50 text-xs font-mono text-foreground animate-fade-in-up">
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-[#1B2536]">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${indicatorColor} ${animationClass}`} />
-              <span className="font-semibold text-sm text-white">Network Details</span>
+              <span className="font-semibold text-sm text-foreground">Network Details</span>
             </div>
             <span
               className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${
                 isArcTestnet
-                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                  : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  ? "bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20"
+                  : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
               }`}
             >
               {contractSetLabel}
@@ -140,33 +140,42 @@ export function NetworkStatusBadge() {
           <div className="py-3 space-y-2.5">
             {/* Network Name */}
             <div className="flex items-center justify-between">
-              <span className="text-[#8A948E]">Network</span>
-              <span className="text-white font-medium flex items-center gap-1.5">
+              <span className="text-muted">Network</span>
+              <span className="text-foreground font-medium flex items-center gap-1.5">
                 <ChainIcon chain="arc" size={14} />
                 {networkName}
               </span>
             </div>
 
+            {/* RPC Endpoint Node */}
+            <div className="flex items-center justify-between">
+              <span className="text-muted">RPC Node</span>
+              <span className="text-foreground font-medium flex items-center gap-1">
+                <span>{isArcTestnet ? "Canteen (Main)" : "Official Arc"}</span>
+                {isHealthy && <span className="text-[10px] text-emerald-500 font-mono">({latency}ms)</span>}
+              </span>
+            </div>
+
             {/* Chain ID */}
             <div className="flex items-center justify-between">
-              <span className="text-[#8A948E]">Chain ID</span>
-              <span className="text-white font-medium">{currentChainId}</span>
+              <span className="text-muted">Chain ID</span>
+              <span className="text-foreground font-medium">{currentChainId}</span>
             </div>
 
             {/* Contract Set */}
             <div className="flex items-center justify-between">
-              <span className="text-[#8A948E]">Contracts</span>
-              <span className="capitalize text-white font-medium">{contractSetLabel}</span>
+              <span className="text-muted">Contracts</span>
+              <span className="capitalize text-foreground font-medium">{contractSetLabel}</span>
             </div>
 
             {/* Block Explorer Link */}
             <div className="flex items-center justify-between">
-              <span className="text-[#8A948E]">Explorer</span>
+              <span className="text-muted">Explorer</span>
               <a
                 href={explorerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[#2F6FFF] hover:text-[#4F8BFF] transition-colors"
+                className="inline-flex items-center gap-1 text-primary hover:underline transition-colors"
               >
                 <span>{isArcTestnet ? "testnet.arcscan.app" : "explorer.arc.io"}</span>
                 <ExternalLink className="w-3 h-3" />
@@ -175,13 +184,13 @@ export function NetworkStatusBadge() {
 
             {/* Faucet Link (Testnet only) */}
             {isArcTestnet && faucetUrl && (
-              <div className="flex items-center justify-between pt-1 border-t border-[#1B2536]/60">
-                <span className="text-[#8A948E]">Faucet</span>
+              <div className="flex items-center justify-between pt-1 border-t border-border">
+                <span className="text-muted">Faucet</span>
                 <a
                   href={faucetUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-amber-400 hover:text-amber-300 transition-colors"
+                  className="inline-flex items-center gap-1 text-amber-500 dark:text-amber-400 hover:underline transition-colors"
                 >
                   <span>Circle Faucet</span>
                   <ExternalLink className="w-3 h-3" />
@@ -191,7 +200,7 @@ export function NetworkStatusBadge() {
           </div>
 
           {/* Seamless Native Wallet Switching Action */}
-          <div className="pt-3 border-t border-[#1B2536]">
+          <div className="pt-3 border-t border-border">
             {isUnsupported && (
               <div className="mb-2 flex items-center gap-1.5 text-xs text-amber-400">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
