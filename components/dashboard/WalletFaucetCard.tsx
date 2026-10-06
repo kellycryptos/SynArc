@@ -630,11 +630,13 @@ export function WalletFaucetCard() {
       )}
 
       {/* Bridge Modal */}
-      <BridgeModal 
-        isOpen={showBridge} 
-        onClose={() => setShowBridge(false)} 
-        onSuccess={refetchToken} 
-      />
+      {showBridge && (
+        <BridgeModal 
+          isOpen={showBridge} 
+          onClose={() => setShowBridge(false)} 
+          onSuccess={refetchToken} 
+        />
+      )}
     </div>
   );
 }

@@ -21,6 +21,7 @@ import { ARC_RPC_URL, ARC_RPC_URLS } from "@/lib/arc/config";
 import { getSigner, selectActiveWallet } from "@/lib/tx-helper";
 import { EVM_BRIDGE_CHAINS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS } from "@/lib/arc-config";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 
 // Circle CCTP V2 canonical addresses
 export const CCTP_TESTNET_MESSENGER = '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA' as const;
@@ -592,6 +593,20 @@ export async function checkArcGasBalance(
 // Hook
 // ============================================================
 export function useCCTPBridge() {
+  const deferred = useDeferredWeb3();
+
+  if (deferred && !deferred.isMounted) {
+    return {
+      state: INITIAL_STATE,
+      bridgeUSDC: async () => {},
+      resetState: () => {},
+    };
+  }
+
+  return useActiveCCTPBridge();
+}
+
+function useActiveCCTPBridge() {
   const { walletAddress } = useAuth();
   const { connector } = useAccount();
   const { wallets } = useWallets();

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Script from "next/script";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -63,8 +64,9 @@ export default function RootLayout({
       <head>
         {/* Blocking script — must run before first paint to avoid theme flash on refresh.
             Reads localStorage synchronously and applies the theme class to <html>. */}
-        <script
-          suppressHydrationWarning
+        <Script
+          id="synarc-theme-script"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('synarc-theme');document.documentElement.classList.add(t==='light'?'light':'dark')}catch(e){document.documentElement.classList.add('dark')}})();`,
           }}

@@ -61,14 +61,6 @@ export const ACTIVE_NETWORK: 'mainnet' | 'testnet' =
 let _activeNetworkState: 'mainnet' | 'testnet' = ACTIVE_NETWORK;
 
 export function getActiveNetwork(): 'mainnet' | 'testnet' {
-  if (typeof window !== 'undefined') {
-    try {
-      const saved = localStorage.getItem('synarc_active_network_mode');
-      if (saved === 'testnet' || saved === 'mainnet') {
-        return saved;
-      }
-    } catch {}
-  }
   return _activeNetworkState;
 }
 

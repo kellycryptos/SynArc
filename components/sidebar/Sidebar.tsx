@@ -30,7 +30,12 @@ import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { BotAvatar } from "bot-avatars";
-import { MetalBadge } from "metal-fx";
+import dynamic from "next/dynamic";
+
+const MetalBadge = dynamic(() => import("metal-fx").then((m) => m.MetalBadge), {
+  ssr: false,
+  loading: () => <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#2F6FFF]/20 text-[#4F8BFF]">LIVE</span>,
+});
 
 interface ActiveLink {
   href: string;

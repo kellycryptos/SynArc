@@ -10,6 +10,7 @@ import { useSwitchChain } from "wagmi";
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
 import { selectActiveWallet } from "@/lib/tx-helper";
 import { IS_MAINNET, getActiveNetwork } from "@/lib/arc-config";
+import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 import {
   X,
   Coins,
@@ -83,7 +84,17 @@ interface BridgeModalProps {
   onSuccess?: () => void;
 }
 
-export function BridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
+export function BridgeModal(props: BridgeModalProps) {
+  const deferred = useDeferredWeb3();
+
+  if (!props.isOpen || (deferred && !deferred.isMounted)) {
+    return null;
+  }
+
+  return <ActiveBridgeModal {...props} />;
+}
+
+function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   const { isAuthenticated, login, walletAddress } = useAuth();
   const isMainnet = getActiveNetwork() === 'mainnet';
   const arcNetworkLabel = isMainnet ? "Arc Mainnet" : "Arc Testnet";

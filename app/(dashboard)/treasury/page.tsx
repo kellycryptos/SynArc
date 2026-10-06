@@ -1112,14 +1112,16 @@ function TreasuryPageContent() {
       )}
 
       {/* Bridge Modal */}
-      <BridgeModal 
-        isOpen={showBridge} 
-        onClose={() => setShowBridge(false)} 
-        onSuccess={() => {
-          refetchWalletUSDC?.();
-          refetchTreasury?.();
-        }}
-      />
+      {showBridge && (
+        <BridgeModal 
+          isOpen={showBridge} 
+          onClose={() => setShowBridge(false)} 
+          onSuccess={() => {
+            refetchWalletUSDC?.();
+            refetchTreasury?.();
+          }}
+        />
+      )}
     </div>
   );
 }
