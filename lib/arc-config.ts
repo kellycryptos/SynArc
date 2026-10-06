@@ -37,12 +37,28 @@ export function getMainnetProxyUrl(): string {
   return `${siteUrl.replace(/\/$/, '')}/api/rpc/mainnet`;
 }
 
-// Arc Testnet list (chain 5042002) - uses same-origin proxy with public fallback
-export const ARC_TESTNET_RPC_URLS = [
-  getTestnetProxyUrl(),
-  ARC_TESTNET_FALLBACK_RPC,
-  'https://rpc.testnet.arc.io',
-];
+// Canteen Arc Testnet RPC (Main/Primary endpoint)
+export const CANTEEN_TESTNET_RPC = 
+  process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || 
+  process.env.ARC_TESTNET_RPC_URL || 
+  'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_0009d65decffd41513652bd6eea966abc868aaacbbe84897e13c724d8fbf1be2';
+
+// Arc Testnet list (chain 5042002) - Canteen is primary (slot 0)
+export function getTestnetRpcUrls(): string[] {
+  return Array.from(new Set([
+    CANTEEN_TESTNET_RPC,
+    getTestnetProxyUrl(),
+    ARC_TESTNET_FALLBACK_RPC,
+    'https://rpc.testnet.arc.io',
+  ].filter(Boolean) as string[]));
+}
+
+export const ARC_TESTNET_RPC_URLS = new Proxy([] as string[], {
+  get(_target, prop) {
+    const urls = getTestnetRpcUrls();
+    return (urls as any)[prop];
+  }
+});
 
 // Arc Mainnet list (chain 5042)
 // Priority: Same-Origin Proxy → Official Arc Mainnet RPC (https://rpc.mainnet.arc.network / https://rpc.mainnet.arc.io) → Alchemy
@@ -104,8 +120,8 @@ export const arcTestnet = defineChain({
   name: 'Arc Testnet',
   nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
   rpcUrls: {
-    default: { http: [ARC_TESTNET_FALLBACK_RPC, getTestnetProxyUrl()] },
-    public: { http: [ARC_TESTNET_FALLBACK_RPC] }
+    default: { http: [CANTEEN_TESTNET_RPC, getTestnetProxyUrl(), ARC_TESTNET_FALLBACK_RPC] },
+    public: { http: [CANTEEN_TESTNET_RPC, ARC_TESTNET_FALLBACK_RPC] }
   },
   blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
 })

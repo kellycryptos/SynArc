@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { useTreasuryBalances } from "@/hooks/useTreasuryBalances";
+import { useTreasuryBalances, invalidateTreasuryBalances } from "@/hooks/useTreasuryBalances";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useEURCBalance } from "@/hooks/useEURCBalance";
 import { useAuth } from "@/hooks/auth/useAuth";
@@ -88,7 +88,7 @@ function TreasuryPageContent() {
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
-  const { isArcMainnet, explorerUrl } = useArcNetwork();
+  const { isArcMainnet, isArcTestnet, contracts, arcChain, explorerUrl } = useArcNetwork();
 
   const [executingId, setExecutingId] = useState<string | null>(null);
   const [cancelingId, setCancelingId] = useState<string | null>(null);
@@ -105,6 +105,8 @@ function TreasuryPageContent() {
     return (queuedWithdrawals || []).filter(q => !q.executed && !q.canceled);
   }, [queuedWithdrawals]);
 
+  const targetChainId = arcChain?.id || (isArcTestnet ? 5042002 : 5042);
+
   const handleExecuteWithdrawal = async (id: string) => {
     if (!isAuthenticated) {
       login();
@@ -115,13 +117,11 @@ function TreasuryPageContent() {
     const toastId = toast.loading("Initiating withdrawal execution...");
     
     try {
-
-      
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, targetChainId, walletAddress);
       const gasParams = await getAggressiveGasParams(publicClient);
       
       const hash = await walletClient.writeContract({
-        address: GOVERNANCE_CONTRACTS.treasury,
+        address: contracts.treasury,
         abi: TreasuryABI,
         functionName: 'executeWithdrawal',
         args: [BigInt(id)],
@@ -134,6 +134,7 @@ function TreasuryPageContent() {
       await waitForTransaction(publicClient, hash);
       toast.success("Withdrawal executed successfully!", { id: toastId });
       refetchTreasury();
+      invalidateTreasuryBalances();
     } catch (err: any) {
       console.error(err);
       toast.error(parseArcError(err), { id: toastId });
@@ -152,13 +153,11 @@ function TreasuryPageContent() {
     const toastId = toast.loading("Initiating withdrawal cancellation...");
     
     try {
-
-      
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, targetChainId, walletAddress);
       const gasParams = await getAggressiveGasParams(publicClient);
       
       const hash = await walletClient.writeContract({
-        address: GOVERNANCE_CONTRACTS.treasury,
+        address: contracts.treasury,
         abi: TreasuryABI,
         functionName: 'cancelWithdrawal',
         args: [BigInt(id)],
@@ -171,6 +170,7 @@ function TreasuryPageContent() {
       await waitForTransaction(publicClient, hash);
       toast.success("Withdrawal canceled successfully!", { id: toastId });
       refetchTreasury();
+      invalidateTreasuryBalances();
     } catch (err: any) {
       console.error(err);
       toast.error(parseArcError(err), { id: toastId });
@@ -241,14 +241,16 @@ function TreasuryPageContent() {
       return [{ date: "Now", balance: combinedTotal }];
     }
     
+    // Sample the most recent 30 activities for smooth chart rendering
+    const recentSample = activities.slice(0, 30);
     // Sort chronologically
-    const sorted = [...activities].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    const sorted = [...recentSample].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
     let runningBalance = combinedTotal;
     
     const points = sorted.map(act => {
       const point = {
         date: new Date(act.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-        balance: runningBalance,
+        balance: Math.max(0, runningBalance),
       };
       
       const factor = act.token === "EURC" ? 1.08 : 1.0;
@@ -277,10 +279,10 @@ function TreasuryPageContent() {
     }));
     
     // De-duplicate: if any local tx has the same txHash as an activity from the contract, filter it from the local list
-    const contractHashes = new Set(activities.map(a => a.txHash));
+    const contractHashes = new Set(activities.map(a => a.txHash).filter(Boolean));
     const filteredLocal = localActs.filter(a => !contractHashes.has(a.txHash));
 
-    return [...filteredLocal, ...activities].slice(0, 10);
+    return [...filteredLocal, ...activities].slice(0, 15);
   }, [recentActivity, activities]);
 
   // Asset Composition details
@@ -333,11 +335,11 @@ function TreasuryPageContent() {
 
       if (isEmbedded && activeWallet) {
         setDepositStatus('Preparing...');
-        const eip1193Provider = await enforceChain(activeWallet, ARC_CHAIN.id);
+        const eip1193Provider = await enforceChain(activeWallet, targetChainId);
         const provider = new BrowserProvider(eip1193Provider);
         const signer = await provider.getSigner();
 
-        const tokenAddress = token === 'USDC' ? USDC_ADDRESS : getEurcAddress();
+        const tokenAddress = token === 'USDC' ? (contracts.usdc || USDC_ADDRESS) : (contracts.eurc || getEurcAddress());
         const amountRaw = BigInt(Math.floor(amount * 1_000_000));
 
         // ERC20 Contract instance
@@ -352,7 +354,7 @@ function TreasuryPageContent() {
 
         // Treasury Contract instance
         const treasury = new Contract(
-          CONTRACTS.treasury,
+          contracts.treasury,
           [
             'function depositUSDC(uint256 amount) external',
             'function depositEURC(uint256 amount) external',
@@ -363,13 +365,13 @@ function TreasuryPageContent() {
         // Step 1 — Check existing allowance to skip unnecessary approve tx
         setDepositStatus('Checking allowance...');
         const signerAddress = await signer.getAddress();
-        const existingAllowance: bigint = await erc20.allowance(signerAddress, CONTRACTS.treasury);
+        const existingAllowance: bigint = await erc20.allowance(signerAddress, contracts.treasury);
         
         if (existingAllowance < amountRaw) {
           // Need to approve — either no allowance or insufficient
           setDepositStatus('Approving ' + token + '...');
           const approveTx = await erc20.approve(
-            CONTRACTS.treasury,
+            contracts.treasury,
             amountRaw
           );
 
@@ -414,13 +416,14 @@ function TreasuryPageContent() {
         refetchTreasury();
         refetchWalletUSDC?.();
         refetchWalletEURC?.();
+        invalidateTreasuryBalances();
         return;
       }
 
       // Get provider and client — Privy wallet, Circle wallet OR external wallet
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, targetChainId, walletAddress);
 
-      const tokenAddress = token === 'USDC' ? USDC_ADDRESS : getEurcAddress();
+      const tokenAddress = token === 'USDC' ? (contracts.usdc || USDC_ADDRESS) : (contracts.eurc || getEurcAddress());
       const amountRaw = BigInt(Math.floor(amount * 1_000_000));
 
       // Dynamically estimate fees using low-latency and aggressive parameters
@@ -442,7 +445,7 @@ function TreasuryPageContent() {
           address: tokenAddress,
           abi: ERC20_ALLOWANCE_ABI,
           functionName: 'allowance',
-          args: [address, CONTRACTS.treasury],
+          args: [address, contracts.treasury],
         }) as bigint;
       } catch (e) {
         console.warn('Allowance check failed, proceeding with approve:', e);
@@ -456,7 +459,7 @@ function TreasuryPageContent() {
             address: tokenAddress,
             abi: ERC20_ABI,
             functionName: 'approve',
-            args: [CONTRACTS.treasury, amountRaw],
+            args: [contracts.treasury, amountRaw],
             account: address,
           })
           estimatedApproveGas = (est * 150n) / 100n;
@@ -470,7 +473,7 @@ function TreasuryPageContent() {
           address: tokenAddress,
           abi: ERC20_ABI,
           functionName: 'approve',
-          args: [CONTRACTS.treasury, amountRaw],
+          args: [contracts.treasury, amountRaw],
           account: address,
           gas: estimatedApproveGas,
           ...gasParams,
@@ -486,7 +489,7 @@ function TreasuryPageContent() {
       let estimatedDepositGas = 300000n; // Slightly higher gas limit
       try {
         estimatedDepositGas = await publicClient.estimateContractGas({
-          address: CONTRACTS.treasury,
+          address: contracts.treasury,
           abi: TREASURY_ABI,
           functionName: token === 'USDC' ? 'depositUSDC' : 'depositEURC',
           args: [amountRaw],
@@ -500,7 +503,7 @@ function TreasuryPageContent() {
 
       setDepositStatus('Sending transaction...');
       const depositTx = await walletClient.writeContract({
-        address: CONTRACTS.treasury,
+        address: contracts.treasury,
         abi: TREASURY_ABI,
         functionName: token === 'USDC' ? 'depositUSDC' : 'depositEURC',
         args: [amountRaw],
@@ -529,6 +532,7 @@ function TreasuryPageContent() {
       refetchTreasury();
       refetchWalletUSDC?.();
       refetchWalletEURC?.();
+      invalidateTreasuryBalances();
 
     } catch (error: any) {
       setDepositStatus('')
@@ -862,7 +866,7 @@ function TreasuryPageContent() {
                   <th className="pb-4 font-bold">Amount</th>
                   <th className="pb-4 font-bold">Document Proof</th>
                   <th className="pb-4 font-bold">Date</th>
-                  <th className="pb-4 font-bold text-right pr-2">Tx</th>
+                  <th className="pb-4 font-bold text-right pr-2">Tx / Party</th>
                 </tr>
               </thead>
               <tbody className="text-sm">
@@ -925,14 +929,28 @@ function TreasuryPageContent() {
                         {new Date(tx.timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                       </td>
                       <td className="py-4 text-right pr-2">
-                        <a 
-                          href={`${explorerUrl}/tx/${tx.txHash}`} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="text-primary hover:underline font-mono text-xs"
-                        >
-                          {tx.txHash ? tx.txHash.slice(0,6) + '...' + tx.txHash.slice(-4) : 'Pending...'}
-                        </a>
+                        {tx.txHash && tx.txHash.startsWith('0x') && tx.txHash.length > 20 ? (
+                          <a 
+                            href={`${explorerUrl}/tx/${tx.txHash}`} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            className="text-primary hover:underline font-mono text-xs"
+                          >
+                            {tx.txHash.slice(0, 6)}...{tx.txHash.slice(-4)}
+                          </a>
+                        ) : tx.party && tx.party.startsWith('0x') && tx.party.length > 20 ? (
+                          <a 
+                            href={`${explorerUrl}/address/${tx.party}`} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            className="text-primary hover:underline font-mono text-xs"
+                            title={`Party: ${tx.party}`}
+                          >
+                            {tx.party.slice(0, 6)}...{tx.party.slice(-4)}
+                          </a>
+                        ) : (
+                          <span className="text-text-tertiary font-mono text-xs">On-Chain</span>
+                        )}
                       </td>
                     </tr>
                   ))

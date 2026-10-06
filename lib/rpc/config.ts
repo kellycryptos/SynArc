@@ -1,7 +1,7 @@
 import { JsonRpcProvider, Network } from "ethers";
 import { checkRpcHealth } from "./health";
 
-import { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK, ARC_RPC_URLS, getActiveNetwork } from "@/lib/arc-config";
+import { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK, ARC_RPC_URLS, getActiveNetwork, CANTEEN_TESTNET_RPC } from "@/lib/arc-config";
 
 export const ARC_MAINNET_NETWORK = Network.from({ name: 'arc', chainId: 5042 });
 export const ARC_TESTNET_NETWORK = Network.from({ name: 'arc-testnet', chainId: 5042002 });
@@ -11,8 +11,7 @@ export const ARC_TESTNET_NETWORK = Network.from({ name: 'arc-testnet', chainId: 
  *
  * Centralized management of Arc RPC endpoints with fallback support.
  * Priority (mainnet): Arc official (https://rpc.mainnet.arc.io) → Alchemy → additional fallbacks
- * Priority (testnet): Arc official (https://rpc.testnet.arc.io) → Canteen CLI testnet node → Alchemy
- * Note: Canteen's RPC is CLI-bundled for their hosted testnet — no public Canteen mainnet RPC exists.
+ * Priority (testnet): Canteen hosted node (https://rpc.testnet.arc-node.thecanteenapp.com) [Primary] → Same-Origin Proxy → Arc official → Fallbacks
  */
 
 export const TESTNET_RPC_URLS = ARC_TESTNET_RPC_URLS;
@@ -20,9 +19,8 @@ export const MAINNET_RPC_URLS = ARC_MAINNET_RPC_URLS;
 
 // Centralized resilient fallbacks dynamically proxying active network (Mainnet or Testnet)
 export const RPC_URLS = ARC_RPC_URLS;
-export const ARC_TESTNET_RPC = TESTNET_RPC_URLS[0] || 'https://rpc.testnet.arc.io';
-/** @deprecated Use ARC_TESTNET_RPC. Canteen's RPC is CLI-bundled for their testnet only — not a public mainnet endpoint. */
-export const CANTEEN_RPC = ARC_TESTNET_RPC;
+export const CANTEEN_RPC = CANTEEN_TESTNET_RPC || TESTNET_RPC_URLS[0];
+export const ARC_TESTNET_RPC = CANTEEN_RPC;
 
 /**
  * Initialize dynamic client-side RPC fallbacks in-place.

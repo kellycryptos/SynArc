@@ -6,7 +6,10 @@ const PUBLIC_BACKUP_RPC = "https://rpc.testnet.arc.network";
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW_SECONDS = 60; // 1 minute
 const RATE_LIMIT_WINDOW_MS = RATE_LIMIT_WINDOW_SECONDS * 1000;
-const MAX_REQUESTS_PER_WINDOW = 120; // 120 requests / min per IP
+const MAX_REQUESTS_PER_WINDOW = 300; // 300 requests / min per IP to prevent false rate limits
+
+// Canonical Canteen Arc Testnet RPC (Main endpoint)
+const CANTEEN_DEFAULT_RPC = "https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_0009d65decffd41513652bd6eea966abc868aaacbbe84897e13c724d8fbf1be2";
 
 // In-memory fallback storage (IP -> timestamps[])
 const rateLimitMap = new Map<string, number[]>();
@@ -205,7 +208,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const upstreamUrl = process.env.ARC_TESTNET_RPC_URL?.trim() || PUBLIC_BACKUP_RPC;
+    const upstreamUrl = 
+      process.env.ARC_TESTNET_RPC_URL?.trim() || 
+      process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC?.trim() || 
+      CANTEEN_DEFAULT_RPC;
     const bodyText = await req.text();
 
     let response: Response;

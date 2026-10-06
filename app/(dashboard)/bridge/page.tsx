@@ -10,7 +10,7 @@ import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useSwitchChain, useAccount } from "wagmi";
 import { createPublicClient, http, fallback, getAddress, parseAbi, formatUnits } from "viem";
 import { selectActiveWallet } from "@/lib/tx-helper";
-import { IS_MAINNET, ACTIVE_NETWORK } from "@/lib/arc-config";
+import { IS_MAINNET, ACTIVE_NETWORK, ARC_TESTNET_RPC_URLS } from "@/lib/arc-config";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -373,7 +373,7 @@ export default function BridgePage() {
           chainParams = {
             chainId: "0x4cef52", // 5042002 hex
             chainName: "Arc Testnet",
-            rpcUrls: ["https://rpc.testnet.arc.io"],
+            rpcUrls: [...ARC_TESTNET_RPC_URLS.filter((url: string) => url.startsWith("http"))],
             nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 6 },
             blockExplorerUrls: ["https://testnet.arcscan.app"],
           };

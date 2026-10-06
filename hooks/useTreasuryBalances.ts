@@ -1,10 +1,17 @@
-import { useEffect, useState, useCallback } from 'react';
-import { createPublicClient, http, fallback, parseAbi } from 'viem';
-import { ARC_CHAIN, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, getActiveNetwork, CONTRACTS } from '@/lib/arc-config';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { createPublicClient, http, fallback } from 'viem';
+import { 
+  ARC_CHAIN, 
+  ARC_RPC_URLS, 
+  ARC_MAINNET_RPC_URLS, 
+  ARC_TESTNET_RPC_URLS, 
+  getActiveNetwork, 
+  CONTRACTS,
+  arcTestnet,
+  arcMainnet
+} from '@/lib/arc-config';
+import { useArcNetwork } from '@/hooks/auth/useArcNetwork';
 import { TreasuryActivity } from '@/types';
-
-// Dynamic getter — resolves the correct RPC list at call time, not import time
-const getActiveRpcUrls = () => getActiveNetwork() === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS;
 
 const ERC20_ABI = [
   {
@@ -16,7 +23,8 @@ const ERC20_ABI = [
   },
 ] as const;
 
-const TREASURY_ABI = [
+// 6-field struct matches deployed testnet & mainnet treasury contracts
+const TREASURY_ABI_6 = [
   {
     name: 'getTransactions',
     type: 'function',
@@ -33,10 +41,23 @@ const TREASURY_ABI = [
           { name: 'tokenSymbol', type: 'string' },
           { name: 'description', type: 'string' },
           { name: 'timestamp', type: 'uint256' },
-          { name: 'deliverableURI', type: 'string' },
         ],
       },
     ],
+  },
+  {
+    name: 'usdcBalance',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    name: 'eurcBalance',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
   },
   {
     name: 'getQueuedWithdrawals',
@@ -64,14 +85,32 @@ const TREASURY_ABI = [
   },
 ] as const;
 
-const TREASURY_EVENTS_ABI = parseAbi([
-  'event Inflow(address indexed sender, uint256 amount, string tokenSymbol, string description, uint256 timestamp)',
-  'event Outflow(address indexed recipient, uint256 amount, string tokenSymbol, string description, uint256 timestamp, string deliverableURI)',
-  'event Outflow(address indexed recipient, uint256 amount, string tokenSymbol, string description, uint256 timestamp)'
-]);
+// 7-field struct fallback
+const TREASURY_ABI_7 = [
+  {
+    name: 'getTransactions',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [
+      {
+        type: 'tuple[]',
+        name: '',
+        components: [
+          { name: 'txType', type: 'string' },
+          { name: 'party', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+          { name: 'tokenSymbol', type: 'string' },
+          { name: 'description', type: 'string' },
+          { name: 'timestamp', type: 'uint256' },
+          { name: 'deliverableURI', type: 'string' },
+        ],
+      },
+    ],
+  },
+] as const;
 
-const USDC_ADDRESS = '0x3600000000000000000000000000000000000000' as `0x${string}`;
-const getEurcAddress = () => (CONTRACTS.eurc || '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1') as `0x${string}`;
+const USDC_DEFAULT_ADDRESS = '0x3600000000000000000000000000000000000000' as `0x${string}`;
 
 export interface QueuedWithdrawal {
   id: string;
@@ -86,8 +125,6 @@ export interface QueuedWithdrawal {
   deliverableURI?: string;
 }
 
-const DEPLOYMENT_BLOCK = 45973599n;
-
 interface CachedData {
   activities: TreasuryActivity[];
   lastFetchedBlock: string;
@@ -95,71 +132,29 @@ interface CachedData {
 
 const getCache = (treasuryAddress: string): CachedData => {
   if (typeof window === 'undefined') {
-    return { activities: [], lastFetchedBlock: (DEPLOYMENT_BLOCK - 1n).toString() };
+    return { activities: [], lastFetchedBlock: '0' };
   }
   try {
-    const data = localStorage.getItem(`synarc_treasury_cache_${treasuryAddress}`);
+    const data = localStorage.getItem(`synarc_treasury_cache_${treasuryAddress.toLowerCase()}`);
     if (data) {
       const parsed = JSON.parse(data);
-      if (parsed && Array.isArray(parsed.activities) && typeof parsed.lastFetchedBlock === 'string') {
+      if (parsed && Array.isArray(parsed.activities)) {
         return parsed;
       }
     }
   } catch (err) {
     console.error('Failed to read treasury cache from localStorage', err);
   }
-  return { activities: [], lastFetchedBlock: (DEPLOYMENT_BLOCK - 1n).toString() };
+  return { activities: [], lastFetchedBlock: '0' };
 };
 
 const setCache = (treasuryAddress: string, data: CachedData) => {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(`synarc_treasury_cache_${treasuryAddress}`, JSON.stringify(data));
+    localStorage.setItem(`synarc_treasury_cache_${treasuryAddress.toLowerCase()}`, JSON.stringify(data));
   } catch (err) {
     console.error('Failed to write treasury cache to localStorage', err);
   }
-};
-
-const fetchLogsInChunkWithRetry = async (
-  publicClient: any,
-  queryOptions: {
-    address: `0x${string}`;
-    events: any;
-    fromBlock: bigint;
-    toBlock: bigint;
-  },
-  retries = 3,
-  delayMs = 1000
-): Promise<any[]> => {
-  try {
-    return await publicClient.getLogs(queryOptions);
-  } catch (err) {
-    if (retries > 0) {
-      console.warn(`getLogs failed for range ${queryOptions.fromBlock}-${queryOptions.toBlock}, retrying in ${delayMs}ms...`, err);
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-      return fetchLogsInChunkWithRetry(publicClient, queryOptions, retries - 1, delayMs * 2);
-    }
-    throw err;
-  }
-};
-
-const formatLogsToActivities = (logs: any[]): TreasuryActivity[] => {
-  return logs.map((log: any, idx: number) => {
-    const args = log.args || {};
-    const isOutflow = log.eventName === 'Outflow';
-    const party = isOutflow ? args.recipient : args.sender;
-    return {
-      id: `${log.transactionHash || idx}-${log.logIndex ?? idx}`,
-      type: (isOutflow ? "Outflow" : "Inflow") as "Inflow" | "Outflow",
-      amount: Number(args.amount || 0n) / 1_000_000,
-      token: args.tokenSymbol || "USDC",
-      timestamp: new Date(Number(args.timestamp || 0n) * 1000).toISOString(),
-      description: args.description || "",
-      party: party || "",
-      deliverableURI: args.deliverableURI || "",
-      txHash: log.transactionHash
-    };
-  });
 };
 
 const mergeAndSortActivities = (
@@ -177,9 +172,25 @@ const mergeAndSortActivities = (
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 };
 
+/**
+ * Dispatch this event after a transaction modifies the treasury (e.g. deposit / withdrawal).
+ * Active useTreasuryBalances instances will immediately refetch.
+ */
+export function invalidateTreasuryBalances() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('synarc_treasury_changed'));
+  }
+}
+
 export const useTreasuryBalances = (customTreasuryAddress?: string) => {
+  const { isArcTestnet, contracts, arcChain } = useArcNetwork();
+
   const treasuryAddress = (customTreasuryAddress ||
-    CONTRACTS.treasury) as `0x${string}`;
+    contracts.treasury) as `0x${string}`;
+
+  const rpcUrls = isArcTestnet ? ARC_TESTNET_RPC_URLS : ARC_MAINNET_RPC_URLS;
+  const usdcAddress = (contracts.usdc || USDC_DEFAULT_ADDRESS) as `0x${string}`;
+  const eurcAddress = (contracts.eurc || (isArcTestnet ? '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a' : '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1')) as `0x${string}`;
 
   const [balance, setBalance] = useState(0); // Combined total in USD
   const [usdcBalance, setUsdcBalance] = useState(0);
@@ -190,196 +201,181 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load activities from cache on mount/address change
+  // Load activities from cache immediately on mount/address change
   useEffect(() => {
-    const cached = getCache(treasuryAddress);
-    setActivities(cached.activities);
+    if (treasuryAddress) {
+      const cached = getCache(treasuryAddress);
+      if (cached.activities.length > 0) {
+        setActivities(cached.activities);
+      }
+    }
   }, [treasuryAddress]);
 
+  const publicClient = useMemo(() => {
+    return createPublicClient({
+      chain: arcChain || (isArcTestnet ? arcTestnet : arcMainnet),
+      transport: fallback(rpcUrls.map((url) => http(url, { timeout: 8000 }))),
+    });
+  }, [arcChain, isArcTestnet, rpcUrls]);
+
   const fetchBalances = useCallback(async () => {
+    if (!treasuryAddress) return;
     setLoading(true);
     setError(null);
 
-    const publicClient = createPublicClient({
-      chain: ARC_CHAIN,
-      transport: fallback(getActiveRpcUrls().map((url) => http(url, { timeout: 5000 }))),
-    });
-
     try {
-      // Fetch USDC, EURC, current block, and queued withdrawals in parallel
-      const [usdcBal, eurcBal, currentBlock, rawQueued] = await Promise.all([
+      // 1. Fetch token balances, queued withdrawals, and transaction history in parallel
+      const [usdcBalRes, eurcBalRes, rawQueuedRes, rawTxsRes] = await Promise.allSettled([
         publicClient.readContract({
-          address: USDC_ADDRESS,
+          address: usdcAddress,
           abi: ERC20_ABI,
           functionName: 'balanceOf',
           args: [treasuryAddress],
-        }).catch(() => 0n),
+        }),
         publicClient.readContract({
-          address: getEurcAddress(),
+          address: eurcAddress,
           abi: ERC20_ABI,
           functionName: 'balanceOf',
           args: [treasuryAddress],
-        }).catch(() => 0n),
-        publicClient.getBlockNumber().catch(() => 0n),
+        }),
         publicClient.readContract({
           address: treasuryAddress,
-          abi: TREASURY_ABI,
+          abi: TREASURY_ABI_6,
           functionName: 'getQueuedWithdrawals',
-        }).catch(() => [] as any),
+        }),
+        // Read getTransactions: attempt 6-field ABI first, fallback to 7-field ABI
+        publicClient.readContract({
+          address: treasuryAddress,
+          abi: TREASURY_ABI_6,
+          functionName: 'getTransactions',
+        }).catch(() =>
+          publicClient.readContract({
+            address: treasuryAddress,
+            abi: TREASURY_ABI_7,
+            functionName: 'getTransactions',
+          })
+        ),
       ]);
 
-      const usdcVal = Number(usdcBal) / 1_000_000;
-      const eurcVal = Number(eurcBal) / 1_000_000;
+      // Process USDC Balance with fallback to internal contract balance
+      let usdcRaw = usdcBalRes.status === 'fulfilled' ? usdcBalRes.value : null;
+      if (usdcRaw === null || usdcRaw === undefined) {
+        try {
+          usdcRaw = await publicClient.readContract({
+            address: treasuryAddress,
+            abi: TREASURY_ABI_6,
+            functionName: 'usdcBalance',
+          });
+        } catch {
+          usdcRaw = 0n;
+        }
+      }
 
-      // Format queued withdrawals
+      // Process EURC Balance with fallback to internal contract balance
+      let eurcRaw = eurcBalRes.status === 'fulfilled' ? eurcBalRes.value : null;
+      if (eurcRaw === null || eurcRaw === undefined) {
+        try {
+          eurcRaw = await publicClient.readContract({
+            address: treasuryAddress,
+            abi: TREASURY_ABI_6,
+            functionName: 'eurcBalance',
+          });
+        } catch {
+          eurcRaw = 0n;
+        }
+      }
+
+      const usdcVal = Number(usdcRaw || 0n) / 1_000_000;
+      const eurcVal = Number(eurcRaw || 0n) / 1_000_000;
+
+      // Process Queued Withdrawals
+      const rawQueued = rawQueuedRes.status === 'fulfilled' && Array.isArray(rawQueuedRes.value) ? rawQueuedRes.value : [];
       const formattedQueued: QueuedWithdrawal[] = rawQueued.map((q: any) => ({
-        id: q.id.toString(),
-        recipient: q.recipient,
-        amount: Number(q.amount) / 1_000_000,
-        token: q.token,
-        tokenSymbol: q.tokenSymbol || "USDC",
-        description: q.description,
-        executionTime: Number(q.executionTime),
-        executed: q.executed,
-        canceled: q.canceled,
-        deliverableURI: q.deliverableURI || "",
+        id: q.id?.toString() || '',
+        recipient: q.recipient || '',
+        amount: Number(q.amount || 0n) / 1_000_000,
+        token: q.token || '',
+        tokenSymbol: q.tokenSymbol || 'USDC',
+        description: q.description || '',
+        executionTime: Number(q.executionTime || 0n),
+        executed: Boolean(q.executed),
+        canceled: Boolean(q.canceled),
+        deliverableURI: q.deliverableURI || '',
       }));
-
       setQueuedWithdrawals(formattedQueued);
+
+      // Process Transactions
+      const rawTxs = rawTxsRes.status === 'fulfilled' && Array.isArray(rawTxsRes.value) ? rawTxsRes.value : [];
+      const formattedTxs: TreasuryActivity[] = rawTxs.map((tx: any, idx: number) => {
+        const isOutflow = tx.txType === 'Outflow';
+        const timestampSec = Number(tx.timestamp || 0n);
+        const isoDate = timestampSec > 0 ? new Date(timestampSec * 1000).toISOString() : new Date().toISOString();
+        return {
+          id: `tx-${treasuryAddress.toLowerCase()}-${idx}-${timestampSec}`,
+          type: (isOutflow ? 'Outflow' : 'Inflow') as 'Inflow' | 'Outflow',
+          amount: Number(tx.amount || 0n) / 1_000_000,
+          token: tx.tokenSymbol || 'USDC',
+          timestamp: isoDate,
+          description: tx.description || (isOutflow ? 'Treasury Outflow' : 'Treasury Inflow'),
+          party: tx.party || '',
+          deliverableURI: (tx as any).deliverableURI || '',
+          txHash: '',
+        };
+      });
 
       // Merge simulated activities from localStorage
       let simulatedActivities: TreasuryActivity[] = [];
-      if (typeof window !== "undefined") {
+      if (typeof window !== 'undefined') {
         try {
-          const stored = localStorage.getItem(`synarc_simulated_activities_${treasuryAddress}`);
+          const stored = localStorage.getItem(`synarc_simulated_activities_${treasuryAddress.toLowerCase()}`);
           if (stored) {
             simulatedActivities = JSON.parse(stored);
           }
         } catch (err) {
-          console.error("Failed to parse simulated activities from localStorage", err);
+          console.error('Failed to parse simulated activities from localStorage', err);
         }
       }
 
-      // Initial merge of cached and simulated activities
+      // Merge cached, fetched and simulated activities
       const cached = getCache(treasuryAddress);
-      const initialActivities = mergeAndSortActivities(simulatedActivities, [], cached.activities);
+      const allActivities = mergeAndSortActivities(simulatedActivities, formattedTxs, cached.activities);
 
       // Sum up simulated activities to adjust balances
       let simulatedUSDC = 0;
       let simulatedEURC = 0;
-      simulatedActivities.forEach(act => {
+      simulatedActivities.forEach((act) => {
         const val = act.amount;
-        if (act.type === "Inflow") {
-          if (act.token === "USDC") simulatedUSDC += val;
-          else if (act.token === "EURC") simulatedEURC += val;
+        if (act.type === 'Inflow') {
+          if (act.token === 'USDC') simulatedUSDC += val;
+          else if (act.token === 'EURC') simulatedEURC += val;
         } else {
-          if (act.token === "USDC") simulatedUSDC -= val;
-          else if (act.token === "EURC") simulatedEURC -= val;
+          if (act.token === 'USDC') simulatedUSDC -= val;
+          else if (act.token === 'EURC') simulatedEURC -= val;
         }
       });
 
       const finalUSDC = usdcVal + simulatedUSDC;
       const finalEURC = eurcVal + simulatedEURC;
+      const combinedVal = finalUSDC + (finalEURC * 1.08);
 
       setUsdcBalance(finalUSDC);
       setEurcBalance(finalEURC);
-
-      const combinedVal = finalUSDC + (finalEURC * 1.08);
       setBalance(combinedVal);
-      setActivities(initialActivities);
+      setActivities(allActivities);
 
-      // We set loading to false here so the balances and cached activities display immediately
-      setLoading(false);
-
-      // Query logs in the background if there are new blocks
-      let cachedLastBlock = BigInt(cached.lastFetchedBlock);
-      if (cachedLastBlock < DEPLOYMENT_BLOCK - 1n) {
-        cachedLastBlock = DEPLOYMENT_BLOCK - 1n;
-      }
-
-      const startBlock = cachedLastBlock + 1n;
-      const endBlock = currentBlock;
-
-      if (endBlock > 0n && startBlock <= endBlock) {
-        // Kick off non-blocking async log fetching
-        (async () => {
-          setHistoryLoading(true);
-          const fetchedLogs: any[] = [];
-          
-          try {
-            const chunkSize = 5000n;
-            const batchCount = 10;
-            let currentEnd = endBlock;
-            
-            while (currentEnd >= startBlock) {
-              const chunkRanges: { from: bigint; to: bigint }[] = [];
-              for (let i = 0; i < batchCount; i++) {
-                const to = currentEnd;
-                if (to < startBlock) break;
-                const from = to - chunkSize + 1n > startBlock ? to - chunkSize + 1n : startBlock;
-                chunkRanges.push({ from, to });
-                currentEnd = from - 1n;
-              }
-              
-              if (chunkRanges.length === 0) break;
-              
-              // Query this batch of chunks in parallel
-              const batchLogs = await Promise.all(
-                chunkRanges.map((range) =>
-                  fetchLogsInChunkWithRetry(publicClient, {
-                    address: treasuryAddress,
-                    events: TREASURY_EVENTS_ABI,
-                    fromBlock: range.from,
-                    toBlock: range.to,
-                  })
-                )
-              );
-              
-              const flatLogs = batchLogs.flat();
-              fetchedLogs.push(...flatLogs);
-              
-              if (flatLogs.length > 0) {
-                const newActivities = formatLogsToActivities(flatLogs);
-                setActivities((prevActivities) => {
-                  // Re-fetch simulated activities in case they changed
-                  let freshSimulated: TreasuryActivity[] = [];
-                  if (typeof window !== "undefined") {
-                    try {
-                      const stored = localStorage.getItem(`synarc_simulated_activities_${treasuryAddress}`);
-                      if (stored) freshSimulated = JSON.parse(stored);
-                    } catch (e) {}
-                  }
-                  return mergeAndSortActivities(freshSimulated, newActivities, prevActivities);
-                });
-              }
-            }
-            
-            // Once all chunks are successfully loaded, write to localStorage cache
-            const formattedFetched = formatLogsToActivities(fetchedLogs);
-            
-            // Read fresh cache from localStorage to merge
-            const freshCached = getCache(treasuryAddress);
-            const finalMerged = mergeAndSortActivities([], formattedFetched, freshCached.activities);
-            
-            setCache(treasuryAddress, {
-              activities: finalMerged,
-              lastFetchedBlock: endBlock.toString(),
-            });
-            
-          } catch (err) {
-            console.error("useTreasuryBalances: Background fetch failed", err);
-          } finally {
-            setHistoryLoading(false);
-          }
-        })();
-      }
-
+      // Save merged activities to localStorage
+      setCache(treasuryAddress, {
+        activities: allActivities,
+        lastFetchedBlock: '0',
+      });
     } catch (err) {
       console.error('useTreasuryBalances: fetch failed', err);
       setError('Failed to fetch treasury balances');
+    } finally {
       setLoading(false);
+      setHistoryLoading(false);
     }
-  }, [treasuryAddress]);
+  }, [publicClient, treasuryAddress, usdcAddress, eurcAddress]);
 
   useEffect(() => {
     fetchBalances();
@@ -388,21 +384,23 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
       fetchBalances();
     };
 
-    if (typeof window !== "undefined") {
-      window.addEventListener("synarc_network_changed", handleNetworkChange);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('synarc_network_changed', handleNetworkChange);
+      window.addEventListener('synarc_treasury_changed', handleNetworkChange);
     }
 
-    // Auto-refresh every 60 seconds and only if visible
+    // Auto-refresh every 30 seconds if page is visible
     const interval = setInterval(() => {
-      if (typeof document === "undefined" || document.visibilityState === "visible") {
+      if (typeof document === 'undefined' || document.visibilityState === 'visible') {
         fetchBalances();
       }
-    }, 60_000);
+    }, 30_000);
 
     return () => {
       clearInterval(interval);
-      if (typeof window !== "undefined") {
-        window.removeEventListener("synarc_network_changed", handleNetworkChange);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('synarc_network_changed', handleNetworkChange);
+        window.removeEventListener('synarc_treasury_changed', handleNetworkChange);
       }
     };
   }, [fetchBalances]);

@@ -6,7 +6,7 @@ import {
   walletConnectWallet,
 } from '@rainbow-me/rainbowkit/wallets'
 import { http, fallback } from 'wagmi'
-import { arcTestnet, arcMainnet, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK, getTestnetProxyUrl, getMainnetProxyUrl } from '@/lib/arc-config'
+import { arcTestnet, arcMainnet, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK, getTestnetProxyUrl, getMainnetProxyUrl, CANTEEN_TESTNET_RPC } from '@/lib/arc-config'
 import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
 
 // Documented public fallback constant for Arc Testnet
@@ -32,9 +32,14 @@ export const wagmiConfig = getDefaultConfig({
     },
   ],
   transports: {
-    // Arc Testnet uses the same-origin server proxy with documented public fallback
+    // Arc Testnet uses Canteen as main, with same-origin server proxy and documented public fallbacks
     [arcTestnet.id]: fallback(
       [
+        http(CANTEEN_TESTNET_RPC, {
+          timeout: 10000,
+          retryCount: 2,
+          retryDelay: 1000,
+        }),
         http(getTestnetProxyUrl(), {
           timeout: 10000,
           retryCount: 2,
