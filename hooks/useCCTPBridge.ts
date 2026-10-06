@@ -18,7 +18,7 @@ import {
 } from "viem";
 
 import { getSigner, selectActiveWallet } from "@/lib/tx-helper";
-import { EVM_BRIDGE_CHAINS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS, getMainnetProxyUrl } from "@/lib/arc-config";
+import { EVM_BRIDGE_CHAINS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS, getMainnetProxyUrl, getTestnetProxyUrl } from "@/lib/arc-config";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 
@@ -257,7 +257,7 @@ export const ARC_CHAIN_TESTNET_CONFIG = {
   usdcAddress: "0x3600000000000000000000000000000000000000" as `0x${string}`,
   tokenMessenger: CCTP_TESTNET_MESSENGER,
   messageTransmitter: CCTP_TESTNET_TRANSMITTER,
-  rpcUrl: ARC_TESTNET_RPC_URLS[0] || 'https://rpc.testnet.arc.network',
+  rpcUrl: getTestnetProxyUrl(),
   rpcUrls: ARC_TESTNET_RPC_URLS,
   icon: "ARC",
   isTestnet: true,
@@ -272,14 +272,8 @@ export const ARC_CHAIN_MAINNET_CONFIG = {
   usdcAddress: "0x3600000000000000000000000000000000000000" as `0x${string}`,
   tokenMessenger: CCTP_MAINNET_MESSENGER,
   messageTransmitter: CCTP_MAINNET_TRANSMITTER,
-  rpcUrl: process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC || 'https://rpc.mainnet.arc.io',
-  rpcUrls: [
-    process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC,
-    process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC,
-    'https://rpc.mainnet.arc.network',
-    'https://rpc.mainnet.arc.io',
-    'https://rpc.drpc.mainnet.arc.io',
-  ].filter(Boolean) as string[],
+  rpcUrl: getMainnetProxyUrl(),
+  rpcUrls: ARC_MAINNET_RPC_URLS,
   icon: "ARC",
   isTestnet: false,
   blockExplorerUrl: "https://explorer.arc.io"
