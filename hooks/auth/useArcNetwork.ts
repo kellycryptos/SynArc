@@ -5,18 +5,36 @@ import {
   arcTestnet, 
   arcMainnet, 
   ACTIVE_NETWORK, 
-  ARC_CHAIN, 
   CONTRACTS_MAINNET, 
   CONTRACTS_TESTNET,
-  setActiveNetwork,
-  getActiveNetwork 
+  setActiveNetwork 
 } from '@/lib/arc-config';
-import { useDeferredWeb3 } from '@/providers/DeferredWeb3Provider';
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useSyncExternalStore } from 'react';
 
 export const ARC_TESTNET_CHAIN_ID = 5042002;
 export const ARC_MAINNET_CHAIN_ID = 5042;
 export const TARGET_CHAIN_ID = ARC_MAINNET_CHAIN_ID;
+
+function subscribeToNetwork(callback: () => void) {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener('synarc_network_changed', callback);
+  window.addEventListener('storage', callback);
+  return () => {
+    window.removeEventListener('synarc_network_changed', callback);
+    window.removeEventListener('storage', callback);
+  };
+}
+
+function getNetworkSnapshot(): 'mainnet' | 'testnet' {
+  if (typeof window === 'undefined') return ACTIVE_NETWORK;
+  const saved = localStorage.getItem('synarc_active_network_mode');
+  if (saved === 'testnet' || saved === 'mainnet') return saved;
+  return ACTIVE_NETWORK;
+}
+
+function getServerSnapshot(): 'mainnet' | 'testnet' {
+  return ACTIVE_NETWORK;
+}
 
 export interface ArcNetworkState {
   chainId: number;
@@ -41,71 +59,16 @@ export interface ArcNetworkState {
 }
 
 export function useArcNetwork(): ArcNetworkState {
-  const deferred = useDeferredWeb3();
-
-  if (deferred && !deferred.isMounted) {
-    const net = getActiveNetwork();
-    const isTestnet = net === 'testnet';
-    const chainId = isTestnet ? ARC_TESTNET_CHAIN_ID : ARC_MAINNET_CHAIN_ID;
-    const arcChain = isTestnet ? arcTestnet : arcMainnet;
-    const contracts = isTestnet ? CONTRACTS_TESTNET : CONTRACTS_MAINNET;
-    const explorerUrl = isTestnet ? 'https://testnet.arcscan.app' : 'https://explorer.arc.io';
-    const faucetUrl = isTestnet ? 'https://faucet.circle.com' : undefined;
-
-    return {
-      chainId,
-      currentChainId: chainId,
-      isArcTestnet: isTestnet,
-      isArcMainnet: !isTestnet,
-      isArc: true,
-      isUnsupported: false,
-      isSwitching: false,
-      switchNetwork: async (targetChainId?: number) => {
-        const target = (targetChainId === ARC_TESTNET_CHAIN_ID || (!targetChainId && !isTestnet)) ? 'testnet' : 'mainnet';
-        setActiveNetwork(target);
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork: target } }));
-        }
-      },
-      switchToMainnet: async () => {
-        setActiveNetwork('mainnet');
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork: 'mainnet' } }));
-        }
-      },
-      switchToTestnet: async () => {
-        setActiveNetwork('testnet');
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork: 'testnet' } }));
-        }
-      },
-      arcChain,
-      targetChainId: ARC_MAINNET_CHAIN_ID,
-      networkName: isTestnet ? 'Arc Testnet' : 'Arc',
-      activeNetwork: net,
-      contractSetLabel: net,
-      contracts,
-      explorerUrl,
-      faucetUrl,
-      isConnected: false,
-    };
-  }
-
-  return useActiveArcNetwork();
-}
-
-function useActiveArcNetwork(): ArcNetworkState {
   const chainId = useChainId();
   const { isConnected } = useAccount();
   const { switchChain, switchChainAsync, isPending: isSwitching } = useSwitchChain();
 
-  const [unconnectedNetwork, setUnconnectedNetwork] = useState<'mainnet' | 'testnet'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('synarc_active_network_mode');
-      if (saved === 'testnet' || saved === 'mainnet') return saved;
-    }
-    return ACTIVE_NETWORK;
-  });
+  // Subscribe to network preference using React's official external store hook
+  const unconnectedNetwork = useSyncExternalStore(
+    subscribeToNetwork,
+    getNetworkSnapshot,
+    getServerSnapshot
+  );
 
   const isWalletConnected = Boolean(isConnected);
 
@@ -132,9 +95,6 @@ function useActiveArcNetwork(): ArcNetworkState {
   // Sync active network in arc-config for non-React callers & notify stores
   useEffect(() => {
     setActiveNetwork(activeNetwork);
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork } }));
-    }
   }, [activeNetwork]);
 
   const switchToMainnet = useCallback(async () => {
@@ -146,11 +106,13 @@ function useActiveArcNetwork(): ArcNetworkState {
           switchChain({ chainId: ARC_MAINNET_CHAIN_ID });
         }
       } else {
-        setUnconnectedNetwork('mainnet');
         if (typeof window !== 'undefined') {
           localStorage.setItem('synarc_active_network_mode', 'mainnet');
         }
         setActiveNetwork('mainnet');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork: 'mainnet' } }));
+        }
       }
     } catch (error) {
       console.error('Failed to switch to Arc Mainnet:', error);
@@ -166,11 +128,13 @@ function useActiveArcNetwork(): ArcNetworkState {
           switchChain({ chainId: ARC_TESTNET_CHAIN_ID });
         }
       } else {
-        setUnconnectedNetwork('testnet');
         if (typeof window !== 'undefined') {
           localStorage.setItem('synarc_active_network_mode', 'testnet');
         }
         setActiveNetwork('testnet');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork: 'testnet' } }));
+        }
       }
     } catch (error) {
       console.error('Failed to switch to Arc Testnet:', error);

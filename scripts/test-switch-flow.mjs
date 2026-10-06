@@ -22,6 +22,7 @@ async function run() {
       '--headless=new',
       '--remote-debugging-port=9222',
       `--user-data-dir=${USER_DATA_DIR}`,
+      '--window-size=1280,800',
       '--no-first-run',
       '--no-default-browser-check',
       '--disable-gpu',
@@ -116,65 +117,154 @@ async function run() {
   await send(pageWs, 'Page.enable');
   await send(pageWs, 'Network.enable');
 
-  console.log("Waiting for page buttons to render...");
-  let buttonsFound = false;
+  console.log("Waiting for NetworkStatusBadge to mount...");
+  let badgeInfo = null;
   for (let i = 0; i < 30; i++) {
     const check = await send(pageWs, 'Runtime.evaluate', {
-      expression: `document.querySelectorAll('button').length`,
+      expression: `(() => {
+        const btn = Array.from(document.querySelectorAll('button')).find(b => 
+          b.getAttribute('aria-haspopup') === 'true' || 
+          (b.title && b.title.includes('Arc')) ||
+          (b.textContent && b.textContent.includes('Arc'))
+        );
+        return btn ? { found: true, text: btn.textContent?.trim(), title: btn.title } : null;
+      })()`,
       returnByValue: true
     });
-    if (check.result?.value > 0) {
-      buttonsFound = true;
-      console.log(`Page rendered with ${check.result.value} buttons after ${i * 500}ms`);
+    if (check.result?.value?.found) {
+      badgeInfo = check.result.value;
+      console.log(`Badge button found after ${i * 500}ms:`, badgeInfo);
       break;
     }
     await new Promise(r => setTimeout(r, 500));
   }
-  await new Promise(r => setTimeout(r, 1000));
 
-  console.log("\nAttempting to find and click the NetworkStatusBadge...");
-  const clickBadgeRes = await send(pageWs, 'Runtime.evaluate', {
+  if (!badgeInfo) {
+    console.error("❌ NetworkStatusBadge did not appear in DOM within 15s");
+    process.exit(1);
+  }
+
+  // 1. Initial State Check (should be mainnet)
+  console.log("\n[Test 1] Checking Initial Cold Load State (Mainnet)...");
+  const initCheck = await send(pageWs, 'Runtime.evaluate', {
+    expression: `({
+      url: window.location.href,
+      mode: localStorage.getItem('synarc_active_network_mode'),
+      badgeText: Array.from(document.querySelectorAll('button')).find(b => b.getAttribute('aria-haspopup') === 'true')?.textContent?.trim()
+    })`,
+    returnByValue: true
+  });
+  console.log("Initial state:", initCheck.result.value);
+
+  // 2. Open dropdown and switch to Testnet
+  console.log("\n[Test 2] Clicking visible badge to open dropdown...");
+  const clickOpenRes = await send(pageWs, 'Runtime.evaluate', {
     expression: `(() => {
-      // Find button that contains network status (ChevronDown, ChainIcon, etc.)
-      const buttons = Array.from(document.querySelectorAll('button'));
-      const badgeBtn = buttons.find(b => b.getAttribute('aria-haspopup') === 'true' || (b.textContent && (b.textContent.includes('Arc') || b.textContent.includes('ms'))));
-      if (!badgeBtn) {
-        return { 
-          success: false, 
-          reason: "Badge button not found. Total buttons: " + buttons.length,
-          allButtons: buttons.map(b => ({
-            text: b.textContent?.trim()?.slice(0, 50),
-            aria: b.getAttribute('aria-haspopup'),
-            title: b.title
-          }))
-        };
-      }
-      badgeBtn.click();
-      return { success: true, text: badgeBtn.textContent };
+      const btn = Array.from(document.querySelectorAll('button')).find(b => {
+        const isBadge = b.getAttribute('aria-haspopup') === 'true' || b.title?.includes('Arc') || b.textContent?.includes('Arc');
+        if (!isBadge) return false;
+        const rect = b.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      });
+      if (!btn) return { success: false, reason: "Visible badge button not found" };
+      btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+      return { success: true, text: btn.textContent?.trim() };
     })()`,
     returnByValue: true
   });
-  console.log("Click badge result:", clickBadgeRes);
+  console.log("Click visible badge result:", clickOpenRes.result.value);
 
-  await new Promise(r => setTimeout(r, 600));
+  console.log("Waiting for dropdown switch button to appear...");
+  let switchTestnetRes = null;
+  for (let i = 0; i < 20; i++) {
+    const check = await send(pageWs, 'Runtime.evaluate', {
+      expression: `(() => {
+        const btn = Array.from(document.querySelectorAll('button')).find(b => b.textContent && b.textContent.includes('Switch to Testnet'));
+        if (!btn) return null;
+        btn.click();
+        return { success: true, text: btn.textContent?.trim() };
+      })()`,
+      returnByValue: true
+    });
+    if (check.result?.value?.success) {
+      switchTestnetRes = check.result.value;
+      console.log(`Clicked 'Switch to Testnet' after ${i * 200}ms:`, switchTestnetRes);
+      break;
+    }
+    await new Promise(r => setTimeout(r, 200));
+  }
 
-  console.log("\nAttempting to find and click 'Switch to Testnet' button...");
-  const clickSwitchRes = await send(pageWs, 'Runtime.evaluate', {
-    expression: `(() => {
-      const buttons = Array.from(document.querySelectorAll('button'));
-      const switchBtn = buttons.find(b => b.textContent && b.textContent.includes('Switch to Testnet'));
-      if (!switchBtn) {
-        return { success: false, reason: "Switch button not found", buttonsText: buttons.map(b => b.textContent?.trim()) };
-      }
-      switchBtn.click();
-      return { success: true, text: switchBtn.textContent };
-    })()`,
+  if (!switchTestnetRes) {
+    console.log("Switch to testnet click result: NOT FOUND");
+  }
+
+  // Wait 4 seconds for testnet transition
+  console.log("Waiting 4s for Testnet state to settle...");
+  await new Promise(r => setTimeout(r, 4000));
+
+  const testnetCheck = await send(pageWs, 'Runtime.evaluate', {
+    expression: `({
+      url: window.location.href,
+      mode: localStorage.getItem('synarc_active_network_mode'),
+      badgeText: Array.from(document.querySelectorAll('button')).find(b => b.getAttribute('aria-haspopup') === 'true' && b.getBoundingClientRect().width > 0)?.textContent?.trim()
+    })`,
     returnByValue: true
   });
-  console.log("Click switch result:", clickSwitchRes);
+  console.log("State after switching to testnet:", testnetCheck.result.value);
 
-  console.log("\nWatching network and console for 15s after switch click...");
-  await new Promise(r => setTimeout(r, 15000));
+  // 3. Switch back to Mainnet
+  console.log("\n[Test 3] Clicking visible badge to open dropdown again...");
+  await send(pageWs, 'Runtime.evaluate', {
+    expression: `(() => {
+      const btn = Array.from(document.querySelectorAll('button')).find(b => {
+        const isBadge = b.getAttribute('aria-haspopup') === 'true' || b.title?.includes('Arc') || b.textContent?.includes('Arc');
+        if (!isBadge) return false;
+        const rect = b.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      });
+      if (btn) btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+    })()`,
+  });
+
+  console.log("Waiting for dropdown switch back button to appear...");
+  let switchMainnetRes = null;
+  for (let i = 0; i < 20; i++) {
+    const check = await send(pageWs, 'Runtime.evaluate', {
+      expression: `(() => {
+        const btn = Array.from(document.querySelectorAll('button')).find(b => b.textContent && b.textContent.includes('Switch to Mainnet'));
+        if (!btn) return null;
+        btn.click();
+        return { success: true, text: btn.textContent?.trim() };
+      })()`,
+      returnByValue: true
+    });
+    if (check.result?.value?.success) {
+      switchMainnetRes = check.result.value;
+      console.log(`Clicked 'Switch to Mainnet' after ${i * 200}ms:`, switchMainnetRes);
+      break;
+    }
+    await new Promise(r => setTimeout(r, 200));
+  }
+
+  console.log("Waiting 4s for Mainnet state to settle...");
+  await new Promise(r => setTimeout(r, 4000));
+
+  const mainnetFinalCheck = await send(pageWs, 'Runtime.evaluate', {
+    expression: `({
+      url: window.location.href,
+      mode: localStorage.getItem('synarc_active_network_mode'),
+      badgeText: Array.from(document.querySelectorAll('button')).find(b => b.getAttribute('aria-haspopup') === 'true' && b.getBoundingClientRect().width > 0)?.textContent?.trim()
+    })`,
+    returnByValue: true
+  });
+  console.log("State after switching back to mainnet:", mainnetFinalCheck.result.value);
+
+  console.log(`\n--- Error Summary: Total Errors Recorded = ${errors.length} ---`);
+  if (errors.length > 0) {
+    console.log("Errors encountered:", errors);
+  } else {
+    console.log("✅ Zero fatal errors or unhandled exceptions encountered during full two-way network switch!");
+  }
 
   console.log("\n--- Checking Pending Requests ---");
   for (const [id, req] of pendingRequests.entries()) {

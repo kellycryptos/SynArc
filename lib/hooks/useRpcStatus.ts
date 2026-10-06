@@ -7,7 +7,6 @@ import { getArcRpcUrl, getArcRpcFallback } from "@/lib/rpc/config";
 
 import { getActiveNetwork, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS } from "@/lib/arc-config";
 
-import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 
 /**
  * Hook: useRpcStatus
@@ -16,31 +15,6 @@ import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
  * Automatically checks fallback endpoints if primary RPC fails or times out.
  */
 export function useRpcStatus(network?: 'mainnet' | 'testnet') {
-  const deferred = useDeferredWeb3();
-  const activeNet = network || getActiveNetwork();
-  const urls = activeNet === 'testnet' ? ARC_TESTNET_RPC_URLS : ARC_MAINNET_RPC_URLS;
-
-  if (deferred && !deferred.isMounted) {
-    return {
-      isHealthy: true,
-      latency: 45,
-      message: "Connected",
-      status: {
-        isHealthy: true,
-        latency: 45,
-        url: urls[0] || "",
-        timestamp: Date.now(),
-      },
-      isLoading: false,
-      error: null,
-      rpcUrl: urls[0] || "",
-    };
-  }
-
-  return useActiveRpcStatus(network);
-}
-
-function useActiveRpcStatus(network?: 'mainnet' | 'testnet') {
   const activeNet = network || getActiveNetwork();
   const urls = activeNet === 'testnet' ? ARC_TESTNET_RPC_URLS : ARC_MAINNET_RPC_URLS;
 
