@@ -77,10 +77,14 @@ export function NetworkStatusBadge() {
   const handleToggle = () => setIsOpen((prev) => !prev);
 
   const handleSwitch = async () => {
-    if (isArcTestnet) {
-      await switchToMainnet();
-    } else {
-      await switchToTestnet();
+    try {
+      if (isArcTestnet) {
+        await switchToMainnet();
+      } else {
+        await switchToTestnet();
+      }
+    } finally {
+      setIsOpen(false);
     }
   };
 
