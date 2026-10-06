@@ -11,7 +11,7 @@ export const ARC_TESTNET_FALLBACK_RPC = 'https://rpc.testnet.arc.network';
  */
 export function getTestnetProxyUrl(): string {
   if (typeof window !== 'undefined') {
-    return '/api/rpc/testnet';
+    return `${window.location.origin}/api/rpc/testnet`;
   }
   let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
@@ -23,11 +23,11 @@ export function getTestnetProxyUrl(): string {
 
 /**
  * Resolves the Arc Mainnet proxy URL safely across both browser and server contexts.
- * In the browser, returns '/api/rpc/mainnet'.
+ * In the browser, returns `${window.location.origin}/api/rpc/mainnet` to satisfy ethers protocol requirements.
  */
 export function getMainnetProxyUrl(): string {
   if (typeof window !== 'undefined') {
-    return '/api/rpc/mainnet';
+    return `${window.location.origin}/api/rpc/mainnet`;
   }
   let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');

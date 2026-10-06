@@ -9,6 +9,7 @@ import {
   ARC_CHAIN,
   ACTIVE_NETWORK,
 } from "@/lib/arc-config";
+import { ARC_MAINNET_NETWORK, ARC_TESTNET_NETWORK } from "@/lib/rpc/config";
 
 export { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_RPC_URLS, arcTestnet, arcMainnet, ARC_CHAIN };
 
@@ -32,6 +33,7 @@ export const arcTransport = fallback(
   }
 );
 
+
 // Centralized Viem Public Client — always targets the active chain (mainnet or testnet)
 export const arcPublicClient = createPublicClient({
   chain: ARC_CHAIN,
@@ -41,7 +43,9 @@ export const arcPublicClient = createPublicClient({
 // Ethers.js provider helper — uses Canteen as primary (ACTIVE_RPC_URLS[0])
 export function getArcEthersProvider(): JsonRpcProvider {
   const primaryUrl = ACTIVE_RPC_URLS[0] || ARC_RPC_URL;
-  return new JsonRpcProvider(primaryUrl, undefined, { staticNetwork: true, batchMaxCount: 1 });
+  const isMainnet = ACTIVE_NETWORK === 'mainnet';
+  const network = isMainnet ? ARC_MAINNET_NETWORK : ARC_TESTNET_NETWORK;
+  return new JsonRpcProvider(primaryUrl, network, { staticNetwork: true, batchMaxCount: 1 });
 }
 
 // Wallet helper: switch or add Arc Testnet / Mainnet in MetaMask/OKX/etc.

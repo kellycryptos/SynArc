@@ -10,7 +10,7 @@ import { ethers, Contract, formatUnits } from "ethers";
 import { GOVERNANCE_CONTRACTS, GovernorABI } from "@/lib/governance/contracts";
 import { CONTRACTS } from "@/lib/arc-config";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
-import { getLogsResiliently } from "@/lib/rpc/config";
+import { getLogsResiliently, ARC_MAINNET_NETWORK, ARC_TESTNET_NETWORK } from "@/lib/rpc/config";
 
 // Module-level cache for VoteCast event scan
 const VOTERS_CACHE: { data: { address: string; votesCount: number; power: number }[] | null; ts: number } = { data: null, ts: 0 };
@@ -91,7 +91,8 @@ export default function AnalyticsPage() {
         const governorAddress = GOVERNANCE_CONTRACTS.governor || CONTRACTS.governor;
 
         const events = await getLogsResiliently(async (rpcUrl) => {
-          const provider = new ethers.JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
+          const net = isArcMainnet ? ARC_MAINNET_NETWORK : ARC_TESTNET_NETWORK;
+          const provider = new ethers.JsonRpcProvider(rpcUrl, net, { staticNetwork: true });
           const governorContract = new Contract(governorAddress, GovernorABI, provider);
           const filter = governorContract.filters.VoteCast();
           const latestBlock = await provider.getBlockNumber();
