@@ -17,14 +17,19 @@ export interface RpcHealthStatus {
  * Check if an RPC endpoint is responsive and healthy
  * Uses a simple JSON-RPC health check (eth_chainId)
  */
-export async function checkRpcHealth(rpcUrl: string, timeout: number = 2500): Promise<RpcHealthStatus> {
+export async function checkRpcHealth(rpcUrl: string, timeout: number = 6000): Promise<RpcHealthStatus> {
   const startTime = Date.now();
   
+  let targetUrl = rpcUrl;
+  if (typeof window !== 'undefined' && rpcUrl.startsWith('/')) {
+    targetUrl = `${window.location.origin}${rpcUrl}`;
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-    
-    const response = await fetch(rpcUrl, {
+    const response = await fetch(targetUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -60,6 +65,7 @@ export async function checkRpcHealth(rpcUrl: string, timeout: number = 2500): Pr
       error: isHealthy ? undefined : data.error?.message || 'Unknown RPC error',
     };
   } catch (error) {
+    clearTimeout(timeoutId);
     const latency = Date.now() - startTime;
     return {
       isHealthy: false,

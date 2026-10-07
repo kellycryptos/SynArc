@@ -21,7 +21,7 @@ export function useRpcStatus(network?: 'mainnet' | 'testnet') {
   const { data: status, isLoading, error } = useQuery({
     queryKey: ["rpcHealth", activeNet],
     queryFn: async () => {
-      const validUrls = urls.filter(Boolean);
+      const validUrls = Array.from(new Set(urls.filter(Boolean)));
       if (validUrls.length === 0) {
         return {
           isHealthy: false,
@@ -32,31 +32,30 @@ export function useRpcStatus(network?: 'mainnet' | 'testnet') {
         };
       }
 
-      // 1. Fast-path: Check primary endpoint first (fast return under 100ms when healthy)
-      const primaryResult = await checkRpcHealth(validUrls[0], 2500);
-      if (primaryResult.isHealthy) {
-        return primaryResult;
+      // Concurrently check available RPC endpoints with a resilient 6000ms timeout.
+      // This prevents sequential stalls and immediately selects the fastest healthy endpoint.
+      const results = await Promise.all(
+        validUrls.map((url) => checkRpcHealth(url, 6000))
+      );
+
+      const healthyResult = results.find((r) => r.isHealthy);
+      if (healthyResult) {
+        return healthyResult;
       }
 
-      // 2. Resilient fallback: Test remaining backup endpoints concurrently (avoids sequential 12s stall)
-      if (validUrls.length > 1) {
-        const fallbackResults = await Promise.all(
-          validUrls.slice(1).map((url) => checkRpcHealth(url, 3000))
-        );
-        const healthyFallback = fallbackResults.find((r) => r.isHealthy);
-        if (healthyFallback) {
-          return healthyFallback;
-        }
-        return fallbackResults[0] || primaryResult;
-      }
-
-      return primaryResult;
+      return results[0] || {
+        isHealthy: false,
+        latency: 0,
+        url: validUrls[0],
+        timestamp: Date.now(),
+        error: "All RPC endpoints unreachable",
+      };
     },
     refetchInterval: 30000,
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
-    staleTime: 30000,
-    retry: 1,
+    staleTime: 25000,
+    retry: 2,
   });
 
   const isHealthy = status?.isHealthy ?? false;
