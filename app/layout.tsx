@@ -20,10 +20,10 @@ const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"], va
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.syndaopro.xyz"),
   title: "Syn DAO",
-  description: "A business funds USDC. An agent pays the contractor. The contract checks the invoice. Built on Arc.",
+  description: "On-chain funding, treasury, and governance for humans and agents. Built on Arc.",
   openGraph: {
     title: "Syn DAO",
-    description: "A business funds USDC. An agent pays the contractor. The contract checks the invoice. Built on Arc.",
+    description: "On-chain funding, treasury, and governance for humans and agents. Built on Arc.",
     url: "https://www.syndaopro.xyz",
     siteName: "Syn DAO",
     images: [
@@ -31,14 +31,14 @@ export const metadata: Metadata = {
         url: "https://www.syndaopro.xyz/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Syn DAO — contractor payouts on Arc",
+        alt: "Syn DAO — Built on Arc",
       }
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Syn DAO",
-    description: "A business funds USDC. An agent pays the contractor. The contract checks the invoice. Built on Arc.",
+    description: "On-chain funding, treasury, and governance for humans and agents. Built on Arc.",
     images: ["https://www.syndaopro.xyz/og-image.jpg"],
     creator: "@syndaopro",
     site: "@syndaopro",
