@@ -168,7 +168,7 @@ export default function CreateProposalPage() {
   };
 
   const proposalThreshold = 1;
-  const hasEnoughBalance = votingPower >= proposalThreshold;
+  const hasEnoughBalance = votingPower >= proposalThreshold || sarcBalance >= proposalThreshold;
 
   const [formData, setFormData] = useState({
     title: "",
@@ -275,24 +275,16 @@ export default function CreateProposalPage() {
       return;
     }
 
-    if (votingPower < proposalThreshold) {
-      if (sarcBalance >= proposalThreshold) {
-        setError(
-          <span>
-            You hold {sarcBalance.toLocaleString()} sARC, but haven&apos;t activated your voting power yet. Please click &quot;Activate Voting Power&quot; above to self-delegate before submitting.
-          </span>
-        );
-      } else {
-        setError(
-          <span>
-            You require a minimum of {proposalThreshold.toLocaleString()} tokens to submit a proposal.{" "}
-            <Link href="/faucet" className="underline font-bold text-primary hover:text-purple-300">
-              Claim 10 sARC here
-            </Link>{" "}
-            first.
-          </span>
-        );
-      }
+    if (votingPower < proposalThreshold && sarcBalance < proposalThreshold) {
+      setError(
+        <span>
+          You require a minimum of {proposalThreshold.toLocaleString()} tokens to submit a proposal.{" "}
+          <Link href="/faucet" className="underline font-bold text-primary hover:text-purple-300">
+            Claim 10 sARC here
+          </Link>{" "}
+          first (no transaction signing required).
+        </span>
+      );
       return;
     }
 

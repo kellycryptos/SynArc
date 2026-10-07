@@ -6,7 +6,7 @@ const PUBLIC_BACKUP_RPC = "https://rpc.mainnet.arc.io";
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW_SECONDS = 60; // 1 minute
 const RATE_LIMIT_WINDOW_MS = RATE_LIMIT_WINDOW_SECONDS * 1000;
-const MAX_REQUESTS_PER_WINDOW = 120; // 120 requests / min per IP
+const MAX_REQUESTS_PER_WINDOW = 300; // 300 requests / min per IP to prevent false rate limits
 
 // In-memory fallback storage (IP -> timestamps[])
 const rateLimitMap = new Map<string, number[]>();

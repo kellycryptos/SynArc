@@ -12,17 +12,17 @@ All core platform mechanics operate programmatically through secure on-chain EVM
 
 ## Deployed Contract Addresses
 
-### Arc Mainnet — Live Production
+### Arc Mainnet — Live Production (Chain ID 5042)
 
-| Contract | Address | Explorer Link |
-| :--- | :--- | :--- |
-| **SynArc Treasury** (Release Valve) | `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B` | [View on Arc Explorer](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
-| **SynArc Governor** (Document Engine) | `0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025` | [View on Arc Explorer](https://explorer.arc.io/address/0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025) |
-| **SynArcToken (`sARC`)** | `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4` | [View on Arc Explorer](https://explorer.arc.io/address/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) |
-| **Authorized Operator Agent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | [View on Arc Explorer](https://explorer.arc.io/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
-| **Authorized Human Reviewer** | `0xE819090D7810D89f2E86e167d0b58425dEd745D8` | [View on Arc Explorer](https://explorer.arc.io/address/0xE819090D7810D89f2E86e167d0b58425dEd745D8) |
-| **Canonical USDC** | `0x3600000000000000000000000000000000000000` | [View on Arc Explorer](https://explorer.arc.io/address/0x3600000000000000000000000000000000000000) |
-| **Canonical EURC** | `0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1` | [View on Arc Explorer](https://explorer.arc.io/address/0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1) |
+| Contract | Address | Explorer / Blockscout | Sourcify Verification (Chain 5042) | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **SynArc Treasury** (Release Valve) | `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B` | [View on Arc Explorer](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) | [Sourcify UI](https://sourcify.dev/#/lookup/5042/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) · [Repository](https://repo.sourcify.dev/5042/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) | Exact Match ✅ |
+| **SynArc Governor** (Document Engine) | `0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025` | [View on Arc Explorer](https://explorer.arc.io/address/0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025) | [Sourcify UI](https://sourcify.dev/#/lookup/5042/0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025) · [Repository](https://repo.sourcify.dev/5042/0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025) | Exact Match ✅ |
+| **SynArcToken (`sARC`)** | `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4` | [View on Arc Explorer](https://explorer.arc.io/address/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) | [Sourcify UI](https://sourcify.dev/#/lookup/5042/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) · [Repository](https://repo.sourcify.dev/5042/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) | Exact Match ✅ |
+| **Authorized Operator Agent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | [View on Arc Explorer](https://explorer.arc.io/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) | - | - |
+| **Authorized Human Reviewer** | `0xE819090D7810D89f2E86e167d0b58425dEd745D8` | [View on Arc Explorer](https://explorer.arc.io/address/0xE819090D7810D89f2E86e167d0b58425dEd745D8) | - | - |
+| **Canonical USDC** | `0x3600000000000000000000000000000000000000` | [View on Arc Explorer](https://explorer.arc.io/address/0x3600000000000000000000000000000000000000) | - | Native Circle USDC |
+| **Canonical EURC** | `0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1` | [View on Arc Explorer](https://explorer.arc.io/address/0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1) | - | Native Circle EURC |
 
 ### Arc Testnet
 
@@ -95,7 +95,7 @@ etherscan: {
 }
 ```
 
-### Verification Commands
+### Verification Commands (Arc Testnet)
 
 1. **Verify Token**:
    ```bash
@@ -116,3 +116,23 @@ etherscan: {
    ```bash
    npx hardhat verify --network arcTestnet 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D 0x35630dFE2592AB19d979ec1B173697aEa554b66b 0x35630dFE2592AB19d979ec1B173697aEa554b66b "Groq AI Engine"
    ```
+
+---
+
+## Verifying Contracts on Arc Mainnet (Chain ID 5042)
+
+All Arc Mainnet core contracts are verified with **Exact Match (Full Match)** on **Sourcify** (and indexed on Arc Blockscout Explorer `https://explorer.arc.io`):
+
+| Contract | Address | Compiler | Verification Status | Match ID |
+| :--- | :--- | :--- | :--- | :--- |
+| **SynArcTreasury** | `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B` | `v0.8.24+commit.e11b9ed9` (runs: 1, viaIR: true, cancun) | **Exact Match ✅** | 55266790 |
+| **SynArcGovernor** | `0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025` | `v0.8.24+commit.e11b9ed9` (runs: 1, viaIR: true, cancun) | **Exact Match ✅** | 55266387 |
+| **SynArcToken** | `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4` | `v0.8.24+commit.e11b9ed9` (runs: 1, viaIR: true, cancun) | **Exact Match ✅** | 55267136 |
+
+### Running the Verification Script
+
+To re-verify or check verification status at any time:
+```bash
+npx tsx scripts/verifySourcifyMainnet.ts
+```
+

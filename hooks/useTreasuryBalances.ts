@@ -127,6 +127,10 @@ export interface QueuedWithdrawal {
 
 interface CachedData {
   activities: TreasuryActivity[];
+  usdcBalance?: number;
+  eurcBalance?: number;
+  combinedBalance?: number;
+  queuedWithdrawals?: QueuedWithdrawal[];
   lastFetchedBlock: string;
 }
 
@@ -138,7 +142,7 @@ const getCache = (treasuryAddress: string): CachedData => {
     const data = localStorage.getItem(`synarc_treasury_cache_${treasuryAddress.toLowerCase()}`);
     if (data) {
       const parsed = JSON.parse(data);
-      if (parsed && Array.isArray(parsed.activities)) {
+      if (parsed && (Array.isArray(parsed.activities) || typeof parsed.usdcBalance === 'number')) {
         return parsed;
       }
     }
@@ -201,12 +205,21 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load activities from cache immediately on mount/address change
+  // Load balances and activities from cache immediately on mount/address change
   useEffect(() => {
     if (treasuryAddress) {
       const cached = getCache(treasuryAddress);
-      if (cached.activities.length > 0) {
+      if (cached.activities && cached.activities.length > 0) {
         setActivities(cached.activities);
+      }
+      if (cached.usdcBalance !== undefined && cached.eurcBalance !== undefined) {
+        setUsdcBalance(cached.usdcBalance);
+        setEurcBalance(cached.eurcBalance);
+        setBalance(cached.combinedBalance ?? (cached.usdcBalance + cached.eurcBalance * 1.08));
+        if (cached.queuedWithdrawals) {
+          setQueuedWithdrawals(cached.queuedWithdrawals);
+        }
+        setLoading(false);
       }
     }
   }, [treasuryAddress]);
@@ -220,12 +233,14 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
 
   const fetchBalances = useCallback(async () => {
     if (!treasuryAddress) return;
-    setLoading(true);
     setError(null);
 
+    // Only set full page loading if we don't have any balance data yet
+    setLoading((prev) => (balance === 0 && usdcBalance === 0 ? true : prev));
+
     try {
-      // 1. Fetch token balances, queued withdrawals, and transaction history in parallel
-      const [usdcBalRes, eurcBalRes, rawQueuedRes, rawTxsRes] = await Promise.allSettled([
+      // Step 1: Rapid fetch of token balances and queued withdrawals (lightweight calls)
+      const [usdcBalRes, eurcBalRes, rawQueuedRes] = await Promise.allSettled([
         publicClient.readContract({
           address: usdcAddress,
           abi: ERC20_ABI,
@@ -243,18 +258,6 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
           abi: TREASURY_ABI_6,
           functionName: 'getQueuedWithdrawals',
         }),
-        // Read getTransactions: attempt 6-field ABI first, fallback to 7-field ABI
-        publicClient.readContract({
-          address: treasuryAddress,
-          abi: TREASURY_ABI_6,
-          functionName: 'getTransactions',
-        }).catch(() =>
-          publicClient.readContract({
-            address: treasuryAddress,
-            abi: TREASURY_ABI_7,
-            functionName: 'getTransactions',
-          })
-        ),
       ]);
 
       // Process USDC Balance with fallback to internal contract balance
@@ -304,25 +307,6 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
       }));
       setQueuedWithdrawals(formattedQueued);
 
-      // Process Transactions
-      const rawTxs = rawTxsRes.status === 'fulfilled' && Array.isArray(rawTxsRes.value) ? rawTxsRes.value : [];
-      const formattedTxs: TreasuryActivity[] = rawTxs.map((tx: any, idx: number) => {
-        const isOutflow = tx.txType === 'Outflow';
-        const timestampSec = Number(tx.timestamp || 0n);
-        const isoDate = timestampSec > 0 ? new Date(timestampSec * 1000).toISOString() : new Date().toISOString();
-        return {
-          id: `tx-${treasuryAddress.toLowerCase()}-${idx}-${timestampSec}`,
-          type: (isOutflow ? 'Outflow' : 'Inflow') as 'Inflow' | 'Outflow',
-          amount: Number(tx.amount || 0n) / 1_000_000,
-          token: tx.tokenSymbol || 'USDC',
-          timestamp: isoDate,
-          description: tx.description || (isOutflow ? 'Treasury Outflow' : 'Treasury Inflow'),
-          party: tx.party || '',
-          deliverableURI: (tx as any).deliverableURI || '',
-          txHash: '',
-        };
-      });
-
       // Merge simulated activities from localStorage
       let simulatedActivities: TreasuryActivity[] = [];
       if (typeof window !== 'undefined') {
@@ -336,11 +320,6 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
         }
       }
 
-      // Merge cached, fetched and simulated activities
-      const cached = getCache(treasuryAddress);
-      const allActivities = mergeAndSortActivities(simulatedActivities, formattedTxs, cached.activities);
-
-      // Sum up simulated activities to adjust balances
       let simulatedUSDC = 0;
       let simulatedEURC = 0;
       simulatedActivities.forEach((act) => {
@@ -361,21 +340,67 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
       setUsdcBalance(finalUSDC);
       setEurcBalance(finalEURC);
       setBalance(combinedVal);
-      setActivities(allActivities);
+      setLoading(false); // Balances are ready immediately without waiting for tx history!
 
-      // Save merged activities to localStorage
-      setCache(treasuryAddress, {
-        activities: allActivities,
-        lastFetchedBlock: '0',
-      });
+      // Step 2: Fetch transaction history asynchronously in background (non-blocking)
+      setHistoryLoading(true);
+      (async () => {
+        try {
+          const rawTxs = await publicClient.readContract({
+            address: treasuryAddress,
+            abi: TREASURY_ABI_6,
+            functionName: 'getTransactions',
+          }).catch(() =>
+            publicClient.readContract({
+              address: treasuryAddress,
+              abi: TREASURY_ABI_7,
+              functionName: 'getTransactions',
+            })
+          ).catch(() => []);
+
+          const formattedTxs: TreasuryActivity[] = (Array.isArray(rawTxs) ? rawTxs : []).map((tx: any, idx: number) => {
+            const isOutflow = tx.txType === 'Outflow';
+            const timestampSec = Number(tx.timestamp || 0n);
+            const isoDate = timestampSec > 0 ? new Date(timestampSec * 1000).toISOString() : new Date().toISOString();
+            return {
+              id: `tx-${treasuryAddress.toLowerCase()}-${idx}-${timestampSec}`,
+              type: (isOutflow ? 'Outflow' : 'Inflow') as 'Inflow' | 'Outflow',
+              amount: Number(tx.amount || 0n) / 1_000_000,
+              token: tx.tokenSymbol || 'USDC',
+              timestamp: isoDate,
+              description: tx.description || (isOutflow ? 'Treasury Outflow' : 'Treasury Inflow'),
+              party: tx.party || '',
+              deliverableURI: (tx as any).deliverableURI || '',
+              txHash: '',
+            };
+          });
+
+          const cached = getCache(treasuryAddress);
+          const allActivities = mergeAndSortActivities(simulatedActivities, formattedTxs, cached.activities);
+          setActivities(allActivities);
+
+          // Save merged activities & balances to localStorage
+          setCache(treasuryAddress, {
+            activities: allActivities,
+            usdcBalance: finalUSDC,
+            eurcBalance: finalEURC,
+            combinedBalance: combinedVal,
+            queuedWithdrawals: formattedQueued,
+            lastFetchedBlock: '0',
+          });
+        } catch (txErr) {
+          console.warn('useTreasuryBalances: background tx fetch failed', txErr);
+        } finally {
+          setHistoryLoading(false);
+        }
+      })();
     } catch (err) {
       console.error('useTreasuryBalances: fetch failed', err);
       setError('Failed to fetch treasury balances');
     } finally {
       setLoading(false);
-      setHistoryLoading(false);
     }
-  }, [publicClient, treasuryAddress, usdcAddress, eurcAddress]);
+  }, [publicClient, treasuryAddress, usdcAddress, eurcAddress, balance, usdcBalance]);
 
   useEffect(() => {
     fetchBalances();

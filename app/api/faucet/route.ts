@@ -11,10 +11,9 @@ const TESTNET_RPC_URLS = [
 ].filter(Boolean)
 
 const MAINNET_RPC_URLS = [
+  'https://rpc.mainnet.arc.io',
   process.env.ARC_MAINNET_RPC_URL?.trim() || '',
   process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL?.trim() || '',
-  'https://rpc.mainnet.arc.network',
-  'https://rpc.mainnet.arc.io',
 ].filter(Boolean)
 
 const arcTestnetChain = defineChain({

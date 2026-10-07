@@ -17,7 +17,7 @@ export interface RpcHealthStatus {
  * Check if an RPC endpoint is responsive and healthy
  * Uses a simple JSON-RPC health check (eth_chainId)
  */
-export async function checkRpcHealth(rpcUrl: string, timeout: number = 5000): Promise<RpcHealthStatus> {
+export async function checkRpcHealth(rpcUrl: string, timeout: number = 2500): Promise<RpcHealthStatus> {
   const startTime = Date.now();
   
   try {

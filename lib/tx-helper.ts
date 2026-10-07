@@ -1,5 +1,5 @@
 import { createWalletClient, createPublicClient, http, custom, fallback, getAddress } from 'viem'
-import { ARC_CHAIN, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_GAS, CONTRACTS, getActiveNetwork, getMainnetProxyUrl, getTestnetProxyUrl } from './arc-config'
+import { ARC_CHAIN, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS, ARC_GAS, CONTRACTS, getActiveNetwork, getMainnetProxyUrl, getTestnetProxyUrl, getMainnetRpcUrls, getTestnetRpcUrls, arcMainnet, arcTestnet } from './arc-config'
 import { BrowserProvider, Contract, ZeroAddress } from 'ethers'
 import { getCircleClient } from './circle/client'
 
@@ -158,6 +158,9 @@ export function selectActiveWallet(wallets?: any[], activeAddress?: string | nul
   return wallets[0];
 }
 
+// Per-chain cache for the public client to avoid re-instantiation overhead and prevent cross-chain contamination
+const publicClientCacheByChain = new Map<number, any>();
+
 export const enforceChain = async (activeWallet: any, targetChainId: number = ARC_CHAIN.id): Promise<any> => {
   if (!activeWallet) throw new Error("No active wallet provided for chain enforcement");
 
@@ -262,8 +265,8 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = AR
         console.log(`[enforceChain] wallet_switchEthereumChain completed for Privy embedded wallet.`);
         // Reduced from 800ms — chain switch is fast on Privy embedded wallets
         await new Promise(resolve => setTimeout(resolve, 400));
-        // Invalidate global public client to force fresh RPC connection
-        globalPublicClientInstance = null;
+        // Invalidate public client cache on chain switch to force fresh connection
+        publicClientCacheByChain.clear();
         return provider;
       } catch (switchError) {
         console.warn(`[enforceChain] wallet_switchEthereumChain failed, trying activeWallet.switchChain fallback:`, switchError);
@@ -279,8 +282,8 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = AR
       console.log(`[enforceChain] switchChain call sent successfully.`);
       // Reduced from 800ms — let provider confirm chain change naturally
       await new Promise(resolve => setTimeout(resolve, 400));
-      // Invalidate global public client on chain switch
-      globalPublicClientInstance = null;
+      // Invalidate public client cache on chain switch
+      publicClientCacheByChain.clear();
     }
   } catch (err: any) {
     console.warn('[enforceChain] switchChain call raised error, continuing with fallback checks:', err);
@@ -494,9 +497,6 @@ export const writeWithRetry = async (
   throw lastError
 }
 
-// Global cache for the public client to avoid re-instantiation overhead and latency-ping storms
-let globalPublicClientInstance: any = null;
-
 /**
  * Unified helper to get an authenticated walletClient and publicClient
  * supporting Privy embedded wallets, Circle wallets, and external injected wallets.
@@ -578,35 +578,39 @@ export const getAuthenticatedClient = async (
 
   console.log(`[getAuthenticatedClient] Final resolved wallet address: ${address}`);
 
-  // Create public client with resilient fallback transport (cached globally)
-  if (!globalPublicClientInstance) {
-    const rpcUrls = [
-      process.env.NEXT_PUBLIC_ARC_RPC_URL,
-      ...ARC_RPC_URLS
-    ].filter(Boolean) as string[];
+  // Resolve target chain and corresponding resilient RPC URLs
+  const isMainnet = targetChainId === 5042;
+  const isTestnet = targetChainId === 5042002;
+  const targetChain = isMainnet ? arcMainnet : (isTestnet ? arcTestnet : ARC_CHAIN);
 
-    const uniqueRpcUrls = Array.from(new Set(rpcUrls));
+  const chainRpcUrls = isMainnet 
+    ? getMainnetRpcUrls().filter(url => !url.includes('rpc.mainnet.arc.network'))
+    : (isTestnet ? getTestnetRpcUrls() : (targetChain.rpcUrls?.default?.http || ARC_RPC_URLS));
 
-    globalPublicClientInstance = createPublicClient({
-      chain: ARC_CHAIN,
+  const uniqueRpcUrls = Array.from(new Set(chainRpcUrls.filter(Boolean) as string[]));
+
+  let publicClient = publicClientCacheByChain.get(targetChainId);
+  if (!publicClient) {
+    publicClient = createPublicClient({
+      chain: targetChain,
       transport: fallback(
         uniqueRpcUrls.map((url) =>
           http(url, {
-            timeout: 15000,   // Wait longer for actual transaction submissions
-            retryCount: 3,
-            retryDelay: 1000,
+            timeout: 8000,
+            retryCount: 2,
+            retryDelay: 500,
           })
         ),
         {
-          rank: false // Use priority order (Canteen first), avoiding pre-transaction latency check overhead
+          rank: false
         }
       ),
     });
+    publicClientCacheByChain.set(targetChainId, publicClient);
   }
-  const publicClient = globalPublicClientInstance;
 
   const walletClient = createWalletClient({
-    chain: ARC_CHAIN,
+    chain: targetChain,
     transport: custom(provider),
     account: address,
   });
@@ -675,8 +679,8 @@ export const waitForTransaction = async (
   const receipt = await publicClient.waitForTransactionReceipt({
     hash,
     timeout: 60_000,
-    pollingInterval: 500, // Reduced polling interval to 500ms
-    retryCount: 60,       // Increased retry count
+    pollingInterval: 400, // Fast 400ms polling for responsive block inclusion
+    retryCount: 60,
   });
   
   console.log(`[waitForTransaction] Transaction receipt received:`, receipt);
@@ -684,13 +688,8 @@ export const waitForTransaction = async (
     throw new Error('Transaction execution failed on-chain.');
   }
 
-  // Introduce a brief settlement delay (800ms) to allow RPC state synchronization
-  // across nodes before proceeding with subsequent transactions or reads.
-  // Reduced from 1500ms — Arc Testnet propagates quickly with low block times.
-  console.log(`[waitForTransaction] Transaction succeeded. Applying 800ms RPC settlement delay...`);
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  console.log(`[waitForTransaction] Settlement delay completed.`);
-  
+  // Fast 300ms settlement delay for RPC state synchronization
+  await new Promise((resolve) => setTimeout(resolve, 300));
   return receipt;
 };
 

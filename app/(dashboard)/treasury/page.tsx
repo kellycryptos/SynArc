@@ -870,7 +870,7 @@ function TreasuryPageContent() {
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {treasuryLoading || (isHistoryLoading && recentTransactions.length === 0) ? (
+                {(treasuryLoading && recentTransactions.length === 0) ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b border-border-thin/50">
                       <td className="py-4 pl-2">

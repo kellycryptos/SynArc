@@ -32,61 +32,62 @@ export const wagmiConfig = getDefaultConfig({
     },
   ],
   transports: {
-    // Arc Testnet uses Canteen as main, with same-origin server proxy and documented public fallbacks
+    // Arc Testnet: fast official RPC, Canteen node, same-origin server proxy, and documented public fallbacks
     [arcTestnet.id]: fallback(
       [
-        http(CANTEEN_TESTNET_RPC, {
-          timeout: 10000,
+        http(ARC_TESTNET_FALLBACK_RPC, {
+          timeout: 8000,
           retryCount: 2,
-          retryDelay: 1000,
+          retryDelay: 500,
+        }),
+        http(CANTEEN_TESTNET_RPC, {
+          timeout: 8000,
+          retryCount: 2,
+          retryDelay: 500,
         }),
         http(getTestnetProxyUrl(), {
-          timeout: 10000,
+          timeout: 8000,
           retryCount: 2,
-          retryDelay: 1000,
+          retryDelay: 500,
           fetchOptions: {
             headers: {
               'x-synarc-source': 'app-client',
             },
           },
         }),
-        http(ARC_TESTNET_FALLBACK_RPC, {
-          timeout: 10000,
+        http('https://rpc.testnet.arc.io', {
+          timeout: 8000,
           retryCount: 2,
-          retryDelay: 1000,
+          retryDelay: 500,
         }),
       ],
       {
         retryCount: 2,
-        retryDelay: 1000,
+        retryDelay: 500,
       }
     ),
+    // Arc Mainnet: official Arc RPC (direct, fast) → same-origin proxy
     [arcMainnet.id]: fallback(
       [
-        http(getMainnetProxyUrl(), {
-          timeout: 10000,
+        http('https://rpc.mainnet.arc.io', {
+          timeout: 8000,
           retryCount: 2,
-          retryDelay: 1000,
+          retryDelay: 500,
+        }),
+        http(getMainnetProxyUrl(), {
+          timeout: 8000,
+          retryCount: 2,
+          retryDelay: 500,
           fetchOptions: {
             headers: {
               'x-synarc-source': 'app-client',
             },
           },
         }),
-        http('https://rpc.mainnet.arc.network', {
-          timeout: 10000,
-          retryCount: 2,
-          retryDelay: 1000,
-        }),
-        http('https://rpc.mainnet.arc.io', {
-          timeout: 10000,
-          retryCount: 2,
-          retryDelay: 1000,
-        }),
       ],
       {
         retryCount: 2,
-        retryDelay: 1000,
+        retryDelay: 500,
       }
     ),
     [sepolia.id]: http("https://ethereum-sepolia-rpc.publicnode.com"),

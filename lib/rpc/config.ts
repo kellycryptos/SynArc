@@ -69,27 +69,50 @@ export async function initializeResilientRpc(chain: any) {
  * the entire app while it waits for a TCP response.
  */
 export async function getResilientProvider(): Promise<JsonRpcProvider> {
-  const TIMEOUT_MS = 4000; // Slightly more generous — Alchemy connects fast
+  const TIMEOUT_MS = 2500;
   const isMainnet = getActiveNetwork() === 'mainnet';
   const network = isMainnet ? ARC_MAINNET_NETWORK : ARC_TESTNET_NETWORK;
+  const validUrls = Array.from(RPC_URLS).filter(url => Boolean(url) && !url.includes('rpc.mainnet.arc.network'));
 
-  for (const rpcUrl of RPC_URLS) {
+  // 1. Fast path: check primary RPC first
+  if (validUrls.length > 0) {
     try {
-      const provider = new JsonRpcProvider(rpcUrl, network, { staticNetwork: true, batchMaxCount: 1 });
-
-      // Race the health check against a timeout so a hanging URL fails fast
+      const primaryUrl = validUrls[0];
+      const provider = new JsonRpcProvider(primaryUrl, network, { staticNetwork: true, batchMaxCount: 1 });
       await Promise.race([
         provider.getBlockNumber(),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`RPC timeout: ${rpcUrl}`)), TIMEOUT_MS)
+          setTimeout(() => reject(new Error(`RPC timeout: ${primaryUrl}`)), TIMEOUT_MS)
         ),
       ]);
-
       return provider;
     } catch (err) {
-      console.warn(`RPC unavailable (${rpcUrl}), trying next fallback...`);
+      console.warn(`Primary RPC unavailable, racing backups in parallel...`);
     }
   }
+
+  // 2. Resilient fallback: race remaining healthy endpoints concurrently
+  const fallbacks = validUrls.slice(1);
+  if (fallbacks.length > 0) {
+    try {
+      const fastestProvider = await Promise.any(
+        fallbacks.map(async (url) => {
+          const provider = new JsonRpcProvider(url, network, { staticNetwork: true, batchMaxCount: 1 });
+          await Promise.race([
+            provider.getBlockNumber(),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error(`RPC timeout: ${url}`)), TIMEOUT_MS)
+            ),
+          ]);
+          return provider;
+        })
+      );
+      return fastestProvider;
+    } catch {
+      // All raced fallbacks failed
+    }
+  }
+
   throw new Error("All RPC endpoints are offline. Please try again later.");
 }
 

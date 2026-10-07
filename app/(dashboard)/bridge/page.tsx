@@ -365,7 +365,7 @@ export default function BridgePage() {
           chainParams = {
             chainId: "0x13b2", // 5042 hex
             chainName: "Arc",
-            rpcUrls: ["https://rpc.mainnet.arc.io", "https://rpc.mainnet.arc.network"],
+            rpcUrls: ["https://rpc.mainnet.arc.io"],
             nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 6 },
             blockExplorerUrls: ["https://explorer.arc.io"],
           };
