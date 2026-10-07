@@ -14,11 +14,6 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { FloatingAIChatLazy } from "@/components/marketing/FloatingAIChatLazy";
 import { LandingActivitySectionLazy } from "@/components/marketing/LandingActivitySectionLazy";
 
-/* ─────────────────────────────────────────────────────────────
-   Sub-components — pure presentational, no hooks
-   ───────────────────────────────────────────────────────────── */
-
-/** A single "How it works" step card */
 function StepCard({
   step,
   icon: Icon,
@@ -37,7 +32,6 @@ function StepCard({
       delay={delay}
       className="relative p-6 border border-border flex flex-col gap-4"
     >
-      {/* Step number */}
       <div className="flex items-center gap-3">
         <span className="font-mono text-xs font-semibold text-primary border border-primary/30 bg-primary/10 rounded px-2 py-0.5 select-none">
           {String(step).padStart(2, "0")}
@@ -54,7 +48,6 @@ function StepCard({
   );
 }
 
-/** A single "Why Syn DAO" differentiator card */
 function DiffCard({
   icon: Icon,
   title,
@@ -84,51 +77,30 @@ function DiffCard({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Page
-   ───────────────────────────────────────────────────────────── */
-
 export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen">
-
-      {/* ══════════════════════════════════════════════════════
-          §1  HERO
-          ══════════════════════════════════════════════════════ */}
       <section className="relative pt-28 pb-20 md:pt-40 md:pb-28 overflow-hidden px-4">
-        {/* Background glow */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] opacity-[0.15] dark:opacity-[0.15] opacity-[0.06] bg-[#2F6FFF] blur-[130px] rounded-full" />
         </div>
 
         <div className="max-w-4xl mx-auto relative z-10 text-center">
-
-          {/* Network badge — no fake stats */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-8 rounded-full border border-border bg-surface/80 text-xs font-mono text-muted shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
             Live on Arc Mainnet
           </div>
 
-          {/* Headline — monospace, per brief */}
           <h1 className="font-mono text-4xl sm:text-5xl md:text-[56px] font-bold tracking-tight leading-[1.1] text-foreground mb-6">
-            Funding and governance{" "}
-            <span
-              className="text-primary"
-              style={{ WebkitTextStroke: "0px" }}
-            >
-              for humans and agents
-            </span>
-            ,{" "}
-            <span className="text-foreground">built on Arc.</span>
+            A business funds USDC.{" "}
+            <span className="text-primary">An agent pays the contractor.</span>{" "}
+            The contract checks the invoice.
           </h1>
 
-          {/* Sub-headline — the core loop sentence, verbatim from brief */}
           <p className="font-mono text-base sm:text-lg text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
-            Fund USDC into the DAO treasury → vote on a proposal → release to a
-            human or agent once the three-way match clears.
+            Deposit USDC on Arc. Release only when the vote, the deliverable hash, and the payee match. Under 50 USDC the agent pays. Above that, a human approves.
           </p>
 
-          {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/dashboard"
@@ -147,23 +119,17 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          §2  HOW IT WORKS
-          ══════════════════════════════════════════════════════ */}
-      <section
-        id="how-it-works"
-        className="py-24 px-4 border-t border-border"
-      >
+      <section id="how-it-works" className="py-24 px-4 border-t border-border">
         <div className="max-w-5xl mx-auto">
           <div className="mb-12 text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-surface text-xs font-mono font-medium text-muted uppercase tracking-wider mb-4">
               Mechanism
             </div>
             <h2 className="font-mono text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
-              How it works
+              How a payout clears
             </h2>
             <p className="mt-3 text-sm text-muted max-w-xl mx-auto">
-              Four concrete steps from USDC deposit to release — no intermediaries.
+              Four steps from a USDC deposit to a contractor payment. No custodian in the middle.
             </p>
           </div>
 
@@ -171,100 +137,87 @@ export default function LandingPage() {
             <StepCard
               step={1}
               icon={Wallet}
-              title="Fund treasury"
-              body="Deposit USDC into the on-chain governance treasury. The balance is publicly readable at any time from the Arc explorer."
+              title="Fund the treasury"
+              body="The business deposits USDC into the on-chain treasury. The balance is public on the Arc explorer."
               delay={0}
             />
             <StepCard
               step={2}
               icon={Vote}
-              title="Vote on a proposal"
-              body="Members vote For, Against, or Abstain on a proposal that specifies a payee, amount, and deliverable document pinned to IPFS."
+              title="Attach the invoice"
+              body="A proposal names the contractor, the amount, and the deliverable pinned to IPFS. The contract stores that hash."
               delay={0.07}
             />
             <StepCard
               step={3}
               icon={ScanSearch}
-              title="AI verifier scores it"
-              body="An AI agent scores the deliverable against the proposal document. The score is an input to the discussion — the vote is the only trigger for release."
+              title="Agent scores the work"
+              body="The agent scores the deliverable against the invoice. The score is an input. It cannot call release."
               delay={0.14}
             />
             <StepCard
               step={4}
               icon={SendHorizonal}
-              title="Release to payee"
-              body="Once the contract confirms the three-way match (vote passed, deliverable hash matches, cooldown elapsed), funds transfer to the payee address."
+              title="Release the USDC"
+              body="Funds move only when the vote, the document hash, and the payee match. Under 50 USDC the agent pays. Above that, a human approves."
               delay={0.21}
             />
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          §3  WHY SYN DAO — differentiators
-          ══════════════════════════════════════════════════════ */}
-      <section
-        id="why"
-        className="py-24 px-4 border-t border-border"
-      >
+      <section id="why" className="py-24 px-4 border-t border-border">
         <div className="max-w-5xl mx-auto">
           <div className="mb-12 text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-surface text-xs font-mono font-medium text-muted uppercase tracking-wider mb-4">
               Differentiators
             </div>
             <h2 className="font-mono text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
-              Why Syn DAO
+              Why the contract, not the agent, signs
             </h2>
             <p className="mt-3 text-sm text-muted max-w-xl mx-auto">
-              Each mechanism named the way you would explain it to an engineer.
+              Each rule is enforced on Arc, not in a prompt.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <DiffCard
               icon={FileText}
-              title="Document-anchored treasury entries"
-              body="Every treasury outflow must reference a pinned IPFS document. The contract stores the CID on-chain — no document hash, no release."
+              title="Invoice anchored on-chain"
+              body="Every outflow must reference a pinned document. The contract stores the CID. No invoice hash, no release."
               delay={0}
             />
             <DiffCard
               icon={GitCompareArrows}
-              title="Contract-level three-way match"
-              body="Release requires three things to agree at the contract level: the vote result, the deliverable CID, and the payee address recorded in the proposal."
+              title="Three-way match"
+              body="Release needs the vote, the deliverable CID, and the payee in the proposal to agree. One mismatch reverts."
               delay={0.07}
             />
             <DiffCard
               icon={Clock}
-              title="48-hour payee-change cooldown"
-              body="After a payee address is set or changed, a 48-hour delay is enforced before that address can receive funds — closing the last-minute address-swap attack."
+              title="48-hour payee cooldown"
+              body="A changed contractor address waits 48 hours before it can receive funds. That closes the last-minute swap."
               delay={0.14}
             />
             <DiffCard
               icon={Bot}
-              title="AI verifier as input, not trigger"
-              body="The AI agent reads the deliverable and scores it against the proposal. That score appears in the proposal thread. It has no write-access to the release function."
+              title="Agent cap, human ceiling"
+              body="The agent can pay at or under 50 USDC. Above that the contract stops for a human. The same payment cannot run twice."
               delay={0.21}
             />
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          §4  REAL ACTIVITY — client island (honest empty state)
-          ══════════════════════════════════════════════════════ */}
       <LandingActivitySectionLazy />
 
-      {/* ══════════════════════════════════════════════════════
-          §5  FINAL CTA
-          ══════════════════════════════════════════════════════ */}
       <section className="py-24 px-4 border-t border-border">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="font-mono text-2xl sm:text-3xl font-semibold text-foreground mb-4 tracking-tight">
-            Ready to participate?
+            Put one payout on it
           </h2>
           <p className="text-sm text-muted mb-10 max-w-lg mx-auto leading-relaxed">
-            Connect your wallet, fund USDC into the treasury, and vote on the
-            first proposals — or submit one yourself.
+            Connect a wallet, fund USDC, and release the first contractor payment. The governor is live. The first release is not.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
@@ -292,7 +245,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Floating AI assistant — client island */}
       <FloatingAIChatLazy />
     </div>
   );
