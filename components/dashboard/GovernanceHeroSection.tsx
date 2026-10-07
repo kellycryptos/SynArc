@@ -10,56 +10,44 @@ export function GovernanceHeroSection() {
   const { isArcMainnet } = useArcNetwork();
   const { campaigns } = useCampaignStore();
 
-  // Dynamic proposal of the day: pick the first active/voting campaign, or fallback
   const featuredProposal = useMemo(() => {
     if (campaigns && campaigns.length > 0) {
       const active = campaigns.find(c => c.state === "Active" || c.state === "Voting");
       if (active) return active;
       return campaigns[0];
     }
-    if (isArcMainnet) {
-      return {
-        id: "mainnet-genesis",
-        title: "Arc Mainnet Community Treasury Initialization",
-        description: "Initial allocation and governance activation on Arc Mainnet (Chain ID 5042).",
-        state: "Genesis",
-        isAgent: true,
-        raised: 0,
-        goal: 1000000,
-        isGenesis: true,
-      };
-    }
     return {
-      id: "arc-prop-104",
-      title: "Arc Treasury Liquidity Rebalance & CCTP Yield",
-      description: "Automated routing of idle USDC into verified Arc yield contracts via agent guardrails.",
-      state: "Active",
+      id: "awaiting-first",
+      title: "Awaiting the first funded payout",
+      description: "The governor is live. No proposal is on-chain yet.",
+      state: "Empty",
       isAgent: true,
-      raised: 450000,
-      goal: 500000,
+      raised: 0,
+      goal: 0,
+      isEmpty: true,
     };
-  }, [campaigns, isArcMainnet]);
+  }, [campaigns]);
+
+  const isEmpty = featuredProposal.id === "awaiting-first";
 
   const proposalNumberLabel = useMemo(() => {
-    if (featuredProposal.id === "mainnet-genesis") return "Genesis";
-    const num = featuredProposal.id.replace(/[^0-9]/g, "");
+    if (isEmpty) return "None";
+    const num = String(featuredProposal.id).replace(/[^0-9]/g, "");
     return num ? `#${num}` : "#1";
-  }, [featuredProposal.id]);
+  }, [featuredProposal.id, isEmpty]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {/* CARD 1: PROPOSAL OF THE DAY */}
       <div className="rounded-2xl border border-[#1B2536] bg-[#0B111C]/90 p-5 sm:p-6 flex flex-col justify-between hover:border-[#2F6FFF]/30 transition-all duration-200 group">
         <div>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5 text-[11px] font-mono font-medium tracking-[0.12em] text-[#4F8BFF] uppercase">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Proposal of the day</span>
+              <span>{isEmpty ? "Treasury status" : "Proposal of the day"}</span>
             </div>
             <span className="w-2.5 h-2.5 rounded-full bg-[#2F6FFF]/30 border border-[#4F8BFF]" />
           </div>
 
-          {/* Badges row */}
           <div className="flex items-center gap-2 flex-wrap mb-2.5">
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-[#151C29] text-[#8A948E] border border-[#1B2536]">
               {proposalNumberLabel}
@@ -68,7 +56,7 @@ export function GovernanceHeroSection() {
               {featuredProposal.state}
             </span>
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-[#2F6FFF]/10 text-[#4F8BFF] border border-[#2F6FFF]/25">
-              Autonomous Agent
+              {isEmpty ? "Escrow initialized" : "Autonomous Agent"}
             </span>
           </div>
 
@@ -79,29 +67,28 @@ export function GovernanceHeroSection() {
           <div className="flex items-center gap-2 mt-3 text-xs text-[#8A948E]">
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-[#4F8BFF]" />
-              Arc Treasury
+              {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}
             </span>
             <span>·</span>
             <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-[#05080F] border border-[#151C29]">
-              Liquidity Protocol
+              {isEmpty ? "0 USDC released" : "Payout"}
             </span>
           </div>
         </div>
 
         <div className="mt-5 pt-4 border-t border-[#151C29] flex items-center justify-between">
           <Link
-            href="/proposals"
+            href={isEmpty ? "/treasury" : "/proposals"}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4F8BFF] group-hover:gap-2.5 transition-all cursor-pointer font-space"
           >
-            Review & Vote <ArrowRight className="w-3.5 h-3.5" />
+            {isEmpty ? "Open treasury" : "Review & Vote"} <ArrowRight className="w-3.5 h-3.5" />
           </Link>
           <span className="text-[11px] font-mono text-[#6B7385]">
-            Ends in 2d 14h
+            {isEmpty ? "No deadline — no proposal on the governor" : "Live proposal"}
           </span>
         </div>
       </div>
 
-      {/* CARD 2: CONTINUE WHERE YOU LEFT OFF */}
       <div className="rounded-2xl border border-[#1B2536] bg-[#0B111C]/90 p-5 sm:p-6 flex flex-col justify-between hover:border-[#2F6FFF]/30 transition-all duration-200">
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -112,7 +99,7 @@ export function GovernanceHeroSection() {
           </div>
 
           <p className="text-xs text-[#8A948E] leading-relaxed mt-2">
-            No proposal in progress. Shift+click a DAO or proposal to pin it to your quick-monitoring watchboard.
+            No payout in progress. Fund USDC, attach an invoice hash, and release under the 50 USDC agent cap.
           </p>
 
           <div className="mt-4 p-3 rounded-xl bg-[#05080F] border border-[#151C29] space-y-1.5">
@@ -123,17 +110,17 @@ export function GovernanceHeroSection() {
               </span>
             </div>
             <p className="text-[11px] text-[#6B7385] font-mono">
-              Last check: Automated agent rules healthy · 0 warnings
+              Last check: Agent cap 50 USDC · human review above it · 0 warnings
             </p>
           </div>
         </div>
 
         <div className="mt-5 pt-4 border-t border-[#151C29]">
           <Link
-            href="/proposals"
+            href="/proposals/create"
             className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4F8BFF] hover:gap-2.5 transition-all cursor-pointer font-space"
           >
-            Browse all proposals <ArrowRight className="w-3.5 h-3.5" />
+            Create a payout <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
