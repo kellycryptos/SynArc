@@ -55,3 +55,7 @@ export/
 *.export/
 tsconfig.tsbuildinfo
 .edge-debug-profile/
+airdrop_progress.json
+recipients.json
+get_recipients.js
+send_tokens_to_holders.js

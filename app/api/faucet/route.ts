@@ -209,7 +209,7 @@ export async function POST(req: NextRequest) {
         const fs = require('fs')
         const path = require('path')
         for (const file of ['.env.local', '.env', '.env.production']) {
-          const filePath = path.join(process.cwd(), file)
+          const filePath = path.join(/*turbopackIgnore: true*/ process.cwd(), file)
           if (fs.existsSync(filePath)) {
             const content = fs.readFileSync(filePath, 'utf8')
             const match = content.match(/^(?:DEPLOYER_PRIVATE_KEY|AGENT_PRIVATE_KEY|FAUCET_PRIVATE_KEY)=["']?([^"'\r\n]+)["']?/m)

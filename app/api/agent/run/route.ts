@@ -4,11 +4,20 @@ import { treasuryAgent } from '@/lib/agent/treasury-agent'
 export const dynamic = 'force-dynamic';
 
 function verifyCronSecret(req: NextRequest): boolean {
-  const incoming = req.headers.get('x-cron-secret');
-  if (!incoming) return false; // missing header -> fail closed!
   const expected = process.env.CRON_SECRET;
   if (!expected) return false; // expected not set -> fail closed!
-  return incoming === expected;
+
+  const authHeader = req.headers.get('authorization');
+  if (authHeader && (authHeader === `Bearer ${expected}` || authHeader === expected)) {
+    return true;
+  }
+
+  const incoming = req.headers.get('x-cron-secret');
+  if (incoming && incoming === expected) {
+    return true;
+  }
+
+  return false;
 }
 
 export async function GET(req: NextRequest) {

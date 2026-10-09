@@ -19,16 +19,13 @@ export function NetworkStatusBadge() {
   const {
     networkName,
     explorerUrl,
-    faucetUrl,
     isArcTestnet,
     isUnsupported,
     switchToMainnet,
     switchToTestnet,
-    updateWalletRpc,
     isSwitching,
   } = useArcNetwork();
 
-  const [isSyncingRpc, setIsSyncingRpc] = useState(false);
   const activeNet: 'mainnet' | 'testnet' = isArcTestnet ? 'testnet' : 'mainnet';
   const { isHealthy, isLoading } = useRpcStatus(activeNet);
 
@@ -88,15 +85,6 @@ export function NetworkStatusBadge() {
       }
     } finally {
       setIsOpen(false);
-    }
-  };
-
-  const handleSyncWalletRpc = async () => {
-    setIsSyncingRpc(true);
-    try {
-      await updateWalletRpc(isArcTestnet ? 5042002 : 5042);
-    } finally {
-      setIsSyncingRpc(false);
     }
   };
 
@@ -202,23 +190,6 @@ export function NetworkStatusBadge() {
             </button>
           </div>
 
-          {/* 1-Click Sync RPC Button */}
-          <div className="mt-2.5 pt-2 border-t border-border">
-            <button
-              type="button"
-              onClick={handleSyncWalletRpc}
-              disabled={isSyncingRpc}
-              className="w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary text-[11px] font-medium transition-colors cursor-pointer"
-              title="Updates your Rabby or MetaMask extension's configured RPC endpoint to official Arc RPC"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingRpc ? "animate-spin" : ""}`} />
-              <span>{isSyncingRpc ? "Requesting Wallet Update..." : "Sync Official RPC to Wallet"}</span>
-            </button>
-            <p className="text-[10px] text-muted text-center mt-1 leading-tight">
-              Fixes Rabby 401 errors by updating RPC to <span className="font-mono text-foreground">rpc.testnet.arc.network</span>
-            </p>
-          </div>
-
           {/* Unsupported Network Warning */}
           {isUnsupported && (
             <div className="mt-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center gap-2 text-xs text-amber-400">
@@ -228,7 +199,7 @@ export function NetworkStatusBadge() {
           )}
 
           {/* Footer Quick Links */}
-          <div className="mt-2.5 pt-2 border-t border-border flex items-center justify-between text-[11px] font-mono text-muted">
+          <div className="mt-2.5 pt-2 border-t border-border flex items-center justify-center text-[11px] font-mono text-muted">
             <a
               href={explorerUrl}
               target="_blank"
@@ -238,18 +209,6 @@ export function NetworkStatusBadge() {
               <span>{isArcTestnet ? "ArcScan Explorer" : "Arc Explorer"}</span>
               <ExternalLink className="w-3 h-3" />
             </a>
-
-            {isArcTestnet && faucetUrl && (
-              <a
-                href={faucetUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-amber-500 dark:text-amber-400 hover:underline transition-colors"
-              >
-                <span>Circle Faucet</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
           </div>
         </div>
       )}

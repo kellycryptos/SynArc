@@ -12,7 +12,6 @@ import Link from "next/link";
 import { useCreatorStore } from "@/hooks/useCreatorStore";
 import { SectionErrorBoundary } from "@/components/ErrorBoundary";
 import { GovernanceHeroSection } from "@/components/dashboard/GovernanceHeroSection";
-import { EcosystemDaoGrid } from "@/components/dashboard/EcosystemDaoGrid";
 
 // --- Lazy-loaded components ---
 // WalletFaucetCard: 618 lines, imports framer-motion + BridgeModal + fires 2 fetch()
@@ -81,11 +80,6 @@ export default function DashboardOverview() {
       {/* Governance Spotlight Hero Row */}
       <SectionErrorBoundary sectionName="Hero Spotlight">
         <GovernanceHeroSection />
-      </SectionErrorBoundary>
-
-      {/* Ecosystem DAOs & Treasuries Grid */}
-      <SectionErrorBoundary sectionName="Ecosystem DAOs">
-        <EcosystemDaoGrid />
       </SectionErrorBoundary>
 
       {/* Agent Status Banner */}

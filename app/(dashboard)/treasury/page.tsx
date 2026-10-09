@@ -64,9 +64,8 @@ import {
   PieChart as RechartsPieChart, Pie, Cell, Legend
 } from "recharts";
 import { 
-  ArrowUpRight, ArrowDownRight, Activity, Wallet, Shield, PieChart, Coins, Info, PlusCircle, X, Check, Clock, TrendingUp
+  ArrowUpRight, ArrowDownRight, Activity, Wallet, PieChart, Coins, Info, PlusCircle, X, Check, Clock, TrendingUp
 } from "lucide-react";
-import { EscrowReleaseValve } from "@/components/dashboard/EscrowReleaseValve";
 
 
 function TreasuryPageContent() {
@@ -646,7 +645,7 @@ function TreasuryPageContent() {
 
         {/* Balance Overview Cards */}
         <SectionErrorBoundary sectionName="Treasury Balance Overview">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <GlassCard className="p-6 relative overflow-hidden group">
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
             <div className="flex justify-between items-start mb-4">
@@ -684,28 +683,8 @@ function TreasuryPageContent() {
             </h3>
             <p className="text-[11px] text-pink-400 mt-1 font-mono">≈ ${(eurcBalance * 1.08).toLocaleString(undefined, { maximumFractionDigits: 2 })} USD</p>
           </GlassCard>
-
-          <GlassCard className="p-6 relative overflow-hidden group">
-            <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-2.5 bg-success/10 border border-success/20 rounded-xl">
-                <Shield className="w-5 h-5 text-success" />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-success/10 border border-success/20 text-success">Active</span>
-            </div>
-            <p className="text-xs font-semibold text-muted uppercase tracking-wider">Emergency Guardian</p>
-            <h3 className="text-base font-bold text-text-primary mt-3">
-              Deposits Pausable
-            </h3>
-            <p className="text-[11px] text-text-tertiary mt-1">Multi-signature emergency pause enabled</p>
-          </GlassCard>
         </div>
       </SectionErrorBoundary>
-
-        {/* Escrow Release Valve */}
-        <SectionErrorBoundary sectionName="Escrow Release Valve">
-          <EscrowReleaseValve treasuryUsdcBalance={usdcBalance} />
-        </SectionErrorBoundary>
 
         {/* Charts Row */}
         <SectionErrorBoundary sectionName="Treasury Valuation & Composition Charts">

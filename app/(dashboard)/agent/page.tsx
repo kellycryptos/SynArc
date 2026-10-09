@@ -11,24 +11,12 @@ import {
   BrainCircuit, Coins, ArrowRight, CheckCircle, XCircle,
   Clock, AlertTriangle, Shield, Cpu, Wallet, ChevronRight,
   TrendingUp, ArrowLeftRight, CreditCard, Plus, Users, X, Check, Copy,
-  Calendar, DollarSign, Percent, Globe, BarChart2, BellRing,
+  DollarSign, Percent, Globe, BarChart2, BellRing,
   Lock, Layers, Landmark, TrendingDown, Repeat, Eye, ChevronDown
 } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ProofOfAutonomyTimeline } from "@/components/dashboard/ProofOfAutonomyTimeline";
-
-const AdversarialSimulator = dynamic(
-  () => import("@/components/dashboard/AdversarialSimulator").then(m => m.AdversarialSimulator),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-64 rounded-2xl bg-white/[0.02] border border-border-thin animate-pulse flex items-center justify-center text-text-tertiary text-sm">
-        Loading Simulator...
-      </div>
-    )
-  }
-);
 
 const CctpStepVisualizer = dynamic(
   () => import("@/components/dashboard/CctpStepVisualizer").then(m => m.CctpStepVisualizer),
@@ -36,16 +24,6 @@ const CctpStepVisualizer = dynamic(
     ssr: false,
     loading: () => (
       <div className="h-40 rounded-2xl bg-white/[0.02] border border-border-thin animate-pulse" />
-    )
-  }
-);
-
-const EscrowReleaseValve = dynamic(
-  () => import("@/components/dashboard/EscrowReleaseValve").then(m => m.EscrowReleaseValve),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-48 rounded-2xl bg-white/[0.02] border border-border-thin animate-pulse" />
     )
   }
 );
@@ -165,12 +143,6 @@ export default function AgentPage() {
   const [isQueueingWithdrawal, setIsQueueingWithdrawal] = useState<boolean>(false);
   const [showReturnModal, setShowReturnModal] = useState<boolean>(false);
   const [proposingReturn, setProposingReturn] = useState<boolean>(false);
-
-  // ── Auto Payments State ──────────────────────────────────────────────────
-  const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
-  const [paymentForm, setPaymentForm] = useState({ recipient: "", label: "", amount: "", frequency: "monthly", asset: "USDC" });
-  const [scheduledPayments, setScheduledPayments] = useState<Array<{id:number;label:string;recipient:string;amount:number;asset:string;frequency:string;status:string;nextRun:string}>>([]);
-  const [isSavingPayment, setIsSavingPayment] = useState(false);
 
   // Live Feature States
   const [isSweepRunning, setIsSweepRunning] = useState(false);
@@ -999,16 +971,6 @@ export default function AgentPage() {
         )}
       </AnimatePresence>
 
-      {/* ════ FORENSIC SENTINEL & DUAL-AGENT SECURITY MESH ════ */}
-      <SectionErrorBoundary sectionName="Forensic Security Sentinel">
-        <AdversarialSimulator />
-      </SectionErrorBoundary>
-
-      {/* ════ ON-CHAIN ESCROW RELEASE VALVE & PERMISSIONS MATRIX ════ */}
-      <SectionErrorBoundary sectionName="Escrow Release Valve">
-        <EscrowReleaseValve treasuryUsdcBalance={treasury?.usdc ?? 25.00} />
-      </SectionErrorBoundary>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Decision Engine */}
@@ -1590,80 +1552,6 @@ export default function AgentPage() {
             </motion.button>
           </GlassCard>
 
-          {/* ════ AUTO PAYMENTS ════════════════════════════════════════════ */}
-          <GlassCard className="p-5 space-y-5 col-span-1 lg:col-span-2 order-6 lg:order-none" hover={false}>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-emerald-400" />
-              <h2 className="text-sm font-bold text-text-primary">Auto Payments</h2>
-              <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/25 text-emerald-400">LIVE</span>
-            </div>
-
-            {/* Summary stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {[
-                { label: "Scheduled / Mo", value: scheduledPayments.length > 0 ? `${scheduledPayments.filter(p => p.status === "scheduled").reduce((s, p) => s + p.amount, 0)} USDC` : "— USDC" },
-                { label: "Next Payout",   value: scheduledPayments.filter(p => p.status === "scheduled").length > 0 ? (scheduledPayments.filter(p => p.status === "scheduled").sort((a, b) => a.nextRun.localeCompare(b.nextRun))[0]?.nextRun || "—") : "—" },
-                { label: "Recipients",    value: scheduledPayments.length > 0 ? scheduledPayments.length.toString() : "0" },
-              ].map(stat => (
-                <div key={stat.label} className="text-center p-2.5 rounded-xl bg-surface-elevated/40 border border-border-thin">
-                  <p className="text-[10px] text-muted">{stat.label}</p>
-                  <p className="text-sm font-bold text-emerald-400 mt-0.5">{stat.value}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Payment schedule table */}
-            {scheduledPayments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 gap-2 rounded-xl border border-border-thin border-dashed">
-                <Calendar className="w-8 h-8 text-muted/40" />
-                <p className="text-xs text-muted text-center">No payments scheduled.<br />Click below to add your first recurring payment.</p>
-              </div>
-            ) : (
-            <div className="overflow-x-auto rounded-xl border border-border-thin">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-border-thin text-text-tertiary text-[10px] uppercase tracking-wider bg-surface-elevated/30">
-                    <th className="py-2.5 pl-3 font-bold">Label</th>
-                    <th className="py-2.5 font-bold">Recipient</th>
-                    <th className="py-2.5 font-bold">Amount</th>
-                    <th className="py-2.5 font-bold">Frequency</th>
-                    <th className="py-2.5 font-bold">Next Run</th>
-                    <th className="py-2.5 pr-3 font-bold text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="text-xs text-text-secondary">
-                  {scheduledPayments.map(p => (
-                    <tr key={p.id} className="border-b border-border-thin/50 hover:bg-surface-elevated/30 transition-colors">
-                      <td className="py-3 pl-3 font-medium text-text-primary">{p.label}</td>
-                      <td className="py-3 font-mono text-[10px] text-muted">{p.recipient}</td>
-                      <td className="py-3 font-bold text-text-primary">{p.amount} <span className="text-muted font-normal">{p.asset}</span></td>
-                      <td className="py-3 capitalize text-muted">{p.frequency}</td>
-                      <td className="py-3 text-muted">{p.nextRun}</td>
-                      <td className="py-3 pr-3 text-right">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${
-                          p.status === "scheduled" ? "bg-emerald-500/15 border-emerald-500/25 text-emerald-400" :
-                          p.status === "paused"    ? "bg-amber-500/15 border-amber-500/25 text-amber-400" :
-                                                     "bg-blue-500/15 border-blue-500/25 text-blue-400"
-                        }`}>
-                          {p.status.toUpperCase()}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            )}
-
-            <button
-              onClick={() => { setPaymentForm({ recipient: "", label: "", amount: "", frequency: "monthly", asset: "USDC" }); setShowPaymentModal(true); }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold hover:bg-emerald-600/30 transition-all cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Schedule New Payment
-            </button>
-          </GlassCard>
-
           {/* ════ RISK MONITORING ═════════════════════════════════════════════ */}
           <GlassCard className={`p-5 space-y-5 col-span-1 lg:col-span-1 order-7 lg:order-none ${ riskScore >= 40 ? "border-red-500/30 bg-red-500/[0.01]" : riskScore >= 20 ? "border-amber-500/30 bg-amber-500/[0.01]" : "border-border-thin" }`} hover={false}>
             <div className="flex items-center gap-2">
@@ -2083,135 +1971,6 @@ export default function AgentPage() {
                     className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-black hover:bg-primary-glow text-sm font-bold transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {isQueueingWithdrawal ? "Queueing..." : "Queue Withdrawal"}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* ─── Auto Payments Modal ───────────────────────────────────────────── */}
-      <AnimatePresence>
-        {showPaymentModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
-            >
-              <button
-                onClick={() => setShowPaymentModal(false)}
-                className="absolute top-4 right-4 text-muted hover:text-text-primary transition-colors cursor-pointer bg-transparent border-0 p-0"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <h3 className="text-lg font-bold text-text-primary mb-1 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-emerald-400" />
-                Schedule Auto Payment
-              </h3>
-              <p className="text-xs text-muted mb-5">Create a recurring USDC or EURC payment. Payments execute automatically when conditions are met.</p>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-muted mb-1.5">Payment Label</label>
-                  <input
-                    type="text"
-                    value={paymentForm.label}
-                    onChange={e => setPaymentForm(f => ({ ...f, label: e.target.value }))}
-                    placeholder="e.g. Creator Milestone #3"
-                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-emerald-500/50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-muted mb-1.5">Recipient Address</label>
-                  <input
-                    type="text"
-                    value={paymentForm.recipient}
-                    onChange={e => setPaymentForm(f => ({ ...f, recipient: e.target.value }))}
-                    placeholder="0x..."
-                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-emerald-500/50 font-mono"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-muted mb-1.5">Amount</label>
-                    <input
-                      type="number"
-                      value={paymentForm.amount}
-                      onChange={e => setPaymentForm(f => ({ ...f, amount: e.target.value }))}
-                      placeholder="0.00"
-                      className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-emerald-500/50 font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-muted mb-1.5">Asset</label>
-                    <select
-                      value={paymentForm.asset}
-                      onChange={e => setPaymentForm(f => ({ ...f, asset: e.target.value }))}
-                      className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-emerald-500/50"
-                    >
-                      <option value="USDC">USDC</option>
-                      <option value="EURC">EURC</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-muted mb-1.5">Frequency</label>
-                  <select
-                    value={paymentForm.frequency}
-                    onChange={e => setPaymentForm(f => ({ ...f, frequency: e.target.value }))}
-                    className="w-full bg-surface/50 border border-border-thin px-4 py-2.5 rounded-xl text-sm text-text-primary focus:outline-none focus:border-emerald-500/50"
-                  >
-                    <option value="one-time">One-time</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="quarterly">Quarterly</option>
-                  </select>
-                </div>
-
-                <div className="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-xl flex items-start gap-2.5">
-                  <Calendar className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-[10px] text-muted leading-relaxed">
-                    Payments are queued on-chain and subject to the 24h timelock for security. The agent will execute automatically when the timelock expires.
-                  </p>
-                </div>
-
-                <div className="flex gap-3 pt-1">
-                  <button
-                    onClick={() => setShowPaymentModal(false)}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-transparent text-sm font-bold text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    disabled={isSavingPayment || !paymentForm.recipient || !paymentForm.amount || !paymentForm.label}
-                    onClick={() => {
-                      if (!paymentForm.recipient || !paymentForm.amount || !paymentForm.label) return;
-                      setIsSavingPayment(true);
-                      setTimeout(() => {
-                        const nextRunMap: Record<string, string> = { "weekly": "Jul 4, 2026", "monthly": "Jul 1, 2026", "quarterly": "Oct 1, 2026", "one-time": "Pending" };
-                        setScheduledPayments(prev => [...prev, {
-                          id: prev.length + 1,
-                          label: paymentForm.label,
-                          recipient: `${paymentForm.recipient.slice(0,6)}...${paymentForm.recipient.slice(-4)}`,
-                          amount: parseFloat(paymentForm.amount),
-                          asset: paymentForm.asset,
-                          frequency: paymentForm.frequency,
-                          status: "scheduled",
-                          nextRun: nextRunMap[paymentForm.frequency] ?? "Pending",
-                        }]);
-                        setIsSavingPayment(false);
-                        setShowPaymentModal(false);
-                      }, 1000);
-                    }}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 text-white-keep hover:bg-emerald-500 text-sm font-bold transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-                  >
-                    {isSavingPayment ? "Scheduling..." : "Schedule Payment"}
                   </button>
                 </div>
               </div>
