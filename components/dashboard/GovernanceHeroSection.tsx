@@ -4,19 +4,63 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Sparkles, Layers } from "lucide-react";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
+import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 export function GovernanceHeroSection() {
   const { isArcMainnet } = useArcNetwork();
   const { campaigns } = useCampaignStore();
+  const { proposals } = useGovernanceStore();
 
-  // Dynamic proposal of the day: pick the first active/voting campaign, or fallback
+  // Dynamic proposal of the day: pick the first active/voting proposal, or honest state
   const featuredProposal = useMemo(() => {
-    if (campaigns && campaigns.length > 0) {
-      const active = campaigns.find(c => c.state === "Active" || c.state === "Voting");
-      if (active) return active;
-      return campaigns[0];
+    // 1. Prioritize active on-chain governance proposals
+    const activeGov = proposals.find((p) => p.status === "Active");
+    if (activeGov) {
+      return {
+        id: activeGov.id,
+        title: activeGov.title,
+        description: activeGov.description,
+        state: activeGov.status,
+        isAgent: true,
+        votingEnds: activeGov.votingEnds,
+        timeRemaining: activeGov.timeRemaining,
+        hasLiveProposal: true,
+      };
     }
+
+    // 2. Check active creator campaign proposals
+    if (campaigns && campaigns.length > 0) {
+      const activeCampaign = campaigns.find((c) => c.state === "Active" || c.state === "Voting");
+      if (activeCampaign) {
+        return {
+          id: activeCampaign.id,
+          title: activeCampaign.title,
+          description: activeCampaign.description,
+          state: activeCampaign.state,
+          isAgent: activeCampaign.isAgent,
+          deadline: activeCampaign.deadline,
+          hasLiveProposal: true,
+        };
+      }
+    }
+
+    // 3. Fall back to most recent closed governance proposal if any exist
+    if (proposals.length > 0) {
+      const recentGov = proposals[0];
+      return {
+        id: recentGov.id,
+        title: recentGov.title,
+        description: recentGov.description,
+        state: recentGov.status,
+        isAgent: true,
+        votingEnds: recentGov.votingEnds,
+        timeRemaining: recentGov.timeRemaining,
+        hasLiveProposal: false,
+      };
+    }
+
+    // 4. Honest state when total proposals = 0
     if (isArcMainnet) {
       return {
         id: "mainnet-genesis",
@@ -24,24 +68,53 @@ export function GovernanceHeroSection() {
         description: "Initial allocation and governance activation on Arc Mainnet (Chain ID 5042).",
         state: "Genesis",
         isAgent: true,
-        raised: 0,
-        goal: 1000000,
-        isGenesis: true,
+        hasLiveProposal: false,
       };
     }
+
     return {
-      id: "arc-prop-104",
-      title: "Arc Treasury Liquidity Rebalance & CCTP Yield",
-      description: "Automated routing of idle USDC into verified Arc yield contracts via agent guardrails.",
-      state: "Active",
-      isAgent: true,
-      raised: 450000,
-      goal: 500000,
+      id: "no-proposals",
+      title: "No Live Governance Proposals",
+      description: "There are currently no active governance proposals on Arc Testnet.",
+      state: "Inactive",
+      isAgent: false,
+      hasLiveProposal: false,
     };
-  }, [campaigns, isArcMainnet]);
+  }, [proposals, campaigns, isArcMainnet]);
+
+  const countdownLabel = useMemo(() => {
+    if (!featuredProposal.hasLiveProposal) {
+      return "No live proposals";
+    }
+
+    if (featuredProposal.votingEnds) {
+      const diffMs = new Date(featuredProposal.votingEnds).getTime() - Date.now();
+      if (diffMs <= 0) return "Voting closed";
+      const days = Math.floor(diffMs / 86400000);
+      const hours = Math.floor((diffMs % 86400000) / 3600000);
+      if (days > 0) return `Ends in ${days}d ${hours}h`;
+      return `Ends in ${hours}h`;
+    }
+
+    if (featuredProposal.deadline) {
+      const diffMs = new Date(featuredProposal.deadline).getTime() - Date.now();
+      if (diffMs <= 0) return "Voting closed";
+      const days = Math.floor(diffMs / 86400000);
+      const hours = Math.floor((diffMs % 86400000) / 3600000);
+      if (days > 0) return `Ends in ${days}d ${hours}h`;
+      return `Ends in ${hours}h`;
+    }
+
+    if (featuredProposal.timeRemaining && featuredProposal.timeRemaining !== "Ended") {
+      return featuredProposal.timeRemaining;
+    }
+
+    return "No live proposals";
+  }, [featuredProposal]);
 
   const proposalNumberLabel = useMemo(() => {
     if (featuredProposal.id === "mainnet-genesis") return "Genesis";
+    if (featuredProposal.id === "no-proposals") return "—";
     const num = featuredProposal.id.replace(/[^0-9]/g, "");
     return num ? `#${num}` : "#1";
   }, [featuredProposal.id]);
@@ -96,7 +169,7 @@ export function GovernanceHeroSection() {
             Review & Vote <ArrowRight className="w-3.5 h-3.5" />
           </Link>
           <span className="text-[11px] font-mono text-[#6B7385]">
-            Ends in 2d 14h
+            {countdownLabel}
           </span>
         </div>
       </div>

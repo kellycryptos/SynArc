@@ -4,6 +4,9 @@ import { ArrowRight, Shield, Zap, Sparkles, Building2, Coins, Bot, Rocket } from
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
+import { useTreasuryBalances } from "@/hooks/useTreasuryBalances";
+import { useGovernanceStore } from "@/hooks/useGovernanceStore";
+
 interface DaoItem {
   id: string;
   name: string;
@@ -16,13 +19,21 @@ interface DaoItem {
   href: string;
 }
 
+function formatUsdcAmount(amount: number): string {
+  if (!amount || amount <= 0) return "0";
+  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(2).replace(/\.00$/, "")}M`;
+  if (amount >= 1_000) return `${(amount / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
+  if (amount < 1) return amount.toFixed(2);
+  return amount.toLocaleString(undefined, { maximumFractionDigits: 0 });
+}
+
 const defaultDaos: DaoItem[] = [
   {
     id: "synarc-core",
     name: "SynDAO Core Treasury",
     category: "System Governance",
-    proposalsCount: 14,
-    treasuryUSDC: "1.25M",
+    proposalsCount: 0,
+    treasuryUSDC: "0",
     iconBg: "bg-gradient-to-br from-[#2F6FFF] to-[#4F8BFF]",
     iconColor: "text-white",
     icon: Shield,
@@ -32,8 +43,8 @@ const defaultDaos: DaoItem[] = [
     id: "circle-cctp",
     name: "Circle CCTP Liquidity Vault",
     category: "Cross-Chain Treasury",
-    proposalsCount: 9,
-    treasuryUSDC: "850K",
+    proposalsCount: 0,
+    treasuryUSDC: "0",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Coins,
@@ -43,8 +54,8 @@ const defaultDaos: DaoItem[] = [
     id: "alpha-agent",
     name: "Autonomous Alpha Agent",
     category: "AI Execution",
-    proposalsCount: 22,
-    treasuryUSDC: "340K",
+    proposalsCount: 0,
+    treasuryUSDC: "0",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Bot,
@@ -54,8 +65,8 @@ const defaultDaos: DaoItem[] = [
     id: "creator-guild",
     name: "Creator Guild Arc",
     category: "Community Labs",
-    proposalsCount: 18,
-    treasuryUSDC: "210K",
+    proposalsCount: 0,
+    treasuryUSDC: "0",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Rocket,
@@ -65,8 +76,8 @@ const defaultDaos: DaoItem[] = [
     id: "developer-grants",
     name: "Developer Grants Program",
     category: "Ecosystem Growth",
-    proposalsCount: 31,
-    treasuryUSDC: "500K",
+    proposalsCount: 0,
+    treasuryUSDC: "0",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Sparkles,
@@ -76,8 +87,8 @@ const defaultDaos: DaoItem[] = [
     id: "escrow-valve",
     name: "Escrow Release Valve",
     category: "Attestation & Security",
-    proposalsCount: 7,
-    treasuryUSDC: "620K",
+    proposalsCount: 0,
+    treasuryUSDC: "0",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Zap,
@@ -87,8 +98,8 @@ const defaultDaos: DaoItem[] = [
     id: "arc-attestation",
     name: "Arc Attestation Collective",
     category: "Protocol Verification",
-    proposalsCount: 12,
-    treasuryUSDC: "190K",
+    proposalsCount: 0,
+    treasuryUSDC: "0",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Building2,
@@ -98,8 +109,8 @@ const defaultDaos: DaoItem[] = [
     id: "defi-syndicate",
     name: "DeFi Yield Syndicate",
     category: "Automated Strategy",
-    proposalsCount: 16,
-    treasuryUSDC: "430K",
+    proposalsCount: 0,
+    treasuryUSDC: "0",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Coins,
@@ -109,20 +120,47 @@ const defaultDaos: DaoItem[] = [
 
 export function EcosystemDaoGrid() {
   const { campaigns } = useCampaignStore();
+  const { proposals, metrics } = useGovernanceStore();
   const { isArcMainnet } = useArcNetwork();
+  const { usdcBalance: coreUsdc, queuedWithdrawals } = useTreasuryBalances();
+
+  const agentUsdc = isArcMainnet ? 0 : 25;
+  const creatorRaised = campaigns.reduce((acc, curr) => acc + (curr.raised || 0), 0);
+  const escrowQueuedUsdc = (queuedWithdrawals || []).reduce((acc, q) => acc + (q.amount || 0), 0);
 
   const daos = useMemo(() => {
     return defaultDaos.map((dao) => {
-      if (dao.id === "synarc-core" && isArcMainnet) {
+      if (dao.id === "synarc-core") {
+        return {
+          ...dao,
+          proposalsCount: isArcMainnet ? (proposals.length || 0) : (metrics.totalProposals || proposals.length || 0),
+          treasuryUSDC: formatUsdcAmount(coreUsdc),
+        };
+      }
+      if (dao.id === "alpha-agent") {
         return {
           ...dao,
           proposalsCount: 0,
-          treasuryUSDC: "0",
+          treasuryUSDC: formatUsdcAmount(agentUsdc),
+        };
+      }
+      if (dao.id === "creator-guild") {
+        return {
+          ...dao,
+          proposalsCount: campaigns.length,
+          treasuryUSDC: formatUsdcAmount(creatorRaised),
+        };
+      }
+      if (dao.id === "escrow-valve") {
+        return {
+          ...dao,
+          proposalsCount: queuedWithdrawals?.length || 0,
+          treasuryUSDC: formatUsdcAmount(escrowQueuedUsdc),
         };
       }
       return dao;
     });
-  }, [isArcMainnet]);
+  }, [isArcMainnet, proposals.length, metrics.totalProposals, coreUsdc, agentUsdc, campaigns.length, creatorRaised, queuedWithdrawals, escrowQueuedUsdc]);
 
   return (
     <div className="space-y-3.5">
