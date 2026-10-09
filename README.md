@@ -7,7 +7,7 @@ Product name updated for Arc naming compliance. Contracts and addresses are unch
 
 # Syn DAO
 
-**Syn DAO is secure funding and coordination infrastructure for humans and agents, built on Arc. We help communities pool capital, vote on funding releases through milestone-based escrows, and manage shared treasuries transparently without complex overhead.**
+**Syn DAO is the payment-safety and governance rail for humans and autonomous agents on Arc. We enforce deterministic capital release: USDC in escrow, deliverable proof attached, and paid once via contract-level Three-Way Match.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)](https://typescriptlang.org)
@@ -28,17 +28,18 @@ Product name updated for Arc naming compliance. Contracts and addresses are unch
 
 ## 1. Introduction
 
-For modern creators, independent developers, and digital organizations, managing shared funds and coordinating community decisions is often complex, fragmented, and lacks trust. Backers want to ensure their capital is spent responsibly, while creators need frictionless tools to collect support and coordinate with their team.
+DAOs and agent-run businesses can easily receive USDC, but **fund release is the fatal failure point**. A passed governance vote does not prove that off-chain work was delivered, autonomous agents can be tricked via prompt injection into paying substituted addresses, and payout transactions can be replayed.
 
-Syn DAO solves this by providing a unified platform for community funding and treasury management:
-*   **Milestone-Based Escrow & Backer Protection**: Lock community contributions in secure smart contract vaults that only release funds progressively as milestones are approved by backer votes.
-*   **Frictionless Micro-Funding**: Receive support payments and micro-donations with near-zero transaction fees, making small-scale contributions viable.
-*   **Simple On-Chain Governance**: Propose, vote on, and execute community decisions collectively without needing complex technical setups.
-*   **Automating Treasury Safeguards**: Configure automated rules to protect your treasury from inflation or idle funds, ensuring capital is automatically routed to where it is needed most.
-*   **Open SDK Integration**: Build custom automated rules or connect external applications to govern your shared workspace.
+Syn DAO solves this by providing the **payment-safety layer Arc builders do not get from standard repos**:
+*   **Contract-Level Three-Way Match**: No treasury outflow occurs without mathematical on-chain agreement between the Purchase Order (Governor proposal), Receiving Report (authentic IPFS-pinned deliverable CID), and Vendor Invoice (payee claim).
+*   **Payee Substitution Defense (48h Cooldown)**: Payee address modifications trigger an unskippable 48-hour timelocked cooldown, completely closing the vector for prompt-injected address hijacking.
+*   **Idempotency Guard**: Deterministic on-chain bit-flips guarantee zero duplicate payouts or transaction replay attacks.
+*   **Autonomous Agent Release Valve ($\le 50.00\text{ USDC}$)**: Authorized autonomous agents can evaluate deliverables and trigger micro-payouts instantly under policy; any disbursement exceeding 50 USDC immediately halts for human multisig review.
+*   **Circle Iris Attestations & Earn Kit**: Verifiable witness attestations and capital efficiency directly on Arc Mainnet.
+*   **Open Agent SDK**: TypeScript package allowing any autonomous agent or framework (Eliza, LangChain, AutoGPT) to deploy DAOs, vote on proposals, and execute payouts programmatically.
 
 ```
-Proposal Creation ──> Off-Chain Signing ──> On-Chain Queue ──> Treasury Settlement
+Proposal & PO ──> IPFS Deliverable (Receipt) ──> AI Audit Score (Signal) ──> Contract 3-Way Match ──> Safe Settlement
 ```
 
 ---
@@ -315,7 +316,8 @@ All treasury interactions are authorized strictly via successful governance outc
 *   **AI Agent Wallet**: `SynArcAgent` (Autonomous ERC-8004 AI Agent execution contract)
 
 ### Network
-*   **Execution Layer**: Arc Testnet
+*   **Production Layer**: Arc Mainnet (Chain ID `5042`)
+*   **Developer Sandbox**: Arc Testnet (Chain ID `5042002`)
 
 
 ---
@@ -487,14 +489,16 @@ Syn DAO is developed with a strict security-first mindset, preparing for institu
 
 ---
 
-## 13. Future Plans
+## 13. Roadmap & Milestone Progress
 
-| Initiative | Timeline | Objectives |
-| :--- | :--- | :--- |
-| **Mainnet Transition** | Q3 2026 | Audited production deployment of Governor and Timelock Controller models on Arc Mainnet. |
-| **Privacy Expansion** | Q4 2026 | Private coordinator election setups, ZK-Snark voting protocols, and secret ballot options. |
-| **Autonomous Execution** | Q1 2027 | AI agent delegation layers with automated intent checking and programmable execution limits. |
-| **Ecosystem Bridges** | Q2 2027 | Cross-chain governance links allowing remote treasury operations via safe bridges. |
+| Initiative | Timeline | Status | Objectives |
+| :--- | :--- | :--- | :--- |
+| **Arc Mainnet Deployment** | Tameion (Sep/Oct 2026) | ✅ Live | Production deployment of Governor, Timelock Controller, Token, and Release Valve Treasury on Arc Mainnet (Chain ID 5042). |
+| **Three-Way Match & Release Valve** | Tameion (Sep/Oct 2026) | ✅ Live | Contract-level Three-Way Match, 48h payee cooldown, idempotency guard, and autonomous agent release valve under 50 USDC. |
+| **Adversarial Mesh & Forensics** | Tameion (Sep/Oct 2026) | ✅ Live | Dual-agent adversarial mesh, forensic auditor, Iris witness attestations, and live stress-test console. |
+| **Circle Ecosystem Rails** | Tameion (Sep/Oct 2026) | ✅ Live | Bidirectional CCTP bridge (Arc to Ethereum, Base, Avalanche), Circle Earn Kit integration, and public TypeScript SDK. |
+| **DeFi Yield Automation** | Q4 2026 | 🔄 In Progress | Automated sweep into Morpho/Aave conservative yield vaults via Treasury Agent rules. |
+| **ZK Secret Ballots** | Q1 2027 | 🗓 Planned | Private coordinator election setups, ZK-Snark voting protocols, and secret ballot options. |
 
 ---
 

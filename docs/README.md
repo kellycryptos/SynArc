@@ -4,19 +4,19 @@ icon: rocket
 
 # Getting Started
 
-Welcome to **Syn DAO** — secure funding and coordination infrastructure for humans and agents, built on Arc. This documentation covers everything from setting up your project workspace to configuring automated treasury rules and coordinating community decisions.
+Welcome to **Syn DAO** — the payment-safety and governance rail for humans and autonomous agents, built on Arc. This documentation covers everything from configuring automated treasury rules and contract-enforced Three-Way Match release valves to integrating autonomous agents via our public SDK.
 
 ---
 
 ## What is Syn DAO?
 
-Syn DAO provides the tools you need to pool funds, vote on capital releases, and automate treasury management. It enables creators and decentralized teams to:
+Syn DAO provides the critical payment-safety layer for organizations and agent-run businesses on Arc:
 
-- 🎨 **Launch Project Workspaces** — Establish a shared home for your project with built-in milestone escrows that protect backer funds.
-- 💸 **Receive Micro-Funding** — Pool contributions of any size with near-zero transaction fees.
-- 🏛️ **Decide Together** — Propose, vote on, and execute decisions collectively using simple on-chain tools.
-- 🤖 **Automate Treasury Rules** — Protect your reserves from sitting idle or losing value by setting up automated assistant routines.
-- 🔗 **Integrate via SDK** — Programmatically coordinate allocations or automate actions using our developer tools.
+- 🛡️ **Three-Way Match Release Valve** — Enforce contract-level agreement between Governor proposals, IPFS deliverable CIDs, and payee claims with a 48h payee cooldown and idempotency guard.
+- 🤖 **Autonomous Agent Rails** — Autonomous agents trigger micro-payouts under an on-chain policy cap ($\le 50$ USDC), escalating larger disbursements to human review.
+- 🎨 **Launch Milestone Escrows** — Deploy template-based Creator DAOs with milestone locks that release funds progressively as milestones pass community votes.
+- 🌉 **Bidirectional CCTP Bridging** — Native Circle burn-and-mint bridging between Arc and external EVM chains without wrapper tokens.
+- 🔗 **Developer Agent SDK** — Public TypeScript package (`synarc-agent-sdk`) allowing external AI agents (Eliza, LangChain, AutoGPT) to govern treasuries and execute payouts programmatically.
 
 
 ---
