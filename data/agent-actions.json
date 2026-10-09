@@ -1,5 +1,24 @@
 [
   {
+    "timestamp": "2026-10-09T18:19:49.604Z",
+    "action": "monitoring",
+    "reasoning": "Treasury flagged emergency_funding, but an active governance proposal is already on-chain. Awaiting voting or execution before submitting another.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-10-09T18:14:49.506Z",
+    "action": "monitoring",
+    "reasoning": "Treasury flagged emergency_funding, but an active governance proposal is already on-chain. Awaiting voting or execution before submitting another.",
+    "status": "executed"
+  },
+  {
+    "timestamp": "2026-10-09T17:57:45.104Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Failed to create proposal on-chain: The total cost (gas * gas fee + value) of executing this transaction exceeds the balance of the account.\n\nThis error could arise when the account does not have enough funds to:\n - pay for the total gas fee,\n - pay for the value to send.\n \nThe cost of the transaction is calculated as `gas * gas fee + value`, where:\n - `gas` is the amount of gas needed for transaction to execute,\n - `gas fee` is the gas fee,\n - `value` is the amount of ether to send to the recipient.\n \nRequest Arguments:\n  from:  0xE819090D7810D89f2E86e167d0b58425dEd745D8\n  to:    0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025\n  data:  0x63d3392900000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000002e00000000000000000000000000000000000000000000000000000000000093a800000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d0000000000000000000000000000000000000000000000000000000000000320000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000017550726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d31302d30395431373a35383a32392e3839365a0a0a414920526561736f6e696e673a0a547265617375727920686f6c647320302e3036205553444320e280942062656c6f77207468652031302055534443206f7065726174696f6e616c207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e0000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e434500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000035697066733a2f2f516d506776776b70444e67485354783356374e724c774372516270704e33395a706a69366f3354776274567569550000000000000000000000\n \nContract Call:\n  address:   0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget, string deliverableURI)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-10-09T17:58:29.896Z\n\nAI Reasoning:\nTreasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 604800, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D, ipfs://QmPgvwkpDNgHSTx3V7NrLwCrQbppN39Zpji6o3TwbtVuiU)\n  sender:    0xE819090D7810D89f2E86e167d0b58425dEd745D8\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: insufficient funds for gas * price + value: have 1917082305706361 want 16301712817123314\nVersion: viem@2.49.3]",
+    "status": "failed",
+    "usdcAmount": 50
+  },
+  {
     "timestamp": "2026-10-09T17:52:45.104Z",
     "action": "emergency_funding",
     "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Failed to create proposal on-chain: The total cost (gas * gas fee + value) of executing this transaction exceeds the balance of the account.\n\nThis error could arise when the account does not have enough funds to:\n - pay for the total gas fee,\n - pay for the value to send.\n \nThe cost of the transaction is calculated as `gas * gas fee + value`, where:\n - `gas` is the amount of gas needed for transaction to execute,\n - `gas fee` is the gas fee,\n - `value` is the amount of ether to send to the recipient.\n \nRequest Arguments:\n  from:  0xE819090D7810D89f2E86e167d0b58425dEd745D8\n  to:    0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025\n  data:  0x63d3392900000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000002e00000000000000000000000000000000000000000000000000000000000093a800000000000000000000000000000000000000000000000000000000002faf08000000000000000000000000088bdf819466c1802ce6c780a9fbdf3a314cab07d0000000000000000000000000000000000000000000000000000000000000320000000000000000000000000000000000000000000000000000000000000003d50726f706f736564206279205472656173757279204167656e7420e2809420526562616c616e63696e673a20656d657267656e63795f66756e64696e67000000000000000000000000000000000000000000000000000000000000000000017550726f706f736564206279205472656173757279204167656e740a0a4155544f4e4f4d4f5553204147454e542050524f504f53414c0a416374696f6e3a20656d657267656e63795f66756e64696e670a416d6f756e743a20353020555344430a4167656e743a203078383842644638313934363643313830326365364337383061396662644633413331346361623037440a54696d657374616d703a20323032362d31302d30395431373a35333a30372e3439305a0a0a414920526561736f6e696e673a0a547265617375727920686f6c647320302e3036205553444320e280942062656c6f77207468652031302055534443206f7065726174696f6e616c207468726573686f6c642e2050726f706f73696e6720656d657267656e63792066756e64696e6720726571756573742e0a0a546869732070726f706f73616c207761732063726561746564206175746f6e6f6d6f75736c79206279207468652053796e417263205472656173757279204167656e742e0000000000000000000000000000000000000000000000000000000000000000000000000000000000001254524541535552595f524542414c414e434500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000035697066733a2f2f516d506776776b70444e67485354783356374e724c774372516270704e33395a706a69366f3354776274567569550000000000000000000000\n \nContract Call:\n  address:   0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025\n  function:  propose(string title, string description, string category, uint256 votingDuration, uint256 treasuryImpactValue, address executionTarget, string deliverableURI)\n  args:             (Proposed by Treasury Agent — Rebalancing: emergency_funding, Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: emergency_funding\nAmount: 50 USDC\nAgent: 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D\nTimestamp: 2026-10-09T17:53:07.490Z\n\nAI Reasoning:\nTreasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.\n\nThis proposal was created autonomously by the SynArc Treasury Agent., TREASURY_REBALANCE, 604800, 50000000, 0x88BdF819466C1802ce6C780a9fbdF3A314cab07D, ipfs://QmPgvwkpDNgHSTx3V7NrLwCrQbppN39Zpji6o3TwbtVuiU)\n  sender:    0xE819090D7810D89f2E86e167d0b58425dEd745D8\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: insufficient funds for gas * price + value: have 1917082305706361 want 16301712000000000\nVersion: viem@2.49.3]",
@@ -333,30 +352,6 @@
     "action": "emergency_funding",
     "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
     "txHash": "0x06ebd02fd9866dd23c45c0b1c3da73c1f9f7947d703849906f9112487856ea95",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-10-09T15:57:44.890Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
-    "txHash": "0x1a7ed6233aaf1c10edac48a0c6d83a1a672c3d410cbded6ec36d4eca2ed57aa9",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-10-09T15:52:44.881Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
-    "txHash": "0xa9c2560178a6cbe8de06c1d33344aed73d9a5d6f5401927b8fb1c2f8918f4677",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-10-09T15:47:44.885Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
-    "txHash": "0xc7db992a07a8c0a4ac58968415d42bd844b5ca26952e2f29c57bd76821672964",
     "status": "executed",
     "usdcAmount": 50
   }
