@@ -45,7 +45,7 @@ export const CHAIN_METADATA: Record<number, AddEthereumChainParameter> = {
       symbol: 'USDC',
       decimals: 18,
     },
-    rpcUrls: [ARC_TESTNET_FALLBACK_RPC, getTestnetProxyUrl(), 'https://rpc.testnet.arc.io'],
+    rpcUrls: ['https://rpc.testnet.arc.network', 'https://rpc.testnet.arc.io'],
     blockExplorerUrls: ['https://testnet.arcscan.app'],
   },
   // Ethereum Mainnet
@@ -214,16 +214,49 @@ export function wrapEip1193ProviderWithAutoAdd(rawProvider: any): any {
 }
 
 /**
- * Ensures wallet provider is switched to the target chain, automatically adding it if missing.
+ * Prompts the connected wallet (MetaMask, Rabby, etc.) to update or register
+ * the chain's configuration and RPC URLs using wallet_addEthereumChain.
+ * This is crucial when an RPC URL has changed (e.g. replacing expired Canteen node with official Arc RPC).
  */
-export async function ensureWalletOnChain(provider: any, targetChainId: number): Promise<void> {
+export async function updateWalletChainRpc(provider: any, targetChainId: number): Promise<boolean> {
+  if (!provider || typeof provider.request !== 'function') return false;
+  const addParams = CHAIN_METADATA[targetChainId];
+  if (!addParams) return false;
+
+  try {
+    console.log(`[updateWalletChainRpc] Requesting wallet to register/update network ${addParams.chainName} (${addParams.chainId}) with RPCs:`, addParams.rpcUrls);
+    await provider.request({
+      method: 'wallet_addEthereumChain',
+      params: [addParams],
+    });
+    return true;
+  } catch (err: any) {
+    console.warn(`[updateWalletChainRpc] Failed to update RPC for chain ${targetChainId}:`, err);
+    return false;
+  }
+}
+
+/**
+ * Ensures wallet provider is switched to the target chain, automatically adding it if missing.
+ * If forceUpdateRpc is true, it triggers wallet_addEthereumChain even if the wallet is already on the chain,
+ * which prompts Rabby/MetaMask to update its saved RPC endpoint to the official one.
+ */
+export async function ensureWalletOnChain(
+  provider: any, 
+  targetChainId: number, 
+  forceUpdateRpc: boolean = false
+): Promise<void> {
   if (!provider || typeof provider.request !== 'function') return;
 
   const chainIdHex = `0x${targetChainId.toString(16)}`;
 
+  if (forceUpdateRpc) {
+    await updateWalletChainRpc(provider, targetChainId);
+  }
+
   try {
     const currentHex = await provider.request({ method: 'eth_chainId' });
-    if (currentHex && currentHex.toLowerCase() === chainIdHex.toLowerCase()) {
+    if (currentHex && currentHex.toLowerCase() === chainIdHex.toLowerCase() && !forceUpdateRpc) {
       return; // Already on target chain
     }
   } catch {}
@@ -234,3 +267,4 @@ export async function ensureWalletOnChain(provider: any, targetChainId: number):
     params: [{ chainId: chainIdHex }],
   });
 }
+

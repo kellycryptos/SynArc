@@ -1,5 +1,29 @@
 [
   {
+    "timestamp": "2026-10-09T15:47:44.885Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
+    "txHash": "0xc7db992a07a8c0a4ac58968415d42bd844b5ca26952e2f29c57bd76821672964",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-10-09T15:42:43.974Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
+    "txHash": "0xbefe95bf35bfecb4ba2d0ae5ad6e79baa567529468366299cddf070cce5ad154",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
+    "timestamp": "2026-10-09T15:37:43.952Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
+    "txHash": "0xe09269c618aed86764286f705ac39ebe09d8d429bdb7587d1e9f7700ca77a71d",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
     "timestamp": "2026-10-09T15:32:43.947Z",
     "action": "emergency_funding",
     "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
@@ -338,24 +362,6 @@
   },
   {
     "timestamp": "2026-07-20T13:10:27.787Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-20T13:05:27.784Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-20T13:00:27.776Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-20T12:55:27.760Z",
     "action": "monitoring",
     "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
     "status": "executed"

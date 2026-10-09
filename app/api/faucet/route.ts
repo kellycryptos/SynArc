@@ -197,22 +197,22 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // On Mainnet, use DEPLOYER_PRIVATE_KEY (owner of 15,000,000 sARC)
-    // On Testnet, use FAUCET_PRIVATE_KEY or DEPLOYER_PRIVATE_KEY
+    // On Mainnet, use DEPLOYER_PRIVATE_KEY (owner of 15,000,000 sARC), or AGENT_PRIVATE_KEY / FAUCET_PRIVATE_KEY
+    // On Testnet, use FAUCET_PRIVATE_KEY or DEPLOYER_PRIVATE_KEY or AGENT_PRIVATE_KEY
     let rawKey = network === 'mainnet'
-      ? (process.env.DEPLOYER_PRIVATE_KEY || '')
-      : (process.env.FAUCET_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY || '')
+      ? (process.env.DEPLOYER_PRIVATE_KEY || process.env.AGENT_PRIVATE_KEY || process.env.FAUCET_PRIVATE_KEY || '')
+      : (process.env.FAUCET_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY || process.env.AGENT_PRIVATE_KEY || '')
 
     // Failsafe: if running in an environment where process.env is missing DEPLOYER_PRIVATE_KEY, read directly
-    if (network === 'mainnet' && !rawKey) {
+    if (!rawKey) {
       try {
         const fs = require('fs')
         const path = require('path')
-        for (const file of ['.env.local', '.env']) {
+        for (const file of ['.env.local', '.env', '.env.production']) {
           const filePath = path.join(process.cwd(), file)
           if (fs.existsSync(filePath)) {
             const content = fs.readFileSync(filePath, 'utf8')
-            const match = content.match(/^DEPLOYER_PRIVATE_KEY=["']?([^"'\r\n]+)["']?/m)
+            const match = content.match(/^(?:DEPLOYER_PRIVATE_KEY|AGENT_PRIVATE_KEY|FAUCET_PRIVATE_KEY)=["']?([^"'\r\n]+)["']?/m)
             if (match && match[1]) {
               rawKey = match[1].trim()
               break
@@ -220,14 +220,18 @@ export async function POST(req: NextRequest) {
           }
         }
       } catch (err) {
-        console.warn('Failed to read DEPLOYER_PRIVATE_KEY from filesystem:', err)
+        console.warn('Failed to read private key from filesystem:', err)
       }
     }
 
     const sanitizedKey = rawKey.trim().replace(/^['"]|['"]$/g, '')
 
     if (!sanitizedKey || sanitizedKey.length < 10) {
-      return NextResponse.json({ error: network === 'mainnet' ? 'Deployer private key not configured on Mainnet' : 'Faucet not configured for this network' }, { status: 500 })
+      return NextResponse.json({ 
+        error: network === 'mainnet' 
+          ? 'Deployer private key not configured on Mainnet. Please add DEPLOYER_PRIVATE_KEY in your Vercel Project Environment Variables.' 
+          : 'Faucet not configured for this network' 
+      }, { status: 500 })
     }
 
     const privateKey = sanitizedKey.startsWith('0x')

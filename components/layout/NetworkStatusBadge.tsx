@@ -24,9 +24,11 @@ export function NetworkStatusBadge() {
     isUnsupported,
     switchToMainnet,
     switchToTestnet,
+    updateWalletRpc,
     isSwitching,
   } = useArcNetwork();
 
+  const [isSyncingRpc, setIsSyncingRpc] = useState(false);
   const activeNet: 'mainnet' | 'testnet' = isArcTestnet ? 'testnet' : 'mainnet';
   const { isHealthy, isLoading } = useRpcStatus(activeNet);
 
@@ -86,6 +88,15 @@ export function NetworkStatusBadge() {
       }
     } finally {
       setIsOpen(false);
+    }
+  };
+
+  const handleSyncWalletRpc = async () => {
+    setIsSyncingRpc(true);
+    try {
+      await updateWalletRpc(isArcTestnet ? 5042002 : 5042);
+    } finally {
+      setIsSyncingRpc(false);
     }
   };
 
@@ -189,6 +200,23 @@ export function NetworkStatusBadge() {
                 <Check className="w-4 h-4 text-amber-500" />
               ) : null}
             </button>
+          </div>
+
+          {/* 1-Click Sync RPC Button */}
+          <div className="mt-2.5 pt-2 border-t border-border">
+            <button
+              type="button"
+              onClick={handleSyncWalletRpc}
+              disabled={isSyncingRpc}
+              className="w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary text-[11px] font-medium transition-colors cursor-pointer"
+              title="Updates your Rabby or MetaMask extension's configured RPC endpoint to official Arc RPC"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingRpc ? "animate-spin" : ""}`} />
+              <span>{isSyncingRpc ? "Requesting Wallet Update..." : "Sync Official RPC to Wallet"}</span>
+            </button>
+            <p className="text-[10px] text-muted text-center mt-1 leading-tight">
+              Fixes Rabby 401 errors by updating RPC to <span className="font-mono text-foreground">rpc.testnet.arc.network</span>
+            </p>
           </div>
 
           {/* Unsupported Network Warning */}

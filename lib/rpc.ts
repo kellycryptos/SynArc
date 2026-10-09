@@ -1,9 +1,9 @@
 import { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK, arcTestnet, arcMainnet } from '@/lib/arc-config';
 
-// Active-network RPC list — Canteen is slot 0 (primary), Arc official is last fallback
+// Active-network RPC list — official Arc RPC is slot 0 (primary)
 const RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS;
-// Canteen node — always the first entry in the priority array
-const CANTEEN_RPC = RPC_URLS[0] || 'https://rpc.testnet.arc.network';
+// Primary official Arc node
+const PRIMARY_RPC = RPC_URLS[0] || 'https://rpc.testnet.arc.network';
 
 export const getWorkingRPC = async (): Promise<string> => {
   for (const url of RPC_URLS) {
@@ -25,7 +25,7 @@ export const getWorkingRPC = async (): Promise<string> => {
       continue // Try next
     }
   }
-  return CANTEEN_RPC // Last resort — should always be Canteen
+  return PRIMARY_RPC // Primary fallback
 }
 
 export const arcTestnetChain = arcTestnet;

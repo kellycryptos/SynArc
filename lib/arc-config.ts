@@ -37,11 +37,11 @@ export function getMainnetProxyUrl(): string {
   return `${siteUrl.replace(/\/$/, '')}/api/rpc/mainnet`;
 }
 
-// Canteen Arc Testnet RPC (Main/Primary endpoint)
+// Canonical Arc Testnet RPC endpoint
 export const CANTEEN_TESTNET_RPC = 
   process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || 
   process.env.ARC_TESTNET_RPC_URL || 
-  'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_0009d65decffd41513652bd6eea966abc868aaacbbe84897e13c724d8fbf1be2';
+  'https://rpc.testnet.arc.network';
 
 function createRpcUrlsProxy(getUrls: () => string[]): string[] {
   return new Proxy([] as string[], {
@@ -65,13 +65,12 @@ function createRpcUrlsProxy(getUrls: () => string[]): string[] {
   });
 }
 
-// Arc Testnet list (chain 5042002) - Fast Arc testnet RPC & Canteen
+// Arc Testnet list (chain 5042002) - Official Arc testnet RPCs
 export function getTestnetRpcUrls(): string[] {
   return Array.from(new Set([
-    ARC_TESTNET_FALLBACK_RPC,
-    CANTEEN_TESTNET_RPC,
-    getTestnetProxyUrl(),
+    'https://rpc.testnet.arc.network',
     'https://rpc.testnet.arc.io',
+    getTestnetProxyUrl(),
   ].filter(Boolean) as string[]));
 }
 

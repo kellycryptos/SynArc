@@ -392,6 +392,8 @@ function useActiveEarn() {
         err?.code === 4001
       ) {
         toast.error("Transaction was cancelled by user", { id: toastId });
+      } else if (msg.includes("401") || msg.includes("unauthorized") || msg.includes("thecanteenapp")) {
+        toast.error("Wallet RPC unauthorized (401). Click 'Sync Official RPC' in top network badge to update Rabby/MetaMask.", { id: toastId, duration: 8000 });
       } else {
         toast.error(err?.message || "Deposit failed", { id: toastId });
       }
@@ -471,6 +473,8 @@ function useActiveEarn() {
         err?.code === 4001
       ) {
         toast.error("Transaction was cancelled by user", { id: toastId });
+      } else if (msg.includes("401") || msg.includes("unauthorized") || msg.includes("thecanteenapp")) {
+        toast.error("Wallet RPC unauthorized (401). Click 'Sync Official RPC' in top network badge to update Rabby/MetaMask.", { id: toastId, duration: 8000 });
       } else {
         toast.error(err?.message || "Withdrawal failed", { id: toastId });
       }

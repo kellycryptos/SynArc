@@ -11,7 +11,7 @@ export const ARC_TESTNET_NETWORK = Network.from({ name: 'arc-testnet', chainId: 
  *
  * Centralized management of Arc RPC endpoints with fallback support.
  * Priority (mainnet): Arc official (https://rpc.mainnet.arc.io) → Alchemy → additional fallbacks
- * Priority (testnet): Canteen hosted node (https://rpc.testnet.arc-node.thecanteenapp.com) [Primary] → Same-Origin Proxy → Arc official → Fallbacks
+ * Priority (testnet): Arc official (https://rpc.testnet.arc.network) → Arc secondary (https://rpc.testnet.arc.io) → Same-Origin Proxy
  */
 
 export const TESTNET_RPC_URLS = ARC_TESTNET_RPC_URLS;
@@ -19,7 +19,7 @@ export const MAINNET_RPC_URLS = ARC_MAINNET_RPC_URLS;
 
 // Centralized resilient fallbacks dynamically proxying active network (Mainnet or Testnet)
 export const RPC_URLS = ARC_RPC_URLS;
-export const CANTEEN_RPC = CANTEEN_TESTNET_RPC || TESTNET_RPC_URLS[0];
+export const CANTEEN_RPC = TESTNET_RPC_URLS[0] || 'https://rpc.testnet.arc.network';
 export const ARC_TESTNET_RPC = CANTEEN_RPC;
 
 /**

@@ -8,8 +8,9 @@ const RATE_LIMIT_WINDOW_SECONDS = 60; // 1 minute
 const RATE_LIMIT_WINDOW_MS = RATE_LIMIT_WINDOW_SECONDS * 1000;
 const MAX_REQUESTS_PER_WINDOW = 300; // 300 requests / min per IP to prevent false rate limits
 
-// Canonical Canteen Arc Testnet RPC (Main endpoint)
-const CANTEEN_DEFAULT_RPC = "https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_0009d65decffd41513652bd6eea966abc868aaacbbe84897e13c724d8fbf1be2";
+// Canonical Arc Testnet RPC endpoints
+const PRIMARY_TESTNET_RPC = "https://rpc.testnet.arc.network";
+const SECONDARY_TESTNET_RPC = "https://rpc.testnet.arc.io";
 
 // In-memory fallback storage (IP -> timestamps[])
 const rateLimitMap = new Map<string, number[]>();
@@ -210,8 +211,7 @@ export async function POST(req: NextRequest) {
   try {
     const upstreamUrl = 
       process.env.ARC_TESTNET_RPC_URL?.trim() || 
-      process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC?.trim() || 
-      CANTEEN_DEFAULT_RPC;
+      PRIMARY_TESTNET_RPC;
     const bodyText = await req.text();
 
     let response: Response;
@@ -223,12 +223,12 @@ export async function POST(req: NextRequest) {
           Accept: "application/json",
         },
         body: bodyText,
-        signal: AbortSignal.timeout(3000),
+        signal: AbortSignal.timeout(5000),
       });
 
-      // If upstream failed with non-2xx and isn't the public backup, fall back to public backup
-      if (!response.ok && upstreamUrl !== PUBLIC_BACKUP_RPC) {
-        response = await fetch(PUBLIC_BACKUP_RPC, {
+      // If upstream failed with non-2xx and isn't the secondary backup, fall back to secondary backup
+      if (!response.ok && upstreamUrl !== SECONDARY_TESTNET_RPC) {
+        response = await fetch(SECONDARY_TESTNET_RPC, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -239,9 +239,9 @@ export async function POST(req: NextRequest) {
         });
       }
     } catch (networkError) {
-      // If primary fetch threw (network error / timeout) and wasn't the public backup, try backup
-      if (upstreamUrl !== PUBLIC_BACKUP_RPC) {
-        response = await fetch(PUBLIC_BACKUP_RPC, {
+      // If primary fetch threw (network error / timeout) and wasn't the secondary backup, try backup
+      if (upstreamUrl !== SECONDARY_TESTNET_RPC) {
+        response = await fetch(SECONDARY_TESTNET_RPC, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

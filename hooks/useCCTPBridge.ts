@@ -451,6 +451,14 @@ function useActiveCCTPBridge() {
         }));
         return;
       }
+      if (errMsg.includes("401") || errMsg.includes("unauthorized") || errMsg.includes("thecanteenapp")) {
+        setState(prev => ({
+          ...prev,
+          status: "error",
+          errorMessage: "Wallet RPC unauthorized (401). Please click 'Sync Official RPC to Wallet' in the top network menu."
+        }));
+        return;
+      }
       setState(prev => ({
         ...prev,
         status: "error",

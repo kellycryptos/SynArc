@@ -9,6 +9,7 @@ import {
   CONTRACTS_TESTNET,
   setActiveNetwork 
 } from '@/lib/arc-config';
+import { ensureWalletOnChain, updateWalletChainRpc } from '@/lib/chain-network-helper';
 import { useEffect, useCallback, useSyncExternalStore } from 'react';
 
 export const ARC_TESTNET_CHAIN_ID = 5042002;
@@ -47,6 +48,7 @@ export interface ArcNetworkState {
   switchNetwork: (targetChainId?: number) => Promise<void>;
   switchToMainnet: () => Promise<void>;
   switchToTestnet: () => Promise<void>;
+  updateWalletRpc: (targetChainId?: number) => Promise<boolean>;
   arcChain: typeof arcMainnet | typeof arcTestnet;
   targetChainId: number;
   networkName: string;
@@ -95,11 +97,32 @@ export function useArcNetwork(): ArcNetworkState {
   // Sync active network in arc-config for non-React callers & notify stores
   useEffect(() => {
     setActiveNetwork(activeNetwork);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('synarc_active_network_mode', activeNetwork);
+      window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork } }));
+    }
   }, [activeNetwork]);
+
+  const updateWalletRpc = useCallback(async (targetChainId: number = ARC_TESTNET_CHAIN_ID): Promise<boolean> => {
+    if (typeof window !== 'undefined' && (window as any).ethereum) {
+      try {
+        return await updateWalletChainRpc((window as any).ethereum, targetChainId);
+      } catch (err) {
+        console.warn('[useArcNetwork] updateWalletRpc failed:', err);
+        return false;
+      }
+    }
+    return false;
+  }, []);
 
   const switchToMainnet = useCallback(async () => {
     try {
       if (isWalletConnected) {
+        if (typeof window !== 'undefined' && (window as any).ethereum) {
+          try {
+            await ensureWalletOnChain((window as any).ethereum, ARC_MAINNET_CHAIN_ID, false);
+          } catch {}
+        }
         if (switchChainAsync) {
           await switchChainAsync({ chainId: ARC_MAINNET_CHAIN_ID });
         } else if (switchChain) {
@@ -122,6 +145,14 @@ export function useArcNetwork(): ArcNetworkState {
   const switchToTestnet = useCallback(async () => {
     try {
       if (isWalletConnected) {
+        // Sync official RPC with Rabby/MetaMask to eliminate stale 401 nodes
+        if (typeof window !== 'undefined' && (window as any).ethereum) {
+          try {
+            await ensureWalletOnChain((window as any).ethereum, ARC_TESTNET_CHAIN_ID, true);
+          } catch (e) {
+            console.warn('[useArcNetwork] Auto-add testnet chain failed:', e);
+          }
+        }
         if (switchChainAsync) {
           await switchChainAsync({ chainId: ARC_TESTNET_CHAIN_ID });
         } else if (switchChain) {
@@ -161,6 +192,7 @@ export function useArcNetwork(): ArcNetworkState {
     switchNetwork,
     switchToMainnet,
     switchToTestnet,
+    updateWalletRpc,
     arcChain,
     targetChainId: TARGET_CHAIN_ID,
     networkName,

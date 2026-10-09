@@ -167,6 +167,69 @@ export const MAINNET_TREASURY_BASELINE: {
   ],
 };
 
+export const TESTNET_TREASURY_ADDRESS = '0xFE0F6bF45D363d34CD5fC1781594a7471736dC18';
+
+export const KNOWN_TESTNET_TX_HASHES: Record<number, string> = {
+  417: '0x6382e395d2d7102f0c14bddecc86ff3dbb587e93df3f606ea748297f1ba7cada',
+};
+
+export const TESTNET_TREASURY_BASELINE: {
+  usdcBalance: number;
+  eurcBalance: number;
+  combinedBalance: number;
+  activities: TreasuryActivity[];
+} = {
+  usdcBalance: 14402.29,
+  eurcBalance: 9883.85,
+  combinedBalance: 25076.85,
+  activities: [
+    {
+      id: `tx-${TESTNET_TREASURY_ADDRESS.toLowerCase()}-417-1791558929`,
+      type: 'Outflow',
+      amount: 0.01,
+      token: 'USDC',
+      timestamp: '2026-10-09T15:15:29.000Z',
+      description: 'Governance approved withdraw: Contractor Milestone Payout (SIP-2990)',
+      party: '0xE819090D7810D89f2E86e167d0b58425dEd745D8',
+      deliverableURI: 'ipfs://QmPgvwkpDNgHSTx3V7NrLwCrQbppN39Zpji6o3TwbtVuiU',
+      txHash: '0x6382e395d2d7102f0c14bddecc86ff3dbb587e93df3f606ea748297f1ba7cada',
+    },
+    {
+      id: `tx-${TESTNET_TREASURY_ADDRESS.toLowerCase()}-416-1791556980`,
+      type: 'Inflow',
+      amount: 1.0,
+      token: 'USDC',
+      timestamp: '2026-09-10T05:16:39.000Z',
+      description: 'USDC Deposit',
+      party: '0x289818d3D41E71cdce80B7bE212f19ba4C7dC7f6',
+      deliverableURI: '',
+      txHash: '',
+    },
+    {
+      id: `tx-${TESTNET_TREASURY_ADDRESS.toLowerCase()}-415-1791556800`,
+      type: 'Inflow',
+      amount: 20.0,
+      token: 'EURC',
+      timestamp: '2026-09-08T16:53:22.000Z',
+      description: 'EURC Deposit',
+      party: '0x2e69C28921cB543C6D52C2Dc0354A3c2cF637933',
+      deliverableURI: '',
+      txHash: '',
+    },
+    {
+      id: `tx-${TESTNET_TREASURY_ADDRESS.toLowerCase()}-414-1791556700`,
+      type: 'Inflow',
+      amount: 30.0,
+      token: 'USDC',
+      timestamp: '2026-09-08T16:52:44.000Z',
+      description: 'USDC Deposit',
+      party: '0x2e69C28921cB543C6D52C2Dc0354A3c2cF637933',
+      deliverableURI: '',
+      txHash: '',
+    },
+  ],
+};
+
 export interface QueuedWithdrawal {
   id: string;
   recipient: string;
@@ -191,12 +254,23 @@ interface CachedData {
 
 const getCache = (treasuryAddress: string): CachedData => {
   const isMainnetTreasury = treasuryAddress?.toLowerCase() === MAINNET_TREASURY_ADDRESS.toLowerCase();
+  const isTestnetTreasury = treasuryAddress?.toLowerCase() === TESTNET_TREASURY_ADDRESS.toLowerCase();
+
   const defaultFallback: CachedData = isMainnetTreasury
     ? {
         activities: MAINNET_TREASURY_BASELINE.activities,
         usdcBalance: MAINNET_TREASURY_BASELINE.usdcBalance,
         eurcBalance: MAINNET_TREASURY_BASELINE.eurcBalance,
         combinedBalance: MAINNET_TREASURY_BASELINE.combinedBalance,
+        queuedWithdrawals: [],
+        lastFetchedBlock: '0',
+      }
+    : isTestnetTreasury
+    ? {
+        activities: TESTNET_TREASURY_BASELINE.activities,
+        usdcBalance: TESTNET_TREASURY_BASELINE.usdcBalance,
+        eurcBalance: TESTNET_TREASURY_BASELINE.eurcBalance,
+        combinedBalance: TESTNET_TREASURY_BASELINE.combinedBalance,
         queuedWithdrawals: [],
         lastFetchedBlock: '0',
       }
@@ -224,6 +298,22 @@ const getCache = (treasuryAddress: string): CachedData => {
             eurcBalance: typeof parsed.eurcBalance === 'number' ? parsed.eurcBalance : 0,
             combinedBalance: typeof parsed.combinedBalance === 'number' && parsed.combinedBalance > 0 ? parsed.combinedBalance : MAINNET_TREASURY_BASELINE.combinedBalance,
             activities: mergedActs.length > 0 ? mergedActs : MAINNET_TREASURY_BASELINE.activities,
+          };
+        }
+        if (isTestnetTreasury) {
+          const cachedActs: TreasuryActivity[] = Array.isArray(parsed.activities) ? parsed.activities : [];
+          const mergedActs = mergeAndSortActivities(
+            TESTNET_TREASURY_BASELINE.activities,
+            [],
+            [],
+            cachedActs
+          );
+          return {
+            ...parsed,
+            usdcBalance: typeof parsed.usdcBalance === 'number' && parsed.usdcBalance > 0 ? parsed.usdcBalance : TESTNET_TREASURY_BASELINE.usdcBalance,
+            eurcBalance: typeof parsed.eurcBalance === 'number' ? parsed.eurcBalance : TESTNET_TREASURY_BASELINE.eurcBalance,
+            combinedBalance: typeof parsed.combinedBalance === 'number' && parsed.combinedBalance > 0 ? parsed.combinedBalance : TESTNET_TREASURY_BASELINE.combinedBalance,
+            activities: mergedActs.length > 0 ? mergedActs : TESTNET_TREASURY_BASELINE.activities,
           };
         }
         return parsed;
@@ -450,20 +540,24 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
           ).catch(() => []);
 
           const isMainnetTreasury = treasuryAddress.toLowerCase() === MAINNET_TREASURY_ADDRESS.toLowerCase();
+          const isTestnetTreasury = treasuryAddress.toLowerCase() === TESTNET_TREASURY_ADDRESS.toLowerCase();
 
           const formattedTxs: TreasuryActivity[] = (Array.isArray(rawTxs) ? rawTxs : []).map((tx: any, idx: number) => {
             const isOutflow = tx.txType === 'Outflow';
             const timestampSec = Number(tx.timestamp || 0n);
             const isoDate = timestampSec > 0 ? new Date(timestampSec * 1000).toISOString() : new Date().toISOString();
             
-            // Check deliverableURI or known mainnet tx hash by index
+            // Check deliverableURI or known tx hashes by network and index
             const deliverableHash = (typeof tx.deliverableURI === 'string' && tx.deliverableURI.startsWith('0x') && tx.deliverableURI.length === 66)
               ? tx.deliverableURI
               : '';
-            const knownHash = (isMainnetTreasury && KNOWN_MAINNET_TX_HASHES[idx])
+            const knownMainnetHash = (isMainnetTreasury && KNOWN_MAINNET_TX_HASHES[idx])
               ? KNOWN_MAINNET_TX_HASHES[idx]
               : '';
-            const txHash = deliverableHash || knownHash;
+            const knownTestnetHash = (isTestnetTreasury && (KNOWN_TESTNET_TX_HASHES[idx] || (isOutflow && Number(tx.amount || 0n) === 10000)))
+              ? (KNOWN_TESTNET_TX_HASHES[idx] || '0x6382e395d2d7102f0c14bddecc86ff3dbb587e93df3f606ea748297f1ba7cada')
+              : '';
+            const txHash = deliverableHash || knownMainnetHash || knownTestnetHash;
 
             return {
               id: `tx-${treasuryAddress.toLowerCase()}-${idx}-${timestampSec}`,
@@ -479,7 +573,9 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
           });
 
           const cached = getCache(treasuryAddress);
-          const baselineToMerge = isMainnetTreasury ? MAINNET_TREASURY_BASELINE.activities : [];
+          const baselineToMerge = isMainnetTreasury 
+            ? MAINNET_TREASURY_BASELINE.activities 
+            : (isTestnetTreasury ? TESTNET_TREASURY_BASELINE.activities : []);
           const allActivities = mergeAndSortActivities(
             baselineToMerge,
             simulatedActivities,

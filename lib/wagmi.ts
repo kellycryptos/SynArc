@@ -32,15 +32,15 @@ export const wagmiConfig = getDefaultConfig({
     },
   ],
   transports: {
-    // Arc Testnet: fast official RPC, Canteen node, same-origin server proxy, and documented public fallbacks
+    // Arc Testnet: official RPCs (direct, fast) → same-origin proxy
     [arcTestnet.id]: fallback(
       [
-        http(ARC_TESTNET_FALLBACK_RPC, {
+        http('https://rpc.testnet.arc.network', {
           timeout: 8000,
           retryCount: 2,
           retryDelay: 500,
         }),
-        http(CANTEEN_TESTNET_RPC, {
+        http('https://rpc.testnet.arc.io', {
           timeout: 8000,
           retryCount: 2,
           retryDelay: 500,
@@ -54,11 +54,6 @@ export const wagmiConfig = getDefaultConfig({
               'x-synarc-source': 'app-client',
             },
           },
-        }),
-        http('https://rpc.testnet.arc.io', {
-          timeout: 8000,
-          retryCount: 2,
-          retryDelay: 500,
         }),
       ],
       {

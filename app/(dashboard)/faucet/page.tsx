@@ -207,8 +207,12 @@ export default function FaucetPage() {
 
     } catch (err: any) {
       setSarcStatus("error");
-      setSarcMsg(err.message || "Something went wrong. Please try again.");
-      toast.error(err.message || "Failed to claim sARC");
+      let errorMsg = err.message || "Something went wrong. Please try again.";
+      if (errorMsg.includes("Deployer private key not configured")) {
+        errorMsg = "Mainnet sARC faucet requires DEPLOYER_PRIVATE_KEY in Vercel Environment Variables.";
+      }
+      setSarcMsg(errorMsg);
+      toast.error(errorMsg);
     }
   };
 

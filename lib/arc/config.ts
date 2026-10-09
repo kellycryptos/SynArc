@@ -57,12 +57,10 @@ export async function ensureArcNetwork(ethereumProvider: any, targetChainId: num
   const chainName = isMainnet ? "Arc" : "Arc Testnet";
   const rawRpcUrls = isMainnet 
     ? [
-        process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL,
         'https://rpc.mainnet.arc.io',
-        ...ARC_MAINNET_RPC_URLS.filter((url: string) => url.startsWith("http"))
+        process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL,
       ]
     : [
-        ...ARC_TESTNET_RPC_URLS.filter((url: string) => url.startsWith("http")),
         'https://rpc.testnet.arc.network',
         'https://rpc.testnet.arc.io',
       ];

@@ -249,7 +249,11 @@ export function WalletFaucetCard() {
 
     } catch (err: any) {
       setFaucetStatus("error");
-      setSynMsg(err.message || "Something went wrong. Please try again.");
+      let msg = err.message || "Something went wrong. Please try again.";
+      if (msg.includes("Deployer private key not configured")) {
+        msg = "Mainnet sARC faucet requires DEPLOYER_PRIVATE_KEY in Vercel Environment Variables.";
+      }
+      setSynMsg(msg);
       setTimeout(() => {
         setFaucetStatus("idle");
       }, 4000);
