@@ -1,5 +1,13 @@
 [
   {
+    "timestamp": "2026-10-09T15:52:44.881Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
+    "txHash": "0xa9c2560178a6cbe8de06c1d33344aed73d9a5d6f5401927b8fb1c2f8918f4677",
+    "status": "executed",
+    "usdcAmount": 50
+  },
+  {
     "timestamp": "2026-10-09T15:47:44.885Z",
     "action": "emergency_funding",
     "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
@@ -356,12 +364,6 @@
   },
   {
     "timestamp": "2026-07-20T13:15:27.788Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-20T13:10:27.787Z",
     "action": "monitoring",
     "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
     "status": "executed"
