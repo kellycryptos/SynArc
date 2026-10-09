@@ -145,7 +145,7 @@ export class TreasuryAgent {
   }
 
   constructor() {
-    const rawKey = process.env.FAUCET_PRIVATE_KEY || process.env.AGENT_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY
+    const rawKey = process.env.DEPLOYER_PRIVATE_KEY || process.env.AGENT_PRIVATE_KEY || process.env.FAUCET_PRIVATE_KEY
     if (!rawKey) {
       // Prevent Next.js compilation/build errors when env vars are missing
       const isBuildOrTest = process.env.NEXT_PHASE === 'phase-production-build' || 
@@ -174,13 +174,14 @@ export class TreasuryAgent {
 
   async checkTreasury(): Promise<{ usdc: number; eurc: number; usedFallback: boolean }> {
     try {
+      const isMainnet = getActiveNetwork() === 'mainnet';
+      const targetTreasury = isMainnet ? CONTRACTS.treasuryGovernance : (CONTRACTS.treasuryAgent || CONTRACTS.treasuryGovernance);
       const [usdc, eurc] = await Promise.all([
-        this.publicClient.readContract({ address: CONTRACTS.treasuryAgent, abi: TREASURY_ABI, functionName: 'usdcBalance' }),
-        this.publicClient.readContract({ address: CONTRACTS.treasuryAgent, abi: TREASURY_ABI, functionName: 'eurcBalance' }),
+        this.publicClient.readContract({ address: targetTreasury, abi: TREASURY_ABI, functionName: 'usdcBalance' }),
+        this.publicClient.readContract({ address: targetTreasury, abi: TREASURY_ABI, functionName: 'eurcBalance' }),
       ])
       const u = Number(usdc) / 1_000_000
       const e = Number(eurc) / 1_000_000
-      const isMainnet = getActiveNetwork() === 'mainnet';
       return { usdc: u > 0 ? u : (isMainnet ? 0 : 25.0), eurc: e > 0 ? e : (isMainnet ? 0 : 20.0), usedFallback: u === 0 }
     } catch (err: any) {
       console.warn('[TreasuryAgent] Could not read treasury balances on-chain, using baseline:', err)
@@ -248,9 +249,18 @@ Respond in JSON format:
   }
 
   async createRebalancingProposal(decision: { action: string; reasoning: string; proposedAmount?: number }): Promise<string> {
-    const title = decision.action === 'bridge_to_ethereum'
-      ? `Proposed by Treasury Agent — Bridge ${decision.proposedAmount} USDC to ${CIRCLE_ETH_CONFIG.name}`
-      : `Proposed by Treasury Agent — Rebalancing: ${decision.action}`
+    const isMainnet = getActiveNetwork() === 'mainnet';
+    const ethNetworkName = isMainnet ? 'Ethereum Mainnet' : CIRCLE_ETH_CONFIG.name;
+
+    let title: string;
+    if (decision.action === 'bridge_to_ethereum') {
+      title = `Proposed by Treasury Agent — Bridge ${decision.proposedAmount} USDC to ${ethNetworkName}`;
+    } else if (decision.action === 'yield_allocation') {
+      title = `Proposed by Treasury Agent — Yield Allocation: Deploy ${decision.proposedAmount || 50} USDC to Liquidity Strategy`;
+    } else {
+      title = `Proposed by Treasury Agent — Rebalancing: ${decision.action}`;
+    }
+
     const description = `Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: ${decision.action}\nAmount: ${decision.proposedAmount || 0} USDC\nAgent: ${this.getAgentAddress()}\nTimestamp: ${new Date().toISOString()}\n\nAI Reasoning:\n${decision.reasoning}\n\nThis proposal was created autonomously by the SynArc Treasury Agent.`
     
     // Pin verifiable rebalancing specification to IPFS, falling back to genuine pinned baseline spec
@@ -273,6 +283,8 @@ Respond in JSON format:
       console.warn('[TreasuryAgent] Dynamic IPFS pin fallback to verified baseline spec:', pinErr)
     }
 
+    const votingDuration = isMainnet ? 604800n : 300n; // 7 days on Mainnet, 5 min on Testnet
+
     const txHash = await this.walletClient.writeContract({
       address: CONTRACTS.governor,
       abi: GOVERNOR_ABI,
@@ -281,7 +293,7 @@ Respond in JSON format:
         title, 
         description, 
         'TREASURY_REBALANCE', 
-        300n, 
+        votingDuration, 
         BigInt(Math.floor((decision.proposedAmount || 0) * 1_000_000)), 
         this.getAgentAddress() as `0x${string}`,
         deliverableURI
@@ -630,18 +642,19 @@ Respond in JSON format:
     this.saveActions(this.actions)
   }
 
-  async run(): Promise<AgentAction> {
+  async run(forcedAction?: { action: string; reasoning: string; proposedAmount?: number }): Promise<AgentAction> {
     if (this.privateKey === '0x0000000000000000000000000000000000000000000000000000000000000001') {
       throw new Error('AGENT_PRIVATE_KEY environment variable is not set. Silent fallback disabled.')
     }
 
-    const cooldown = 15000 // 15 seconds
+    const cooldown = 10000 // 10 seconds
     if (Date.now() - this.lastExecutionTime < cooldown) {
       throw new Error(`Rate limit exceeded. Please wait ${Math.ceil((cooldown - (Date.now() - this.lastExecutionTime)) / 1000)}s before triggering the agent again.`)
     }
     this.lastExecutionTime = Date.now()
 
     const startTime = new Date().toISOString()
+    const isMainnet = getActiveNetwork() === 'mainnet';
     try {
       // Check if the agent is paused on-chain before running
       try {
@@ -662,7 +675,7 @@ Respond in JSON format:
           return pauseAction
         }
       } catch (pauseErr) {
-        console.warn('[TreasuryAgent] Failed to check on-chain paused state:', pauseErr)
+        // Expected if agent is EOA or does not implement paused()
       }
 
       // Verify native gas balance of agent account before attempting on-chain transactions
@@ -674,7 +687,7 @@ Respond in JSON format:
       }
 
       // 1. Execute any succeeded proposals first (autonomous execution)
-      if (agentGasBalance > 0n) {
+      if (agentGasBalance > 1000000000000000n) { // > 0.001 USDC
         const executedTxHashes = await this.executeSucceededProposals()
         if (executedTxHashes.length > 0) {
           return this.loadActions()[0]
@@ -683,11 +696,12 @@ Respond in JSON format:
         // 2. Vote on any active proposals autonomously
         await this.voteOnActiveProposals()
 
-        // 2.5 Sync balance of the agent operating treasury first
+        // 2.5 Sync balance of the treasury contract
         try {
-          console.log('[TreasuryAgent] Syncing on-chain balances for the agent operating treasury...')
+          const syncTarget = isMainnet ? CONTRACTS.treasuryGovernance : (CONTRACTS.treasuryAgent || CONTRACTS.treasuryGovernance);
+          console.log('[TreasuryAgent] Syncing on-chain balances for treasury:', syncTarget)
           const syncTx = await this.walletClient.writeContract({
-            address: CONTRACTS.treasuryAgent,
+            address: syncTarget,
             abi: parseAbi(['function syncBalance() external']),
             functionName: 'syncBalance',
             args: []
@@ -695,27 +709,38 @@ Respond in JSON format:
           console.log(`[TreasuryAgent] Balance sync transaction submitted: ${syncTx}`)
           await this.publicClient.waitForTransactionReceipt({ hash: syncTx, timeout: 60_000 })
           console.log('[TreasuryAgent] Balance sync completed successfully.')
-        } catch (syncErr) {
-          console.warn('[TreasuryAgent] Failed to sync operating treasury balances:', syncErr)
+        } catch (syncErr: any) {
+          console.warn('[TreasuryAgent] Note on syncBalance:', syncErr?.message || syncErr)
         }
       } else {
-        console.log(`[TreasuryAgent] Agent wallet ${this.account.address} has 0 gas on current network. Skipping on-chain executions.`)
+        console.log(`[TreasuryAgent] Agent wallet ${this.account.address} has low gas (${agentGasBalance} wei). Skipping on-chain executions.`)
       }
 
-      // 3. Check treasury and proposal creation rules
-      const treasury = await this.checkTreasury()
-      
-      // Local check: if treasury is healthy, skip calling AI to prevent free-tier rate limits
-      let decision;
-      if (treasury.usdc >= 10 && treasury.usdc <= 100 && treasury.eurc <= 50) {
-        console.log('[TreasuryAgent] Local health check passed. Skipping AI call.')
+      // 3. Determine decision
+      let decision: { shouldAct: boolean; action: string; reasoning: string; proposedAmount?: number };
+
+      if (forcedAction) {
         decision = {
-          shouldAct: false,
-          action: 'monitoring',
-          reasoning: `Treasury healthy (USDC: ${treasury.usdc}, EURC: ${treasury.eurc}). Continuing to monitor.`
-        }
+          shouldAct: true,
+          action: forcedAction.action,
+          reasoning: forcedAction.reasoning,
+          proposedAmount: forcedAction.proposedAmount
+        };
       } else {
-        decision = await this.analyzeAndDecide(treasury)
+        // Check treasury and proposal creation rules
+        const treasury = await this.checkTreasury()
+        
+        // Local check: if treasury is healthy, skip calling AI to prevent free-tier rate limits
+        if (treasury.usdc >= 10 && treasury.usdc <= 100 && treasury.eurc <= 50) {
+          console.log('[TreasuryAgent] Local health check passed. Skipping AI call.')
+          decision = {
+            shouldAct: false,
+            action: 'monitoring',
+            reasoning: `Treasury healthy (USDC: ${treasury.usdc}, EURC: ${treasury.eurc}). Continuing to monitor.`
+          }
+        } else {
+          decision = await this.analyzeAndDecide(treasury)
+        }
       }
       
       if (!decision.shouldAct) {
@@ -725,9 +750,9 @@ Respond in JSON format:
       }
 
       // If action is required but agent lacks native gas, log deferred status cleanly
-      if (agentGasBalance === 0n) {
-        const networkLabel = IS_MAINNET ? 'Arc Mainnet' : 'Arc Testnet';
-        console.warn(`[TreasuryAgent] Agent wallet ${this.account.address} has 0 gas on ${networkLabel}. Skipping proposal broadcast.`);
+      if (agentGasBalance < 1000000000000000n) {
+        const networkLabel = isMainnet ? 'Arc Mainnet' : 'Arc Testnet';
+        console.warn(`[TreasuryAgent] Agent wallet ${this.account.address} has low gas on ${networkLabel}. Skipping proposal broadcast.`);
         const gasAction: AgentAction = {
           timestamp: startTime,
           action: decision.action,

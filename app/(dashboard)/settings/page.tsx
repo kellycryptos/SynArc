@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { GOVERNANCE_CONTRACTS, ERC20ABI } from "@/lib/governance/contracts";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 import { useTheme } from "@/providers/ThemeProvider";
@@ -28,7 +28,7 @@ import { ARC_CHAIN, CONTRACTS } from "@/lib/arc-config";
 
 export default function SettingsPage() {
   const { walletAddress, isAuthenticated, isCircle } = useAuth();
-  const { balance: usdcBalance, isLoading: usdcLoading } = useUSDCBalance();
+  const { balance: usdcBalance, loading: usdcLoading, refetch: refetchUSDC } = useUSDCBalance();
   const { isArcTestnet, isArc, isUnsupported, networkName, explorerUrl, currentChainId } = useArcNetwork();
   const { switchToArc, isSwitching } = useSwitchArcNetwork();
   const { theme, setTheme } = useTheme();
@@ -190,8 +190,18 @@ export default function SettingsPage() {
 
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-muted uppercase tracking-wider">USDC Balance</p>
-                  <div className="font-semibold font-mono text-base text-foreground bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin">
-                    {usdcLoading ? "Loading..." : `${parseFloat(usdcBalance || "0.0").toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC`}
+                  <div className="font-semibold font-mono text-base text-foreground bg-surface-elevated px-3 py-2.5 rounded-lg border border-border-thin flex justify-between items-center">
+                    <span>{usdcLoading && (!usdcBalance || usdcBalance === "0.00") ? "Loading..." : `${parseFloat(usdcBalance || "0.0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC`}</span>
+                    <button 
+                      onClick={() => {
+                        invalidateUSDCBalance();
+                        refetchUSDC();
+                      }}
+                      title="Refresh USDC balance"
+                      className="p-1 text-muted hover:text-foreground transition-colors cursor-pointer"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${usdcLoading ? "animate-spin" : ""}`} />
+                    </button>
                   </div>
                 </div>
 

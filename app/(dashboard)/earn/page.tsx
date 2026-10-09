@@ -187,7 +187,7 @@ export default function EarnPage() {
           </div>
           <div className="text-2xl font-bold font-mono text-[#F8FAFC] flex items-center gap-2">
             <TokenIcon symbol="USDC" size={20} />
-            <span>{usdcBalance || "0.00"} USDC</span>
+            <span>{parseFloat(usdcBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC</span>
           </div>
           <span className="text-[11px] text-[#8F9CAE] block mt-0.5">Ready to deploy into vaults</span>
         </GlassCard>

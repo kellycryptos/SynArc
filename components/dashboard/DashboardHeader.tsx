@@ -3,8 +3,7 @@
 import { useAuth } from "@/hooks/auth/useAuth";
 import Link from "next/link";
 import { AuthPromptBanner } from "@/components/auth/AuthPromptBanner";
-import { Plus, Bookmark } from "lucide-react";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { Plus } from "lucide-react";
 
 /**
  * Isolated client CTA button that subscribes to useAuth().
@@ -38,13 +37,15 @@ export function CreateProposalCTA() {
 export function DashboardHeader() {
   return (
     <div className="space-y-4">
-      {/* Action Pills & CTA */}
-      <div className="flex items-center justify-end gap-2 flex-wrap pt-1">
-        <ThemeToggle variant="pill" className="hidden sm:inline-flex" />
-
-        <div className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-border bg-surface text-xs font-mono text-muted">
-          <Bookmark className="w-3.5 h-3.5 text-muted" />
-          <span>Saved 0</span>
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-text-primary font-space">
+            Dashboard
+          </h1>
+          <p className="text-muted text-xs sm:text-sm mt-0.5">
+            Overview of ecosystem governance, treasury reserves, and proposals.
+          </p>
         </div>
 
         <CreateProposalCTA />

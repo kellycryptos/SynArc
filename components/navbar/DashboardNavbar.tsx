@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
-import { Bell, Search, Menu, LogOut, Wallet } from "lucide-react";
+import { Menu, LogOut, Wallet } from "lucide-react";
 import { useMemo } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { TokenIcon } from "@/components/ui/TokenIcon";
@@ -19,7 +19,7 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
  * - Arc Network connection status with RPC latency
  * - USDC balance from connected wallet
  * - User profile with shorthand address
- * - Notification bell and logout button
+ * - Theme toggle and logout button
  */
 export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const deferred = useDeferredWeb3();
@@ -31,28 +31,6 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const shortAddress = useMemo(() => {
     if (!walletAddress) return "";
     return `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`;
-  }, [walletAddress]);
-
-  // Generate unique initials depending on the user's social or email login details
-  const initials = useMemo(() => {
-    if (user?.google?.name) return user.google.name.substring(0, 2).toUpperCase();
-    if (user?.twitter?.name) return user.twitter.name.substring(0, 2).toUpperCase();
-    if (user?.discord?.username) return user.discord.username.substring(0, 2).toUpperCase();
-    if (email) return email.substring(0, 2).toUpperCase();
-    if (walletAddress) return walletAddress.substring(2, 4).toUpperCase();
-    return "SA";
-  }, [user, email, walletAddress]);
-
-  // Generate a premium generative background gradient from the user's address/details to wow the user
-  const avatarGradient = useMemo(() => {
-    const seed = walletAddress ? walletAddress.charCodeAt(5) + walletAddress.charCodeAt(8) : 0;
-    const gradients = [
-      "bg-gradient-to-tr from-purple-deep to-arc-blue",
-      "bg-gradient-to-tr from-primary to-accent",
-      "bg-gradient-to-tr from-cyan-soft to-purple-glow",
-      "bg-gradient-to-tr from-arc-blue-soft to-purple-deep",
-    ];
-    return gradients[seed % gradients.length];
   }, [walletAddress]);
 
   return (
@@ -87,16 +65,16 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <div className="flex items-center gap-2 sm:gap-3">
 
             {/* USDC Balance Display */}
-            {loading ? (
+            {loading && (!balance || balance === "0.00") ? (
               <div className="h-8 w-24 bg-surface animate-pulse rounded-lg border border-border shrink-0" />
-            ) : error ? (
+            ) : error && (!balance || balance === "0.00") ? (
               <span className="hidden xs:inline-flex items-center px-3 py-2 rounded-lg text-xs font-mono bg-negative/10 border border-negative/20 text-negative shrink-0">
                 -- USDC
               </span>
             ) : balance !== null ? (
               <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono bg-surface border border-border text-foreground shrink-0">
                 <TokenIcon symbol="USDC" size={14} />
-                {parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                {parseFloat(balance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
               </span>
             ) : null}
 
@@ -152,16 +130,6 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
         {/* Theme Toggle (Light / Dark mode) */}
         <ThemeToggle />
-
-        {/* Notifications */}
-        <button 
-          aria-label="View notifications"
-          title="Notifications"
-          className="relative p-2 text-muted hover:text-foreground transition-colors rounded-full hover:bg-surface-elevated border border-transparent hover:border-border-thin cursor-pointer"
-        >
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-accent-purple rounded-full border-2 border-background" />
-        </button>
       </div>
 
       {/* Mobile Controls (Mobile Only) */}

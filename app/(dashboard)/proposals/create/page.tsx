@@ -6,7 +6,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useToken } from "@/hooks/useToken";
-import { useUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Send, AlertCircle, Loader2, Bot, Sparkles, Wand2, ChevronDown, Wallet, Check, ExternalLink, Coins, Zap, RefreshCw } from "lucide-react";
@@ -437,6 +437,7 @@ export default function CreateProposalPage() {
 
       // Force-refetch proposal list from chain (bypasses 3-minute staleness cache)
       await useGovernanceStore.getState().initializeStore(undefined, true);
+      invalidateUSDCBalance();
 
       toast.success('Proposal submitted!');
       setSuccessProposalId(finalProposalId);
@@ -646,7 +647,9 @@ export default function CreateProposalPage() {
                     <Check className="w-5 h-5 shrink-0 text-success" />
                     <div>
                       <span className="font-bold">Wallet Gas Ready</span>
-                      <p className="text-xs text-muted/80 mt-0.5 font-semibold">{usdcBalance} USDC is available in your wallet for transaction fees.</p>
+                      <p className="text-xs text-muted/80 mt-0.5 font-semibold">
+                        {parseFloat(usdcBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC is available in your wallet for transaction fees.
+                      </p>
                     </div>
                   </div>
                 )}

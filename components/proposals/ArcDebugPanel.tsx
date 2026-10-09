@@ -44,7 +44,7 @@ export function ArcDebugPanel({
           <div>
             <span className="text-text-tertiary">Voting Power:</span>{" "}
             <span className="text-success font-bold">
-              {activeBalance.toFixed(2)} USDC/sARC
+              {activeBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC/sARC
             </span>
           </div>
           <div>

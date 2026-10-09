@@ -43,6 +43,28 @@ export const CANTEEN_TESTNET_RPC =
   process.env.ARC_TESTNET_RPC_URL || 
   'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_0009d65decffd41513652bd6eea966abc868aaacbbe84897e13c724d8fbf1be2';
 
+function createRpcUrlsProxy(getUrls: () => string[]): string[] {
+  return new Proxy([] as string[], {
+    get(_target, prop) {
+      const urls = getUrls();
+      const val = Reflect.get(urls, prop, urls);
+      if (typeof val === 'function') {
+        return val.bind(urls);
+      }
+      return val;
+    },
+    has(_target, prop) {
+      return Reflect.has(getUrls(), prop);
+    },
+    ownKeys(_target) {
+      return Reflect.ownKeys(getUrls());
+    },
+    getOwnPropertyDescriptor(_target, prop) {
+      return Reflect.getOwnPropertyDescriptor(getUrls(), prop);
+    }
+  });
+}
+
 // Arc Testnet list (chain 5042002) - Fast Arc testnet RPC & Canteen
 export function getTestnetRpcUrls(): string[] {
   return Array.from(new Set([
@@ -53,12 +75,7 @@ export function getTestnetRpcUrls(): string[] {
   ].filter(Boolean) as string[]));
 }
 
-export const ARC_TESTNET_RPC_URLS = new Proxy([] as string[], {
-  get(_target, prop) {
-    const urls = getTestnetRpcUrls();
-    return (urls as any)[prop];
-  }
-});
+export const ARC_TESTNET_RPC_URLS = createRpcUrlsProxy(getTestnetRpcUrls);
 
 // Arc Mainnet list (chain 5042)
 // Priority: Official Arc Mainnet RPC (https://rpc.mainnet.arc.io) → Same-Origin Proxy → Alchemy
@@ -72,12 +89,7 @@ export function getMainnetRpcUrls(): string[] {
   ].filter(Boolean) as string[]));
 }
 
-export const ARC_MAINNET_RPC_URLS = new Proxy([] as string[], {
-  get(_target, prop) {
-    const urls = getMainnetRpcUrls();
-    return (urls as any)[prop];
-  }
-});
+export const ARC_MAINNET_RPC_URLS = createRpcUrlsProxy(getMainnetRpcUrls);
 
 // Default network on any fresh page load with no wallet connected
 export const ACTIVE_NETWORK: 'mainnet' | 'testnet' = 
@@ -107,12 +119,9 @@ export function setActiveNetwork(net: 'mainnet' | 'testnet') {
 }
 
 // Active-network RPC array (respects active network: mainnet or testnet)
-export const ARC_RPC_URLS = new Proxy([] as typeof ARC_MAINNET_RPC_URLS, {
-  get(_target, prop) {
-    const urls = getActiveNetwork() === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS;
-    return (urls as any)[prop];
-  }
-});
+export const ARC_RPC_URLS = createRpcUrlsProxy(() => 
+  getActiveNetwork() === 'mainnet' ? getMainnetRpcUrls() : getTestnetRpcUrls()
+);
 
 export const arcTestnet = defineChain({
   id: 5042002,

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useCreatorStore, Supporter } from "@/hooks/useCreatorStore";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
-import { useUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { TokenIcon } from "@/components/ui/TokenIcon";
 import { getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
@@ -241,6 +241,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
         setLatestTxHash(mockHash);
         setSupportSuccess(true);
         setSupportAmount("");
+        invalidateUSDCBalance();
         refetchUSDC();
         toast.success(`Sent ${amountVal} USDC simulated nanopayment!`);
 
@@ -339,6 +340,7 @@ export default function CreatorProfilePage({ params }: PageProps) {
       setLatestTxHash(txHash);
       setSupportSuccess(true);
       setSupportAmount("");
+      invalidateUSDCBalance();
       refetchUSDC();
 
       setTimeout(() => {
@@ -597,7 +599,14 @@ export default function CreatorProfilePage({ params }: PageProps) {
 
             {/* Custom Amount */}
             <div className="space-y-2">
-              <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Custom USDC amount</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase font-bold text-muted tracking-wider block">Custom USDC amount</span>
+                {isAuthenticated && (
+                  <span className="text-[11px] font-mono text-muted">
+                    Balance: <span className="text-white font-semibold">{parseFloat(walletUSDC || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC</span>
+                  </span>
+                )}
+              </div>
               <div className="flex gap-2">
                 <input
                   type="number"

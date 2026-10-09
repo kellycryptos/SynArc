@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useToken } from "@/hooks/useToken";
+import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useEURCBalance } from "@/hooks/useEURCBalance";
 import { useWallets } from "@/hooks/useWallets";
 import { getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
 import { ARC_CHAIN, CONTRACTS } from "@/lib/arc-config";
@@ -74,6 +76,8 @@ export default function FaucetPage() {
   const [showBridgeModal, setShowBridgeModal] = useState(false);
 
   const { needsDelegation, sarcBalance, votingPower, refetch: refetchToken } = useToken(walletAddress);
+  const { balance: usdcBalance, loading: usdcLoading, refetch: refetchUSDC } = useUSDCBalance(walletAddress);
+  const { balance: eurcBalance, loading: eurcLoading, refetch: refetchEURC } = useEURCBalance(walletAddress);
   const { wallets } = useWallets();
   const [delegating, setDelegating] = useState(false);
 
@@ -194,8 +198,12 @@ export default function FaucetPage() {
       setSarcStatus("success");
       setSarcMsg(data.message || `${claimAmount} sARC sent to your wallet!`);
       setSarcTxHash(data.txHash || "");
-      toast.success(`${claimAmount} sARC claimed successfully!`);
-      await refetchToken().catch(() => {});
+      invalidateUSDCBalance();
+      await Promise.allSettled([
+        refetchToken(),
+        refetchUSDC(),
+        refetchEURC(),
+      ]).catch(() => {});
 
     } catch (err: any) {
       setSarcStatus("error");
@@ -434,6 +442,16 @@ export default function FaucetPage() {
               : "Get free testnet USDC from Circle's official faucet. Use it to deposit into the Syn DAO treasury and participate in treasury governance."}
           </p>
 
+          {/* Current balance indicator */}
+          {isAuthenticated && (
+            <div className="p-3 rounded-xl bg-surface border border-border-thin flex items-center justify-between text-xs">
+              <span className="text-muted">Your Holdings:</span>
+              <span className="font-mono font-bold text-white">
+                {usdcLoading && (!usdcBalance || usdcBalance === "0.00") ? "..." : `${parseFloat(usdcBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC`}
+              </span>
+            </div>
+          )}
+
           {isArcMainnet ? (
             <button
               onClick={() => {
@@ -478,6 +496,16 @@ export default function FaucetPage() {
               ? "EURC is the Euro-pegged stablecoin accepted by the Syn DAO Treasury for multi-currency grants and international payouts."
               : "Get free testnet EURC from Circle's official faucet. EURC is the Euro-pegged stablecoin accepted by the Syn DAO treasury."}
           </p>
+
+          {/* Current balance indicator */}
+          {isAuthenticated && (
+            <div className="p-3 rounded-xl bg-surface border border-border-thin flex items-center justify-between text-xs">
+              <span className="text-muted">Your Holdings:</span>
+              <span className="font-mono font-bold text-white">
+                {eurcLoading && (!eurcBalance || eurcBalance === "0.00") ? "..." : `${parseFloat(eurcBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EURC`}
+              </span>
+            </div>
+          )}
 
           {isArcMainnet ? (
             <Link

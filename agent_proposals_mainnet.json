@@ -1,0 +1,74 @@
+[
+  {
+    "proposalId": "SIP-6",
+    "title": "Proposed by Treasury Agent — Bridge 35 USDC to Ethereum Mainnet via CCTP",
+    "category": "TREASURY_REBALANCE",
+    "amount": 35,
+    "txHash": "0xcb4c10cdd6b903473c107826a52c2c89d99259bab8ab19e30cbd87bf9954c9ce",
+    "block": 25087367
+  },
+  {
+    "proposalId": "SIP-7",
+    "title": "Proposed by Treasury Agent — Ecosystem Liquidity Provision: Seed sARC/USDC DEX Pool",
+    "category": "TREASURY_REBALANCE",
+    "amount": 40,
+    "txHash": "0xaa367b2e748d888067730b32716c7d91b85be3038a463588e0f1020501d122f9",
+    "block": 25087374
+  },
+  {
+    "proposalId": "SIP-8",
+    "title": "Proposed by Treasury Agent — Risk Reserve Backstop: Establish 25 USDC Emergency Buffer",
+    "category": "TREASURY_REBALANCE",
+    "amount": 25,
+    "txHash": "0xc3c5a6eb9b8ce46787172e09bf7ba7e2fa72026b83fb958ad415f62b95c78f6b",
+    "block": 25087382
+  },
+  {
+    "proposalId": "SIP-9",
+    "title": "Proposed by Treasury Agent — AI Security Mesh: Deploy Forensic Sentinel Node",
+    "category": "TREASURY_REBALANCE",
+    "amount": 30,
+    "txHash": "0xfa31e02754f8e699267d09ff8d44903a0703744fc10030e3f0dfa087a65742f9",
+    "block": 25087387
+  },
+  {
+    "proposalId": "SIP-10",
+    "title": "Proposed by Treasury Agent — FX Rebalance: Acquire EURC Multi-Currency Reserve",
+    "category": "TREASURY_REBALANCE",
+    "amount": 20,
+    "txHash": "0xcfe7604250fe075b5736e5d949313bc0e70f0fb34213d2d0e9c141069424c126",
+    "block": 25087404
+  },
+  {
+    "proposalId": "SIP-11",
+    "title": "Proposed by Treasury Agent — Ecosystem Growth: Developer Grant Allocation Round 1",
+    "category": "TREASURY_REBALANCE",
+    "amount": 45,
+    "txHash": "0x2d75b1d334bfd43b56670bfc3b58a2bea374b0a4024ebf78ffb2cbfb340358cf",
+    "block": 25087414
+  },
+  {
+    "proposalId": "SIP-13",
+    "title": "Proposed by Treasury Agent — Reverse Bridge: Return 42.50 USDC from Sepolia via CCTP",
+    "category": "TREASURY_REBALANCE",
+    "amount": 42,
+    "txHash": "0xb2a105413ea0ce9b4f13f0c7a16ba6c55a7f4d6d494c5ab21b37e365e9761246",
+    "block": 25087420
+  },
+  {
+    "proposalId": "SIP-14",
+    "title": "Proposed by Treasury Agent — Infrastructure: Subsidize On-Chain Oracle Feeds",
+    "category": "TREASURY_REBALANCE",
+    "amount": 15,
+    "txHash": "0x4f42615fe85a67ad0dbe0c6e9018bf4a094829cd70345aafe888e5d6f564fde6",
+    "block": 25087431
+  },
+  {
+    "proposalId": "SIP-15",
+    "title": "Proposed by Treasury Agent — Community Rewards: Top Up Staking Emission Pool",
+    "category": "TREASURY_REBALANCE",
+    "amount": 50,
+    "txHash": "0x44a263dad4b242643b9d4dff5588eae04c4407838c561fd4a78076274cd0659c",
+    "block": 25087439
+  }
+]

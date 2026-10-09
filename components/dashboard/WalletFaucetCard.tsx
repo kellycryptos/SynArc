@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useToken } from "@/hooks/useToken";
+import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Wallet, 
@@ -80,16 +81,23 @@ export function WalletFaucetCard() {
   const [txHistory, setTxHistory] = useState<FaucetTx[]>([]);
   const [nextClaimAt, setNextClaimAt] = useState<string | null>(null);
 
-  // Custom hook to fetch sARC token balance and USDC from Arc
+  // Custom hook to fetch sARC token balance
   const { 
     votingPower: sarcVotes, 
     sarcBalance, 
-    usdcBalance: activeBalance, 
     needsDelegation, 
     loading: tokenLoading, 
     error: tokenError, 
     refetch: refetchToken 
   } = useToken(walletAddress);
+
+  // Hook for live, multi-source USDC balance (Circle + ERC20 + Native Arc USDC)
+  const {
+    balance: usdcBalanceStr,
+    loading: usdcLoading,
+    error: usdcError,
+    refetch: refetchUSDC,
+  } = useUSDCBalance(walletAddress);
 
   // Load persistent override and history on mount & address change
   useEffect(() => {
@@ -223,11 +231,15 @@ export function WalletFaucetCard() {
       setFaucetStatus("success");
       setSynMsg(data.message || `${expectedAmount} sARC Tokens sent to your wallet!`);
 
-      // Refetch sARC token balance
+      // Refetch sARC token balance and USDC balance
+      invalidateUSDCBalance();
       try {
-        refetchToken();
+        await Promise.allSettled([
+          refetchToken(),
+          refetchUSDC(),
+        ]);
       } catch (e) {
-        console.warn("Could not refetch sARC balance", e);
+        console.warn("Could not refetch balances", e);
       }
 
       // Reset back to cooldown after 4 seconds
@@ -339,20 +351,20 @@ export function WalletFaucetCard() {
           <div className="flex flex-col gap-3 py-4">
             <p className="text-xs font-semibold tracking-wider text-text-tertiary uppercase flex items-center gap-1">
               {isArcTestnet ? "Arc Testnet Wallet Balance" : "Arc Wallet Balance"}
-              {tokenLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin text-brand" />}
+              {(tokenLoading || usdcLoading) && <RefreshCw className="w-3.5 h-3.5 animate-spin text-brand" />}
             </p>
 
             {/* USDC Primary Balance */}
             <div className="flex items-baseline gap-2">
-              {tokenLoading && activeBalance === 0 ? (
+              {usdcLoading && (!usdcBalanceStr || usdcBalanceStr === "0.00") ? (
                 <div className="h-12 w-48 bg-white/5 animate-pulse rounded-xl" />
-              ) : tokenError ? (
+              ) : usdcError && (!usdcBalanceStr || usdcBalanceStr === "0.00") ? (
                 <span className="text-sm font-semibold text-danger bg-danger/10 border border-danger/20 rounded-full px-3 py-1" title="Failed to fetch balance from Arc RPC">
                   Error fetching balance
                 </span>
               ) : (
                 <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white font-heading">
-                  {activeBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {parseFloat(usdcBalanceStr || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </h1>
               )}
               <span className="text-2xl font-bold text-brand font-heading flex items-center gap-2">

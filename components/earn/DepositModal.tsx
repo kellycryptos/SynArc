@@ -134,7 +134,7 @@ export function DepositModal({
               <div className="flex items-center justify-between text-xs text-[#94A3B8] mb-1.5">
                 <span>Deposit Amount ({vault.asset})</span>
                 <span className="cursor-pointer hover:text-primary transition-colors" onClick={handleMax}>
-                  Wallet: <span className="text-[#F8FAFC] font-medium">{usdcBalance || "0.00"} {vault.asset}</span> (Max)
+                  Wallet: <span className="text-[#F8FAFC] font-medium">{parseFloat(usdcBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {vault.asset}</span> (Max)
                 </span>
               </div>
               <div className="relative">

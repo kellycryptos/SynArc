@@ -1,11 +1,8 @@
-import { createPublicClient, http, fallback } from 'viem'
+import { createPublicClient, http, fallback, isAddress, getAddress, formatUnits } from 'viem'
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from "@/hooks/auth/useAuth"
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork"
-import { ARC_CHAIN, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, getActiveNetwork, CONTRACTS } from '@/lib/arc-config'
-
-// Dynamic getter — resolves the correct RPC list at call time, not import time
-const getActiveRpcUrls = () => getActiveNetwork() === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_RPC_URLS;
+import { ARC_CHAIN, ARC_RPC_URLS, ARC_MAINNET_RPC_URLS, getActiveNetwork, CONTRACTS, getMainnetRpcUrls, getTestnetRpcUrls } from '@/lib/arc-config'
 
 // Dynamic active-network EURC contract address
 const getEurcAddress = () => (CONTRACTS.eurc || '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1') as `0x${string}`;
@@ -25,9 +22,18 @@ const ERC20_ABI = [
 const cachedBalance: { [address: string]: { balance: string; timestamp: number } | undefined } = {}
 const pendingFetches: { [address: string]: Promise<string> | undefined } = {}
 
+export function invalidateEURCBalance() {
+  if (typeof window !== 'undefined') {
+    for (const key in cachedBalance) {
+      delete cachedBalance[key]
+    }
+    window.dispatchEvent(new CustomEvent('synarc_usdc_changed'))
+  }
+}
+
 export const useEURCBalance = (walletAddress?: string | undefined) => {
   const { walletAddress: authAddress } = useAuth()
-  const { activeNetwork } = useArcNetwork()
+  const { activeNetwork, isArcTestnet } = useArcNetwork()
   const activeAddress = walletAddress || authAddress
 
   const [balance, setBalance] = useState<string>('0.00')
@@ -35,14 +41,23 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
   const [error, setError] = useState<string | null>(null)
 
   const fetchBalance = useCallback(async () => {
-    if (!activeAddress) {
+    let safeAddress: `0x${string}` | null = null
+    try {
+      if (activeAddress && isAddress(activeAddress.toLowerCase())) {
+        safeAddress = getAddress(activeAddress.toLowerCase())
+      }
+    } catch {
+      safeAddress = null
+    }
+
+    if (!safeAddress) {
       setBalance('0.00')
       setLoading(false)
       setError(null)
       return
     }
 
-    const key = `${activeAddress.toLowerCase()}_${activeNetwork}`
+    const key = `${safeAddress.toLowerCase()}_${activeNetwork}`
     const now = Date.now()
 
     // 1. Check cache (5 seconds cache to deduplicate simultaneous calls on load)
@@ -59,7 +74,7 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
       setLoading(true)
       try {
         const res = await pendingFetches[key]
-        setBalance(res)
+        if (res) setBalance(res)
         setLoading(false)
         return
       } catch (err) {
@@ -71,19 +86,20 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
     setError(null)
     
     const fetchPromise = (async () => {
+      const rpcUrls = isArcTestnet ? getTestnetRpcUrls() : getMainnetRpcUrls()
       const client = createPublicClient({
         chain: ARC_CHAIN,
-        transport: fallback(getActiveRpcUrls().map(url => http(url))),
+        transport: fallback(rpcUrls.filter(Boolean).map(url => http(url, { timeout: 8000 }))),
       })
 
       const raw = await client.readContract({
         address: getEurcAddress(),
         abi: ERC20_ABI,
         functionName: 'balanceOf',
-        args: [activeAddress as `0x${string}`],
+        args: [safeAddress],
       })
 
-      const formatted = (Number(raw) / 1_000_000).toFixed(2)
+      const formatted = Number(formatUnits(raw, 6)).toFixed(2)
       cachedBalance[key] = { balance: formatted, timestamp: Date.now() }
       return formatted
     })()
@@ -96,25 +112,49 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
       setLoading(false)
     } catch (err) {
       console.warn('EURC balance fetch failed:', err)
-      setError('Error fetching balance')
+      if (!cachedBalance[key]?.balance) {
+        setError('Error fetching balance')
+      }
       setLoading(false)
     } finally {
       delete pendingFetches[key]
     }
-  }, [activeAddress, activeNetwork])
+  }, [activeAddress, activeNetwork, isArcTestnet])
+
+  const refetch = useCallback(async () => {
+    if (!activeAddress) return
+    let safeAddress: `0x${string}` | null = null
+    try {
+      if (activeAddress && isAddress(activeAddress.toLowerCase())) {
+        safeAddress = getAddress(activeAddress.toLowerCase())
+      }
+    } catch {}
+    const addr = safeAddress ? safeAddress.toLowerCase() : activeAddress.toLowerCase()
+    const key = `${addr}_${activeNetwork}`
+    delete cachedBalance[key]
+    await fetchBalance()
+  }, [activeAddress, activeNetwork, fetchBalance])
 
   useEffect(() => {
     fetchBalance()
     
     const handleNetworkChange = () => {
+      for (const k in cachedBalance) {
+        delete cachedBalance[k]
+      }
+      fetchBalance()
+    }
+
+    const handleUsdcChange = () => {
       fetchBalance()
     }
 
     if (typeof window !== "undefined") {
       window.addEventListener("synarc_network_changed", handleNetworkChange)
+      window.addEventListener("synarc_usdc_changed", handleUsdcChange)
     }
 
-    // Refresh every 60 seconds (reduced from 30s) and only if visible
+    // Refresh every 60 seconds and only if visible
     const interval = setInterval(() => {
       if (typeof document === "undefined" || document.visibilityState === "visible") {
         fetchBalance()
@@ -125,6 +165,7 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
       clearInterval(interval)
       if (typeof window !== "undefined") {
         window.removeEventListener("synarc_network_changed", handleNetworkChange)
+        window.removeEventListener("synarc_usdc_changed", handleUsdcChange)
       }
     }
   }, [fetchBalance])
@@ -133,11 +174,10 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
     balance,
     loading,
     error,
-    // Add backward-compatible properties for the rest of the application
-    isLoading: loading && balance === '0.00',
+    isLoading: loading,
     isFetching: loading,
     isError: !!error,
-    refetch: fetchBalance,
+    refetch,
   }
 }
 

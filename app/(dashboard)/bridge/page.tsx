@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
-import { useUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useSwitchChain, useAccount } from "wagmi";
 import { createPublicClient, http, fallback, getAddress, parseAbi, formatUnits } from "viem";
@@ -447,6 +447,7 @@ export default function BridgePage() {
           return updated;
         });
       }
+      invalidateUSDCBalance();
       refetchArcUSDC();
     } else if (s === "error") {
       setProgressState("error");
@@ -816,7 +817,9 @@ export default function BridgePage() {
                           {fromBalanceLoading ? (
                             <Loader2 className="w-3 h-3 animate-spin text-primary" />
                           ) : (
-                            <span className="font-bold text-white font-mono">{fromBalance} USDC</span>
+                            <span className="font-bold text-white font-mono">
+                              {parseFloat(fromBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                            </span>
                           )}
                           <button
                             type="button"
@@ -911,7 +914,9 @@ export default function BridgePage() {
                           {toBalanceLoading ? (
                             <Loader2 className="w-3 h-3 animate-spin text-primary" />
                           ) : (
-                            <span className="font-bold text-white font-mono">{toBalance} USDC</span>
+                            <span className="font-bold text-white font-mono">
+                              {parseFloat(toBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                            </span>
                           )}
                         </div>
                       </div>

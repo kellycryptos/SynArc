@@ -307,21 +307,21 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
               <TokenIcon symbol="USDC" size={14} />
               USDC Balance
             </span>
-            {isLoading ? (
+            {isLoading && (!balance || balance === "0.00") ? (
               <div className="h-6 w-20 bg-surface-elevated animate-pulse rounded-full border border-border-thin" />
-            ) : isError ? (
+            ) : isError && (!balance || balance === "0.00") ? (
               <span className="px-2 py-0.5 rounded-full bg-danger/10 border border-danger/20 text-danger font-semibold">
                 Error
               </span>
             ) : balance !== null ? (
               isCircle ? (
                 <span className="px-2 py-0.5 rounded-full bg-[#2F6FFF]/10 border border-[#2F6FFF]/20 text-[#4F8BFF] font-bold flex items-center gap-1">
-                  <span>{parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC</span>
+                  <span>{parseFloat(balance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC</span>
                   <span className="text-[9px] font-extrabold px-1 py-0.2 rounded bg-[#2F6FFF]/20 text-[#4F8BFF]">AI</span>
                 </span>
               ) : (
                 <span className="px-2 py-0.5 rounded-full bg-[#2F6FFF]/10 border border-[#2F6FFF]/20 text-[#4F8BFF] font-bold">
-                  {parseFloat(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                  {parseFloat(balance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
                 </span>
               )
             ) : null}

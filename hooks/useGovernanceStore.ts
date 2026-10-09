@@ -78,6 +78,7 @@ interface GovernanceState {
     governor: string;
     treasury: string;
     token: string;
+    usdc?: string;
   };
   
   // Actions
@@ -101,7 +102,7 @@ const INITIAL_TREASURY_ACTIVITIES: TreasuryActivity[] = [];
 
 const isMainnetInitial = getActiveNetwork() === 'mainnet';
 const INITIAL_METRICS: GovernanceMetrics = {
-  treasuryValue: isMainnetInitial ? "$0" : "$2,450,000",
+  treasuryValue: "$0.00",
   activeProposals: 0,
   totalProposals: 0,
   governanceParticipation: isMainnetInitial ? "0.0%" : "16.7%",
@@ -150,11 +151,13 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     const contracts = customDao ? {
       governor: customDao.governorAddress,
       treasury: customDao.treasuryAddress,
-      token: customDao.tokenAddress
+      token: customDao.tokenAddress,
+      usdc: isMainnet ? CONTRACTS_MAINNET.usdc : CONTRACTS_TESTNET.usdc
     } : {
       governor: isMainnet ? CONTRACTS_MAINNET.governor : CONTRACTS_TESTNET.governor,
       treasury: isMainnet ? CONTRACTS_MAINNET.treasuryGovernance : CONTRACTS_TESTNET.treasuryGovernance,
-      token: isMainnet ? CONTRACTS_MAINNET.token : CONTRACTS_TESTNET.token
+      token: isMainnet ? CONTRACTS_MAINNET.token : CONTRACTS_TESTNET.token,
+      usdc: isMainnet ? CONTRACTS_MAINNET.usdc : CONTRACTS_TESTNET.usdc
     };
 
     set({ 
@@ -197,7 +200,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       proposals: eagerProposals,
       initialized: true,
       metrics: {
-        treasuryValue: isMainnet ? "$0" : "$2,450,000",
+        treasuryValue: "$0.00",
         activeProposals: eagerProposals.filter(p => p.status === "Active").length,
         totalProposals: eagerProposals.length,
         governanceParticipation: eagerProposals.length > 0
@@ -368,12 +371,18 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         "function usdcBalance() external view returns (uint256)"
       ], provider);
 
+      const usdcAddress = contracts.usdc || (isMainnet ? CONTRACTS_MAINNET.usdc : CONTRACTS_TESTNET.usdc);
+      const usdcTokenContract = new Contract(usdcAddress, [
+        "function balanceOf(address account) external view returns (uint256)"
+      ], provider);
+
       let loadedActivities: TreasuryActivity[] = [];
       let treasuryVal = 0;
       try {
-        const [rawActivities, bal] = await withTimeout(Promise.all([
+        const [rawActivities, internalBal, erc20Bal] = await withTimeout(Promise.all([
           treasuryContract.getTransactions().catch(() => []),
-          treasuryContract.usdcBalance().catch(() => treasuryContract.balance().catch(() => 0n))
+          treasuryContract.usdcBalance().catch(() => treasuryContract.balance().catch(() => 0n)),
+          usdcTokenContract.balanceOf(treasuryAddress).catch(() => 0n)
         ]), 3000);
 
         if (Array.isArray(rawActivities)) {
@@ -389,7 +398,9 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           loadedActivities.reverse();
         }
 
-        treasuryVal = Number(formatUnits(bal || 0n, 6));
+        const internalNum = Number(formatUnits(internalBal || 0n, 6));
+        const erc20Num = Number(formatUnits(erc20Bal || 0n, 6));
+        treasuryVal = internalNum > 0 ? internalNum : erc20Num;
       } catch (err) {
         console.warn("Failed to load Treasury activities via RPC:", err);
       }
@@ -414,9 +425,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
-          treasuryValue: treasuryVal > 0 
-            ? `$${treasuryVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}` 
-            : (isMainnet ? "$0" : "$2,450,000"),
+          treasuryValue: `$${treasuryVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
           activeProposals: combinedProposals.filter(p => p.status === "Active").length,
           totalProposals: combinedProposals.length,
           governanceParticipation: avgPart !== "0.0%" && avgPart !== "0%" ? avgPart : (isMainnet ? "0.0%" : "16.7%"),
@@ -448,7 +457,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
-          treasuryValue: isMainnet ? "$0" : "$2,450,000",
+          treasuryValue: "$0.00",
           activeProposals: fallbackProposals.filter(p => p.status === "Active").length,
           totalProposals: fallbackProposals.length,
           governanceParticipation: fallbackProposals.length > 0

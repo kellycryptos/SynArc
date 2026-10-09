@@ -1,7 +1,7 @@
-import { createPublicClient, http, fallback } from 'viem'
+import { createPublicClient, http, fallback, isAddress, getAddress, formatUnits } from 'viem'
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from "@/hooks/auth/useAuth"
-import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS } from '@/lib/arc-config'
+import { ARC_CHAIN, ARC_RPC_URLS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS, getMainnetRpcUrls, getTestnetRpcUrls } from '@/lib/arc-config'
 
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork"
 
@@ -20,7 +20,14 @@ const ERC20_ABI = [
 ] as const
 
 // Cache and promise deduplication variables
-const cachedBalance: { [address: string]: { balance: string; timestamp: number } | undefined } = {}
+const cachedBalance: { 
+  [address: string]: { 
+    balance: string; 
+    nativeBalance: string; 
+    erc20Balance: string; 
+    timestamp: number 
+  } | undefined 
+} = {}
 const pendingFetches: { [address: string]: Promise<string> | undefined } = {}
 
 /**
@@ -44,28 +51,40 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
   const { arcChain, isArcTestnet } = useArcNetwork()
 
   const [balance, setBalance] = useState<string>('0.00')
+  const [nativeBalance, setNativeBalance] = useState<string>('0.00')
+  const [erc20Balance, setErc20Balance] = useState<string>('0.00')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [nativeBalance, setNativeBalance] = useState<string>('0.00')
-
   /** Internal: fetch, respecting the 5-second deduplication cache. */
   const fetchBalance = useCallback(async () => {
-    if (!activeAddress) {
+    let safeAddress: `0x${string}` | null = null
+    try {
+      if (activeAddress && isAddress(activeAddress.toLowerCase())) {
+        safeAddress = getAddress(activeAddress.toLowerCase())
+      }
+    } catch {
+      safeAddress = null
+    }
+
+    if (!safeAddress) {
       setBalance('0.00')
       setNativeBalance('0.00')
+      setErc20Balance('0.00')
       setLoading(false)
       setError(null)
       return
     }
 
-    const key = `${activeAddress.toLowerCase()}_${arcChain?.id || (isArcTestnet ? 5042002 : 5042)}`
+    const key = `${safeAddress.toLowerCase()}_${arcChain?.id || (isArcTestnet ? 5042002 : 5042)}`
     const now = Date.now()
 
     // 1. Check cache (5 seconds cache to deduplicate simultaneous calls on load)
     const cacheEntry = cachedBalance[key]
     if (cacheEntry && now - cacheEntry.timestamp < 5000) {
       setBalance(cacheEntry.balance)
+      setNativeBalance(cacheEntry.nativeBalance || '0.00')
+      setErc20Balance(cacheEntry.erc20Balance || '0.00')
       setLoading(false)
       setError(null)
       return
@@ -76,7 +95,7 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
       setLoading(true)
       try {
         const res = await pendingFetches[key]
-        setBalance(res)
+        if (res) setBalance(res)
         setLoading(false)
         return
       } catch (err) {
@@ -107,7 +126,13 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
                   const amountNum = parseFloat(usdcToken.amount) || 0
                   const formatted = amountNum.toFixed(2)
                   setNativeBalance(formatted)
-                  cachedBalance[key] = { balance: formatted, timestamp: Date.now() }
+                  setErc20Balance(formatted)
+                  cachedBalance[key] = { 
+                    balance: formatted, 
+                    nativeBalance: formatted, 
+                    erc20Balance: formatted, 
+                    timestamp: Date.now() 
+                  }
                   return formatted
                 }
               }
@@ -119,30 +144,51 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
       }
 
       // Public on-chain read using active network RPC URLs
-      const rpcUrls = isArcTestnet ? ARC_TESTNET_RPC_URLS : ARC_MAINNET_RPC_URLS
+      const rpcUrls = isArcTestnet ? getTestnetRpcUrls() : getMainnetRpcUrls()
       const client = createPublicClient({
         chain: arcChain,
-        transport: fallback(rpcUrls.filter(Boolean).map((url: string) => http(url, { timeout: 4000 }))),
+        transport: fallback(rpcUrls.filter(Boolean).map((url: string) => http(url, { timeout: 8000 }))),
       })
 
-      const [raw, nativeRaw] = await Promise.all([
+      const [contractResult, balanceResult] = await Promise.allSettled([
         client.readContract({
           address: USDC_ADDRESS as `0x${string}`,
           abi: ERC20_ABI,
           functionName: 'balanceOf',
-          args: [activeAddress as `0x${string}`],
-        }).catch(() => 0n),
-        client.getBalance({ address: activeAddress as `0x${string}` }).catch(() => 0n),
+          args: [safeAddress],
+        }),
+        client.getBalance({ address: safeAddress }),
       ])
 
-      const erc20Formatted = (Number(raw) / 1_000_000).toFixed(2)
-      // Native Arc USDC has 18 decimals in wei
-      const nativeFormatted = (Number(nativeRaw) / 1e18).toFixed(2)
-      setNativeBalance(nativeFormatted)
+      const raw = contractResult.status === 'fulfilled' ? contractResult.value : 0n
+      const nativeRaw = balanceResult.status === 'fulfilled' ? balanceResult.value : 0n
 
-      // Use erc20 balanceOf if available, else native balance if non-zero
-      const formatted = raw > 0n ? erc20Formatted : (nativeRaw > 0n ? nativeFormatted : erc20Formatted)
-      cachedBalance[key] = { balance: formatted, timestamp: Date.now() }
+      if (contractResult.status === 'rejected' && balanceResult.status === 'rejected') {
+        console.warn('[useUSDCBalance] Both RPC calls failed:', contractResult.reason, balanceResult.reason)
+        if (cacheEntry?.balance) {
+          return cacheEntry.balance
+        }
+        throw new Error('RPC balance read failed')
+      }
+
+      // ERC20 USDC uses 6 decimals; Arc native gas USDC uses 18 decimals (wei)
+      const erc20Num = Number(formatUnits(raw, 6))
+      const nativeNum = Number(formatUnits(nativeRaw, 18))
+      const totalNum = erc20Num + nativeNum
+
+      const erc20Formatted = erc20Num.toFixed(2)
+      const nativeFormatted = nativeNum.toFixed(2)
+      const formatted = totalNum.toFixed(2)
+
+      setNativeBalance(nativeFormatted)
+      setErc20Balance(erc20Formatted)
+
+      cachedBalance[key] = { 
+        balance: formatted, 
+        nativeBalance: nativeFormatted, 
+        erc20Balance: erc20Formatted, 
+        timestamp: Date.now() 
+      }
       return formatted
     })()
 
@@ -154,7 +200,9 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
       setLoading(false)
     } catch (err) {
       console.warn('USDC balance fetch failed:', err)
-      setError('Error fetching balance')
+      if (!cachedBalance[key]?.balance) {
+        setError('Error fetching balance')
+      }
       setLoading(false)
     } finally {
       delete pendingFetches[key]
@@ -167,7 +215,14 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
    */
   const refetch = useCallback(async () => {
     if (!activeAddress) return
-    const key = `${activeAddress.toLowerCase()}_${arcChain?.id || (isArcTestnet ? 5042002 : 5042)}`
+    let safeAddress: `0x${string}` | null = null
+    try {
+      if (activeAddress && isAddress(activeAddress.toLowerCase())) {
+        safeAddress = getAddress(activeAddress.toLowerCase())
+      }
+    } catch {}
+    const addr = safeAddress ? safeAddress.toLowerCase() : activeAddress.toLowerCase()
+    const key = `${addr}_${arcChain?.id || (isArcTestnet ? 5042002 : 5042)}`
     delete cachedBalance[key]
     await fetchBalance()
   }, [activeAddress, arcChain, isArcTestnet, fetchBalance])
@@ -183,20 +238,27 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
     }, 60_000)
 
     // Respond to synarc_usdc_changed events fired after earn deposits/withdraws etc.
-    // The module-level cache is already cleared by invalidateUSDCBalance() before the
-    // event is dispatched, so fetchBalance() will go live.
     const handleUsdcChanged = () => {
+      fetchBalance()
+    }
+
+    const handleNetworkChanged = () => {
+      for (const k in cachedBalance) {
+        delete cachedBalance[k]
+      }
       fetchBalance()
     }
 
     if (typeof window !== 'undefined') {
       window.addEventListener('synarc_usdc_changed', handleUsdcChanged)
+      window.addEventListener('synarc_network_changed', handleNetworkChanged)
     }
 
     return () => {
       clearInterval(interval)
       if (typeof window !== 'undefined') {
         window.removeEventListener('synarc_usdc_changed', handleUsdcChanged)
+        window.removeEventListener('synarc_network_changed', handleNetworkChanged)
       }
     }
     
@@ -205,10 +267,11 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
   return {
     balance,
     nativeBalance,
+    erc20Balance,
     loading,
     error,
     // Backward-compatible fields:
-    isLoading: loading && balance === '0.00',
+    isLoading: loading,
     isFetching: loading,
     isError: !!error,
     refetch,

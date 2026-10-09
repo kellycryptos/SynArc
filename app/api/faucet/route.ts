@@ -199,14 +199,35 @@ export async function POST(req: NextRequest) {
 
     // On Mainnet, use DEPLOYER_PRIVATE_KEY (owner of 15,000,000 sARC)
     // On Testnet, use FAUCET_PRIVATE_KEY or DEPLOYER_PRIVATE_KEY
-    const rawKey = network === 'mainnet'
-      ? (process.env.DEPLOYER_PRIVATE_KEY || process.env.FAUCET_PRIVATE_KEY || '')
+    let rawKey = network === 'mainnet'
+      ? (process.env.DEPLOYER_PRIVATE_KEY || '')
       : (process.env.FAUCET_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY || '')
+
+    // Failsafe: if running in an environment where process.env is missing DEPLOYER_PRIVATE_KEY, read directly
+    if (network === 'mainnet' && !rawKey) {
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        for (const file of ['.env.local', '.env']) {
+          const filePath = path.join(process.cwd(), file)
+          if (fs.existsSync(filePath)) {
+            const content = fs.readFileSync(filePath, 'utf8')
+            const match = content.match(/^DEPLOYER_PRIVATE_KEY=["']?([^"'\r\n]+)["']?/m)
+            if (match && match[1]) {
+              rawKey = match[1].trim()
+              break
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to read DEPLOYER_PRIVATE_KEY from filesystem:', err)
+      }
+    }
 
     const sanitizedKey = rawKey.trim().replace(/^['"]|['"]$/g, '')
 
     if (!sanitizedKey || sanitizedKey.length < 10) {
-      return NextResponse.json({ error: 'Faucet not configured for this network' }, { status: 500 })
+      return NextResponse.json({ error: network === 'mainnet' ? 'Deployer private key not configured on Mainnet' : 'Faucet not configured for this network' }, { status: 500 })
     }
 
     const privateKey = sanitizedKey.startsWith('0x')

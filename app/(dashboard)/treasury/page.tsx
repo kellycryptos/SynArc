@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useTreasuryBalances, invalidateTreasuryBalances } from "@/hooks/useTreasuryBalances";
-import { useUSDCBalance } from "@/hooks/useUSDCBalance";
-import { useEURCBalance } from "@/hooks/useEURCBalance";
+import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useEURCBalance, invalidateEURCBalance } from "@/hooks/useEURCBalance";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { ErrorBoundary, SectionErrorBoundary } from "@/components/ErrorBoundary";
@@ -416,6 +416,8 @@ function TreasuryPageContent() {
         refetchTreasury();
         refetchWalletUSDC?.();
         refetchWalletEURC?.();
+        invalidateUSDCBalance();
+        invalidateEURCBalance();
         invalidateTreasuryBalances();
         return;
       }
@@ -532,6 +534,8 @@ function TreasuryPageContent() {
       refetchTreasury();
       refetchWalletUSDC?.();
       refetchWalletEURC?.();
+      invalidateUSDCBalance();
+      invalidateEURCBalance();
       invalidateTreasuryBalances();
 
     } catch (error: any) {
@@ -1014,7 +1018,7 @@ function TreasuryPageContent() {
               {/* Balance display */}
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted">Wallet Balance</span>
-                <span className="font-semibold text-text-primary font-mono">{parseFloat(currentWalletBalance).toLocaleString(undefined, { minimumFractionDigits: 2 })} {selectedToken}</span>
+                <span className="font-semibold text-text-primary font-mono">{parseFloat(currentWalletBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedToken}</span>
               </div>
 
               {/* Amount input */}

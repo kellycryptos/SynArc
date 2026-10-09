@@ -6,6 +6,7 @@ import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useTreasury } from "@/hooks/useTreasury";
 import { useToken } from "@/hooks/useToken";
+import { invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
 import { getResilientProvider } from "@/lib/rpc/config";
 import { arcPublicClient } from "@/lib/arc/config";
 import { toast } from "react-hot-toast";
@@ -100,7 +101,9 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   } = useToken(walletAddress);
 
   // USDC formatted for display (comes from useToken, 6-decimal aware)
-  const usdcFormatted = usdcFromToken > 0 ? usdcFromToken.toFixed(2) : "0";
+  const usdcFormatted = usdcFromToken > 0 
+    ? usdcFromToken.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
+    : "0.00";
   const sarcFormatted = sarcPower > 0
     ? sarcPower.toLocaleString(undefined, { maximumFractionDigits: 0 })
     : "0";
@@ -355,8 +358,8 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
     if (!proposal) return;
 
     // Check voting power — anyone with USDC or sARC can vote
-    const usdcBal = Number(usdcFormatted) || 0
-    const sarcBal = Number(sarcFormatted) || 0
+    const usdcBal = usdcFromToken || 0;
+    const sarcBal = sarcPower || 0;
 
     if (usdcBal <= 0 && sarcBal <= 0) {
       toast.error('You need USDC or sARC tokens to vote')
@@ -551,6 +554,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       
       // Reactive force-refetch — bypasses 3-minute staleness cache so UI updates immediately
       await initializeStore(undefined, true);
+      invalidateUSDCBalance();
 
       // Clear optimistic states once store is synchronized
       setOptimisticVotes(null);
@@ -669,7 +673,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       <div className="max-w-4xl mx-auto space-y-8">
         
         {/* RPC Health Banner */}
-        <RpcHealthBanner hasLoadedBalance={usdcFormatted !== "0" || sarcPower > 0} />
+        <RpcHealthBanner hasLoadedBalance={usdcFromToken > 0 || sarcPower > 0} />
         
         {/* Navigation & Header */}
         <div className="space-y-4">

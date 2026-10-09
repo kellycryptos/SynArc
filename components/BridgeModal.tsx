@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useCCTPBridge } from "@/hooks/useCCTPBridge";
-import { useUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useSwitchChain } from "wagmi";
 import { createPublicClient, http, fallback, getAddress, parseAbi, formatUnits } from "viem";
@@ -269,6 +269,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   useEffect(() => {
     if (bridgeState.status === "success") {
       fetchSourceBalance();
+      invalidateUSDCBalance();
       if (onSuccess) onSuccess();
     }
   }, [bridgeState.status]);
@@ -468,7 +469,9 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     {balanceLoading ? (
                       <Loader2 className="w-3 h-3 animate-spin text-primary" />
                     ) : (
-                      <span className="font-bold font-mono text-text-primary select-all">{sourceBalance} USDC</span>
+                      <span className="font-bold font-mono text-text-primary select-all">
+                        {parseFloat(sourceBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                      </span>
                     )}
                   </div>
                 </div>

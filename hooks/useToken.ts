@@ -99,12 +99,13 @@ export function useToken(userAddress: string | null): UseTokenReturn {
         ? Number(formatUnits(usdcBalRaw, 6))
         : 0;
       const nativeUsdcBal = typeof nativeBalRaw === "bigint"
-        ? Number(formatUnits(nativeBalRaw, 6))
+        ? Number(formatUnits(nativeBalRaw, 18))
         : 0;
+      const totalUsdc = usdcBal + nativeUsdcBal;
 
       setSarcBalance(sarcBal);
       setVotingPower(sarcVotes);
-      setUsdcBalance(usdcBal);
+      setUsdcBalance(totalUsdc);
       setNativeUsdcBalance(nativeUsdcBal);
       // Needs delegation: has sARC but no delegated votes
       setNeedsDelegation(sarcBal > 0 && sarcVotes === 0);
@@ -124,8 +125,13 @@ export function useToken(userAddress: string | null): UseTokenReturn {
       fetchBalances();
     };
 
+    const handleUsdcChange = () => {
+      fetchBalances();
+    };
+
     if (typeof window !== "undefined") {
       window.addEventListener("synarc_network_changed", handleNetworkChange);
+      window.addEventListener("synarc_usdc_changed", handleUsdcChange);
     }
 
     // Refresh every 60 seconds and only if visible
@@ -139,6 +145,7 @@ export function useToken(userAddress: string | null): UseTokenReturn {
       clearInterval(interval);
       if (typeof window !== "undefined") {
         window.removeEventListener("synarc_network_changed", handleNetworkChange);
+        window.removeEventListener("synarc_usdc_changed", handleUsdcChange);
       }
     };
   }, [fetchBalances]);

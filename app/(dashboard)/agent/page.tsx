@@ -578,11 +578,13 @@ export default function AgentPage() {
     fetchAgentState();
   };
 
-  const triggerManualRun = async () => {
+  const triggerManualRun = async (actionType?: string, proposedAmount?: number) => {
     if (!privyAddress) {
       throw new Error("Please connect your wallet first via Privy to trigger the agent manually.");
     }
-    const message = "Sign this message to authenticate your manual agent run request.";
+    const message = actionType === "yield_allocation"
+      ? "Sign this message to authenticate your yield allocation proposal request."
+      : "Sign this message to authenticate your manual agent run request.";
     const signature = await signMessage(message);
     const res = await fetch("/api/agent/manual-run", {
       method: "POST",
@@ -593,6 +595,8 @@ export default function AgentPage() {
         address: privyAddress,
         signature,
         message,
+        actionType,
+        proposedAmount,
       }),
     });
     return res;
@@ -626,7 +630,7 @@ export default function AgentPage() {
     setIsYieldProposing(true);
     const toastId = toast.loading("Signing auth message & preparing proposal...");
     try {
-      const res = await triggerManualRun();
+      const res = await triggerManualRun("yield_allocation", 50);
       const data = await res.json();
       if (data.success) {
         await fetchAgentState();

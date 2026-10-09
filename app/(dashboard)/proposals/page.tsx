@@ -129,7 +129,7 @@ export default function ProposalsPage() {
               {isAuthenticated && totalDisplayPower > 0 && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/10 border border-purple-500/20 text-purple-300">
                   <Zap className="w-3 h-3" />
-                  {usdcBalance > 0 && <>{usdcBalance.toFixed(2)} USDC + </>}
+                  {usdcBalance > 0 && <>{usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC + </>}
                   {sarcVotes > 0
                     ? <>{sarcVotes.toLocaleString(undefined, { maximumFractionDigits: 0 })} sARC</>
                     : <>0 sARC</>}

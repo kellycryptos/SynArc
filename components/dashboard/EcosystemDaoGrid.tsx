@@ -20,11 +20,10 @@ interface DaoItem {
 }
 
 function formatUsdcAmount(amount: number): string {
-  if (!amount || amount <= 0) return "0";
+  if (!amount || amount <= 0) return "0.00";
   if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(2).replace(/\.00$/, "")}M`;
   if (amount >= 1_000) return `${(amount / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  if (amount < 1) return amount.toFixed(2);
-  return amount.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 const defaultDaos: DaoItem[] = [
@@ -33,7 +32,7 @@ const defaultDaos: DaoItem[] = [
     name: "SynDAO Core Treasury",
     category: "System Governance",
     proposalsCount: 0,
-    treasuryUSDC: "0",
+    treasuryUSDC: "0.00",
     iconBg: "bg-gradient-to-br from-[#2F6FFF] to-[#4F8BFF]",
     iconColor: "text-white",
     icon: Shield,
@@ -44,7 +43,7 @@ const defaultDaos: DaoItem[] = [
     name: "Circle CCTP Liquidity Vault",
     category: "Cross-Chain Treasury",
     proposalsCount: 0,
-    treasuryUSDC: "0",
+    treasuryUSDC: "0.00",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Coins,
@@ -55,7 +54,7 @@ const defaultDaos: DaoItem[] = [
     name: "Autonomous Alpha Agent",
     category: "AI Execution",
     proposalsCount: 0,
-    treasuryUSDC: "0",
+    treasuryUSDC: "0.00",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Bot,
@@ -66,7 +65,7 @@ const defaultDaos: DaoItem[] = [
     name: "Creator Guild Arc",
     category: "Community Labs",
     proposalsCount: 0,
-    treasuryUSDC: "0",
+    treasuryUSDC: "0.00",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Rocket,
@@ -77,7 +76,7 @@ const defaultDaos: DaoItem[] = [
     name: "Developer Grants Program",
     category: "Ecosystem Growth",
     proposalsCount: 0,
-    treasuryUSDC: "0",
+    treasuryUSDC: "0.00",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Sparkles,
@@ -88,7 +87,7 @@ const defaultDaos: DaoItem[] = [
     name: "Escrow Release Valve",
     category: "Attestation & Security",
     proposalsCount: 0,
-    treasuryUSDC: "0",
+    treasuryUSDC: "0.00",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Zap,
@@ -99,7 +98,7 @@ const defaultDaos: DaoItem[] = [
     name: "Arc Attestation Collective",
     category: "Protocol Verification",
     proposalsCount: 0,
-    treasuryUSDC: "0",
+    treasuryUSDC: "0.00",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Building2,
@@ -110,7 +109,7 @@ const defaultDaos: DaoItem[] = [
     name: "DeFi Yield Syndicate",
     category: "Automated Strategy",
     proposalsCount: 0,
-    treasuryUSDC: "0",
+    treasuryUSDC: "0.00",
     iconBg: "bg-[#05080F] border border-[#1B2536]",
     iconColor: "text-[#4F8BFF]",
     icon: Coins,

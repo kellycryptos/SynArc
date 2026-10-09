@@ -6,7 +6,7 @@ import { Milestone } from "@/types";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { TokenIcon } from "@/components/ui/TokenIcon";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { getSigner, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams } from "@/lib/tx-helper";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
@@ -334,6 +334,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
 
       // 4. Update the campaign store state & sync metrics on-chain
       await contribute(campaignId, contributionAmount);
+      invalidateUSDCBalance();
       
       setContributionSuccess(true);
       setContributionAmount(0);
@@ -756,7 +757,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
                   <div className="flex justify-between items-center text-xs px-1">
                     <span className="text-muted">Wallet Balance</span>
                     <span className="font-semibold text-white font-mono">
-                      {parseFloat(walletUSDC || "0.00").toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC
+                      {parseFloat(walletUSDC || "0.00").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
                     </span>
                   </div>
                   <div className="relative">
