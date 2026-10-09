@@ -15,10 +15,41 @@ import {
   Lock, Layers, Landmark, TrendingDown, Repeat, Eye, ChevronDown
 } from "lucide-react";
 import Link from "next/link";
-import { CctpStepVisualizer } from "@/components/dashboard/CctpStepVisualizer";
+import dynamic from "next/dynamic";
 import { ProofOfAutonomyTimeline } from "@/components/dashboard/ProofOfAutonomyTimeline";
-import { EscrowReleaseValve } from "@/components/dashboard/EscrowReleaseValve";
-import { AdversarialSimulator } from "@/components/dashboard/AdversarialSimulator";
+
+const AdversarialSimulator = dynamic(
+  () => import("@/components/dashboard/AdversarialSimulator").then(m => m.AdversarialSimulator),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-64 rounded-2xl bg-white/[0.02] border border-border-thin animate-pulse flex items-center justify-center text-text-tertiary text-sm">
+        Loading Simulator...
+      </div>
+    )
+  }
+);
+
+const CctpStepVisualizer = dynamic(
+  () => import("@/components/dashboard/CctpStepVisualizer").then(m => m.CctpStepVisualizer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-40 rounded-2xl bg-white/[0.02] border border-border-thin animate-pulse" />
+    )
+  }
+);
+
+const EscrowReleaseValve = dynamic(
+  () => import("@/components/dashboard/EscrowReleaseValve").then(m => m.EscrowReleaseValve),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-48 rounded-2xl bg-white/[0.02] border border-border-thin animate-pulse" />
+    )
+  }
+);
+
 import toast from "react-hot-toast";
 import { AGENT_CAPABILITIES, AGENT_CONFIG } from "@/lib/agent/smart-account";
 import { useAuth } from "@/hooks/auth/useAuth";

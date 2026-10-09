@@ -11,6 +11,7 @@ import {
   arcMainnet
 } from '@/lib/arc-config';
 import { useArcNetwork } from '@/hooks/auth/useArcNetwork';
+import { getCachedPublicClient } from '@/lib/rpc/provider-cache';
 import { TreasuryActivity } from '@/types';
 
 const ERC20_ABI = [
@@ -225,11 +226,8 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
   }, [treasuryAddress]);
 
   const publicClient = useMemo(() => {
-    return createPublicClient({
-      chain: arcChain || (isArcTestnet ? arcTestnet : arcMainnet),
-      transport: fallback(rpcUrls.map((url) => http(url, { timeout: 8000 }))),
-    });
-  }, [arcChain, isArcTestnet, rpcUrls]);
+    return getCachedPublicClient(arcChain?.id);
+  }, [arcChain?.id, isArcTestnet]);
 
   const fetchBalances = useCallback(async () => {
     if (!treasuryAddress) return;
