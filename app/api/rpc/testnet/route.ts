@@ -223,6 +223,7 @@ export async function POST(req: NextRequest) {
           Accept: "application/json",
         },
         body: bodyText,
+        signal: AbortSignal.timeout(3000),
       });
 
       // If upstream failed with non-2xx and isn't the public backup, fall back to public backup
@@ -234,6 +235,7 @@ export async function POST(req: NextRequest) {
             Accept: "application/json",
           },
           body: bodyText,
+          signal: AbortSignal.timeout(8000),
         });
       }
     } catch (networkError) {
@@ -246,6 +248,7 @@ export async function POST(req: NextRequest) {
             Accept: "application/json",
           },
           body: bodyText,
+          signal: AbortSignal.timeout(8000),
         });
       } else {
         throw networkError;

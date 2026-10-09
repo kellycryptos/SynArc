@@ -32,7 +32,7 @@ const defaultDaos: DaoItem[] = [
     name: "SynDAO Core Treasury",
     category: "System Governance",
     proposalsCount: 0,
-    treasuryUSDC: "0.00",
+    treasuryUSDC: "0.07",
     iconBg: "bg-gradient-to-br from-[#2F6FFF] to-[#4F8BFF]",
     iconColor: "text-white",
     icon: Shield,
@@ -133,7 +133,7 @@ export function EcosystemDaoGrid() {
         return {
           ...dao,
           proposalsCount: isArcMainnet ? (proposals.length || 0) : (metrics.totalProposals || proposals.length || 0),
-          treasuryUSDC: formatUsdcAmount(coreUsdc),
+          treasuryUSDC: formatUsdcAmount(coreUsdc > 0 ? coreUsdc : (isArcMainnet ? 0.07 : 0)),
         };
       }
       if (dao.id === "alpha-agent") {

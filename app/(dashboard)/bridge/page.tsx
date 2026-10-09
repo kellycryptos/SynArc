@@ -11,6 +11,7 @@ import { useSwitchChain, useAccount } from "wagmi";
 import { createPublicClient, http, fallback, getAddress, parseAbi, formatUnits } from "viem";
 import { selectActiveWallet } from "@/lib/tx-helper";
 import { IS_MAINNET, ACTIVE_NETWORK, ARC_TESTNET_RPC_URLS } from "@/lib/arc-config";
+import { ensureWalletOnChain, getAddChainParameters } from "@/lib/chain-network-helper";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -282,19 +283,24 @@ export default function BridgePage() {
     setSwitchingNetwork(true);
     try {
       const targetChainId = direction === "in" ? selectedChain.chainId : activeArcChain.chainId;
+      const provider = await (
+        activeWallet?.getEthereumProvider?.() ||
+        (activeWallet as any)?.getProvider?.() ||
+        (activeWallet as any)?.getEip1193Provider?.() ||
+        (typeof window !== "undefined" ? (window as any).ethereum : null)
+      );
+
+      if (provider) {
+        await ensureWalletOnChain(provider, targetChainId);
+        resetBridgeState();
+        fetchSourceBalance();
+        return;
+      }
+
       if (targetChainId > 0 && switchChainAsync) {
-        try {
-          await switchChainAsync({ chainId: targetChainId });
-          resetBridgeState();
-          fetchSourceBalance();
-        } catch (switchError: any) {
-          // Fallback if network needs to be added manually
-          if (switchError.code === 4902 || switchError.message?.toLowerCase().includes("unrecognized chain")) {
-            await handleAddNetwork();
-          } else {
-            throw switchError;
-          }
-        }
+        await switchChainAsync({ chainId: targetChainId });
+        resetBridgeState();
+        fetchSourceBalance();
       }
     } catch (err) {
       console.error("Network switch failed:", err);
@@ -306,88 +312,16 @@ export default function BridgePage() {
   const handleAddNetwork = async () => {
     setSwitchingNetwork(true);
     try {
-      if (!activeWallet) return;
-      const provider = await (activeWallet.getEthereumProvider?.() || (activeWallet as any).getProvider?.() || (activeWallet as any).getEip1193Provider?.());
-      
-      let chainParams: any = null;
-      if (direction === "in") {
-        if (selectedChain.id === "ETH_SEPOLIA") {
-          chainParams = {
-            chainId: "0xaa36a7", // 11155111 hex
-            chainName: "Ethereum Sepolia",
-            rpcUrls: ["https://rpc.ankr.com/eth_sepolia", "https://ethereum-sepolia-rpc.publicnode.com"],
-            nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
-            blockExplorerUrls: ["https://sepolia.etherscan.io"],
-          };
-        } else if (selectedChain.id === "BASE_SEPOLIA") {
-          chainParams = {
-            chainId: "0x14a34", // 84532 hex
-            chainName: "Base Sepolia",
-            rpcUrls: ["https://sepolia.base.org", "https://base-sepolia-rpc.publicnode.com"],
-            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-            blockExplorerUrls: ["https://sepolia.basescan.org"],
-          };
-        } else if (selectedChain.id === "AVAX_FUJI") {
-          chainParams = {
-            chainId: "0xa869", // 43113 hex
-            chainName: "Avalanche Fuji",
-            rpcUrls: ["https://api.avax-test.network/ext/bc/C/rpc"],
-            nativeCurrency: { name: "Avalanche", symbol: "AVAX", decimals: 18 },
-            blockExplorerUrls: ["https://testnet.snowtrace.io"],
-          };
-        } else if (selectedChain.id === "ETH_MAINNET") {
-          chainParams = {
-            chainId: "0x1", // 1 hex
-            chainName: "Ethereum Mainnet",
-            rpcUrls: ["https://eth.llamarpc.com", "https://rpc.ankr.com/eth"],
-            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-            blockExplorerUrls: ["https://etherscan.io"],
-          };
-        } else if (selectedChain.id === "BASE_MAINNET") {
-          chainParams = {
-            chainId: "0x2105", // 8453 hex
-            chainName: "Base",
-            rpcUrls: ["https://mainnet.base.org", "https://base.llamarpc.com"],
-            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-            blockExplorerUrls: ["https://basescan.org"],
-          };
-        } else if (selectedChain.id === "AVAX_MAINNET") {
-          chainParams = {
-            chainId: "0xa86a", // 43114 hex
-            chainName: "Avalanche C-Chain",
-            rpcUrls: ["https://api.avax.network/ext/bc/C/rpc"],
-            nativeCurrency: { name: "Avalanche", symbol: "AVAX", decimals: 18 },
-            blockExplorerUrls: ["https://snowtrace.io"],
-          };
-        }
-      } else {
-        if (bridgeNetwork === "mainnet") {
-          chainParams = {
-            chainId: "0x13b2", // 5042 hex
-            chainName: "Arc",
-            rpcUrls: ["https://rpc.mainnet.arc.io"],
-            nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 6 },
-            blockExplorerUrls: ["https://explorer.arc.io"],
-          };
-        } else {
-          chainParams = {
-            chainId: "0x4cef52", // 5042002 hex
-            chainName: "Arc Testnet",
-            rpcUrls: [...ARC_TESTNET_RPC_URLS.filter((url: string) => url.startsWith("http"))],
-            nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 6 },
-            blockExplorerUrls: ["https://testnet.arcscan.app"],
-          };
-        }
-      }
-      
-      if (chainParams && provider) {
-        await provider.request({
-          method: "wallet_addEthereumChain",
-          params: [chainParams],
-        });
-        if (switchChainAsync) {
-          await switchChainAsync({ chainId: parseInt(chainParams.chainId, 16) });
-        }
+      const targetChainId = direction === "in" ? selectedChain.chainId : activeArcChain.chainId;
+      const provider = await (
+        activeWallet?.getEthereumProvider?.() ||
+        (activeWallet as any)?.getProvider?.() ||
+        (activeWallet as any)?.getEip1193Provider?.() ||
+        (typeof window !== "undefined" ? (window as any).ethereum : null)
+      );
+
+      if (provider) {
+        await ensureWalletOnChain(provider, targetChainId);
         resetBridgeState();
         fetchSourceBalance();
       }
@@ -588,20 +522,6 @@ export default function BridgePage() {
       setErrorMessage("Please connect your wallet to bridge.");
       setProgressState("error");
       return;
-    }
-
-    // Pre-flight check: Arc uses USDC as its native gas token.
-    // When bridging into Arc, the destination wallet MUST hold sufficient native USDC
-    // to pay gas for the destination mint (receiveMessage) transaction.
-    if (direction === "in") {
-      const arcGas = parseFloat(arcUSDCBalance || "0");
-      if (arcGas < 0.01) {
-        setErrorMessage(
-          `Insufficient Arc gas: Arc uses USDC as its native gas token. Your wallet on ${activeArcChain.name} currently holds ${arcGas.toFixed(4)} USDC, but requires at least 0.01 USDC to pay gas for claiming/minting this transfer.`
-        );
-        setProgressState("error");
-        return;
-      }
     }
 
     setErrorMessage("");
@@ -969,14 +889,14 @@ export default function BridgePage() {
                       )}
                     </div>
 
-                    {/* Arc Gas Pre-flight Warning Banner */}
+                    {/* Arc Gas Informational Notice Banner */}
                     {hasInsufficientArcGas && (
                       <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs flex items-start gap-2.5">
                         <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                         <div className="space-y-1">
                           <p className="font-semibold text-amber-200">Arc Gas Notice: USDC is the Native Gas Token</p>
                           <p className="text-[11px] text-amber-300/80 leading-relaxed">
-                            Arc uses native USDC to pay network transaction gas. Your wallet on {activeArcChain.name} currently holds {parseFloat(arcUSDCBalance || "0").toFixed(4)} USDC, but requires at least 0.01 USDC to pay gas for claiming and minting this transfer on Arc.
+                            Arc uses native USDC to pay network transaction gas. Once your transfer completes, your bridged USDC is immediately usable as native gas for all transactions on Arc.
                           </p>
                         </div>
                       </div>
@@ -1021,14 +941,12 @@ export default function BridgePage() {
                       <button
                         type="button"
                         onClick={handleBridgeConfirm}
-                        disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(fromBalance) || hasInsufficientArcGas}
+                        disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(fromBalance)}
                         className="w-full py-4 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary-hover transition-all shadow-[0_0_24px_rgba(124,58,237,0.25)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none active:scale-[0.99]"
                       >
-                        {hasInsufficientArcGas
-                          ? "Insufficient Arc Gas (min 0.01 USDC on Arc)"
-                          : parseFloat(amount) > parseFloat(fromBalance) 
-                            ? "Insufficient Balance" 
-                            : `Bridge USDC to ${toChain.name}`
+                        {parseFloat(amount) > parseFloat(fromBalance) 
+                          ? "Insufficient Balance" 
+                          : `Bridge USDC to ${toChain.name}`
                         }
                       </button>
                     )}

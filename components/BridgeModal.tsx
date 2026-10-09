@@ -10,6 +10,7 @@ import { useSwitchChain } from "wagmi";
 import { createPublicClient, http, fallback, getAddress, parseAbi, formatUnits } from "viem";
 import { selectActiveWallet } from "@/lib/tx-helper";
 import { IS_MAINNET, getActiveNetwork } from "@/lib/arc-config";
+import { ensureWalletOnChain } from "@/lib/chain-network-helper";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 import {
   X,
@@ -34,10 +35,11 @@ const erc20Abi = parseAbi([
   "function decimals() view returns (uint8)",
 ]);
 
-// Source networks config
-const SOURCE_CHAINS = [
+// Testnet source networks config
+export const TESTNET_SOURCE_CHAINS = [
   {
     id: "ETH_SEPOLIA",
+    chainId: 11155111,
     name: "Ethereum Sepolia",
     tokenAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
     rpcUrl: "https://rpc.ankr.com/eth_sepolia",
@@ -50,6 +52,7 @@ const SOURCE_CHAINS = [
   },
   {
     id: "BASE_SEPOLIA",
+    chainId: 84532,
     name: "Base Sepolia",
     tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dcf7e",
     rpcUrl: "https://sepolia.base.org",
@@ -62,6 +65,7 @@ const SOURCE_CHAINS = [
   },
   {
     id: "AVAX_FUJI",
+    chainId: 43113,
     name: "Avalanche Fuji",
     tokenAddress: "0x5425890298aed601595a70AB815c96711a31Bc65",
     rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc",
@@ -73,6 +77,7 @@ const SOURCE_CHAINS = [
   },
   {
     id: "SOL_DEVNET",
+    chainId: 103,
     name: "Solana Devnet",
     tokenAddress: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
     rpcUrl: "https://api.devnet.solana.com",
@@ -81,6 +86,52 @@ const SOURCE_CHAINS = [
     color: "text-purple-400"
   },
 ];
+
+// Mainnet source networks config
+export const MAINNET_SOURCE_CHAINS = [
+  {
+    id: "ETH_MAINNET",
+    chainId: 1,
+    name: "Ethereum",
+    tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    rpcUrl: "https://eth.llamarpc.com",
+    rpcUrls: [
+      "https://cloudflare-eth.com",
+      "https://ethereum-rpc.publicnode.com"
+    ],
+    icon: "ETH",
+    color: "text-blue-400"
+  },
+  {
+    id: "BASE_MAINNET",
+    chainId: 8453,
+    name: "Base",
+    tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    rpcUrl: "https://mainnet.base.org",
+    rpcUrls: [
+      "https://mainnet.base.org",
+      "https://base-rpc.publicnode.com"
+    ],
+    icon: "BASE",
+    color: "text-blue-500"
+  },
+  {
+    id: "AVAX_MAINNET",
+    chainId: 43114,
+    name: "Avalanche",
+    tokenAddress: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+    rpcUrl: "https://api.avax.network/ext/bc/C/rpc",
+    rpcUrls: [
+      "https://api.avax.network/ext/bc/C/rpc",
+      "https://avalanche-c-chain-rpc.publicnode.com"
+    ],
+    icon: "AVAX",
+    color: "text-red-500"
+  },
+];
+
+// Fallback alias for backward compatibility
+const SOURCE_CHAINS = TESTNET_SOURCE_CHAINS;
 
 // CCTP step definitions
 const BRIDGE_STEPS = [
@@ -111,7 +162,14 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   const isMainnet = getActiveNetwork() === 'mainnet';
   const arcNetworkLabel = isMainnet ? "Arc Mainnet" : "Arc Testnet";
   const arcExplorerUrl = isMainnet ? "https://explorer.arc.io" : "https://testnet.arcscan.app";
-  const [selectedChain, setSelectedChain] = useState(SOURCE_CHAINS[0]);
+  const activeSourceChains = isMainnet ? MAINNET_SOURCE_CHAINS : TESTNET_SOURCE_CHAINS;
+  const [selectedChain, setSelectedChain] = useState(activeSourceChains[0]);
+
+  // Keep selectedChain in sync when network mode changes
+  useEffect(() => {
+    setSelectedChain(isMainnet ? MAINNET_SOURCE_CHAINS[0] : TESTNET_SOURCE_CHAINS[0]);
+  }, [isMainnet]);
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [sourceBalance, setSourceBalance] = useState<string>("0.00");
@@ -132,25 +190,24 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   const handleSwitchNetwork = async () => {
     setSwitchingNetwork(true);
     try {
-      const targetChainId =
-        selectedChain.id === "ETH_SEPOLIA" ? 11155111
-        : selectedChain.id === "BASE_SEPOLIA" ? 84532
-        : selectedChain.id === "AVAX_FUJI" ? 43113
-        : 0;
-      if (targetChainId > 0 && switchChainAsync) {
-        try {
-          await switchChainAsync({ chainId: targetChainId });
-          resetState();
-        } catch (switchError: any) {
-          if (
-            switchError.code === 4902 ||
-            switchError.message?.toLowerCase().includes("unrecognized chain")
-          ) {
-            await handleAddNetwork();
-          } else {
-            throw switchError;
-          }
-        }
+      const provider = await (
+        activeWallet?.getEthereumProvider?.() ||
+        (activeWallet as any)?.getProvider?.() ||
+        (activeWallet as any)?.getEip1193Provider?.() ||
+        (typeof window !== "undefined" ? (window as any).ethereum : null)
+      );
+
+      if (provider) {
+        await ensureWalletOnChain(provider, selectedChain.chainId);
+        resetState();
+        fetchSourceBalance();
+        return;
+      }
+
+      if (selectedChain.chainId > 0 && switchChainAsync) {
+        await switchChainAsync({ chainId: selectedChain.chainId });
+        resetState();
+        fetchSourceBalance();
       }
     } catch (err) {
       console.error("Manual network switch failed:", err);
@@ -162,49 +219,17 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   const handleAddNetwork = async () => {
     setSwitchingNetwork(true);
     try {
-      if (!activeWallet) return;
       const provider = await (
-        activeWallet.getEthereumProvider?.() ||
-        (activeWallet as any).getProvider?.() ||
-        (activeWallet as any).getEip1193Provider?.()
+        activeWallet?.getEthereumProvider?.() ||
+        (activeWallet as any)?.getProvider?.() ||
+        (activeWallet as any)?.getEip1193Provider?.() ||
+        (typeof window !== "undefined" ? (window as any).ethereum : null)
       );
 
-      let chainParams: any = null;
-      if (selectedChain.id === "ETH_SEPOLIA") {
-        chainParams = {
-          chainId: "0xaa36a7",
-          chainName: "Ethereum Sepolia",
-          rpcUrls: ["https://rpc.ankr.com/eth_sepolia"],
-          nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
-          blockExplorerUrls: ["https://sepolia.etherscan.io"],
-        };
-      } else if (selectedChain.id === "BASE_SEPOLIA") {
-        chainParams = {
-          chainId: "0x14a34",
-          chainName: "Base Sepolia",
-          rpcUrls: ["https://sepolia.base.org"],
-          nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-          blockExplorerUrls: ["https://sepolia.basescan.org"],
-        };
-      } else if (selectedChain.id === "AVAX_FUJI") {
-        chainParams = {
-          chainId: "0xa869",
-          chainName: "Avalanche Fuji",
-          rpcUrls: ["https://api.avax-test.network/ext/bc/C/rpc"],
-          nativeCurrency: { name: "Avalanche", symbol: "AVAX", decimals: 18 },
-          blockExplorerUrls: ["https://testnet.snowtrace.io"],
-        };
-      }
-
-      if (chainParams) {
-        await provider.request({
-          method: "wallet_addEthereumChain",
-          params: [chainParams],
-        });
-        if (switchChainAsync) {
-          await switchChainAsync({ chainId: parseInt(chainParams.chainId, 16) });
-        }
+      if (provider) {
+        await ensureWalletOnChain(provider, selectedChain.chainId);
         resetState();
+        fetchSourceBalance();
       }
     } catch (err) {
       console.error("Manual network add failed:", err);
@@ -280,7 +305,6 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) return;
     if (amountNum > parseFloat(sourceBalance)) return;
-    if (hasInsufficientArcGas) return;
     await bridgeUSDC(selectedChain.id as any, amount);
   };
 
@@ -310,6 +334,9 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     if (selectedChain.id === "ETH_SEPOLIA") return `https://sepolia.etherscan.io/tx/${hash}`;
     if (selectedChain.id === "BASE_SEPOLIA") return `https://sepolia.basescan.org/tx/${hash}`;
     if (selectedChain.id === "AVAX_FUJI") return `https://testnet.snowtrace.io/tx/${hash}`;
+    if (selectedChain.id === "ETH_MAINNET") return `https://etherscan.io/tx/${hash}`;
+    if (selectedChain.id === "BASE_MAINNET") return `https://basescan.org/tx/${hash}`;
+    if (selectedChain.id === "AVAX_MAINNET") return `https://snowtrace.io/tx/${hash}`;
     return `#`;
   };
 
@@ -424,7 +451,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
 
                 {dropdownOpen && (
                   <div className="absolute left-0 right-0 mt-2 z-20 bg-surface-elevated/95 border border-border-thin backdrop-blur-xl rounded-xl shadow-xl overflow-hidden py-1">
-                    {SOURCE_CHAINS.map((chain) => (
+                    {activeSourceChains.map((chain) => (
                       <button
                         key={chain.id}
                         type="button"
@@ -518,14 +545,14 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                 </div>
               </div>
 
-              {/* Arc Gas Pre-flight Warning Banner */}
+              {/* Arc Gas Informational Notice Banner */}
               {hasInsufficientArcGas && (
                 <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs flex items-start gap-2.5">
                   <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   <div className="space-y-1">
                     <p className="font-semibold text-amber-200">Arc Gas Notice: USDC is the Native Gas Token</p>
                     <p className="text-[11px] text-amber-300/80 leading-relaxed">
-                      Arc uses native USDC to pay network gas. Your wallet on {arcNetworkLabel} currently holds {parseFloat(arcUSDCBalance || "0").toFixed(4)} USDC, but requires at least 0.01 USDC to pay gas for claiming and minting this transfer on Arc.
+                      Arc uses native USDC to pay network gas. Once your transfer completes, your bridged USDC is immediately usable as native gas for all transactions on Arc.
                     </p>
                   </div>
                 </div>
@@ -545,11 +572,11 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   <button
                     type="button"
                     onClick={handleBridgeConfirm}
-                    disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(sourceBalance) || hasInsufficientArcGas}
+                    disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(sourceBalance)}
                     className="flex-1 py-3 bg-accent-purple text-white-keep font-bold text-sm rounded-xl hover:bg-accent-purple/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="text-white-keep">
-                      {hasInsufficientArcGas ? "Insufficient Arc Gas (min 0.01 USDC)" : "Bridge USDC"}
+                      {parseFloat(amount) > parseFloat(sourceBalance) ? "Insufficient Balance" : "Bridge USDC"}
                     </span>
                   </button>
                 ) : (

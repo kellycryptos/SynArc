@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
+import { selectActiveWallet } from "@/lib/tx-helper";
+import { wrapEip1193ProviderWithAutoAdd, ensureWalletOnChain } from "@/lib/chain-network-helper";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 import { useConnectorClient } from "wagmi";
 import { toast } from "react-hot-toast";
@@ -16,53 +19,56 @@ const getEarnKit = async () => {
 };
 
 /**
- * Build an EIP-1193-compatible provider from the wagmi connector client.
- * Falls back to window.ethereum for injected wallets not connected via wagmi.
- * Throws a user-friendly message when no provider is available at all.
+ * Resolve an EIP-1193-compatible provider from all available wallet sources:
+ * Wagmi connector client, Privy active wallet, or window.ethereum.
+ * Always wrapped with wrapEip1193ProviderWithAutoAdd for seamless chain registration.
  */
-const makeProviderFromClient = (connectorClient: any) => {
+const resolveProvider = async (activeWallet: any, connectorClient: any) => {
+  let raw: any = null;
+
   if (connectorClient?.transport?.request) {
-    // wagmi v2 connector client exposes a viem-transport-shaped object;
-    // wrap it in an EIP-1193 provider so Circle's adapter-viem-v2 can use it.
-    return {
+    raw = {
       request: (args: any) => connectorClient.transport.request(args),
     };
+  } else if (activeWallet) {
+    raw = await (
+      activeWallet.getEthereumProvider?.() ||
+      activeWallet.getProvider?.() ||
+      activeWallet.getEip1193Provider?.()
+    );
   }
-  if (typeof window !== "undefined" && (window as any).ethereum) {
-    return (window as any).ethereum;
+
+  if (!raw && typeof window !== "undefined" && (window as any).ethereum) {
+    raw = (window as any).ethereum;
   }
-  return null;
+
+  if (!raw) return null;
+  return wrapEip1193ProviderWithAutoAdd(raw);
 };
 
 const buildAdapter = async (provider: any) => {
   const { createViemAdapterFromProvider } = await import("@circle-fin/adapter-viem-v2");
-  const { createPublicClient, http } = await import("viem");
-  const { getMainnetProxyUrl, getTestnetProxyUrl } = await import("@/lib/arc-config");
+  const { createPublicClient, http, fallback } = await import("viem");
+  const { ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS } = await import("@/lib/arc-config");
 
   return await createViemAdapterFromProvider({
-    provider,
+    provider: wrapEip1193ProviderWithAutoAdd(provider),
     capabilities: { addressContext: "user-controlled" },
-    getPublicClient: ({ chain }) => {
-      // Route Arc Mainnet (5042) and Arc Testnet (5042002) through same-origin proxy to eliminate browser CORS
-      const rpcUrl =
-        chain.id === 5042
-          ? getMainnetProxyUrl()
-          : chain.id === 5042002
-            ? getTestnetProxyUrl()
-            : chain.rpcUrls?.default?.http?.[0] || getMainnetProxyUrl();
-
-      return createPublicClient({
-        chain,
-        transport: http(rpcUrl, {
-          timeout: 15000,
-          fetchOptions: {
-            headers: {
-              "x-synarc-source": "app-client",
-            },
-          },
-        }),
-      });
-    },
+    getPublicClient: (({ chain }: { chain: any }) => {
+      if (chain?.id === 5042) {
+        return createPublicClient({
+          chain,
+          transport: fallback(ARC_MAINNET_RPC_URLS.map(u => http(u, { timeout: 10_000, retryCount: 2 }))),
+        });
+      }
+      if (chain?.id === 5042002) {
+        return createPublicClient({
+          chain,
+          transport: fallback(ARC_TESTNET_RPC_URLS.map(u => http(u, { timeout: 10_000, retryCount: 2 }))),
+        });
+      }
+      return createPublicClient({ chain, transport: http() });
+    }) as any,
   });
 };
 
@@ -164,6 +170,9 @@ function useGuestEarn() {
 function useActiveEarn() {
   const { isArcTestnet, activeNetwork, networkName } = useArcNetwork();
   const { walletAddress, isAuthenticated } = useAuth();
+  const { wallets: privyWallets } = usePrivyWallets();
+  const wallets = privyWallets ?? [];
+  const activeWallet = selectActiveWallet(wallets, walletAddress);
 
   // Get the currently connected wagmi connector client (EIP-1193 transport)
   const { data: connectorClient } = useConnectorClient();
@@ -180,19 +189,24 @@ function useActiveEarn() {
   }, [isArcTestnet]);
 
   /**
-   * Build and return the adapter, using the wagmi connector client as the
-   * primary provider source. Falls back to window.ethereum for injected
-   * wallets that may not be reflected by wagmi yet.
+   * Resolve wrapped EIP-1193 provider from any active wallet source
+   */
+  const getProvider = useCallback(async () => {
+    return await resolveProvider(activeWallet, connectorClient);
+  }, [activeWallet, connectorClient]);
+
+  /**
+   * Build and return the adapter with auto-add and robust RPCs
    */
   const getAdapter = useCallback(async () => {
-    const provider = makeProviderFromClient(connectorClient);
+    const provider = await getProvider();
     if (!provider) {
       throw new Error(
         "No Web3 provider found. Please connect your wallet first."
       );
     }
     return buildAdapter(provider);
-  }, [connectorClient]);
+  }, [getProvider]);
 
   // 1. Fetch available vaults on Arc (Mainnet or Testnet)
   const fetchVaults = useCallback(async (chainOverride?: ArcEarnChain) => {
@@ -322,7 +336,11 @@ function useActiveEarn() {
 
       return quote as DepositQuote;
     } catch (err: any) {
-      console.error("[useEarn] getDepositQuote error:", err);
+      console.warn("[useEarn] getDepositQuote warning:", err?.message);
+      const msg = (err?.message || "").toLowerCase();
+      if (msg.includes("does not hold enough") || msg.includes("insufficient_token") || msg.includes("insufficient")) {
+        throw new Error("Amount exceeds current wallet balance");
+      }
       throw new Error(err?.message || "Could not retrieve deposit quote");
     }
   };
@@ -334,7 +352,17 @@ function useActiveEarn() {
 
     try {
       const kit = await getEarnKit();
-      const adapter = await getAdapter();
+      const provider = await getProvider();
+      if (!provider) {
+        throw new Error("No Web3 provider found. Please connect your wallet first.");
+      }
+
+      // Ensure wallet is switched to active Arc chain with auto-add
+      const targetChainId = isArcTestnet ? 5042002 : 5042;
+      toast.loading(`Switching to ${isArcTestnet ? "Arc Testnet" : "Arc"}...`, { id: toastId });
+      await ensureWalletOnChain(provider, targetChainId);
+
+      const adapter = await buildAdapter(provider);
 
       toast.loading("Please confirm transactions in your wallet (approval + deposit)...", { id: toastId });
 
@@ -356,7 +384,17 @@ function useActiveEarn() {
       return result;
     } catch (err: any) {
       console.error("[useEarn] deposit error:", err);
-      toast.error(err?.message || "Deposit failed", { id: toastId });
+      const msg = (err?.message || "").toLowerCase();
+      if (
+        msg.includes("user rejected") ||
+        msg.includes("user denied") ||
+        msg.includes("cancelled") ||
+        err?.code === 4001
+      ) {
+        toast.error("Transaction was cancelled by user", { id: toastId });
+      } else {
+        toast.error(err?.message || "Deposit failed", { id: toastId });
+      }
       throw err;
     } finally {
       setIsTransacting(false);
@@ -377,7 +415,11 @@ function useActiveEarn() {
 
       return quote as WithdrawalQuote;
     } catch (err: any) {
-      console.error("[useEarn] getWithdrawalQuote error:", err);
+      console.warn("[useEarn] getWithdrawalQuote warning:", err?.message);
+      const msg = (err?.message || "").toLowerCase();
+      if (msg.includes("does not hold enough") || msg.includes("insufficient") || msg.includes("exceeds")) {
+        throw new Error("Amount exceeds current vault balance");
+      }
       throw new Error(err?.message || "Could not retrieve withdrawal quote");
     }
   };
@@ -389,7 +431,17 @@ function useActiveEarn() {
 
     try {
       const kit = await getEarnKit();
-      const adapter = await getAdapter();
+      const provider = await getProvider();
+      if (!provider) {
+        throw new Error("No Web3 provider found. Please connect your wallet first.");
+      }
+
+      // Ensure wallet is switched to active Arc chain with auto-add
+      const targetChainId = isArcTestnet ? 5042002 : 5042;
+      toast.loading(`Switching to ${isArcTestnet ? "Arc Testnet" : "Arc"}...`, { id: toastId });
+      await ensureWalletOnChain(provider, targetChainId);
+
+      const adapter = await buildAdapter(provider);
 
       toast.loading("Please confirm withdrawal in your wallet...", { id: toastId });
 
@@ -411,7 +463,17 @@ function useActiveEarn() {
       return result;
     } catch (err: any) {
       console.error("[useEarn] withdraw error:", err);
-      toast.error(err?.message || "Withdrawal failed", { id: toastId });
+      const msg = (err?.message || "").toLowerCase();
+      if (
+        msg.includes("user rejected") ||
+        msg.includes("user denied") ||
+        msg.includes("cancelled") ||
+        err?.code === 4001
+      ) {
+        toast.error("Transaction was cancelled by user", { id: toastId });
+      } else {
+        toast.error(err?.message || "Withdrawal failed", { id: toastId });
+      }
       throw err;
     } finally {
       setIsTransacting(false);

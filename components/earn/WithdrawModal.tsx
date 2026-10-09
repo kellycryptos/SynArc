@@ -146,7 +146,7 @@ export function WithdrawModal({
                 </button>
               </div>
               {quoteError && (
-                <div className="flex items-center gap-1.5 text-xs text-rose-400 mt-1.5">
+                <div className={`flex items-center gap-1.5 text-xs mt-1.5 ${quoteError.includes("exceeds") ? "text-amber-400" : "text-rose-400"}`}>
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>{quoteError}</span>
                 </div>

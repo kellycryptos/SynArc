@@ -79,10 +79,15 @@ export function DepositModal({
 
   const handleMax = () => {
     if (!usdcBalance || usdcBalance === "0") return;
-    // Format to max 6 decimals
     const num = parseFloat(usdcBalance);
     if (!isNaN(num) && num > 0) {
-      setAmount(num.toFixed(6).replace(/\.?0+$/, ""));
+      // Leave 0.05 USDC buffer for Arc native gas
+      const maxWithGasBuffer = Math.max(0, num - 0.05);
+      if (maxWithGasBuffer > 0) {
+        setAmount(maxWithGasBuffer.toFixed(6).replace(/\.?0+$/, ""));
+      } else {
+        setAmount(num.toFixed(6).replace(/\.?0+$/, ""));
+      }
     }
   };
 
@@ -157,7 +162,7 @@ export function DepositModal({
                 </button>
               </div>
               {quoteError && (
-                <div className="flex items-center gap-1.5 text-xs text-rose-400 mt-1.5">
+                <div className={`flex items-center gap-1.5 text-xs mt-1.5 ${quoteError.includes("exceeds") ? "text-amber-400" : "text-rose-400"}`}>
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>{quoteError}</span>
                 </div>

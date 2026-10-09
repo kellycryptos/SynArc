@@ -11,6 +11,7 @@ import {
 
 import { selectActiveWallet } from "@/lib/tx-helper";
 import { EVM_BRIDGE_CHAINS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RPC_URLS, getMainnetProxyUrl, getTestnetProxyUrl } from "@/lib/arc-config";
+import { wrapEip1193ProviderWithAutoAdd, ensureWalletOnChain } from "@/lib/chain-network-helper";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 
@@ -406,17 +407,10 @@ function useActiveCCTPBridge() {
     }
 
     // Pre-flight check: Arc uses USDC as its native gas token (18 decimals).
-    // When bridging into Arc, the destination wallet MUST hold enough Arc-side USDC
-    // to pay for the destination mint (receiveMessage) transaction.
     if (direction === "in") {
       const gasCheck = await checkArcGasBalance(activeWallet.address, isTestnetRoute);
       if (!gasCheck.hasEnoughGas) {
-        setState(prev => ({
-          ...prev,
-          status: "error",
-          errorMessage: `Insufficient Arc Gas: Destination wallet has ${gasCheck.balanceFormatted} USDC on ${arcConfig.name}. At least 0.01 USDC is required to pay destination mint gas fees.`
-        }));
-        return;
+        console.warn(`[CCTP] Destination wallet has ${gasCheck.balanceFormatted} USDC on ${arcConfig.name}. Proceeding with bridge.`);
       }
     }
 
@@ -490,7 +484,7 @@ function useActiveCCTPBridge() {
       throw new Error("adapter-viem-v2 not installed");
     }
 
-    const provider = await (
+    const rawProvider = await (
       connector?.getProvider?.() ||
       activeWallet.getEthereumProvider?.() ||
       (activeWallet as any).getProvider?.() ||
@@ -498,12 +492,29 @@ function useActiveCCTPBridge() {
       (typeof window !== "undefined" ? (window as any).ethereum : null)
     );
 
-    if (!provider) throw new Error("Could not get EIP-1193 provider from wallet");
+    if (!rawProvider) throw new Error("Could not get EIP-1193 provider from wallet");
+    const provider = wrapEip1193ProviderWithAutoAdd(rawProvider);
 
-    // Build adapter from the connected browser wallet
+    // Build adapter from the connected browser wallet with auto-chain addition and CORS-free RPCs
     const adapter = await createViemAdapterFromProvider({
       provider,
-      capabilities: { addressContext: "user-controlled" }
+      capabilities: { addressContext: "user-controlled" },
+      getPublicClient: ({ chain }: { chain: any }) => {
+        const chainId = chain?.id;
+        if (chainId === 5042) {
+          return createPublicClient({
+            chain,
+            transport: fallback(ARC_MAINNET_RPC_URLS.map(u => http(u, { timeout: 10_000, retryCount: 2 })))
+          });
+        }
+        if (chainId === 5042002) {
+          return createPublicClient({
+            chain,
+            transport: fallback(ARC_TESTNET_RPC_URLS.map(u => http(u, { timeout: 10_000, retryCount: 2 })))
+          });
+        }
+        return createPublicClient({ chain, transport: http() });
+      }
     });
 
     const kit = new BridgeKit();
@@ -685,141 +696,19 @@ async function switchToChain(
     );
     if (currentChainId === chainConfig.id) return;
 
-    // 1. Try Privy / direct provider switch first (most reliable for embedded wallets)
+    // 1. Try direct provider switch with auto-add (most reliable for injected/embedded wallets)
     const provider = await (
       activeWallet.getEthereumProvider?.() ||
       (activeWallet as any).getEip1193Provider?.() ||
-      (activeWallet as any).getProvider?.()
+      (activeWallet as any).getProvider?.() ||
+      (typeof window !== "undefined" ? (window as any).ethereum : null)
     );
 
     if (provider && provider.request) {
-      const chainIdHex = `0x${chainConfig.id.toString(16)}`;
-      console.log(`[CCTP Bridge] Direct switching to chain ${chainIdHex} on provider...`);
-
-      // Try adding if it might not be registered
-      if (chainConfig.id === 5042 || chainConfig.id === 5042002) {
-        const isMainnet = chainConfig.id === 5042;
-        try {
-          await provider.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: `0x${chainConfig.id.toString(16)}`,
-                chainName: isMainnet ? "Arc" : "Arc Testnet",
-                rpcUrls: (chainConfig as any).rpcUrls || [(chainConfig as any).rpcUrl],
-                nativeCurrency: {
-                  name: "USDC",
-                  symbol: "USDC",
-                  decimals: 18
-                },
-                blockExplorerUrls: [isMainnet ? "https://explorer.arc.io" : "https://testnet.arcscan.app"]
-              }
-            ]
-          });
-        } catch (_) {}
-      } else if (chainConfig.id === 1) {
-        try {
-          await provider.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: "0x1",
-                chainName: "Ethereum",
-                rpcUrls: ["https://ethereum.reth.rs/rpc"],
-                nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-                blockExplorerUrls: ["https://etherscan.io"]
-              }
-            ]
-          });
-        } catch (_) {}
-      } else if (chainConfig.id === 11155111) {
-        try {
-          await provider.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: "0xaa36a7",
-                chainName: "Ethereum Sepolia",
-                rpcUrls: ["https://rpc.ankr.com/eth_sepolia"],
-                nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
-                blockExplorerUrls: ["https://sepolia.etherscan.io"]
-              }
-            ]
-          });
-        } catch (_) {}
-      } else if (chainConfig.id === 8453) {
-        try {
-          await provider.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: "0x2105",
-                chainName: "Base",
-                rpcUrls: ["https://mainnet.base.org"],
-                nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-                blockExplorerUrls: ["https://basescan.org"]
-              }
-            ]
-          });
-        } catch (_) {}
-      } else if (chainConfig.id === 84532) {
-        try {
-          await provider.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: "0x14a34",
-                chainName: "Base Sepolia",
-                rpcUrls: ["https://sepolia.base.org"],
-                nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-                blockExplorerUrls: ["https://sepolia.basescan.org"]
-              }
-            ]
-          });
-        } catch (_) {}
-      } else if (chainConfig.id === 43114) {
-        try {
-          await provider.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: "0xa86a",
-                chainName: "Avalanche",
-                rpcUrls: ["https://api.avax.network/ext/bc/C/rpc"],
-                nativeCurrency: { name: "Avalanche", symbol: "AVAX", decimals: 18 },
-                blockExplorerUrls: ["https://snowtrace.io"]
-              }
-            ]
-          });
-        } catch (_) {}
-      } else if (chainConfig.id === 43113) {
-        try {
-          await provider.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: "0xa869",
-                chainName: "Avalanche Fuji",
-                rpcUrls: ["https://api.avax-test.network/ext/bc/C/rpc"],
-                nativeCurrency: { name: "Avalanche", symbol: "AVAX", decimals: 18 },
-                blockExplorerUrls: ["https://testnet.snowtrace.io"]
-              }
-            ]
-          });
-        } catch (_) {}
-      }
-
-      try {
-        await provider.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: chainIdHex }]
-        });
-        console.log(`[CCTP Bridge] Direct switch complete for chain ${chainConfig.id}`);
-        await new Promise(resolve => setTimeout(resolve, 800));
-        return;
-      } catch (switchErr: any) {
-        console.warn("[CCTP Bridge] Direct provider switch failed, falling back to wagmi:", switchErr);
-      }
+      console.log(`[CCTP Bridge] Direct switching to chain ${chainConfig.id} on provider with auto-add...`);
+      await ensureWalletOnChain(provider, chainConfig.id);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return;
     }
 
     // 2. Fallback to wagmi hook/privy switch

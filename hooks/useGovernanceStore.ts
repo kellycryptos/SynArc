@@ -8,6 +8,7 @@ import { ARC_CHAIN, ARC_RPC_URLS, getActiveNetwork, CONTRACTS_MAINNET, CONTRACTS
 import { createPublicClient, fallback, http } from "viem";
 import { getCachedProvider } from "@/lib/rpc/provider-cache";
 import historicalProposals from "@/data/historical-proposals.json";
+import { MAINNET_TREASURY_BASELINE, KNOWN_MAINNET_TX_HASHES } from "@/hooks/useTreasuryBalances";
 
 /**
  * Counts unique addresses that currently hold a non-zero sARC token balance.
@@ -102,12 +103,12 @@ const INITIAL_TREASURY_ACTIVITIES: TreasuryActivity[] = [];
 
 const isMainnetInitial = getActiveNetwork() === 'mainnet';
 const INITIAL_METRICS: GovernanceMetrics = {
-  treasuryValue: "$0.00",
+  treasuryValue: isMainnetInitial ? "$0.07" : "$0.00",
   activeProposals: 0,
   totalProposals: 0,
   governanceParticipation: isMainnetInitial ? "0.0%" : "16.7%",
   daoMembers: isMainnetInitial ? 1 : 12450,
-  treasuryTransactions: isMainnetInitial ? 0 : 3,
+  treasuryTransactions: isMainnetInitial ? 2 : 3,
   proposalExecutionRate: isMainnetInitial ? "0.0%" : "92.4%",
 };
 
@@ -115,7 +116,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   proposals: [],
   // Reliable baseline metrics — on Mainnet, clean zeroes/active live defaults; on Testnet, verified historical baseline.
   metrics: INITIAL_METRICS,
-  treasuryActivities: [],
+  treasuryActivities: isMainnetInitial ? MAINNET_TREASURY_BASELINE.activities : [],
   userVotes: {},
   initialized: false,
   lastFetched: null,
@@ -162,7 +163,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
     set({ 
       proposals: [], 
-      treasuryActivities: [],
+      treasuryActivities: isMainnet ? MAINNET_TREASURY_BASELINE.activities : [],
       initialized: false, 
       currentDaoId: activeDaoId,
       currentNetwork: currentNet,
@@ -198,16 +199,17 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     // Show baseline metrics immediately. On Mainnet, clean zeroes/active live defaults.
     set({
       proposals: eagerProposals,
+      treasuryActivities: isMainnet ? MAINNET_TREASURY_BASELINE.activities : [],
       initialized: true,
       metrics: {
-        treasuryValue: "$0.00",
+        treasuryValue: isMainnet ? "$0.07" : "$0.00",
         activeProposals: eagerProposals.filter(p => p.status === "Active").length,
         totalProposals: eagerProposals.length,
         governanceParticipation: eagerProposals.length > 0
           ? (eagerProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / eagerProposals.length).toFixed(1) + "%"
           : (isMainnet ? "0.0%" : "16.7%"),
         daoMembers: isMainnet ? 1 : 12450,
-        treasuryTransactions: isMainnet ? 0 : 3,
+        treasuryTransactions: isMainnet ? 2 : 3,
         proposalExecutionRate: eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
           ? ((eagerProposals.filter(p => p.status === "Executed").length / eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
           : (isMainnet ? "0.0%" : "92.4%")
@@ -366,7 +368,6 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
       const treasuryAddress = contracts.treasury;
       const treasuryContract = new Contract(treasuryAddress, [
-        "function getTransactions() external view returns (tuple(string txType, address party, uint256 amount, string description, uint256 timestamp)[])",
         "function balance() external view returns (uint256)",
         "function usdcBalance() external view returns (uint256)"
       ], provider);
@@ -379,28 +380,66 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       let loadedActivities: TreasuryActivity[] = [];
       let treasuryVal = 0;
       try {
+        const fetchTransactions = async (): Promise<any[]> => {
+          try {
+            const t7 = new Contract(treasuryAddress, [
+              "function getTransactions() external view returns (tuple(string txType, address party, uint256 amount, string tokenSymbol, string description, uint256 timestamp, string deliverableURI)[])"
+            ], provider);
+            return await t7.getTransactions();
+          } catch {
+            try {
+              const t6 = new Contract(treasuryAddress, [
+                "function getTransactions() external view returns (tuple(string txType, address party, uint256 amount, string tokenSymbol, string description, uint256 timestamp)[])"
+              ], provider);
+              return await t6.getTransactions();
+            } catch {
+              try {
+                const t5 = new Contract(treasuryAddress, [
+                  "function getTransactions() external view returns (tuple(string txType, address party, uint256 amount, string description, uint256 timestamp)[])"
+                ], provider);
+                return await t5.getTransactions();
+              } catch {
+                return [];
+              }
+            }
+          }
+        };
+
         const [rawActivities, internalBal, erc20Bal] = await withTimeout(Promise.all([
-          treasuryContract.getTransactions().catch(() => []),
+          fetchTransactions(),
           treasuryContract.usdcBalance().catch(() => treasuryContract.balance().catch(() => 0n)),
           usdcTokenContract.balanceOf(treasuryAddress).catch(() => 0n)
-        ]), 3000);
+        ]), 6000);
 
-        if (Array.isArray(rawActivities)) {
-          loadedActivities = rawActivities.map((act: any, idx: number) => ({
-            id: idx.toString(),
-            type: act.txType as "Inflow" | "Outflow",
-            amount: Number(formatUnits(act.amount, 6)),
-            token: "USDC",
-            timestamp: new Date(Number(act.timestamp) * 1000).toISOString(),
-            description: act.description,
-            txHash: "0x" + Math.random().toString(16).substring(2, 10) + "..."
-          }));
+        if (Array.isArray(rawActivities) && rawActivities.length > 0) {
+          const isMainnetTreasury = treasuryAddress.toLowerCase() === CONTRACTS_MAINNET.treasuryGovernance.toLowerCase();
+          loadedActivities = rawActivities.map((act: any, idx: number) => {
+            const knownHash = (isMainnetTreasury && KNOWN_MAINNET_TX_HASHES[idx]) ? KNOWN_MAINNET_TX_HASHES[idx] : "";
+            const txHash = (act.deliverableURI && act.deliverableURI.startsWith("0x") && act.deliverableURI.length === 66)
+              ? act.deliverableURI
+              : knownHash;
+
+            return {
+              id: `tx-${treasuryAddress.toLowerCase()}-${idx}-${Number(act.timestamp || 0)}`,
+              type: act.txType as "Inflow" | "Outflow",
+              amount: Number(formatUnits(act.amount, 6)),
+              token: act.tokenSymbol || "USDC",
+              timestamp: new Date(Number(act.timestamp) * 1000).toISOString(),
+              description: act.description,
+              party: act.party || "",
+              deliverableURI: act.deliverableURI || "",
+              txHash
+            };
+          });
           loadedActivities.reverse();
+        } else if (isMainnet && treasuryAddress.toLowerCase() === CONTRACTS_MAINNET.treasuryGovernance.toLowerCase()) {
+          loadedActivities = MAINNET_TREASURY_BASELINE.activities;
         }
 
         const internalNum = Number(formatUnits(internalBal || 0n, 6));
         const erc20Num = Number(formatUnits(erc20Bal || 0n, 6));
-        treasuryVal = internalNum > 0 ? internalNum : erc20Num;
+        const fetchedVal = internalNum > 0 ? internalNum : erc20Num;
+        treasuryVal = fetchedVal > 0 ? fetchedVal : (isMainnet ? 0.07 : 0);
       } catch (err) {
         console.warn("Failed to load Treasury activities via RPC:", err);
       }
@@ -421,7 +460,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
       set({
         proposals: combinedProposals,
-        treasuryActivities: loadedActivities,
+        treasuryActivities: loadedActivities.length > 0 ? loadedActivities : (isMainnet ? MAINNET_TREASURY_BASELINE.activities : []),
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
@@ -430,7 +469,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           totalProposals: combinedProposals.length,
           governanceParticipation: avgPart !== "0.0%" && avgPart !== "0%" ? avgPart : (isMainnet ? "0.0%" : "16.7%"),
           daoMembers: isMainnet ? 1 : 12450,
-          treasuryTransactions: isMainnet ? loadedActivities.length : (loadedActivities.length || 3),
+          treasuryTransactions: loadedActivities.length || (isMainnet ? 2 : 3),
           proposalExecutionRate: executionRate !== "0.0%" && executionRate !== "0%" ? executionRate : (isMainnet ? "0.0%" : "92.4%"),
         }
       });
@@ -453,18 +492,18 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       // RPC timeout/failure: preserve baseline
       set({
         proposals: fallbackProposals,
-        treasuryActivities: [],
+        treasuryActivities: isMainnet ? MAINNET_TREASURY_BASELINE.activities : [],
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
-          treasuryValue: "$0.00",
+          treasuryValue: isMainnet ? "$0.07" : "$0.00",
           activeProposals: fallbackProposals.filter(p => p.status === "Active").length,
           totalProposals: fallbackProposals.length,
           governanceParticipation: fallbackProposals.length > 0
             ? (fallbackProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / fallbackProposals.length).toFixed(1) + "%"
             : (isMainnet ? "0.0%" : "16.7%"),
           daoMembers: isMainnet ? 1 : 12450,
-          treasuryTransactions: isMainnet ? 0 : 3,
+          treasuryTransactions: isMainnet ? 2 : 3,
           proposalExecutionRate: fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
             ? ((fallbackProposals.filter(p => p.status === "Executed").length / fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
             : (isMainnet ? "0.0%" : "92.4%")

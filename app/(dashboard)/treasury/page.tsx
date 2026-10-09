@@ -241,29 +241,39 @@ function TreasuryPageContent() {
       return [{ date: "Now", balance: combinedTotal }];
     }
     
-    // Sample the most recent 30 activities for smooth chart rendering
-    const recentSample = activities.slice(0, 30);
-    // Sort chronologically
-    const sorted = [...recentSample].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    // Sort descending (newest first) to accurately trace back running balance
+    const sortedDesc = [...activities].slice(0, 30).sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
     let runningBalance = combinedTotal;
-    
-    const points = sorted.map(act => {
-      const point = {
+    const points: { date: string; balance: number }[] = [
+      { date: "Current", balance: Number(combinedTotal.toFixed(2)) }
+    ];
+
+    for (const act of sortedDesc) {
+      points.push({
         date: new Date(act.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-        balance: Math.max(0, runningBalance),
-      };
-      
+        balance: Number(Math.max(0, runningBalance).toFixed(2)),
+      });
       const factor = act.token === "EURC" ? 1.08 : 1.0;
       if (act.type === 'Inflow') {
         runningBalance -= (act.amount * factor);
       } else if (act.type === 'Outflow') {
         runningBalance += (act.amount * factor);
       }
-      
-      return point;
-    }).reverse();
-    
-    return [...points, { date: "Current", balance: combinedTotal }];
+    }
+
+    if (sortedDesc.length > 0) {
+      const oldestDate = new Date(sortedDesc[sortedDesc.length - 1].timestamp);
+      oldestDate.setDate(oldestDate.getDate() - 1);
+      points.push({
+        date: oldestDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        balance: Number(Math.max(0, runningBalance).toFixed(2)),
+      });
+    }
+
+    return points.reverse();
   }, [activities, combinedTotal]);
 
   const recentTransactions = useMemo(() => {
@@ -715,10 +725,10 @@ function TreasuryPageContent() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#2D1B4E" opacity={0.3} vertical={false} />
                   <XAxis dataKey="date" stroke="#9E8CA9" tick={{fill: '#9E8CA9', fontSize: 11}} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#9E8CA9" tick={{fill: '#9E8CA9', fontSize: 11}} tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} width={45} />
+                  <YAxis stroke="#9E8CA9" tick={{fill: '#9E8CA9', fontSize: 11}} tickFormatter={(val) => (val >= 1000 ? `$${(val / 1000).toFixed(0)}k` : `$${val.toFixed(2)}`)} tickLine={false} axisLine={false} width={48} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#150A2E', borderColor: '#3D2E68', borderRadius: '12px', color: '#FFF' }}
-                    formatter={(value: number) => [`$${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, "US Valuation"]}
+                    formatter={(value: number) => [`$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "US Valuation"]}
                   />
                   <Area type="monotone" dataKey="balance" stroke="#7c3aed" strokeWidth={3} fillOpacity={1} fill="url(#colorBalance)" />
                 </AreaChart>
