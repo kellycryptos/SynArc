@@ -665,29 +665,41 @@ Respond in JSON format:
         console.warn('[TreasuryAgent] Failed to check on-chain paused state:', pauseErr)
       }
 
-      // 1. Execute any succeeded proposals first (autonomous execution)
-      const executedTxHashes = await this.executeSucceededProposals()
-      if (executedTxHashes.length > 0) {
-        return this.loadActions()[0]
+      // Verify native gas balance of agent account before attempting on-chain transactions
+      let agentGasBalance = 0n;
+      try {
+        agentGasBalance = await this.publicClient.getBalance({ address: this.account.address });
+      } catch (balErr) {
+        console.warn('[TreasuryAgent] Could not verify agent gas balance:', balErr);
       }
 
-      // 2. Vote on any active proposals autonomously
-      await this.voteOnActiveProposals()
+      // 1. Execute any succeeded proposals first (autonomous execution)
+      if (agentGasBalance > 0n) {
+        const executedTxHashes = await this.executeSucceededProposals()
+        if (executedTxHashes.length > 0) {
+          return this.loadActions()[0]
+        }
 
-      // 2.5 Sync balance of the agent operating treasury first
-      try {
-        console.log('[TreasuryAgent] Syncing on-chain balances for the agent operating treasury...')
-        const syncTx = await this.walletClient.writeContract({
-          address: CONTRACTS.treasuryAgent,
-          abi: parseAbi(['function syncBalance() external']),
-          functionName: 'syncBalance',
-          args: []
-        })
-        console.log(`[TreasuryAgent] Balance sync transaction submitted: ${syncTx}`)
-        await this.publicClient.waitForTransactionReceipt({ hash: syncTx, timeout: 60_000 })
-        console.log('[TreasuryAgent] Balance sync completed successfully.')
-      } catch (syncErr) {
-        console.warn('[TreasuryAgent] Failed to sync operating treasury balances:', syncErr)
+        // 2. Vote on any active proposals autonomously
+        await this.voteOnActiveProposals()
+
+        // 2.5 Sync balance of the agent operating treasury first
+        try {
+          console.log('[TreasuryAgent] Syncing on-chain balances for the agent operating treasury...')
+          const syncTx = await this.walletClient.writeContract({
+            address: CONTRACTS.treasuryAgent,
+            abi: parseAbi(['function syncBalance() external']),
+            functionName: 'syncBalance',
+            args: []
+          })
+          console.log(`[TreasuryAgent] Balance sync transaction submitted: ${syncTx}`)
+          await this.publicClient.waitForTransactionReceipt({ hash: syncTx, timeout: 60_000 })
+          console.log('[TreasuryAgent] Balance sync completed successfully.')
+        } catch (syncErr) {
+          console.warn('[TreasuryAgent] Failed to sync operating treasury balances:', syncErr)
+        }
+      } else {
+        console.log(`[TreasuryAgent] Agent wallet ${this.account.address} has 0 gas on current network. Skipping on-chain executions.`)
       }
 
       // 3. Check treasury and proposal creation rules
@@ -710,6 +722,21 @@ Respond in JSON format:
         const action: AgentAction = { timestamp: startTime, action: 'monitoring', reasoning: decision.reasoning, status: 'executed' }
         this.logAction(action)
         return action
+      }
+
+      // If action is required but agent lacks native gas, log deferred status cleanly
+      if (agentGasBalance === 0n) {
+        const networkLabel = IS_MAINNET ? 'Arc Mainnet' : 'Arc Testnet';
+        console.warn(`[TreasuryAgent] Agent wallet ${this.account.address} has 0 gas on ${networkLabel}. Skipping proposal broadcast.`);
+        const gasAction: AgentAction = {
+          timestamp: startTime,
+          action: decision.action,
+          reasoning: `${decision.reasoning} [Execution deferred: Agent wallet ${this.account.address} requires native gas on ${networkLabel} to broadcast on-chain transaction.]`,
+          status: 'failed',
+          usdcAmount: decision.proposedAmount
+        };
+        this.logAction(gasAction);
+        return gasAction;
       }
       
       let txHash: string | undefined

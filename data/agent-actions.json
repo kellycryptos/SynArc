@@ -1,5 +1,12 @@
 [
   {
+    "timestamp": "2026-10-09T07:05:37.522Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0x35630dFE2592AB19d979ec1B173697aEa554b66b requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50
+  },
+  {
     "timestamp": "2026-10-01T13:00:34.695Z",
     "action": "monitoring",
     "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
@@ -277,24 +284,6 @@
   },
   {
     "timestamp": "2026-07-19T12:16:20.599Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-19T12:11:20.599Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-19T12:06:20.599Z",
-    "action": "monitoring",
-    "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
-    "status": "executed"
-  },
-  {
-    "timestamp": "2026-07-19T12:01:20.596Z",
     "action": "monitoring",
     "reasoning": "Treasury healthy (USDC: 25, EURC: 20). Continuing to monitor.",
     "status": "executed"

@@ -73,7 +73,13 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   const { currentBlock } = useArcRpcHealth();
 
   const { proposals, initialized, initializeStore, userVotes, castVote, executeProposal } = useGovernanceStore();
-  const proposal = proposals.find(p => p.id === unwrappedParams.id);
+  const rawParamId = unwrappedParams.id;
+  const normalizedParamId = rawParamId ? rawParamId.replace(/^SIP-/i, "") : "";
+  const proposal = proposals.find(p => 
+    p.id === rawParamId || 
+    p.id === `SIP-${rawParamId}` || 
+    (normalizedParamId && (p.id === normalizedParamId || p.id === `SIP-${normalizedParamId}`))
+  );
 
   // Live stablecoin treasury balances
   const { usdcBalance: treasuryUSDC, eurcBalance: treasuryEURC } = useTreasury();
