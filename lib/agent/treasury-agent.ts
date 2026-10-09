@@ -687,7 +687,7 @@ Respond in JSON format:
       }
 
       // 1. Execute any succeeded proposals first (autonomous execution)
-      if (agentGasBalance > 1000000000000000n) { // > 0.001 USDC
+      if (agentGasBalance > 15000000000000000n) { // > 0.015 USDC
         const executedTxHashes = await this.executeSucceededProposals()
         if (executedTxHashes.length > 0) {
           return this.loadActions()[0]
@@ -749,10 +749,30 @@ Respond in JSON format:
         return action
       }
 
-      // If action is required but agent lacks native gas, log deferred status cleanly
-      if (agentGasBalance < 1000000000000000n) {
+      // If action is required, check for recent duplicate proposal to prevent gas spam
+      const recentActions = this.loadActions();
+      const recentSimilar = recentActions.find(a => 
+        a.action === decision.action && 
+        (a.status === 'executed' || a.status === 'pending') &&
+        (Date.now() - new Date(a.timestamp).getTime() < 12 * 60 * 60 * 1000) // 12 hours cooldown
+      );
+      if (!forcedAction && recentSimilar) {
+        console.log(`[TreasuryAgent] A proposal for ${decision.action} was already broadcast recently. Skipping duplicate.`);
+        const waitAction: AgentAction = {
+          timestamp: startTime,
+          action: 'monitoring',
+          reasoning: `Treasury flagged ${decision.action}, but an active governance proposal is already on-chain. Awaiting voting or execution before submitting another.`,
+          status: 'executed'
+        };
+        this.logAction(waitAction);
+        return waitAction;
+      }
+
+      // If action is required but agent lacks native gas (minimum 0.018 USDC for Governor propose), log deferred status cleanly
+      const MIN_GAS_FOR_PROPOSAL = 18000000000000000n; // 0.018 USDC
+      if (agentGasBalance < MIN_GAS_FOR_PROPOSAL) {
         const networkLabel = isMainnet ? 'Arc Mainnet' : 'Arc Testnet';
-        console.warn(`[TreasuryAgent] Agent wallet ${this.account.address} has low gas on ${networkLabel}. Skipping proposal broadcast.`);
+        console.warn(`[TreasuryAgent] Agent wallet ${this.account.address} has low gas (${agentGasBalance} wei on ${networkLabel}). Skipping proposal broadcast.`);
         const gasAction: AgentAction = {
           timestamp: startTime,
           action: decision.action,
