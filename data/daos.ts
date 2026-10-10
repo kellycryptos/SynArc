@@ -1,4 +1,4 @@
-import { CONTRACTS, getActiveNetwork } from "@/lib/arc-config";
+import { CONTRACTS } from "@/lib/arc-config";
 
 export interface DAOInfo {
   id: string;
@@ -36,12 +36,8 @@ export const DAO_REGISTRY: DAOInfo[] = [
     verified: true,
     featured: true,
     category: 'Governance',
-    get members() {
-      return getActiveNetwork() === 'mainnet' ? 1 : 12450;
-    },
-    get treasury() {
-      return getActiveNetwork() === 'mainnet' ? 0 : 2450000;
-    },
+    members: 1,
+    treasury: 0,
     website: 'https://syndaopro.xyz',
   },
   {
@@ -52,8 +48,6 @@ export const DAO_REGISTRY: DAOInfo[] = [
     status: 'active',
     verified: true,
     category: 'Borrow/Lend',
-    members: 12400,
-    treasury: 4200000,
     website: 'https://aave.com',
   },
   {
@@ -64,8 +58,6 @@ export const DAO_REGISTRY: DAOInfo[] = [
     status: 'active',
     verified: true,
     category: 'DEX',
-    members: 89000,
-    treasury: 12000000,
     website: 'https://uniswap.org',
   },
   {
@@ -76,8 +68,6 @@ export const DAO_REGISTRY: DAOInfo[] = [
     status: 'active',
     verified: true,
     category: 'Yield',
-    members: 3200,
-    treasury: 8500000,
     website: 'https://maple.finance',
   },
   {
@@ -88,8 +78,6 @@ export const DAO_REGISTRY: DAOInfo[] = [
     status: 'active',
     verified: true,
     category: 'Infrastructure',
-    members: 45000,
-    treasury: 25000000,
     website: 'https://chain.link',
   },
   {
@@ -100,8 +88,6 @@ export const DAO_REGISTRY: DAOInfo[] = [
     status: 'active',
     verified: true,
     category: 'Borrow/Lend',
-    members: 8700,
-    treasury: 6200000,
     website: 'https://morpho.org',
   },
 ];

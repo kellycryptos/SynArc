@@ -228,7 +228,7 @@ export const ARC_CHAIN_TESTNET_CONFIG = {
   rpcUrls: ARC_TESTNET_RPC_URLS,
   icon: "ARC",
   isTestnet: true,
-  blockExplorerUrl: "https://testnet.arcscan.app"
+  blockExplorerUrl: "https://explorer.testnet.arc.io"
 } as const;
 
 export const ARC_CHAIN_MAINNET_CONFIG = {
@@ -376,13 +376,13 @@ function useActiveCCTPBridge() {
     const irisApiUrl = isTestnetRoute ? IRIS_API_SANDBOX_URL : IRIS_API_MAINNET_URL;
     const irisFeeUrl = isTestnetRoute ? IRIS_FEE_SANDBOX_URL : IRIS_FEE_MAINNET_URL;
 
-    // Solana / Circle-wallet mock bridge simulation
-    const isCircleConnected =
-      typeof window !== "undefined" &&
-      localStorage.getItem("synarc_circle_connected") === "true";
-
-    if (isCircleConnected || chainConfig.id === 103) {
-      await executeSolanaMockBridge(chainConfig.name, arcConfig.name, amountString);
+    // Solana CCTP bridging notice
+    if (chainConfig.id === 103 || (chainConfig as any).id === 101) {
+      setState(prev => ({
+        ...prev,
+        status: "error",
+        errorMessage: "Solana CCTP bridging requires a connected Solana wallet (Phantom or Solflare). Please select Ethereum, Base, or Avalanche for EVM bridging."
+      }));
       return;
     }
 
@@ -543,6 +543,9 @@ function useActiveCCTPBridge() {
       }));
     });
 
+    const sourceChainName = direction === "in" ? chainConfig.name : arcConfig.name;
+    const destChainName   = direction === "in" ? arcConfig.name : chainConfig.name;
+
     kit.on("burn", (event: any) => {
       console.log("[Kit] burn event:", event);
       setState(prev => ({
@@ -550,7 +553,7 @@ function useActiveCCTPBridge() {
         status: "burning",
         progress: 40,
         burnTxHash: event.values?.txHash || prev.burnTxHash,
-        stepDetail: `Burn confirmed on ${chainConfig.name}`
+        stepDetail: `Burn confirmed on ${sourceChainName}`
       }));
     });
 
@@ -560,7 +563,7 @@ function useActiveCCTPBridge() {
         ...prev,
         status: "waiting-attestation",
         progress: 65,
-        stepDetail: `Circle attestation received — switching to ${arcConfig.name}…`
+        stepDetail: `Circle attestation received — preparing mint on ${destChainName}…`
       }));
       // Stop elapsed timer since we have the attestation
       if (timerRef.current) {
@@ -575,12 +578,12 @@ function useActiveCCTPBridge() {
         ...prev,
         status: "minting",
         progress: 85,
-        stepDetail: `Minting USDC on ${arcConfig.name}…`
+        stepDetail: `Minting USDC on ${destChainName}…`
       }));
     });
 
     // Start elapsed timer during attestation phase
-    setState(prev => ({ ...prev, status: "burning", progress: 25, stepDetail: "Broadcasting burn transaction…" }));
+    setState(prev => ({ ...prev, status: "burning", progress: 25, stepDetail: `Broadcasting burn transaction on ${sourceChainName}…` }));
 
     // Switch to correct source chain before Kit executes
     await switchToChain(activeWallet, direction === "in" ? chainConfig : arcConfig, switchChainAsync);
@@ -610,7 +613,6 @@ function useActiveCCTPBridge() {
 
     const mintStep = result?.steps?.find((s: any) => s.name === "mint");
     const burnStep = result?.steps?.find((s: any) => s.name === "burn" || s.name === "depositForBurn");
-    const destChainName = direction === "in" ? arcConfig.name : chainConfig.name;
 
     setState(prev => ({
       ...prev,
@@ -625,67 +627,6 @@ function useActiveCCTPBridge() {
   };
 
 
-
-
-  // -------------------------------------------------------
-  // Mock Solana / Circle wallet bridge simulation
-  // -------------------------------------------------------
-  const executeSolanaMockBridge = async (chainName: string, arcName: string, amountString: string) => {
-    try {
-      setState({ ...INITIAL_STATE, status: "approving", progress: 5, stepDetail: "Connecting to Circle bridge…" });
-      await new Promise(r => setTimeout(r, 1800));
-
-      setState(prev => ({ ...prev, status: "burning", progress: 30, stepDetail: `Burning USDC on ${chainName}…` }));
-      await new Promise(r => setTimeout(r, 2200));
-
-      setState(prev => ({
-        ...prev,
-        status: "waiting-attestation",
-        progress: 55,
-        elapsedSeconds: 0,
-        stepDetail: "Waiting for Circle attestation…"
-      }));
-
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(() => {
-        setState(prev => ({
-          ...prev,
-          elapsedSeconds: prev.elapsedSeconds + 1,
-          progress: Math.min(75, 55 + prev.elapsedSeconds * 2)
-        }));
-      }, 1000);
-
-      await new Promise(r => setTimeout(r, 4000));
-
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-
-      setState(prev => ({ ...prev, status: "minting", progress: 85, stepDetail: `Minting USDC on ${arcName}…` }));
-      await new Promise(r => setTimeout(r, 2000));
-
-      const mockHash = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
-      setState(prev => ({
-        ...prev,
-        status: "success",
-        progress: 100,
-        txHash: mockHash,
-        stepDetail: "Bridge simulation complete!"
-      }));
-    } catch (err: any) {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      setState(prev => ({
-        ...prev,
-        status: "error",
-        progress: 0,
-        errorMessage: "Bridge simulation encountered an error."
-      }));
-    }
-  };
 
   return { state, bridgeUSDC, resetState };
 }

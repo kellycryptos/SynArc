@@ -12,6 +12,7 @@ import { getSigner, getAuthenticatedClient, waitForTransaction, getAggressiveGas
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 import { ARC_CHAIN } from "@/lib/arc-config";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { useToken } from "@/hooks/useToken";
 import { parseAbi } from "viem";
 import { 
   ArrowLeft, 
@@ -84,6 +85,7 @@ export default function CampaignDetailPage({ params }: PageProps) {
   const wallets = privyWallets ?? [];
   const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
   const { isArcMainnet } = useArcNetwork();
+  const { votingPower, sarcBalance } = useToken(walletAddress);
   const { campaigns, initialized, initializeStore, contribute, castVote, setAIAnalysis, syncOnChainCampaign } = useCampaignStore();
   const { balance: walletUSDC } = useUSDCBalance();
 
@@ -363,7 +365,8 @@ export default function CampaignDetailPage({ params }: PageProps) {
     // Simulate ballot validation & record in active list
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    await castVote(campaignId, choice, 12000); // 12k mock voting power weight
+    const userWeight = votingPower > 0 ? votingPower : (sarcBalance > 0 ? sarcBalance : 1);
+    await castVote(campaignId, choice, userWeight);
     setVoting(false);
     setVoteSuccess(true);
 

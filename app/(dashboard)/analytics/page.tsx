@@ -32,14 +32,6 @@ import {
   CartesianGrid,
 } from "@/components/charts/RechartsBundle";
 
-const FALLBACK_VOTERS = [
-  { address: "0x90960038761b58787522Bbe64F7b355c13b2b58a", votesCount: 14, power: 2_450_000 },
-  { address: "0x4e02C4291B74Fd989dB87D17026F77293F9CC6f2", votesCount: 11, power: 1_820_000 },
-  { address: "0x1bda72688f918e9508a8b27341e97664687d8e53", votesCount: 8, power: 1_250_000 },
-  { address: "0x71c82c49a1b920199e414c771a3962b9a71a4911", votesCount: 6, power: 890_000 },
-  { address: "0x3a921d0172e9471182448b29104085f5e840f10b", votesCount: 4, power: 450_000 },
-];
-
 export default function AnalyticsPage() {
   const { isArcMainnet } = useArcNetwork();
   const { proposals, initialized, initializeStore } = useGovernanceStore();
@@ -134,14 +126,14 @@ export default function AnalyticsPage() {
           power: voterPower.get(address) || 0,
         })).sort((a, b) => b.votesCount - a.votesCount).slice(0, 5);
 
-        const finalVoters = sortedVoters.length > 0 ? sortedVoters : (isArcMainnet ? [] : FALLBACK_VOTERS);
+        const finalVoters = sortedVoters;
         VOTERS_CACHE.data = finalVoters;
         VOTERS_CACHE.ts = Date.now();
 
         setActiveVoters(finalVoters);
       } catch (err) {
-        console.warn("Failed to load active voters, using fallbacks:", err);
-        setActiveVoters(isArcMainnet ? [] : FALLBACK_VOTERS);
+        console.warn("Failed to load active voters:", err);
+        setActiveVoters([]);
       } finally {
         setVotersLoading(false);
       }
@@ -207,7 +199,7 @@ export default function AnalyticsPage() {
 
   // Dynamic Line Chart — Treasury balance trajectory
   const treasuryTrendData = useMemo(() => {
-    const targetBalance = (typeof balance === "number" && !isNaN(balance) && balance > 0) ? balance : (isArcMainnet ? 0 : 2_450_000);
+    const targetBalance = (typeof balance === "number" && !isNaN(balance) && balance > 0) ? balance : 0;
     
     if (filteredActivities.length > 0) {
       let runningBalance = targetBalance;
@@ -227,19 +219,17 @@ export default function AnalyticsPage() {
       return [...trend, { date: "Current", balance: Math.round(targetBalance) }];
     }
 
-    // Dynamic curve responsive to dateFilter
+    // Flat baseline matching live targetBalance when no activities exist
     const now = Date.now();
     const points = dateFilter === "7d" ? 7 : 6;
     const result = [];
-    const base = targetBalance * 0.75;
     
     for (let i = 0; i < points; i++) {
-      const stepRatio = i / (points - 1);
       const timeOffsetMs = dateFilter === "7d" 
-        ? (6 - i) * 86400 * 1000 
+        ? (points - 1 - i) * 86400 * 1000 
         : dateFilter === "30d" 
-        ? (5 - i) * 5 * 86400 * 1000 
-        : (5 - i) * 30 * 86400 * 1000;
+        ? (points - 1 - i) * 5 * 86400 * 1000 
+        : (points - 1 - i) * 30 * 86400 * 1000;
         
       const pointDate = new Date(now - timeOffsetMs);
       const dateLabel = dateFilter === "7d" 
@@ -248,10 +238,9 @@ export default function AnalyticsPage() {
         ? pointDate.toLocaleDateString(undefined, { month: "short", year: "2-digit" })
         : pointDate.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
-      const currentVal = Math.round(base + (targetBalance - base) * Math.pow(stepRatio, 0.8) + (Math.sin(i * 1.5) * 15000));
       result.push({
         date: i === points - 1 ? "Current" : dateLabel,
-        balance: i === points - 1 ? Math.round(targetBalance) : currentVal,
+        balance: Math.round(targetBalance),
       });
     }
     return result;

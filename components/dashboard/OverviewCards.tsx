@@ -63,12 +63,12 @@ export function OverviewCards() {
   const isMainnet = getActiveNetwork() === 'mainnet';
 
   const cards = [
-    { title: "Treasury Value", value: metrics?.treasuryValue || "$0", icon: DollarSign, trend: isMainnet ? "Live" : "+2.4%" },
+    { title: "Treasury Value", value: metrics?.treasuryValue || "$0", icon: DollarSign, trend: "Live" },
     { title: "Total Proposals", value: metrics?.totalProposals !== undefined ? metrics.totalProposals : 0, icon: FileText, trend: "Live" },
-    { title: "Active Proposals", value: metrics?.activeProposals !== undefined ? metrics.activeProposals : 0, icon: Activity, trend: "Stable" },
-    { title: "Governance Participation", value: metrics?.governanceParticipation || "0%", icon: ArrowRightLeft, trend: isMainnet ? "0.0%" : "+5.1%" },
+    { title: "Active Proposals", value: metrics?.activeProposals !== undefined ? metrics.activeProposals : 0, icon: Activity, trend: "Active" },
+    { title: "Governance Participation", value: metrics?.governanceParticipation || "0%", icon: ArrowRightLeft, trend: "Live" },
     { title: "DAO Members", value: metrics?.daoMembers !== undefined ? metrics.daoMembers : 0, icon: Users, trend: "Active" },
-    { title: "Proposal Execution Rate", value: metrics?.proposalExecutionRate || "0%", icon: CheckCircle2, trend: isMainnet ? "0.0%" : "High" },
+    { title: "Proposal Execution Rate", value: metrics?.proposalExecutionRate || "0%", icon: CheckCircle2, trend: "Live" },
   ];
 
   const containerVariants = {

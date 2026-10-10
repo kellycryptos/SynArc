@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { pinJSONToIPFS, validateAttestationURI } from "@/lib/attestation";
+import { validateAttestationURI } from "@/lib/attestation";
+import { pinJSONToIPFS } from "@/lib/server/pinata";
 import { ARC_CHAIN } from "@/lib/arc-config";
 
 export const dynamic = "force-dynamic";

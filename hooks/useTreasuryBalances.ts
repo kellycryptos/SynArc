@@ -180,8 +180,8 @@ export const TESTNET_TREASURY_BASELINE: {
   activities: TreasuryActivity[];
 } = {
   usdcBalance: 14402.29,
-  eurcBalance: 9883.85,
-  combinedBalance: 25076.85,
+  eurcBalance: 16286.70,
+  combinedBalance: 30688.99,
   activities: [
     {
       id: `tx-${TESTNET_TREASURY_ADDRESS.toLowerCase()}-417-1791558929`,

@@ -22,62 +22,23 @@ import {
   Sparkles
 } from "lucide-react";
 import { DAO_REGISTRY } from "@/data/daos";
-import { ethers, Contract, formatUnits } from "ethers";
-import { getResilientProvider } from "@/lib/rpc/config";
-import { CONTRACTS } from "@/lib/arc-config";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { useTreasuryBalances } from "@/hooks/useTreasuryBalances";
 
 export default function CampaignsPage() {
   const router = useRouter();
   const { isAuthenticated, login } = useAuth();
   const { isArcMainnet } = useArcNetwork();
   const { campaigns, initialized, initializeStore } = useCampaignStore();
+  const { balance: synarcTreasury, loading: metricsLoading } = useTreasuryBalances();
+  const synarcMembers = 1;
   const [filter, setFilter] = useState("All");
   const [badgeFilter, setBadgeFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Live contract metrics for SynArc DAO
-  const [synarcMembers, setSynarcMembers] = useState<number | null>(null);
-  const [synarcTreasury, setSynarcTreasury] = useState<number | null>(null);
-  const [metricsLoading, setMetricsLoading] = useState(true);
-
   useEffect(() => {
     initializeStore();
   }, [initializeStore]);
-
-  // Fetch live metrics for SynArc DAO from smart contracts
-  useEffect(() => {
-    async function fetchSynArcLiveMetrics() {
-      try {
-        setMetricsLoading(true);
-        const provider = await getResilientProvider();
-        
-        const treasuryAddress = CONTRACTS.treasuryGovernance;
-        const TREASURY_ABI = [
-          "function usdcBalance() external view returns (uint256)",
-          "function eurcBalance() external view returns (uint256)"
-        ];
-        const treasuryContract = new Contract(treasuryAddress, TREASURY_ABI, provider);
-        const [usdcBal, eurcBal] = await Promise.all([
-          treasuryContract.usdcBalance().catch(() => 0n),
-          treasuryContract.eurcBalance().catch(() => 0n)
-        ]);
-        const usdcVal = Number(formatUnits(usdcBal, 6));
-        const eurcVal = Number(formatUnits(eurcBal, 6));
-        const combinedTreasury = usdcVal + (eurcVal * 1.08);
-        setSynarcTreasury(combinedTreasury > 0 ? combinedTreasury : (isArcMainnet ? 0 : 2450000));
-        setSynarcMembers(isArcMainnet ? 1 : 12450);
-      } catch (err) {
-        console.error("Failed to fetch live contract reads for SynArc DAO", err);
-        setSynarcTreasury(isArcMainnet ? 0 : 2450000);
-        setSynarcMembers(isArcMainnet ? 1 : 12450);
-      } finally {
-        setMetricsLoading(false);
-      }
-    }
-
-    fetchSynArcLiveMetrics();
-  }, [isArcMainnet]);
 
   // Calculate dynamic stats
   const totalCampaigns = campaigns.length;
@@ -99,8 +60,8 @@ export default function CampaignsPage() {
     })),
     ...DAO_REGISTRY.map(d => {
       const isSynArc = d.id === 'synarc';
-      const members = isSynArc && synarcMembers !== null ? synarcMembers : (isArcMainnet ? 1 : (d.members || 12450));
-      const treasury = isSynArc && synarcTreasury !== null ? synarcTreasury : (isArcMainnet ? 0 : (d.treasury || 2450000));
+      const members = isSynArc ? synarcMembers : (d.members ?? 1);
+      const treasury = isSynArc ? synarcTreasury : (d.treasury ?? 0);
       return {
         type: "ecosystem" as const,
         id: d.id,

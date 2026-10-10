@@ -40,36 +40,14 @@ const INITIAL_AGENTS: RegisteredAgent[] = [
     capabilities: "On-chain risk scans, automated treasury sanity audits, voting recommendations",
     metadataURI: "ipfs://QmGovernanceAgentERC8004Metadata",
     status: "Active",
-    proposalsAnalyzed: 142,
-    votesRecommended: 89,
-    accuracyRate: "94%",
-    usdcBalance: "50.00",
-    sarcBalance: "500.00",
-    reputation: 94,
+    proposalsAnalyzed: 0,
+    votesRecommended: 0,
+    accuracyRate: "100%",
+    usdcBalance: "0.00",
+    sarcBalance: "0.00",
+    reputation: 95,
     owner: "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53",
-    history: [
-      {
-        proposalId: "prop_1",
-        title: "Allocate 20k USDC for Mobile App Integration",
-        recommendation: "FOR",
-        confidence: 87,
-        timestamp: "2026-05-28T04:12:00Z"
-      },
-      {
-        proposalId: "prop_2",
-        title: "Alter Quorum Parameter from 4% to 8%",
-        recommendation: "AGAINST",
-        confidence: 94,
-        timestamp: "2026-05-27T18:30:00Z"
-      },
-      {
-        proposalId: "prop_3",
-        title: "Timelock Delay Extension to 14 Days",
-        recommendation: "ABSTAIN",
-        confidence: 65,
-        timestamp: "2026-05-25T09:15:00Z"
-      }
-    ]
+    history: []
   },
   {
     id: "agent_allocation",
@@ -80,29 +58,14 @@ const INITIAL_AGENTS: RegisteredAgent[] = [
     capabilities: "Milestone escrow disburse auditing, gas optimization recommendations",
     metadataURI: "ipfs://QmAllocationAgentERC8004Metadata",
     status: "Paused",
-    proposalsAnalyzed: 56,
-    votesRecommended: 32,
-    accuracyRate: "91%",
-    usdcBalance: "1,250.00",
+    proposalsAnalyzed: 0,
+    votesRecommended: 0,
+    accuracyRate: "100%",
+    usdcBalance: "0.00",
     sarcBalance: "0.00",
-    reputation: 85,
+    reputation: 90,
     owner: "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53",
-    history: [
-      {
-        proposalId: "prop_1",
-        title: "Allocate 20k USDC for Mobile App Integration",
-        recommendation: "FOR",
-        confidence: 90,
-        timestamp: "2026-05-28T04:15:00Z"
-      },
-      {
-        proposalId: "prop_3",
-        title: "Timelock Delay Extension to 14 Days",
-        recommendation: "FOR",
-        confidence: 72,
-        timestamp: "2026-05-25T09:20:00Z"
-      }
-    ]
+    history: []
   },
   {
     id: "agent_guardian",
@@ -113,22 +76,14 @@ const INITIAL_AGENTS: RegisteredAgent[] = [
     capabilities: "Spam proposal identification, autonomous veto scoring",
     metadataURI: "ipfs://QmGuardianAgentERC8004Metadata",
     status: "Active",
-    proposalsAnalyzed: 18,
-    votesRecommended: 4,
-    accuracyRate: "98%",
+    proposalsAnalyzed: 0,
+    votesRecommended: 0,
+    accuracyRate: "100%",
     usdcBalance: "0.00",
-    sarcBalance: "12,500.00",
+    sarcBalance: "0.00",
     reputation: 98,
     owner: "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53",
-    history: [
-      {
-        proposalId: "prop_2",
-        title: "Alter Quorum Parameter from 4% to 8%",
-        recommendation: "AGAINST",
-        confidence: 98,
-        timestamp: "2026-05-27T18:32:00Z"
-      }
-    ]
+    history: []
   }
 ];
 

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ExternalLink, Github, Twitter } from "lucide-react";
+import { ExternalLink, Github, Twitter, Mail } from "lucide-react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 export function DashboardFooter() {
@@ -59,10 +59,21 @@ export function DashboardFooter() {
           <Link href="/privacy" className="hover:text-foreground transition-colors">
             Privacy
           </Link>
+          <Link href="/contact" className="hover:text-primary transition-colors text-primary/90">
+            Feedback
+          </Link>
         </div>
 
         {/* Right: Social & Explorer */}
         <div className="flex items-center gap-3">
+          <a
+            href="mailto:devsynarc@gmail.com"
+            className="text-muted hover:text-primary transition-colors p-1"
+            title="Email devsynarc@gmail.com"
+            aria-label="Email support"
+          >
+            <Mail className="w-3.5 h-3.5" />
+          </a>
           <a
             href="https://x.com/syndaopro"
             target="_blank"

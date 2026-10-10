@@ -8,11 +8,13 @@ interface GlassCardProps {
   className?: string;
   delay?: number;
   hover?: boolean;
+  id?: string;
 }
 
-export function GlassCard({ children, className, delay = 0, hover = true }: GlassCardProps) {
+export function GlassCard({ children, className, delay = 0, hover = true, id }: GlassCardProps) {
   return (
     <motion.div
+      id={id}
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}

@@ -8,7 +8,7 @@ import { createPublicClient, createWalletClient, http, fallback, parseAbi, parse
 import { privateKeyToAccount } from 'viem/accounts'
 import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS, CONTRACTS_MAINNET, CONTRACTS_TESTNET, ARC_GAS, IS_MAINNET, getActiveNetwork, getMainnetRpcUrls, getTestnetRpcUrls, arcMainnet, arcTestnet, CIRCLE_ETH_CONFIG, CIRCLE_IRIS_API_URL } from '../arc-config'
 import { CCTPExecutor } from './cctp-executor'
-import { pinJSONToIPFS } from '../attestation'
+import { pinJSONToIPFS } from '../server/pinata'
 import { ForensicAuditor } from './forensic-auditor'
 import fs from 'fs'
 

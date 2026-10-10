@@ -7,14 +7,14 @@ import { Grid, Users, Shield, ArrowRight, Award, Plus, X, Globe, MessageSquare, 
 import Link from "next/link";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { AnimatePresence } from "framer-motion";
-import { ethers, Contract, formatUnits } from "ethers";
-import { getResilientProvider } from "@/lib/rpc/config";
-import { CONTRACTS } from "@/lib/arc-config";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { useTreasuryBalances } from "@/hooks/useTreasuryBalances";
 
 export default function DAOsPage() {
   const { isArcMainnet } = useArcNetwork();
   const { isAuthenticated, login } = useAuth();
+  const { balance: synarcTreasury, loading: metricsLoading } = useTreasuryBalances();
+  const synarcMembers = 1;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     daoName: "",
@@ -27,11 +27,6 @@ export default function DAOsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState<boolean | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
-
-  // Live contract read states for SynArc DAO
-  const [synarcMembers, setSynarcMembers] = useState<number | null>(null);
-  const [synarcTreasury, setSynarcTreasury] = useState<number | null>(null);
-  const [metricsLoading, setMetricsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
   // Sort registry: Featured pinning first
@@ -45,46 +40,6 @@ export default function DAOsPage() {
     if (selectedCategory === "All") return true;
     return dao.category === selectedCategory;
   });
-
-  // Fetch live metrics for SynArc DAO from smart contracts
-  useEffect(() => {
-    async function fetchSynArcLiveMetrics() {
-      try {
-        setMetricsLoading(true);
-
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Metrics RPC timeout")), 2500)
-        );
-
-        const fetchPromise = (async () => {
-          const provider = await getResilientProvider();
-          const treasuryAddress = CONTRACTS.treasuryGovernance;
-          const TREASURY_ABI = [
-            "function usdcBalance() external view returns (uint256)",
-            "function eurcBalance() external view returns (uint256)"
-          ];
-          const treasuryContract = new Contract(treasuryAddress, TREASURY_ABI, provider);
-          const [usdcBal, eurcBal] = await Promise.all([
-            treasuryContract.usdcBalance().catch(() => 0n),
-            treasuryContract.eurcBalance().catch(() => 0n)
-          ]);
-          const usdcVal = Number(formatUnits(usdcBal, 6));
-          const eurcVal = Number(formatUnits(eurcBal, 6));
-          return usdcVal + (eurcVal * 1.08);
-        })();
-
-        const combinedTreasury = await Promise.race([fetchPromise, timeoutPromise]);
-        setSynarcTreasury(combinedTreasury > 0 ? combinedTreasury : (isArcMainnet ? 0 : 2450000));
-        setSynarcMembers(isArcMainnet ? 1 : 12450);
-      } catch (err) {
-        setSynarcTreasury(isArcMainnet ? 0 : 2450000);
-        setSynarcMembers(isArcMainnet ? 1 : 12450);
-      } finally {
-        setMetricsLoading(false);
-      }
-    }
-    fetchSynArcLiveMetrics();
-  }, [isArcMainnet]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -192,9 +147,9 @@ export default function DAOsPage() {
           const isFeatured = dao.featured || dao.id === "synarc";
           const logoInitials = dao.name.slice(0, 2).toUpperCase();
 
-          // Use live contract read value for SynArc, otherwise mock registry data
-          const displayMembers = (isFeatured && synarcMembers !== null) ? synarcMembers : dao.members;
-          const displayTreasury = (isFeatured && synarcTreasury !== null) ? synarcTreasury : dao.treasury;
+          // Live cached balance for SynArc DAO, clean registry data for partners
+          const displayMembers = isFeatured ? synarcMembers : dao.members;
+          const displayTreasury = isFeatured ? synarcTreasury : dao.treasury;
 
           return (
             <GlassCard
@@ -276,8 +231,10 @@ export default function DAOsPage() {
                   <span className="text-white font-mono font-extrabold text-base">
                     {metricsLoading && isFeatured ? (
                       <span className="block w-12 h-5 bg-white/5 animate-pulse rounded" />
+                    ) : typeof displayMembers === "number" ? (
+                      displayMembers.toLocaleString()
                     ) : (
-                      displayMembers?.toLocaleString() || "0"
+                      "Ecosystem"
                     )}
                   </span>
                 </div>
@@ -289,8 +246,12 @@ export default function DAOsPage() {
                   <span className="text-white font-mono font-extrabold text-base">
                     {metricsLoading && isFeatured ? (
                       <span className="block w-16 h-5 bg-white/5 animate-pulse rounded" />
+                    ) : typeof displayTreasury === "number" && displayTreasury > 0 ? (
+                      `$${displayTreasury.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    ) : isFeatured ? (
+                      `$${(synarcTreasury || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     ) : (
-                      `$${displayTreasury?.toLocaleString(undefined, { maximumFractionDigits: 0 }) || "0"}`
+                      "—"
                     )}
                   </span>
                 </div>

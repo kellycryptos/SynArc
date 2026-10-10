@@ -30,12 +30,13 @@ export default function TermsPage() {
     {
       title: "5. Treasury Management",
       icon: CoinsIcon,
-      content: "USDC and EURC stablecoin deposits, stakings, and DAO-approved allocations are managed programmatically by autonomous, open-source smart contracts deployed on the Arc Testnet. The Syn DAO team, developers, and contributors have no control over treasury funds, custody of deposits, or transactional interventions."
+      content: "USDC and EURC stablecoin deposits, stakings, and DAO-approved allocations are managed programmatically by autonomous, open-source smart contracts deployed on the Arc network. The Syn DAO team, developers, and contributors have no control over treasury funds, custody of deposits, or transactional interventions."
     },
     {
+      id: "disclaimer",
       title: "6. Risks & Limitations",
       icon: AlertTriangle,
-      content: "You explicitly acknowledge and accept the inherent risks of smart contracts, cryptographic tokens, and experimental blockchain protocols. Syn DAO operates on the Arc Testnet; all tokens are for testing purposes only and hold no real-world economic value. No content on the platform constitutes financial, legal, or investment advice."
+      content: "You explicitly acknowledge and accept the inherent risks of smart contracts, cryptographic tokens, and experimental blockchain protocols. Syn DAO operates on Arc (Mainnet and Testnet). No content on the platform constitutes financial, legal, or investment advice."
     },
     {
       title: "7. Prohibited Use",
@@ -99,7 +100,7 @@ export default function TermsPage() {
           {sections.map((section, idx) => {
             const Icon = section.icon;
             return (
-              <GlassCard key={idx} delay={idx * 0.03} className="p-6 sm:p-8 border border-border-thin">
+              <GlassCard id={section.id} key={idx} delay={idx * 0.03} className="p-6 sm:p-8 border border-border-thin scroll-mt-24">
                 <div className="flex items-start gap-4">
                   <div className="p-2.5 bg-primary/10 border border-primary/20 rounded-xl text-primary shrink-0">
                     <Icon className="w-5 h-5" />

@@ -135,13 +135,13 @@ export const TESTNET_BASELINE_PROPOSALS: Proposal[] = [
 
 const isMainnetInitial = getActiveNetwork() === 'mainnet';
 const INITIAL_METRICS: GovernanceMetrics = {
-  treasuryValue: isMainnetInitial ? "$0.07" : "$25,076.85",
+  treasuryValue: isMainnetInitial ? "$0.07" : "$30,688.99",
   activeProposals: 0,
-  totalProposals: isMainnetInitial ? 0 : 2990,
-  governanceParticipation: isMainnetInitial ? "0.0%" : "98.7%",
-  daoMembers: isMainnetInitial ? 1 : 12450,
-  treasuryTransactions: isMainnetInitial ? 2 : 418,
-  proposalExecutionRate: isMainnetInitial ? "0.0%" : "92.4%",
+  totalProposals: 0,
+  governanceParticipation: "0.0%",
+  daoMembers: 1,
+  treasuryTransactions: isMainnetInitial ? 3 : 2,
+  proposalExecutionRate: "0.0%",
 };
 
 export const useGovernanceStore = create<GovernanceState>((set, get) => ({
@@ -238,17 +238,17 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       treasuryActivities: isMainnet ? MAINNET_TREASURY_BASELINE.activities : TESTNET_TREASURY_BASELINE.activities,
       initialized: true,
       metrics: {
-        treasuryValue: isMainnet ? "$0.07" : "$25,076.85",
+        treasuryValue: isMainnet ? "$0.07" : "$30,688.99",
         activeProposals: eagerProposals.filter(p => p.status === "Active").length,
         totalProposals: eagerProposals.length,
         governanceParticipation: eagerProposals.length > 0
           ? (eagerProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / eagerProposals.length).toFixed(1) + "%"
-          : (isMainnet ? "0.0%" : "98.7%"),
-        daoMembers: isMainnet ? 1 : 12450,
-        treasuryTransactions: isMainnet ? 2 : 418,
+          : "0.0%",
+        daoMembers: 1,
+        treasuryTransactions: isMainnet ? 3 : 2,
         proposalExecutionRate: eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
           ? ((eagerProposals.filter(p => p.status === "Executed").length / eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-          : (isMainnet ? "0.0%" : "92.4%")
+          : "0.0%"
       }
     });
 
@@ -502,18 +502,26 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         const internalNum = Number(formatUnits(internalBal || 0n, 6));
         const erc20Num = Number(formatUnits(erc20Bal || 0n, 6));
         const fetchedVal = internalNum > 0 ? internalNum : erc20Num;
-        treasuryVal = fetchedVal > 0 ? fetchedVal : (isMainnet ? 0.07 : 25076.85);
+        treasuryVal = fetchedVal > 0 ? fetchedVal : (isMainnet ? MAINNET_TREASURY_BASELINE.combinedBalance : TESTNET_TREASURY_BASELINE.combinedBalance);
       } catch (err) {
         console.warn("Failed to load Treasury activities via RPC:", err);
       }
 
+      let memberCount = 1;
+      try {
+        memberCount = await getTokenHolderCount(provider, contracts.token);
+        if (!memberCount || memberCount < 1) memberCount = 1;
+      } catch {
+        memberCount = 1;
+      }
+
       const avgPart = combinedProposals.length > 0
         ? (combinedProposals.reduce((sum, p) => sum + p.participationPercentage, 0) / combinedProposals.length).toFixed(1) + "%"
-        : (isMainnet ? "0.0%" : "98.7%");
+        : "0.0%";
 
       const executionRate = combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
         ? ((combinedProposals.filter(p => p.status === "Executed").length / combinedProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-        : (isMainnet ? "0.0%" : "92.4%");
+        : "0.0%";
 
       if (typeof window !== "undefined" && loadedProposals.length > 0) {
         try {
@@ -530,10 +538,10 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           treasuryValue: `$${treasuryVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
           activeProposals: combinedProposals.filter(p => p.status === "Active").length,
           totalProposals: combinedProposals.length,
-          governanceParticipation: avgPart !== "0.0%" && avgPart !== "0%" ? avgPart : (isMainnet ? "0.0%" : "98.7%"),
-          daoMembers: isMainnet ? 1 : 12450,
-          treasuryTransactions: loadedActivities.length || (isMainnet ? 2 : 418),
-          proposalExecutionRate: executionRate !== "0.0%" && executionRate !== "0%" ? executionRate : (isMainnet ? "0.0%" : "92.4%"),
+          governanceParticipation: avgPart,
+          daoMembers: memberCount,
+          treasuryTransactions: loadedActivities.length || (isMainnet ? 3 : 2),
+          proposalExecutionRate: executionRate,
         }
       });
     } catch (e) {
@@ -555,21 +563,21 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       // RPC timeout/failure: preserve baseline
       set({
         proposals: fallbackProposals,
-        treasuryActivities: isMainnet ? MAINNET_TREASURY_BASELINE.activities : [],
+        treasuryActivities: isMainnet ? MAINNET_TREASURY_BASELINE.activities : TESTNET_TREASURY_BASELINE.activities,
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
-          treasuryValue: isMainnet ? "$0.07" : "$0.00",
+          treasuryValue: isMainnet ? "$0.07" : "$30,688.99",
           activeProposals: fallbackProposals.filter(p => p.status === "Active").length,
           totalProposals: fallbackProposals.length,
           governanceParticipation: fallbackProposals.length > 0
             ? (fallbackProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / fallbackProposals.length).toFixed(1) + "%"
-            : (isMainnet ? "0.0%" : "16.7%"),
-          daoMembers: isMainnet ? 1 : 12450,
-          treasuryTransactions: isMainnet ? 2 : 3,
+            : "0.0%",
+          daoMembers: 1,
+          treasuryTransactions: isMainnet ? 3 : 2,
           proposalExecutionRate: fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
             ? ((fallbackProposals.filter(p => p.status === "Executed").length / fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-            : (isMainnet ? "0.0%" : "92.4%")
+            : "0.0%"
         }
       });
     }

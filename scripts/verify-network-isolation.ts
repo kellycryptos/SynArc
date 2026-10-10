@@ -29,7 +29,7 @@ const MAINNET_RPC = 'https://rpc.mainnet.arc.io';
 const TESTNET_RPC =
   process.env.ARC_TESTNET_RPC_URL ||
   process.env.NEXT_PUBLIC_ARC_RPC_URL ||
-  'https://rpc.testnet.arc.network';
+  'https://rpc.testnet.arc.io';
 
 async function rpcCall(rpcUrl: string, method: string, params: any[], retries = 2): Promise<any> {
   let lastErr: any;

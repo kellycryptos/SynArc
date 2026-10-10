@@ -32,13 +32,13 @@ export function MarketingNavbar() {
         </Link>
         
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="/#features" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
-            Features
+          <Link href="/#how-it-works" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+            How It Works
           </Link>
-          <Link href="/#governance" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
-            Governance
+          <Link href="/#why" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+            Architecture
           </Link>
-          <Link href="/#treasury" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+          <Link href="/treasury" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
             Treasury
           </Link>
           <Link href="/docs" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
@@ -49,6 +49,9 @@ export function MarketingNavbar() {
           </Link>
           <Link href="/agent" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
             AI Agent
+          </Link>
+          <Link href="/contact" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+            Contact
           </Link>
         </nav>
 

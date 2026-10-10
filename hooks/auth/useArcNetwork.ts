@@ -90,7 +90,7 @@ export function useArcNetwork(): ArcNetworkState {
   const networkName = isArcTestnet ? 'Arc Testnet' : 'Arc';
   const contractSetLabel = isArcTestnet ? 'testnet' : 'mainnet';
   const contracts = isArcTestnet ? CONTRACTS_TESTNET : CONTRACTS_MAINNET;
-  const explorerUrl = isArcTestnet ? 'https://testnet.arcscan.app' : 'https://explorer.arc.io';
+  const explorerUrl = isArcTestnet ? 'https://explorer.testnet.arc.io' : 'https://explorer.arc.io';
   const faucetUrl = isArcTestnet ? 'https://faucet.circle.com' : undefined;
   const arcChain = isArcTestnet ? arcTestnet : arcMainnet;
 

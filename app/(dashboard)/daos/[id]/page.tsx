@@ -191,33 +191,42 @@ export default function DAODetailsPage() {
         })
       );
 
-      const memberList: Member[] = await Promise.all(
-        Array.from(holders).map(async (holder, idx) => {
-          const [tokenBal, usdcBal] = await Promise.all([
-            tokenContract.balanceOf(holder).catch(() => 0n),
-            usdcContract.balanceOf(holder).catch(() => 0n)
-          ]);
+      const holderArray = Array.from(holders);
+      const memberList: Member[] = [];
+      const CHUNK_SIZE = 10;
 
-          const tokenBalanceNum = Number(formatUnits(tokenBal, 18));
-          const usdcBalanceNum = Number(formatUnits(usdcBal, 6));
-          const firstBlock = holderFirstBlock.get(holder);
-          const timestamp = firstBlock ? (blockMap.get(firstBlock) || (Date.now() / 1000)) : (Date.now() / 1000);
-          const joinDate = new Date(timestamp * 1000).toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "short",
-            day: "numeric"
-          });
+      for (let i = 0; i < holderArray.length; i += CHUNK_SIZE) {
+        const chunk = holderArray.slice(i, i + CHUNK_SIZE);
+        const chunkResults = await Promise.all(
+          chunk.map(async (holder, cIdx) => {
+            const idx = i + cIdx;
+            const [tokenBal, usdcBal] = await Promise.all([
+              tokenContract.balanceOf(holder).catch(() => 0n),
+              usdcContract.balanceOf(holder).catch(() => 0n)
+            ]);
 
-          return {
-            id: idx.toString(),
-            address: holder,
-            tokenBalance: tokenBalanceNum,
-            usdcBalance: usdcBalanceNum,
-            joinDate,
-            timestamp,
-          };
-        })
-      );
+            const tokenBalanceNum = Number(formatUnits(tokenBal, 18));
+            const usdcBalanceNum = Number(formatUnits(usdcBal, 6));
+            const firstBlock = holderFirstBlock.get(holder);
+            const timestamp = firstBlock ? (blockMap.get(firstBlock) || (Date.now() / 1000)) : (Date.now() / 1000);
+            const joinDate = new Date(timestamp * 1000).toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "short",
+              day: "numeric"
+            });
+
+            return {
+              id: idx.toString(),
+              address: holder,
+              tokenBalance: tokenBalanceNum,
+              usdcBalance: usdcBalanceNum,
+              joinDate,
+              timestamp,
+            };
+          })
+        );
+        memberList.push(...chunkResults);
+      }
 
       const activeMembers = memberList
         .filter(m => m.tokenBalance > 0)

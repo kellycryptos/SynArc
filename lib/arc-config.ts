@@ -40,8 +40,7 @@ export function getMainnetProxyUrl(): string {
 // Canonical Arc Testnet RPC endpoint
 export const CANTEEN_TESTNET_RPC = 
   process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || 
-  process.env.ARC_TESTNET_RPC_URL || 
-  'https://rpc.testnet.arc.network';
+  ARC_TESTNET_FALLBACK_RPC;
 
 function createRpcUrlsProxy(getUrls: () => string[]): string[] {
   return new Proxy([] as string[], {
@@ -130,7 +129,7 @@ export const arcTestnet = defineChain({
     default: { http: ARC_TESTNET_RPC_URLS },
     public: { http: ARC_TESTNET_RPC_URLS }
   },
-  blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
+  blockExplorers: { default: { name: 'Arc Explorer', url: 'https://explorer.testnet.arc.io' } },
 })
 
 // Arc Mainnet (Chain ID 5042)
