@@ -1,5 +1,11 @@
 [
   {
+    "timestamp": "2026-10-09T18:24:49.613Z",
+    "action": "monitoring",
+    "reasoning": "Treasury flagged emergency_funding, but an active governance proposal is already on-chain. Awaiting voting or execution before submitting another.",
+    "status": "executed"
+  },
+  {
     "timestamp": "2026-10-09T18:19:49.604Z",
     "action": "monitoring",
     "reasoning": "Treasury flagged emergency_funding, but an active governance proposal is already on-chain. Awaiting voting or execution before submitting another.",
@@ -344,14 +350,6 @@
     "action": "emergency_funding",
     "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
     "txHash": "0xa342b873199cbd3d50b061b4f1399fdff365a8448263c0a28044985f5397d452",
-    "status": "executed",
-    "usdcAmount": 50
-  },
-  {
-    "timestamp": "2026-10-09T16:02:44.897Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
-    "txHash": "0x06ebd02fd9866dd23c45c0b1c3da73c1f9f7947d703849906f9112487856ea95",
     "status": "executed",
     "usdcAmount": 50
   }

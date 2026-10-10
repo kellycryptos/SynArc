@@ -30,8 +30,8 @@ import {
 } from "@/lib/agent/forensic-auditor";
 
 const SCENARIOS: { id: AttackScenario; label: string; tag: string; icon: string }[] = [
-  { id: "phantom_invoice", label: "Phantom Invoice", tag: "Fake CID / Omission", icon: "INV" },
-  { id: "payee_substitution", label: "Payee Substitution", tag: "Prompt Injection", icon: "SUB" },
+  { id: "phantom_invoice", label: "Phantom Invoice", tag: "Mismatched Deliverable (Fake CID)", icon: "INV" },
+  { id: "payee_substitution", label: "Prompt Injected Payee Swap", tag: "Payee Substitution Attack", icon: "SUB" },
   { id: "silent_roundoff", label: "Silent Round-Off", tag: "ERPNext Float Drift", icon: "CALC" },
   { id: "unwitnessed_bridge", label: "Unwitnessed Bridge", tag: "No Iris Attestation", icon: "BRG" },
   { id: "whale_drain_bypass", label: "Whale Drain Bypass", tag: "50 USDC Cap Breached", icon: "CAP" }

@@ -18,6 +18,8 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ProofOfAutonomyTimeline } from "@/components/dashboard/ProofOfAutonomyTimeline";
 
+import { AdversarialSimulator } from "@/components/dashboard/AdversarialSimulator";
+
 const CctpStepVisualizer = dynamic(
   () => import("@/components/dashboard/CctpStepVisualizer").then(m => m.CctpStepVisualizer),
   {
@@ -970,6 +972,11 @@ export default function AgentPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ════ FORENSIC SENTINEL & DUAL-AGENT SECURITY MESH ════ */}
+      <SectionErrorBoundary sectionName="Forensic Security Sentinel">
+        <AdversarialSimulator />
+      </SectionErrorBoundary>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

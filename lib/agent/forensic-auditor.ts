@@ -371,7 +371,7 @@ export class ForensicAuditor {
           auditTicket: ticket,
           operatorLog: `[Operator Agent] Ingested invoice instructing payment to ${attackerPayee}. Queuing release.`,
           sentinelLog: `[Forensic Sentinel] SECURITY ALERT: Payee divergence detected! Claimed: ${attackerPayee} vs Registered PO: ${originalPayee}. Diverting to 48h timelock cooldown.`,
-          smartContractRevert: `revert PayeeMismatch(${originalPayee}, ${attackerPayee}) // Contract enforces on-chain Order terms`
+          smartContractRevert: `revert PayeeCooldownActive(${attackerPayee}, 48h) // On-chain 48h cooldown active: revert PayeeMismatch`
         };
       }
 
