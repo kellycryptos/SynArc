@@ -25,49 +25,61 @@ interface CheckResult {
   details?: string;
 }
 
-const MAINNET_RPC = 'https://rpc.mainnet.arc.io';
-const TESTNET_RPC =
-  process.env.ARC_TESTNET_RPC_URL ||
-  process.env.NEXT_PUBLIC_ARC_RPC_URL ||
-  'https://rpc.testnet.arc.io';
+const MAINNET_RPCS = [
+  'https://rpc.mainnet.arc.io',
+  'https://rpc.mainnet.arc.network',
+];
 
-async function rpcCall(rpcUrl: string, method: string, params: any[], retries = 2): Promise<any> {
+const TESTNET_RPCS = [
+  process.env.ARC_TESTNET_RPC_URL,
+  process.env.NEXT_PUBLIC_ARC_RPC_URL,
+  'https://rpc.testnet.arc.network',
+  'https://rpc.testnet.arc.io',
+].filter(Boolean) as string[];
+
+const MAINNET_RPC = MAINNET_RPCS[0];
+const TESTNET_RPC = TESTNET_RPCS[0];
+
+async function rpcCall(rpcUrls: string | string[], method: string, params: any[], retries = 3): Promise<any> {
+  const urls = Array.isArray(rpcUrls) ? rpcUrls : [rpcUrls];
   let lastErr: any;
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const res = await fetch(rpcUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: Math.floor(Math.random() * 100000),
-          method,
-          params,
-        }),
-        signal: AbortSignal.timeout(15000),
-      });
 
-      if (!res.ok) {
-        throw new Error(`RPC HTTP error ${res.status}: ${res.statusText}`);
-      }
+  for (const url of urls) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: Math.floor(Math.random() * 100000),
+            method,
+            params,
+          }),
+          signal: AbortSignal.timeout(12000),
+        });
 
-      const json = await res.json();
-      if (json.error) {
-        throw new Error(`RPC JSON error: ${json.error.message || JSON.stringify(json.error)}`);
-      }
-      return json.result;
-    } catch (err: any) {
-      lastErr = err;
-      if (attempt < retries) {
-        // Small backoff before retrying
-        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        if (!res.ok) {
+          throw new Error(`RPC HTTP error ${res.status}: ${res.statusText}`);
+        }
+
+        const json = await res.json();
+        if (json.error) {
+          throw new Error(`RPC JSON error: ${json.error.message || JSON.stringify(json.error)}`);
+        }
+        return json.result;
+      } catch (err: any) {
+        lastErr = err;
+        if (attempt < retries) {
+          await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+        }
       }
     }
   }
   throw lastErr;
 }
 
-async function getBytecode(rpcUrl: string, address: string): Promise<number> {
+async function getBytecode(rpcUrl: string | string[], address: string): Promise<number> {
   const hex: string = await rpcCall(rpcUrl, 'eth_getCode', [address, 'latest']);
   if (!hex || hex === '0x' || hex === '0x0') {
     return 0;
@@ -75,7 +87,7 @@ async function getBytecode(rpcUrl: string, address: string): Promise<number> {
   return (hex.length - 2) / 2;
 }
 
-async function getLiveGovernor(rpcUrl: string, treasuryAddress: string): Promise<string> {
+async function getLiveGovernor(rpcUrl: string | string[], treasuryAddress: string): Promise<string> {
   // function selector for governor(): 0x0c340a24
   const result: string = await rpcCall(rpcUrl, 'eth_call', [
     { to: treasuryAddress, data: '0x0c340a24' },
@@ -142,60 +154,59 @@ async function main() {
     });
   }
 
-  await Promise.all(
-    mainnetItems.map(async (item) => {
-      try {
-        const byteCount = await getBytecode(MAINNET_RPC, item.address);
-        const hasCode = byteCount > 0;
+  for (const item of mainnetItems) {
+    try {
+      const byteCount = await getBytecode(MAINNET_RPCS, item.address);
+      const hasCode = byteCount > 0;
 
-        if (item.type === 'CONTRACT') {
-          const pass = item.isCriticalContract ? hasCode : true;
-          const status: 'PASS' | 'FAIL' = item.isCriticalContract
-            ? (hasCode ? 'PASS' : 'FAIL')
-            : (hasCode ? 'PASS' : 'FAIL'); // If crowdfund is specified, let's see its state
+      if (item.type === 'CONTRACT') {
+        const pass = item.isCriticalContract ? hasCode : true;
+        const status: 'PASS' | 'FAIL' = item.isCriticalContract
+          ? (hasCode ? 'PASS' : 'FAIL')
+          : (hasCode ? 'PASS' : 'FAIL'); // If crowdfund is specified, let's see its state
 
-          results.push({
-            network: 'mainnet',
-            target: item.name,
-            address: item.address,
-            type: item.type,
-            expected: 'HAS CODE (>0 bytes)',
-            actual: hasCode ? `HAS CODE (${byteCount} B)` : 'NO CODE (0 B)',
-            status: status,
-            details: hasCode ? `${byteCount} bytes deployed` : (item.isCriticalContract ? 'CRITICAL: Contract not deployed on mainnet' : 'Optional contract not deployed on mainnet'),
-          });
-        } else {
-          // EOA: Expected NO CODE
-          const isEoa = !hasCode;
-          results.push({
-            network: 'mainnet',
-            target: item.name,
-            address: item.address,
-            type: item.type,
-            expected: 'NO CODE (EOA, 0 B)',
-            actual: hasCode ? `HAS CODE (${byteCount} B)` : 'NO CODE (0 B)',
-            status: isEoa ? 'PASS' : 'FAIL',
-            details: isEoa ? 'Verified EOA (no code)' : 'WARNING: EOA has bytecode',
-          });
-        }
-      } catch (err: any) {
         results.push({
           network: 'mainnet',
           target: item.name,
           address: item.address,
           type: item.type,
-          expected: 'HAS CODE',
-          actual: `RPC ERROR: ${err.message}`,
-          status: 'FAIL',
+          expected: 'HAS CODE (>0 bytes)',
+          actual: hasCode ? `HAS CODE (${byteCount} B)` : 'NO CODE (0 B)',
+          status: status,
+          details: hasCode ? `${byteCount} bytes deployed` : (item.isCriticalContract ? 'CRITICAL: Contract not deployed on mainnet' : 'Optional contract not deployed on mainnet'),
+        });
+      } else {
+        // EOA: Expected NO CODE
+        const isEoa = !hasCode;
+        results.push({
+          network: 'mainnet',
+          target: item.name,
+          address: item.address,
+          type: item.type,
+          expected: 'NO CODE (EOA, 0 B)',
+          actual: hasCode ? `HAS CODE (${byteCount} B)` : 'NO CODE (0 B)',
+          status: isEoa ? 'PASS' : 'FAIL',
+          details: isEoa ? 'Verified EOA (no code)' : 'WARNING: EOA has bytecode',
         });
       }
-    })
-  );
+    } catch (err: any) {
+      results.push({
+        network: 'mainnet',
+        target: item.name,
+        address: item.address,
+        type: item.type,
+        expected: 'HAS CODE',
+        actual: `RPC ERROR: ${err.message}`,
+        status: 'FAIL',
+      });
+    }
+    await new Promise((r) => setTimeout(r, 150));
+  }
 
   // 3. Cross-reference: treasury.governor() on Mainnet
   console.log('\n[3/4] Cross-referencing treasury.governor() live on Arc Mainnet...');
   try {
-    const liveGovernor = await getLiveGovernor(MAINNET_RPC, CONTRACTS_MAINNET.treasury);
+    const liveGovernor = await getLiveGovernor(MAINNET_RPCS, CONTRACTS_MAINNET.treasury);
     const expectedGovernor = CONTRACTS_MAINNET.governor;
     const isGovMatch = liveGovernor.toLowerCase() === expectedGovernor.toLowerCase();
 
@@ -239,7 +250,7 @@ async function main() {
 
   for (const item of testnetItems) {
     try {
-      const byteCount = await getBytecode(TESTNET_RPC, item.address);
+      const byteCount = await getBytecode(TESTNET_RPCS, item.address);
       const hasCode = byteCount > 0;
 
       results.push({
@@ -263,6 +274,7 @@ async function main() {
         status: 'FAIL',
       });
     }
+    await new Promise((r) => setTimeout(r, 150));
   }
 
   // Summary Table
