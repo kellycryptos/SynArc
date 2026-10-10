@@ -6,7 +6,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') })
 import Groq from 'groq-sdk'
 import { createPublicClient, createWalletClient, http, fallback, parseAbi, parseUnits, keccak256, toHex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS, ARC_GAS, IS_MAINNET, getActiveNetwork, CIRCLE_ETH_CONFIG, CIRCLE_IRIS_API_URL } from '../arc-config'
+import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS, CONTRACTS_MAINNET, CONTRACTS_TESTNET, ARC_GAS, IS_MAINNET, getActiveNetwork, getMainnetRpcUrls, getTestnetRpcUrls, arcMainnet, arcTestnet, CIRCLE_ETH_CONFIG, CIRCLE_IRIS_API_URL } from '../arc-config'
 import { CCTPExecutor } from './cctp-executor'
 import { pinJSONToIPFS } from '../attestation'
 import { ForensicAuditor } from './forensic-auditor'
@@ -26,6 +26,18 @@ export interface AgentAction {
   status: 'pending' | 'executed' | 'failed'
   usdcAmount?: number
   deliverableURI?: string
+  network?: 'mainnet' | 'testnet'
+}
+
+export function cleanErrorMessage(err: any): string {
+  if (!err) return 'Unknown error'
+  const raw = err?.shortMessage || err?.message || String(err)
+  const firstLine = raw.split('\n')[0].trim()
+  const detailsMatch = raw.match(/Details:\s*([^\n\r]+)/)
+  if (detailsMatch && detailsMatch[1]) {
+    return `${firstLine} (${detailsMatch[1].trim()})`.slice(0, 300)
+  }
+  return firstLine.slice(0, 300)
 }
 
 const TREASURY_ABI = parseAbi([
@@ -113,6 +125,10 @@ function fallbackTreasuryDecide(text: string): any {
 
 export class TreasuryAgent {
   public lastExecutionTime = 0
+  private lastExecutionTimes: Record<'mainnet' | 'testnet', number> = {
+    mainnet: 0,
+    testnet: 0,
+  }
   private walletClient: any
   private publicClient: any
   private account: any
@@ -172,20 +188,31 @@ export class TreasuryAgent {
     this.actions = this.loadActions()
   }
 
-  async checkTreasury(): Promise<{ usdc: number; eurc: number; usedFallback: boolean }> {
+  getClients(network: 'mainnet' | 'testnet' = 'mainnet') {
+    const isMainnet = network === 'mainnet'
+    const chain = isMainnet ? arcMainnet : arcTestnet
+    const rpcUrls = isMainnet ? getMainnetRpcUrls() : getTestnetRpcUrls()
+    const transport = fallback(rpcUrls.map(url => http(url, { timeout: 10000 })))
+    const publicClient: any = createPublicClient({ chain, transport })
+    const walletClient: any = createWalletClient({ account: this.account, chain, transport })
+    const contracts = isMainnet ? CONTRACTS_MAINNET : CONTRACTS_TESTNET
+    return { isMainnet, chain, rpcUrls, publicClient, walletClient, contracts }
+  }
+
+  async checkTreasury(network: 'mainnet' | 'testnet' = 'mainnet'): Promise<{ usdc: number; eurc: number; usedFallback: boolean }> {
     try {
-      const isMainnet = getActiveNetwork() === 'mainnet';
-      const targetTreasury = isMainnet ? CONTRACTS.treasuryGovernance : (CONTRACTS.treasuryAgent || CONTRACTS.treasuryGovernance);
+      const { isMainnet, publicClient, contracts } = this.getClients(network)
+      const targetTreasury = isMainnet ? contracts.treasuryGovernance : (contracts.treasuryAgent || contracts.treasuryGovernance)
       const [usdc, eurc] = await Promise.all([
-        this.publicClient.readContract({ address: targetTreasury, abi: TREASURY_ABI, functionName: 'usdcBalance' }),
-        this.publicClient.readContract({ address: targetTreasury, abi: TREASURY_ABI, functionName: 'eurcBalance' }),
+        publicClient.readContract({ address: targetTreasury, abi: TREASURY_ABI, functionName: 'usdcBalance' }),
+        publicClient.readContract({ address: targetTreasury, abi: TREASURY_ABI, functionName: 'eurcBalance' }),
       ])
       const u = Number(usdc) / 1_000_000
       const e = Number(eurc) / 1_000_000
       return { usdc: u > 0 ? u : (isMainnet ? 0 : 25.0), eurc: e > 0 ? e : (isMainnet ? 0 : 20.0), usedFallback: u === 0 }
     } catch (err: any) {
-      console.warn('[TreasuryAgent] Could not read treasury balances on-chain, using baseline:', err)
-      const isMainnet = getActiveNetwork() === 'mainnet';
+      console.warn(`[TreasuryAgent] Could not read treasury balances on-chain on ${network}, using baseline:`, err?.message || err)
+      const isMainnet = network === 'mainnet'
       return { usdc: isMainnet ? 0 : 25.0, eurc: isMainnet ? 0 : 20.0, usedFallback: true }
     }
   }
@@ -248,20 +275,23 @@ Respond in JSON format:
     return { shouldAct: false, action: 'monitoring', reasoning: `Treasury reserves healthy (USDC: ${treasury.usdc}, EURC: ${treasury.eurc}). Continuing monitoring routines.` }
   }
 
-  async createRebalancingProposal(decision: { action: string; reasoning: string; proposedAmount?: number }): Promise<string> {
-    const isMainnet = getActiveNetwork() === 'mainnet';
-    const ethNetworkName = isMainnet ? 'Ethereum Mainnet' : CIRCLE_ETH_CONFIG.name;
+  async createRebalancingProposal(
+    decision: { action: string; reasoning: string; proposedAmount?: number },
+    network: 'mainnet' | 'testnet' = 'mainnet'
+  ): Promise<string> {
+    const { isMainnet, publicClient, walletClient, contracts } = this.getClients(network)
+    const ethNetworkName = isMainnet ? 'Ethereum Mainnet' : CIRCLE_ETH_CONFIG.name
 
-    let title: string;
+    let title: string
     if (decision.action === 'bridge_to_ethereum') {
-      title = `Proposed by Treasury Agent — Bridge ${decision.proposedAmount} USDC to ${ethNetworkName}`;
+      title = `Proposed by Treasury Agent — Bridge ${decision.proposedAmount} USDC to ${ethNetworkName}`
     } else if (decision.action === 'yield_allocation') {
-      title = `Proposed by Treasury Agent — Yield Allocation: Deploy ${decision.proposedAmount || 50} USDC to Liquidity Strategy`;
+      title = `Proposed by Treasury Agent — Yield Allocation: Deploy ${decision.proposedAmount || 50} USDC to Liquidity Strategy`
     } else {
-      title = `Proposed by Treasury Agent — Rebalancing: ${decision.action}`;
+      title = `Proposed by Treasury Agent — Rebalancing: ${decision.action}`
     }
 
-    const description = `Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: ${decision.action}\nAmount: ${decision.proposedAmount || 0} USDC\nAgent: ${this.getAgentAddress()}\nTimestamp: ${new Date().toISOString()}\n\nAI Reasoning:\n${decision.reasoning}\n\nThis proposal was created autonomously by the SynArc Treasury Agent.`
+    const description = `Proposed by Treasury Agent\n\nAUTONOMOUS AGENT PROPOSAL\nAction: ${decision.action}\nAmount: ${decision.proposedAmount || 0} USDC\nAgent: ${this.getAgentAddress(network)}\nTimestamp: ${new Date().toISOString()}\n\nAI Reasoning:\n${decision.reasoning}\n\nThis proposal was created autonomously by the SynArc Treasury Agent.`
     
     // Pin verifiable rebalancing specification to IPFS, falling back to genuine pinned baseline spec
     let deliverableURI = 'ipfs://QmPgvwkpDNgHSTx3V7NrLwCrQbppN39Zpji6o3TwbtVuiU'
@@ -270,8 +300,8 @@ Respond in JSON format:
         title,
         action: decision.action,
         proposedAmount: decision.proposedAmount || 0,
-        recipient: this.getAgentAddress(),
-        agentAddress: this.getAgentAddress(),
+        recipient: this.getAgentAddress(network),
+        agentAddress: this.getAgentAddress(network),
         timestamp: new Date().toISOString(),
         aiReasoning: decision.reasoning,
         type: 'AUTONOMOUS_TREASURY_REBALANCE'
@@ -280,13 +310,13 @@ Respond in JSON format:
         deliverableURI = pinRes
       }
     } catch (pinErr) {
-      console.warn('[TreasuryAgent] Dynamic IPFS pin fallback to verified baseline spec:', pinErr)
+      console.warn(`[TreasuryAgent] Dynamic IPFS pin fallback to verified baseline spec on ${network}:`, pinErr)
     }
 
-    const votingDuration = isMainnet ? 604800n : 300n; // 7 days on Mainnet, 5 min on Testnet
+    const votingDuration = isMainnet ? 604800n : 300n // 7 days on Mainnet, 5 min on Testnet
 
-    const txHash = await this.walletClient.writeContract({
-      address: CONTRACTS.governor,
+    const txHash = await walletClient.writeContract({
+      address: contracts.governor,
       abi: GOVERNOR_ABI,
       functionName: 'propose',
       args: [
@@ -295,24 +325,25 @@ Respond in JSON format:
         'TREASURY_REBALANCE', 
         votingDuration, 
         BigInt(Math.floor((decision.proposedAmount || 0) * 1_000_000)), 
-        this.getAgentAddress() as `0x${string}`,
+        this.getAgentAddress(network) as `0x${string}`,
         deliverableURI
       ],
     })
-    await this.publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 })
+    await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 })
     return txHash
   }
 
-  async proposeReturnFunds(): Promise<string> {
-    const cctp = new CCTPExecutor(this.privateKey)
+  async proposeReturnFunds(network: 'mainnet' | 'testnet' = 'mainnet'): Promise<string> {
+    const { isMainnet, publicClient, walletClient, contracts } = this.getClients(network)
+    const cctp = new CCTPExecutor(this.privateKey, network)
     const balance = await cctp.getEthereumUSDCBalance()
     if (balance <= 0) {
       throw new Error(`No USDC funds on ${CIRCLE_ETH_CONFIG.name} to return.`)
     }
 
-    const arcNetworkName = IS_MAINNET ? 'Arc Mainnet' : 'Arc Testnet'
+    const arcNetworkName = isMainnet ? 'Arc Mainnet' : 'Arc Testnet'
     const title = `Proposed by Treasury Agent — Return ${balance.toFixed(2)} USDC from ${CIRCLE_ETH_CONFIG.name}`
-    const description = `Proposed by Treasury Agent\n\nAUTONOMOUS RETURN PROPOSAL\nAction: return_funds\nAmount: ${balance.toFixed(2)} USDC\nDestination: Agent Operating Treasury (${CONTRACTS.treasuryAgent})\nAgent: ${this.getAgentAddress()}\nTimestamp: ${new Date().toISOString()}\n\nThis proposal was created to return bridged stablecoin reserves back to the agent operating treasury on ${arcNetworkName} via CCTP.`
+    const description = `Proposed by Treasury Agent\n\nAUTONOMOUS RETURN PROPOSAL\nAction: return_funds\nAmount: ${balance.toFixed(2)} USDC\nDestination: Agent Operating Treasury (${contracts.treasuryAgent})\nAgent: ${this.getAgentAddress(network)}\nTimestamp: ${new Date().toISOString()}\n\nThis proposal was created to return bridged stablecoin reserves back to the agent operating treasury on ${arcNetworkName} via CCTP.`
 
     // Pin return specification to IPFS, falling back to official Circle MessageTransmitter reference on target chain
     let deliverableURI = CIRCLE_ETH_CONFIG.transmitterUrl
@@ -324,8 +355,8 @@ Respond in JSON format:
         currency: 'USDC',
         sourceChain: CIRCLE_ETH_CONFIG.name,
         destinationChain: arcNetworkName,
-        destinationTreasury: CONTRACTS.treasuryAgent,
-        agentAddress: this.getAgentAddress(),
+        destinationTreasury: contracts.treasuryAgent,
+        agentAddress: this.getAgentAddress(network),
         timestamp: new Date().toISOString(),
         type: 'CCTP_REVERSE_RETURN'
       }, `cctp-return-${Date.now()}`)
@@ -333,11 +364,11 @@ Respond in JSON format:
         deliverableURI = pinRes
       }
     } catch (pinErr) {
-      console.warn(`[TreasuryAgent] Dynamic IPFS pin fallback to ${CIRCLE_ETH_CONFIG.name} CCTP transmitter:`, pinErr)
+      console.warn(`[TreasuryAgent] Dynamic IPFS pin fallback to ${CIRCLE_ETH_CONFIG.name} CCTP transmitter on ${network}:`, pinErr)
     }
 
-    const txHash = await this.walletClient.writeContract({
-      address: CONTRACTS.governor,
+    const txHash = await walletClient.writeContract({
+      address: contracts.governor,
       abi: GOVERNOR_ABI,
       functionName: 'propose',
       args: [
@@ -346,20 +377,21 @@ Respond in JSON format:
         'TREASURY_REBALANCE',
         300n,
         0n,
-        this.getAgentAddress() as `0x${string}`,
+        this.getAgentAddress(network) as `0x${string}`,
         deliverableURI
       ],
     })
-    await this.publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 })
+    await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 })
 
     this.logAction({
       timestamp: new Date().toISOString(),
       action: 'return_funds',
-      reasoning: `ADMIN INITIATED: Proposed return of ${balance.toFixed(2)} USDC from ${CIRCLE_ETH_CONFIG.name} back to main Treasury. Governance Proposal created. Attestation: ${deliverableURI}. Tx: ${txHash}`,
+      reasoning: `ADMIN INITIATED: Proposed return of ${balance.toFixed(2)} USDC from ${CIRCLE_ETH_CONFIG.name} back to main Treasury on ${network}. Governance Proposal created. Attestation: ${deliverableURI}. Tx: ${txHash}`,
       txHash,
       deliverableURI,
       status: 'pending',
-      usdcAmount: balance
+      usdcAmount: balance,
+      network
     })
 
     return txHash
@@ -368,21 +400,22 @@ Respond in JSON format:
   /**
    * Scans and autonomously executes succeeded rebalance proposals on-chain
    */
-  async executeSucceededProposals(): Promise<string[]> {
+  async executeSucceededProposals(network: 'mainnet' | 'testnet' = 'mainnet'): Promise<string[]> {
     const executedTxHashes: string[] = []
     try {
-      const count = await this.publicClient.readContract({
-        address: CONTRACTS.governor,
+      const { isMainnet, publicClient, walletClient, contracts } = this.getClients(network)
+      const count = await publicClient.readContract({
+        address: contracts.governor,
         abi: GOVERNOR_ABI,
         functionName: 'proposalCount'
       })
 
-      const agentAddr = this.getAgentAddress().toLowerCase()
+      const agentAddr = this.getAgentAddress(network).toLowerCase()
 
       const startIdx = Math.max(1, Number(count) - 15)
       for (let i = startIdx; i <= Number(count); i++) {
-        const state = await this.publicClient.readContract({
-          address: CONTRACTS.governor,
+        const state = await publicClient.readContract({
+          address: contracts.governor,
           abi: GOVERNOR_ABI,
           functionName: 'state',
           args: [BigInt(i)]
@@ -390,8 +423,8 @@ Respond in JSON format:
 
         // State 4 = Succeeded
         if (Number(state) === 4) {
-          const prop = await this.publicClient.readContract({
-            address: CONTRACTS.governor,
+          const prop = await publicClient.readContract({
+            address: contracts.governor,
             abi: GOVERNOR_ABI,
             functionName: 'getProposal',
             args: [BigInt(i)]
@@ -403,7 +436,7 @@ Respond in JSON format:
 
           // Only execute agent's own rebalance proposals targeting this agent
           if ((title.includes('[AGENT]') || title.includes('Proposed by Treasury Agent')) && target.toLowerCase() === agentAddr) {
-            console.log(`[TreasuryAgent] Found succeeded proposal #${i}: "${title}". Submitting to Forensic Sentinel...`)
+            console.log(`[TreasuryAgent] Found succeeded proposal #${i} on ${network}: "${title}". Submitting to Forensic Sentinel...`)
 
             const deliverableURI = prop[15] || ""
             const impactUSDC = Number(impact) / 1_000_000
@@ -422,30 +455,31 @@ Respond in JSON format:
               amountUSDC: impactUSDC
             })
 
-            console.log(`[TreasuryAgent] Forensic Sentinel Verdict: ${auditTicket.verdict} (Risk Score: ${auditTicket.riskScore}/100)`)
+            console.log(`[TreasuryAgent] Forensic Sentinel Verdict on ${network}: ${auditTicket.verdict} (Risk Score: ${auditTicket.riskScore}/100)`)
 
             if (auditTicket.verdict === "REJECTED_AUDIT_FAILURE") {
               const violations = auditTicket.securityControlViolations || auditTicket.canteenControlViolations || [];
-              console.error(`[TreasuryAgent] Execution halted by Forensic Sentinel: ${violations.join(", ")}`)
+              console.error(`[TreasuryAgent] Execution halted by Forensic Sentinel on ${network}: ${violations.join(", ")}`)
               this.logAction({
                 timestamp: new Date().toISOString(),
                 action: 'error',
                 reasoning: `[FORENSIC SENTINEL REJECTION] Proposal #${i} blocked: ${violations.join("; ")}`,
-                status: 'failed'
+                status: 'failed',
+                network
               })
               continue
             }
 
             try {
               // 1. Call execute on governor
-              const execTx = await this.walletClient.writeContract({
-                address: CONTRACTS.governor,
+              const execTx = await walletClient.writeContract({
+                address: contracts.governor,
                 abi: GOVERNOR_ABI,
                 functionName: 'execute',
                 args: [BigInt(i)],
               })
-              await this.publicClient.waitForTransactionReceipt({ hash: execTx, timeout: 120_000 })
-              console.log(`[TreasuryAgent] Governor executed proposal #${i}. Hash: ${execTx}`)
+              await publicClient.waitForTransactionReceipt({ hash: execTx, timeout: 120_000 })
+              console.log(`[TreasuryAgent] Governor executed proposal #${i} on ${network}. Hash: ${execTx}`)
 
               // Wait a few seconds for blockchain settlement
               await new Promise(resolve => setTimeout(resolve, 5000))
@@ -454,21 +488,22 @@ Respond in JSON format:
               const description = prop[3] || ""
               const isReturn = title.toLowerCase().includes('return') || description.toLowerCase().includes('return_funds')
 
-              const ethNetworkName = CIRCLE_ETH_CONFIG.name
-              const arcNetworkName = IS_MAINNET ? 'Arc Mainnet' : 'Arc Testnet'
+              const ethNetworkName = isMainnet ? 'Ethereum Mainnet' : CIRCLE_ETH_CONFIG.name
+              const arcNetworkName = isMainnet ? 'Arc Mainnet' : 'Arc Testnet'
 
               if (isReturn) {
-                console.log(`[TreasuryAgent] Initiating reverse CCTP bridge to return funds to main Treasury...`)
+                console.log(`[TreasuryAgent] Initiating reverse CCTP bridge to return funds on ${network}...`)
 
                 const liveAction: AgentAction = {
                   timestamp: new Date().toISOString(),
                   action: 'return_funds',
                   reasoning: `[CCTP Step 1/3] Succeeded return proposal #${i} executed on governor. Initializing ${ethNetworkName} -> ${arcNetworkName} transfer...`,
-                  status: 'pending'
+                  status: 'pending',
+                  network
                 }
                 this.logAction(liveAction)
 
-                const cctp = new CCTPExecutor(this.privateKey)
+                const cctp = new CCTPExecutor(this.privateKey, network)
 
                 // Callback to update actions log in real-time
                 const onProgress = (msg: string) => {
@@ -486,8 +521,8 @@ Respond in JSON format:
                   liveAction.usdcAmount = balance
                   this.logAction(liveAction)
 
-                  const bridgeRes = await cctp.bridgeToArc(balance, CONTRACTS.treasuryAgent, onProgress)
-                  console.log(`[TreasuryAgent] CCTP return completed successfully. Hash: ${bridgeRes.burnTxHash}`)
+                  const bridgeRes = await cctp.bridgeToArc(balance, contracts.treasuryAgent, onProgress)
+                  console.log(`[TreasuryAgent] CCTP return completed on ${network}. Hash: ${bridgeRes.burnTxHash}`)
 
                   liveAction.status = 'executed'
                   liveAction.txHash = bridgeRes.burnTxHash
@@ -497,14 +532,14 @@ Respond in JSON format:
 
                   executedTxHashes.push(bridgeRes.burnTxHash)
                 } catch (bridgeErr: any) {
-                  console.error('[TreasuryAgent] CCTP return failed:', bridgeErr)
+                  console.error(`[TreasuryAgent] CCTP return failed on ${network}:`, bridgeErr)
                   liveAction.status = 'failed'
-                  liveAction.reasoning = `CCTP return execution failed: ${bridgeErr?.message || bridgeErr}`
+                  liveAction.reasoning = `CCTP return execution failed: ${cleanErrorMessage(bridgeErr)}`
                   this.logAction(liveAction)
                 }
               } else {
                 const amountUsdc = Number(impact) / 1_000_000
-                console.log(`[TreasuryAgent] Initiating CCTP bridge for ${amountUsdc} USDC to ${ethNetworkName}...`)
+                console.log(`[TreasuryAgent] Initiating CCTP bridge for ${amountUsdc} USDC on ${network}...`)
 
                 // Log starting of CCTP
                 const liveAction: AgentAction = {
@@ -512,11 +547,12 @@ Respond in JSON format:
                   action: 'bridge_to_ethereum',
                   reasoning: `[CCTP Step 1/3] Succeeded proposal #${i} executed on governor. Initializing CCTP transfer to ${ethNetworkName}...`,
                   status: 'pending',
-                  usdcAmount: amountUsdc
+                  usdcAmount: amountUsdc,
+                  network
                 }
                 this.logAction(liveAction)
 
-                const cctp = new CCTPExecutor(this.privateKey)
+                const cctp = new CCTPExecutor(this.privateKey, network)
 
                 // Callback to update actions log in real-time
                 const onProgress = (msg: string) => {
@@ -526,7 +562,7 @@ Respond in JSON format:
 
                 try {
                   const bridgeRes = await cctp.bridgeToEthereum(amountUsdc, this.account.address, onProgress)
-                  console.log(`[TreasuryAgent] CCTP bridge completed successfully. Hash: ${bridgeRes.burnTxHash}`)
+                  console.log(`[TreasuryAgent] CCTP bridge completed on ${network}. Hash: ${bridgeRes.burnTxHash}`)
 
                   liveAction.status = 'executed'
                   liveAction.txHash = bridgeRes.burnTxHash
@@ -536,20 +572,20 @@ Respond in JSON format:
 
                   executedTxHashes.push(bridgeRes.burnTxHash)
                 } catch (bridgeErr: any) {
-                  console.error('[TreasuryAgent] CCTP bridge failed:', bridgeErr)
+                  console.error(`[TreasuryAgent] CCTP bridge failed on ${network}:`, bridgeErr)
                   liveAction.status = 'failed'
-                  liveAction.reasoning = `CCTP bridge execution failed: ${bridgeErr?.message || bridgeErr}`
+                  liveAction.reasoning = `CCTP bridge execution failed: ${cleanErrorMessage(bridgeErr)}`
                   this.logAction(liveAction)
                 }
               }
             } catch (proposalExecErr: any) {
-              console.error(`[TreasuryAgent] Failed to execute succeeded proposal #${i}:`, proposalExecErr?.message || proposalExecErr)
+              console.error(`[TreasuryAgent] Failed to execute succeeded proposal #${i} on ${network}:`, cleanErrorMessage(proposalExecErr))
             }
           }
         }
       }
-    } catch (err) {
-      console.error('[TreasuryAgent] Failed to check/execute succeeded proposals:', err)
+    } catch (err: any) {
+      console.error(`[TreasuryAgent] Failed to check/execute succeeded proposals on ${network}:`, err?.message || err)
     }
     return executedTxHashes
   }
@@ -557,20 +593,21 @@ Respond in JSON format:
   /**
    * Scans and autonomously votes FOR active rebalance proposals on-chain
    */
-  async voteOnActiveProposals(): Promise<void> {
+  async voteOnActiveProposals(network: 'mainnet' | 'testnet' = 'mainnet'): Promise<void> {
     try {
-      const count = await this.publicClient.readContract({
-        address: CONTRACTS.governor,
+      const { publicClient, walletClient, contracts } = this.getClients(network)
+      const count = await publicClient.readContract({
+        address: contracts.governor,
         abi: GOVERNOR_ABI,
         functionName: 'proposalCount'
       })
 
-      const agentAddr = this.getAgentAddress().toLowerCase()
+      const agentAddr = this.getAgentAddress(network).toLowerCase()
 
       const startIdx = Math.max(1, Number(count) - 15)
       for (let i = startIdx; i <= Number(count); i++) {
-        const state = await this.publicClient.readContract({
-          address: CONTRACTS.governor,
+        const state = await publicClient.readContract({
+          address: contracts.governor,
           abi: GOVERNOR_ABI,
           functionName: 'state',
           args: [BigInt(i)]
@@ -578,8 +615,8 @@ Respond in JSON format:
 
         // State 1 = Active
         if (Number(state) === 1) {
-          const prop = await this.publicClient.readContract({
-            address: CONTRACTS.governor,
+          const prop = await publicClient.readContract({
+            address: contracts.governor,
             abi: GOVERNOR_ABI,
             functionName: 'getProposal',
             args: [BigInt(i)]
@@ -590,47 +627,53 @@ Respond in JSON format:
 
           // Only vote on agent's own rebalance proposals targeting this agent
           if ((title.includes('[AGENT]') || title.includes('Proposed by Treasury Agent')) && target.toLowerCase() === agentAddr) {
-            const voted = await this.publicClient.readContract({
-              address: CONTRACTS.governor,
+            const voted = await publicClient.readContract({
+              address: contracts.governor,
               abi: GOVERNOR_ABI,
               functionName: 'hasVoted',
               args: [BigInt(i), this.account.address]
             })
 
             if (!voted) {
-              console.log(`[TreasuryAgent] Proactively voting FOR active proposal #${i}...`)
+              console.log(`[TreasuryAgent] Proactively voting FOR active proposal #${i} on ${network}...`)
               
-              const voteTx = await this.walletClient.writeContract({
-                address: CONTRACTS.governor,
+              const voteTx = await walletClient.writeContract({
+                address: contracts.governor,
                 abi: parseAbi(['function castVote(uint256 proposalId, uint8 support) external returns (uint256)']),
                 functionName: 'castVote',
                 args: [BigInt(i), 1], // 1 = FOR
               })
-              await this.publicClient.waitForTransactionReceipt({ hash: voteTx, timeout: 120_000 })
-              console.log(`[TreasuryAgent] Vote casted successfully. Hash: ${voteTx}`)
+              await publicClient.waitForTransactionReceipt({ hash: voteTx, timeout: 120_000 })
+              console.log(`[TreasuryAgent] Vote casted successfully on ${network}. Hash: ${voteTx}`)
 
               this.logAction({
                 timestamp: new Date().toISOString(),
                 action: 'vote_for_proposal',
                 reasoning: `AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #${i} ("${title}").`,
                 txHash: voteTx,
-                status: 'executed'
+                status: 'executed',
+                network
               })
             }
           }
         }
       }
-    } catch (err) {
-      console.error('[TreasuryAgent] Failed to check/vote active proposals:', err)
+    } catch (err: any) {
+      console.error(`[TreasuryAgent] Failed to check/vote active proposals on ${network}:`, err?.message || err)
     }
   }
 
   logAction(action: AgentAction) {
     this.actions = this.loadActions()
     
+    // Sanitize reasoning if excessively long
+    if (action.reasoning && action.reasoning.length > 300) {
+      action.reasoning = cleanErrorMessage(action.reasoning)
+    }
+
     // De-duplicate actions to prevent duplicates if we are updating step status
     const existingIndex = this.actions.findIndex(
-      a => a.action === action.action && a.status === 'pending'
+      a => a.action === action.action && a.status === 'pending' && (!a.network || a.network === action.network)
     )
     if (existingIndex >= 0) {
       this.actions[existingIndex] = action
@@ -642,34 +685,52 @@ Respond in JSON format:
     this.saveActions(this.actions)
   }
 
-  async run(forcedAction?: { action: string; reasoning: string; proposedAmount?: number }): Promise<AgentAction> {
+  async run(
+    networkOrForced?: 'mainnet' | 'testnet' | { action: string; reasoning: string; proposedAmount?: number },
+    forcedActionParam?: { action: string; reasoning: string; proposedAmount?: number }
+  ): Promise<AgentAction> {
     if (this.privateKey === '0x0000000000000000000000000000000000000000000000000000000000000001') {
       throw new Error('AGENT_PRIVATE_KEY environment variable is not set. Silent fallback disabled.')
     }
 
-    const cooldown = 10000 // 10 seconds
-    if (Date.now() - this.lastExecutionTime < cooldown) {
-      throw new Error(`Rate limit exceeded. Please wait ${Math.ceil((cooldown - (Date.now() - this.lastExecutionTime)) / 1000)}s before triggering the agent again.`)
+    let network: 'mainnet' | 'testnet' = 'mainnet'
+    let forcedAction: { action: string; reasoning: string; proposedAmount?: number } | undefined
+
+    if (typeof networkOrForced === 'string') {
+      network = networkOrForced
+      forcedAction = forcedActionParam
+    } else if (networkOrForced && typeof networkOrForced === 'object') {
+      forcedAction = networkOrForced
+      network = 'mainnet'
     }
-    this.lastExecutionTime = Date.now()
+
+    const cooldown = 10000 // 10 seconds per network
+    const lastTime = this.lastExecutionTimes[network] || 0
+    if (Date.now() - lastTime < cooldown) {
+      throw new Error(`Rate limit exceeded for ${network}. Please wait ${Math.ceil((cooldown - (Date.now() - lastTime)) / 1000)}s before triggering the agent again.`)
+    }
+    this.lastExecutionTimes[network] = Date.now()
 
     const startTime = new Date().toISOString()
-    const isMainnet = getActiveNetwork() === 'mainnet';
+    const { isMainnet, publicClient, walletClient, contracts } = this.getClients(network)
+    const networkLabel = isMainnet ? 'Arc Mainnet' : 'Arc Testnet'
+
     try {
       // Check if the agent is paused on-chain before running
       try {
-        const isPaused = await this.publicClient.readContract({
-          address: this.getAgentAddress(),
+        const isPaused = await publicClient.readContract({
+          address: this.getAgentAddress(network) as `0x${string}`,
           abi: parseAbi(['function paused() view returns (bool)']),
           functionName: 'paused'
         })
         if (isPaused) {
-          console.log('[TreasuryAgent] Agent is paused on-chain. Skipping execution.')
+          console.log(`[TreasuryAgent] Agent is paused on-chain on ${networkLabel}. Skipping execution.`)
           const pauseAction: AgentAction = {
             timestamp: startTime,
             action: 'monitoring',
-            reasoning: 'Agent execution skipped: The Treasury Agent is currently paused on-chain via the emergency stop toggle.',
-            status: 'executed'
+            reasoning: `Agent execution skipped: The Treasury Agent is currently paused on-chain on ${networkLabel} via emergency stop.`,
+            status: 'executed',
+            network
           }
           this.logAction(pauseAction)
           return pauseAction
@@ -679,45 +740,45 @@ Respond in JSON format:
       }
 
       // Verify native gas balance of agent account before attempting on-chain transactions
-      let agentGasBalance = 0n;
+      let agentGasBalance = 0n
       try {
-        agentGasBalance = await this.publicClient.getBalance({ address: this.account.address });
+        agentGasBalance = await publicClient.getBalance({ address: this.account.address })
       } catch (balErr) {
-        console.warn('[TreasuryAgent] Could not verify agent gas balance:', balErr);
+        console.warn(`[TreasuryAgent] Could not verify agent gas balance on ${networkLabel}:`, balErr)
       }
 
       // 1. Execute any succeeded proposals first (autonomous execution)
       if (agentGasBalance > 15000000000000000n) { // > 0.015 USDC
-        const executedTxHashes = await this.executeSucceededProposals()
+        const executedTxHashes = await this.executeSucceededProposals(network)
         if (executedTxHashes.length > 0) {
-          return this.loadActions()[0]
+          return this.loadActions().find(a => (!a.network || a.network === network)) || this.loadActions()[0]
         }
 
         // 2. Vote on any active proposals autonomously
-        await this.voteOnActiveProposals()
+        await this.voteOnActiveProposals(network)
 
         // 2.5 Sync balance of the treasury contract
         try {
-          const syncTarget = isMainnet ? CONTRACTS.treasuryGovernance : (CONTRACTS.treasuryAgent || CONTRACTS.treasuryGovernance);
-          console.log('[TreasuryAgent] Syncing on-chain balances for treasury:', syncTarget)
-          const syncTx = await this.walletClient.writeContract({
+          const syncTarget = isMainnet ? contracts.treasuryGovernance : (contracts.treasuryAgent || contracts.treasuryGovernance)
+          console.log(`[TreasuryAgent] Syncing on-chain balances for ${networkLabel} treasury:`, syncTarget)
+          const syncTx = await walletClient.writeContract({
             address: syncTarget,
             abi: parseAbi(['function syncBalance() external']),
             functionName: 'syncBalance',
             args: []
           })
-          console.log(`[TreasuryAgent] Balance sync transaction submitted: ${syncTx}`)
-          await this.publicClient.waitForTransactionReceipt({ hash: syncTx, timeout: 60_000 })
-          console.log('[TreasuryAgent] Balance sync completed successfully.')
+          console.log(`[TreasuryAgent] Balance sync transaction submitted on ${networkLabel}: ${syncTx}`)
+          await publicClient.waitForTransactionReceipt({ hash: syncTx, timeout: 60_000 })
+          console.log(`[TreasuryAgent] Balance sync completed successfully on ${networkLabel}.`)
         } catch (syncErr: any) {
-          console.warn('[TreasuryAgent] Note on syncBalance:', syncErr?.message || syncErr)
+          console.warn(`[TreasuryAgent] Note on syncBalance for ${networkLabel}:`, cleanErrorMessage(syncErr))
         }
       } else {
-        console.log(`[TreasuryAgent] Agent wallet ${this.account.address} has low gas (${agentGasBalance} wei). Skipping on-chain executions.`)
+        console.log(`[TreasuryAgent] Agent wallet ${this.account.address} has low gas (${agentGasBalance} wei on ${networkLabel}). Skipping on-chain executions.`)
       }
 
       // 3. Determine decision
-      let decision: { shouldAct: boolean; action: string; reasoning: string; proposedAmount?: number };
+      let decision: { shouldAct: boolean; action: string; reasoning: string; proposedAmount?: number }
 
       if (forcedAction) {
         decision = {
@@ -725,18 +786,17 @@ Respond in JSON format:
           action: forcedAction.action,
           reasoning: forcedAction.reasoning,
           proposedAmount: forcedAction.proposedAmount
-        };
+        }
       } else {
-        // Check treasury and proposal creation rules
-        const treasury = await this.checkTreasury()
+        const treasury = await this.checkTreasury(network)
         
         // Local check: if treasury is healthy, skip calling AI to prevent free-tier rate limits
         if (treasury.usdc >= 10 && treasury.usdc <= 100 && treasury.eurc <= 50) {
-          console.log('[TreasuryAgent] Local health check passed. Skipping AI call.')
+          console.log(`[TreasuryAgent] Local health check passed for ${networkLabel}. Skipping AI call.`)
           decision = {
             shouldAct: false,
             action: 'monitoring',
-            reasoning: `Treasury healthy (USDC: ${treasury.usdc}, EURC: ${treasury.eurc}). Continuing to monitor.`
+            reasoning: `Treasury healthy on ${networkLabel} (USDC: ${treasury.usdc}, EURC: ${treasury.eurc}). Continuing to monitor.`
           }
         } else {
           decision = await this.analyzeAndDecide(treasury)
@@ -744,97 +804,132 @@ Respond in JSON format:
       }
       
       if (!decision.shouldAct) {
-        const action: AgentAction = { timestamp: startTime, action: 'monitoring', reasoning: decision.reasoning, status: 'executed' }
+        const action: AgentAction = {
+          timestamp: startTime,
+          action: 'monitoring',
+          reasoning: decision.reasoning,
+          status: 'executed',
+          network
+        }
         this.logAction(action)
         return action
       }
 
-      // If action is required, check for recent duplicate proposal to prevent gas spam
-      const recentActions = this.loadActions();
+      // Check for recent duplicate proposal on this network
+      const recentActions = this.loadActions()
       const recentSimilar = recentActions.find(a => 
+        (!a.network || a.network === network) &&
         a.action === decision.action && 
         (a.status === 'executed' || a.status === 'pending') &&
-        (Date.now() - new Date(a.timestamp).getTime() < 12 * 60 * 60 * 1000) // 12 hours cooldown
-      );
+        (Date.now() - new Date(a.timestamp).getTime() < 12 * 60 * 60 * 1000)
+      )
       if (!forcedAction && recentSimilar) {
-        console.log(`[TreasuryAgent] A proposal for ${decision.action} was already broadcast recently. Skipping duplicate.`);
+        console.log(`[TreasuryAgent] A proposal for ${decision.action} on ${networkLabel} was already broadcast recently. Skipping duplicate.`)
         const waitAction: AgentAction = {
           timestamp: startTime,
           action: 'monitoring',
-          reasoning: `Treasury flagged ${decision.action}, but an active governance proposal is already on-chain. Awaiting voting or execution before submitting another.`,
-          status: 'executed'
-        };
-        this.logAction(waitAction);
-        return waitAction;
+          reasoning: `Treasury flagged ${decision.action} on ${networkLabel}, but an active governance proposal is already on-chain. Awaiting voting or execution before submitting another.`,
+          status: 'executed',
+          network
+        }
+        this.logAction(waitAction)
+        return waitAction
       }
 
-      // If action is required but agent lacks native gas (minimum 0.018 USDC for Governor propose), log deferred status cleanly
-      const MIN_GAS_FOR_PROPOSAL = 18000000000000000n; // 0.018 USDC
+      // Verify gas for proposal creation
+      const MIN_GAS_FOR_PROPOSAL = 18000000000000000n // 0.018 USDC
       if (agentGasBalance < MIN_GAS_FOR_PROPOSAL) {
-        const networkLabel = isMainnet ? 'Arc Mainnet' : 'Arc Testnet';
-        console.warn(`[TreasuryAgent] Agent wallet ${this.account.address} has low gas (${agentGasBalance} wei on ${networkLabel}). Skipping proposal broadcast.`);
+        console.warn(`[TreasuryAgent] Agent wallet ${this.account.address} has low gas (${agentGasBalance} wei on ${networkLabel}). Skipping proposal broadcast.`)
         const gasAction: AgentAction = {
           timestamp: startTime,
           action: decision.action,
           reasoning: `${decision.reasoning} [Execution deferred: Agent wallet ${this.account.address} requires native gas on ${networkLabel} to broadcast on-chain transaction.]`,
           status: 'failed',
-          usdcAmount: decision.proposedAmount
-        };
-        this.logAction(gasAction);
-        return gasAction;
+          usdcAmount: decision.proposedAmount,
+          network
+        }
+        this.logAction(gasAction)
+        return gasAction
       }
       
       let txHash: string | undefined
       try {
-        txHash = await this.createRebalancingProposal(decision)
+        txHash = await this.createRebalancingProposal(decision, network)
       } catch (propErr: any) {
-        console.error('[TreasuryAgent] Failed to create rebalance proposal:', propErr)
-        const failedAction: AgentAction = { timestamp: startTime, action: decision.action, reasoning: decision.reasoning + ` [Failed to create proposal on-chain: ${propErr?.message || propErr}]`, status: 'failed', usdcAmount: decision.proposedAmount }
+        const errorSummary = cleanErrorMessage(propErr)
+        console.error(`[TreasuryAgent] Failed to create rebalance proposal on ${networkLabel}:`, errorSummary)
+        const failedAction: AgentAction = {
+          timestamp: startTime,
+          action: decision.action,
+          reasoning: `${decision.reasoning} [Failed to create proposal on-chain: ${errorSummary}]`,
+          status: 'failed',
+          usdcAmount: decision.proposedAmount,
+          network
+        }
         this.logAction(failedAction)
         return failedAction
       }
-      const action: AgentAction = { timestamp: startTime, action: decision.action, reasoning: decision.reasoning, txHash, status: 'executed', usdcAmount: decision.proposedAmount }
+
+      const action: AgentAction = {
+        timestamp: startTime,
+        action: decision.action,
+        reasoning: decision.reasoning,
+        txHash,
+        status: 'executed',
+        usdcAmount: decision.proposedAmount,
+        network
+      }
       this.logAction(action)
       return action
     } catch (error: any) {
-      const action: AgentAction = { timestamp: startTime, action: 'error', reasoning: error?.message || 'Agent execution failed', status: 'failed' }
+      const errorMsg = cleanErrorMessage(error)
+      console.error(`[TreasuryAgent] Uncaught error during ${networkLabel} run:`, errorMsg)
+      const action: AgentAction = {
+        timestamp: startTime,
+        action: 'error',
+        reasoning: errorMsg || 'Agent execution failed',
+        status: 'failed',
+        network
+      }
       this.logAction(action)
       return action
     }
   }
 
-  async getEthereumBalance(): Promise<number> {
+  async getEthereumBalance(network: 'mainnet' | 'testnet' = 'mainnet'): Promise<number> {
     try {
-      const cctp = new CCTPExecutor(this.privateKey)
+      const cctp = new CCTPExecutor(this.privateKey, network)
       const bal = await cctp.getEthereumUSDCBalance()
       return bal > 0 ? bal : 42.50
     } catch (err) {
-      console.error(`[TreasuryAgent] Failed to check ${CIRCLE_ETH_CONFIG.name} USDC balance:`, err)
+      const ethName = network === 'mainnet' ? 'Ethereum Mainnet' : 'Ethereum Sepolia'
+      console.error(`[TreasuryAgent] Failed to check ${ethName} USDC balance:`, err)
       return 42.50
     }
   }
 
   // Alias for backward compatibility
   async getSepoliaBalance(): Promise<number> {
-    return this.getEthereumBalance()
+    return this.getEthereumBalance('testnet')
   }
 
-  async triggerReturnFunds(): Promise<void> {
+  async triggerReturnFunds(network: 'mainnet' | 'testnet' = 'mainnet'): Promise<void> {
     const startTime = new Date().toISOString()
-    const ethNetworkName = CIRCLE_ETH_CONFIG.name
-    const arcNetworkName = IS_MAINNET ? 'Arc Mainnet' : 'Arc Testnet'
+    const { isMainnet, contracts } = this.getClients(network)
+    const ethNetworkName = isMainnet ? 'Ethereum Mainnet' : CIRCLE_ETH_CONFIG.name
+    const arcNetworkName = isMainnet ? 'Arc Mainnet' : 'Arc Testnet'
     const returnAction: AgentAction = {
       timestamp: startTime,
       action: 'return_funds',
-      reasoning: `[CCTP Step 1/3] Return funds process triggered by administrator. Initializing ${ethNetworkName} -> ${arcNetworkName} transfer...`,
-      status: 'pending'
+      reasoning: `[CCTP Step 1/3] Return funds process triggered by administrator on ${network}. Initializing ${ethNetworkName} -> ${arcNetworkName} transfer...`,
+      status: 'pending',
+      network
     }
     this.logAction(returnAction)
 
     try {
-      const cctp = new CCTPExecutor(this.privateKey)
+      const cctp = new CCTPExecutor(this.privateKey, network)
       
-      // 1. Get Ethereum USDC Balance
       const balance = await cctp.getEthereumUSDCBalance()
       if (balance <= 0) {
         throw new Error(`No USDC funds available on ${ethNetworkName} for the Treasury Agent.`)
@@ -843,16 +938,12 @@ Respond in JSON format:
       returnAction.usdcAmount = balance
       this.logAction(returnAction)
 
-      // Callback to update progress log in actions DB
       const onProgress = (msg: string) => {
         returnAction.reasoning = msg
         this.logAction(returnAction)
       }
 
-      // Main Treasury contract is the recipient of the returned funds
-      const treasuryAddress = CONTRACTS.treasury
-
-      // 2. Run the bridge
+      const treasuryAddress = contracts.treasury
       const bridgeRes = await cctp.bridgeToArc(balance, treasuryAddress, onProgress)
       
       returnAction.status = 'executed'
@@ -861,19 +952,24 @@ Respond in JSON format:
       returnAction.reasoning = `RETURN SUCCESSFUL: Successfully returned ${balance} USDC from ${ethNetworkName} back to the main Treasury contract on ${arcNetworkName} via CCTP. Circle Witness: ${bridgeRes.attestationUrl}. Burn Tx: ${bridgeRes.burnTxHash}, Mint Tx: ${bridgeRes.mintTxHash}`
       this.logAction(returnAction)
     } catch (err: any) {
-      console.error('[TreasuryAgent] returnFunds failed:', err)
+      console.error(`[TreasuryAgent] returnFunds failed on ${network}:`, err)
       returnAction.status = 'failed'
-      returnAction.reasoning = `Return funds failed: ${err?.message || err}`
+      returnAction.reasoning = `Return funds failed: ${cleanErrorMessage(err)}`
       this.logAction(returnAction)
     }
   }
 
-  getRecentActions(): AgentAction[] {
-    return this.loadActions()
+  getRecentActions(network?: 'mainnet' | 'testnet'): AgentAction[] {
+    const actions = this.loadActions()
+    if (!network) return actions
+    return actions.filter(a => !a.network || a.network === network)
   }
 
-  getAgentAddress(): string {
-    return process.env.NEXT_PUBLIC_AGENT_ADDRESS || this.account.address
+  getAgentAddress(network: 'mainnet' | 'testnet' = 'mainnet'): string {
+    if (network === 'mainnet') {
+      return process.env.NEXT_PUBLIC_MAINNET_TREASURY_AGENT_ADDRESS || process.env.NEXT_PUBLIC_AGENT_ADDRESS || this.account.address
+    }
+    return process.env.NEXT_PUBLIC_TREASURY_AGENT_ADDRESS || this.account.address
   }
 }
 

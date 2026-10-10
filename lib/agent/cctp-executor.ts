@@ -1,6 +1,6 @@
 import { createWalletClient, createPublicClient, http, fallback, parseUnits, parseAbi, decodeEventLog, keccak256, decodeAbiParameters, encodeFunctionData } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { ARC_CHAIN, ARC_GAS, ARC_RPC_URLS, IS_MAINNET, CIRCLE_IRIS_API_URL, CIRCLE_ETH_CONFIG, ACTIVE_NETWORK } from '@/lib/arc-config'
+import { ARC_CHAIN, ARC_GAS, ARC_RPC_URLS, IS_MAINNET, CIRCLE_IRIS_API_URL, CIRCLE_ETH_CONFIG, ACTIVE_NETWORK, getActiveNetwork, getMainnetRpcUrls, getTestnetRpcUrls, arcMainnet, arcTestnet } from '@/lib/arc-config'
 import { mainnet, sepolia } from 'viem/chains'
 
 // Circle CCTP contract addresses (dynamically resolved for Mainnet or Testnet)
@@ -51,25 +51,28 @@ export class CCTPExecutor {
   public get sepoliaWalletClient() { return this.ethWalletClient }
   public get sepoliaPublicClient() { return this.ethPublicClient }
 
-  constructor(privateKey: `0x${string}`) {
+  constructor(privateKey: `0x${string}`, targetNetwork?: 'mainnet' | 'testnet') {
     this.privateKey = privateKey
     this.account = privateKeyToAccount(privateKey)
+    const isMainnet = targetNetwork ? targetNetwork === 'mainnet' : (getActiveNetwork() === 'mainnet')
+    const arcRpcUrls = isMainnet ? getMainnetRpcUrls() : getTestnetRpcUrls()
+    const arcChain = isMainnet ? arcMainnet : arcTestnet
     const arcTransport = fallback(
-      ARC_RPC_URLS.map(url => http(url, { timeout: 10000 }))
+      arcRpcUrls.map(url => http(url, { timeout: 10000 }))
     )
     this.arcPublicClient = createPublicClient({
-      chain: ARC_CHAIN,
+      chain: arcChain,
       transport: arcTransport,
     })
     this.arcWalletClient = createWalletClient({
       account: this.account,
-      chain: ARC_CHAIN,
+      chain: arcChain,
       transport: arcTransport,
     })
 
     // Ethereum network (Mainnet or Sepolia) configuration
-    const ethChain = IS_MAINNET ? mainnet : sepolia
-    const ethRpcUrls = IS_MAINNET
+    const ethChain = isMainnet ? mainnet : sepolia
+    const ethRpcUrls = isMainnet
       ? Array.from(new Set([
           process.env.NEXT_PUBLIC_ETH_MAINNET_RPC,
           'https://eth.llamarpc.com',

@@ -25,57 +25,50 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { searchParams } = new URL(req.url);
+  const networkParam = searchParams.get('network');
+
+  if (!networkParam || (networkParam !== 'mainnet' && networkParam !== 'testnet')) {
+    return NextResponse.json(
+      { error: 'Missing or invalid network parameter. Must specify ?network=mainnet or ?network=testnet' },
+      { status: 400 }
+    );
+  }
+
   try {
-    console.log('[API Cron] Automated run triggered via GET request.');
-    const actionResult = await treasuryAgent.run();
+    console.log(`[API Cron] Automated run triggered for ${networkParam} via GET request.`);
+    const actionResult = await treasuryAgent.run(networkParam);
 
-    // checkTreasury() may throw if the RPC is down — wrap it so a contract
-    // read failure never crashes a healthy cron execution into a 500.
-    let treasury: { usdc: number; eurc: number; usedFallback: boolean } | null = null;
-    let treasuryError: string | null = null;
-    try {
-      treasury = await treasuryAgent.checkTreasury();
-    } catch (err: any) {
-      treasuryError = err?.message || 'Treasury read failed';
-      console.error('[API Cron] Post-run checkTreasury() failed (non-fatal):', treasuryError);
-    }
+    // Detailed execution telemetry logged server-side
+    console.log(`[API Cron] ${networkParam} execution finished:`, {
+      action: actionResult.action,
+      status: actionResult.status,
+      reasoning: actionResult.reasoning,
+      txHash: actionResult.txHash,
+      usdcAmount: actionResult.usdcAmount,
+    });
 
-    // getSepoliaBalance() already handles its own errors internally, but guard anyway
-    let sepoliaUsdc = 0;
-    try {
-      sepoliaUsdc = await treasuryAgent.getSepoliaBalance();
-    } catch (err: any) {
-      console.error('[API Cron] Post-run getSepoliaBalance() failed (non-fatal):', err?.message);
-    }
+    const actionsExecuted = (actionResult.status === 'executed' && actionResult.action !== 'monitoring') ? 1 : 0;
 
+    // Minimal response returned to cron caller to stay far below buffer thresholds
     return NextResponse.json({
-      success: true,
-      agentAddress: treasuryAgent.getAgentAddress(),
-      cronExecuted: true,
-      action: actionResult,
-      treasury: treasury
-        ? { usdc: treasury.usdc, eurc: treasury.eurc, sepoliaUsdc }
-        : { usdc: null, eurc: null, sepoliaUsdc },
-      treasurySource: treasury
-        ? (treasury.usedFallback ? 'fallback' : 'live')
-        : 'unavailable',
-      treasuryError: treasuryError ?? undefined,
-      recentActions: treasuryAgent.getRecentActions(),
-      isRunning: true,
-      lastCheck: new Date().toISOString(),
-    })
+      status: 'ok',
+      network: networkParam,
+      actionsExecuted,
+      action: actionResult.action,
+      timestamp: new Date().toISOString(),
+    });
   } catch (error: any) {
-    // Only truly unrecoverable errors reach here (e.g. rate-limit or missing key)
-    console.error('[API Cron] Unrecoverable error in GET /api/agent/run:', error?.message || error);
+    console.error(`[API Cron] Error during GET /api/agent/run for ${networkParam}:`, error?.message || error);
     return NextResponse.json(
       {
-        success: false,
-        cronExecuted: false,
+        status: 'error',
+        network: networkParam,
         error: error?.message || 'Failed to process agent state',
-        lastCheck: new Date().toISOString(),
+        timestamp: new Date().toISOString(),
       },
-      { status: 503 }
-    )
+      { status: 500 }
+    );
   }
 }
 
@@ -84,48 +77,62 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { searchParams } = new URL(req.url);
+  let networkParam = searchParams.get('network');
+  let forcedAction: { action: string; reasoning: string; proposedAmount?: number } | undefined;
+
+  if (!networkParam) {
+    try {
+      const body = await req.json();
+      if (body?.network) networkParam = body.network;
+      if (body?.action && body?.reasoning) {
+        forcedAction = {
+          action: body.action,
+          reasoning: body.reasoning,
+          proposedAmount: body.proposedAmount,
+        };
+      }
+    } catch {}
+  }
+
+  if (!networkParam || (networkParam !== 'mainnet' && networkParam !== 'testnet')) {
+    return NextResponse.json(
+      { error: 'Missing or invalid network parameter. Must specify network=mainnet or network=testnet' },
+      { status: 400 }
+    );
+  }
+
   try {
-    const action = await treasuryAgent.run();
+    console.log(`[API Cron] Automated run triggered for ${networkParam} via POST request.`);
+    const actionResult = await treasuryAgent.run(networkParam, forcedAction);
 
-    // checkTreasury() may throw if the RPC is down — wrap it so a contract
-    // read failure never crashes the route into a 500.
-    let treasury: { usdc: number; eurc: number; usedFallback: boolean } | null = null;
-    let treasuryError: string | null = null;
-    try {
-      treasury = await treasuryAgent.checkTreasury();
-    } catch (err: any) {
-      treasuryError = err?.message || 'Treasury read failed';
-      console.error('[API Cron] Post-run checkTreasury() failed (non-fatal):', treasuryError);
-    }
+    console.log(`[API Cron] ${networkParam} POST execution finished:`, {
+      action: actionResult.action,
+      status: actionResult.status,
+      reasoning: actionResult.reasoning,
+      txHash: actionResult.txHash,
+      usdcAmount: actionResult.usdcAmount,
+    });
 
-    let sepoliaUsdc = 0;
-    try {
-      sepoliaUsdc = await treasuryAgent.getSepoliaBalance();
-    } catch (err: any) {
-      console.error('[API Cron] Post-run getSepoliaBalance() failed (non-fatal):', err?.message);
-    }
+    const actionsExecuted = (actionResult.status === 'executed' && actionResult.action !== 'monitoring') ? 1 : 0;
 
     return NextResponse.json({
-      success: true,
-      action,
-      treasury: treasury
-        ? { usdc: treasury.usdc, eurc: treasury.eurc, sepoliaUsdc }
-        : { usdc: null, eurc: null, sepoliaUsdc },
-      treasurySource: treasury
-        ? (treasury.usedFallback ? 'fallback' : 'live')
-        : 'unavailable',
-      treasuryError: treasuryError ?? undefined,
-      recentActions: treasuryAgent.getRecentActions(),
-    })
+      status: 'ok',
+      network: networkParam,
+      actionsExecuted,
+      action: actionResult.action,
+      timestamp: new Date().toISOString(),
+    });
   } catch (error: any) {
-    console.error('[API Cron] Unrecoverable error in POST /api/agent/run:', error?.message || error);
+    console.error(`[API Cron] Error during POST /api/agent/run for ${networkParam}:`, error?.message || error);
     return NextResponse.json(
       {
-        success: false,
+        status: 'error',
+        network: networkParam,
         error: error?.message || 'Agent execution failed',
-        lastCheck: new Date().toISOString(),
+        timestamp: new Date().toISOString(),
       },
-      { status: 503 }
-    )
+      { status: 500 }
+    );
   }
 }
