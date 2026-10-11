@@ -29,14 +29,17 @@ Syn DAO provides the critical payment-safety layer for organizations and agent-r
 |:---|:---|:---|:---|
 | **Chain ID** | `5042` | Arc Mainnet Identifier | [Arc Explorer](https://explorer.arc.io) |
 | **RPC Endpoint** | `https://rpc.mainnet.arc.io` | Official Arc Mainnet RPC Endpoint | — |
-| **SynArcTreasury** (Release Valve) | `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B` | Three-Way Match Release Valve, Payee Cooldown & Idempotency Guard | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
-| **SynArcGovernor** (Document Engine) | `0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025` | Document-Anchored Governance Engine (48h timelock) | [Inspect](https://explorer.arc.io/address/0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025) |
-| **SynArcToken** (`sARC`) | `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4` | Primary Governance Token with checkpoint delegation | [Inspect](https://explorer.arc.io/address/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) |
+| **SynArcTreasury** (Release Valve) | `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B` | Three-Way Match Release Valve, Payee Cooldown & Idempotency Guard (Verified ✅) | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
+| **SynArcGovernor** (Document Engine) | `0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025` | Document-Anchored Governance Engine (48h timelock) (Verified ✅) | [Inspect](https://explorer.arc.io/address/0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025) |
+| **SynArcToken** (`sARC`) | `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4` | Primary Governance Token with checkpoint delegation (Verified ✅) | [Inspect](https://explorer.arc.io/address/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) |
+| **SynArcCrowdfund (Primary Mainnet Escrow)** | `0x99955b487aE5519a2b1Ff677f9bed3A6145b750d` | Milestone-Locked Creator DAO Escrow (Aura Synth Lab) (Verified ✅) | [Inspect](https://explorer.arc.io/address/0x99955b487aE5519a2b1Ff677f9bed3A6145b750d) |
 | **Authorized Operator Agent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | Autonomous AI Agent executing under-cap releases & rebalances | [Inspect](https://explorer.arc.io/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
 | **Authorized Human Reviewer** | `0xE819090D7810D89f2E86e167d0b58425dEd745D8` | Deployer EOA registered on-chain for emergency overrides & multisig signoff | [Inspect](https://explorer.arc.io/address/0xE819090D7810D89f2E86e167d0b58425dEd745D8) |
 | **Canonical USDC** | `0x3600000000000000000000000000000000000000` | Native Circle USDC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0x3600000000000000000000000000000000000000) |
 | **Canonical EURC** | `0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1` | Native Circle EURC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1) |
 | **Agent Release Cap** | `50.00 USDC` (`50_000_000 micro-USDC`) | Enforced on-chain: releases $\le 50$ autonomous; $> 50$ require human review | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
+
+> ℹ️ All 10 Creator DAO Crowdfund contracts deployed on Arc Mainnet are verified with exact match on Sourcify. See [`docs/07-smart-contracts.md`](/docs/smart-contracts) for the complete list of creator escrow addresses.
 
 ### Arc Testnet
 

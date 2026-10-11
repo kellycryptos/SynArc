@@ -92,6 +92,7 @@ Syn DAO operates natively on **Arc** (Circle's Layer 1 blockchain where gas is p
 * **SynArcToken (sARC):** `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4`
 * **SynArc Treasury (Release Valve):** `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B`
 * **SynArc Governor:** `0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025`
+* **SynArcCrowdfund (Primary Escrow):** `0x99955b487aE5519a2b1Ff677f9bed3A6145b750d` (Plus 10 verified Creator DAOs)
 
 ### Arc Testnet — Developer Sandbox
 * **EVM Chain ID:** `5042002`

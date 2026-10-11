@@ -193,7 +193,7 @@ export const CONTRACTS_MAINNET = {
   get usdc() { return (process.env.NEXT_PUBLIC_MAINNET_USDC_ADDRESS || '0x3600000000000000000000000000000000000000') as `0x${string}` },
   get eurc() { return (process.env.NEXT_PUBLIC_MAINNET_EURC_CONTRACT_ADDRESS || process.env.NEXT_PUBLIC_MAINNET_EURC_ADDRESS || '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1') as `0x${string}` },
   get tokenMessenger() { return (process.env.NEXT_PUBLIC_MAINNET_TOKEN_MESSENGER_ADDRESS || '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d') as `0x${string}` },
-  get crowdfund() { return (process.env.NEXT_PUBLIC_MAINNET_CROWDFUND_ADDRESS || '') as `0x${string}` },
+  get crowdfund() { return (process.env.NEXT_PUBLIC_MAINNET_CROWDFUND_ADDRESS || '0x99955b487aE5519a2b1Ff677f9bed3A6145b750d') as `0x${string}` },
 }
 
 

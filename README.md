@@ -412,14 +412,32 @@ https://www.syndaopro.xyz/
 |:---|:---|:---|:---|
 | **Chain ID** | `5042` | Arc Mainnet Identifier | [Arc Explorer](https://explorer.arc.io) |
 | **RPC Endpoint** | `https://rpc.mainnet.arc.io` | Official Arc Mainnet RPC Endpoint | — |
-| **SynArcTreasury** (Release Valve) | `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B` | Three-Way Match Release Valve, Payee Cooldown & Idempotency Guard | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
-| **SynArcGovernor** (Document Engine) | `0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025` | Document-Anchored Governance Engine (48h timelock) | [Inspect](https://explorer.arc.io/address/0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025) |
-| **SynArcToken** (`sARC`) | `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4` | Primary Governance Token with checkpoint delegation | [Inspect](https://explorer.arc.io/address/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) |
+| **SynArcTreasury** (Release Valve) | `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B` | Three-Way Match Release Valve, Payee Cooldown & Idempotency Guard (Verified ✅) | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
+| **SynArcGovernor** (Document Engine) | `0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025` | Document-Anchored Governance Engine (48h timelock) (Verified ✅) | [Inspect](https://explorer.arc.io/address/0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025) |
+| **SynArcToken** (`sARC`) | `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4` | Primary Governance Token with checkpoint delegation (Verified ✅) | [Inspect](https://explorer.arc.io/address/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) |
+| **SynArcCrowdfund (Primary Mainnet Escrow)** | `0x99955b487aE5519a2b1Ff677f9bed3A6145b750d` | Milestone-Locked Creator DAO Escrow (Aura Synth Lab) (Verified ✅) | [Inspect](https://explorer.arc.io/address/0x99955b487aE5519a2b1Ff677f9bed3A6145b750d) |
 | **Authorized Operator Agent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | Autonomous AI Agent executing under-cap releases & rebalances | [Inspect](https://explorer.arc.io/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
 | **Authorized Human Reviewer** | `0xE819090D7810D89f2E86e167d0b58425dEd745D8` | Deployer EOA registered on-chain for emergency overrides & multisig signoff | [Inspect](https://explorer.arc.io/address/0xE819090D7810D89f2E86e167d0b58425dEd745D8) |
 | **Canonical USDC** | `0x3600000000000000000000000000000000000000` | Native Circle USDC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0x3600000000000000000000000000000000000000) |
 | **Canonical EURC** | `0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1` | Native Circle EURC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1) |
 | **Agent Release Cap** | `50.00 USDC` (`50_000_000 micro-USDC`) | Enforced on-chain: releases $\le 50$ autonomous; $> 50$ require human review | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
+
+#### Arc Mainnet — Verified Creator DAO Escrow Contracts (`SynArcCrowdfund.sol`)
+
+All 10 Creator DAOs are deployed on Arc Mainnet (Chain ID `5042`) and **100% verified** with `exact_match` on Sourcify / Arc Explorer:
+
+| Campaign | Title | Type | Escrow Address | Sourcify Match |
+|:---|:---|:---|:---|:---|
+| `camp-main-001` | Aura Synth Lab | Human Creator | `0x99955b487aE5519a2b1Ff677f9bed3A6145b750d` | [Exact Match (55943381)](https://sourcify.dev/#/lookup/5042/0x99955b487aE5519a2b1Ff677f9bed3A6145b750d) |
+| `camp-main-002` | ArcShield AI Sentinel | AI Agent Fund | `0x2518d845C9d23AE52650f35C4E4E187BFD797f6B` | [Exact Match (55943506)](https://sourcify.dev/#/lookup/5042/0x2518d845C9d23AE52650f35C4E4E187BFD797f6B) |
+| `camp-main-003` | PixelVerse RPG | Human Creator | `0xC6BE1BCE9ADcad9d97a302D652839F399a699460` | [Exact Match (55943507)](https://sourcify.dev/#/lookup/5042/0xC6BE1BCE9ADcad9d97a302D652839F399a699460) |
+| `camp-main-004` | Krypton Protocol Research | Human Creator | `0xd1e4F8dfBD1e7eC75Fa58561909706af223c5e34` | [Exact Match (55943508)](https://sourcify.dev/#/lookup/5042/0xd1e4F8dfBD1e7eC75Fa58561909706af223c5e34) |
+| `camp-main-005` | Veritas On-Chain Journal | Human Creator | `0x8eC5c246E976b512D7c157714e464D1A38CD59B6` | [Exact Match (55943510)](https://sourcify.dev/#/lookup/5042/0x8eC5c246E976b512D7c157714e464D1A38CD59B6) |
+| `camp-main-006` | Solstice Generative Art | Human Creator | `0x11Ae69867785C36ADAcc40D383cd5f19d6288432` | [Exact Match (55943520)](https://sourcify.dev/#/lookup/5042/0x11Ae69867785C36ADAcc40D383cd5f19d6288432) |
+| `camp-main-007` | Vanguard Liquidity Optimizer | AI Agent Fund | `0x55bA23c48e3c5bE2A36a93A9124C3f7Cacac6B81` | [Exact Match (55943539)](https://sourcify.dev/#/lookup/5042/0x55bA23c48e3c5bE2A36a93A9124C3f7Cacac6B81) |
+| `camp-main-008` | Nexus SubDAO Creator Hub | Human Creator | `0x5821ACB8CD8601cCd3861dD66f459Cd9f0027Dd2` | [Exact Match (55943547)](https://sourcify.dev/#/lookup/5042/0x5821ACB8CD8601cCd3861dD66f459Cd9f0027Dd2) |
+| `camp-main-009` | Hyperion Motion Graphics | Human Creator | `0xC566D6E70e76886f2aB253f165E6Bd4A69145025` | [Exact Match (55943562)](https://sourcify.dev/#/lookup/5042/0xC566D6E70e76886f2aB253f165E6Bd4A69145025) |
+| `camp-main-010` | Zenith Eco-Track AI Agent | AI Agent Fund | `0x3b56457A3f647CDf04Db064BD6f1Da9e883C185c` | [Exact Match (55943796)](https://sourcify.dev/#/lookup/5042/0x3b56457A3f647CDf04Db064BD6f1Da9e883C185c) |
 
 ### Arc Testnet
 
