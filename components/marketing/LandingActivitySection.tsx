@@ -18,16 +18,16 @@ import Link from "next/link";
 function statusLabel(status: string): { label: string; cls: string } {
   switch (status?.toLowerCase()) {
     case "active":
-      return { label: "Active", cls: "text-[#2F6FFF] border-[#2F6FFF]/30 bg-[#2F6FFF]/10" };
+      return { label: "Active", cls: "text-primary border-primary/30 bg-primary/10" };
     case "succeeded":
     case "executed":
-      return { label: "Executed", cls: "text-[#22C55E] border-[#22C55E]/30 bg-[#22C55E]/10" };
+      return { label: "Executed", cls: "text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10" };
     case "defeated":
-      return { label: "Defeated", cls: "text-[#EF4444] border-[#EF4444]/30 bg-[#EF4444]/10" };
+      return { label: "Defeated", cls: "text-red-500 dark:text-red-400 border-red-500/30 bg-red-500/10" };
     case "pending":
-      return { label: "Pending", cls: "text-[#9CA6B8] border-[#9CA6B8]/30 bg-[#9CA6B8]/10" };
+      return { label: "Pending", cls: "text-muted border-border bg-surface" };
     default:
-      return { label: status ?? "Unknown", cls: "text-[#9CA6B8] border-[#9CA6B8]/30 bg-[#9CA6B8]/10" };
+      return { label: status ?? "Unknown", cls: "text-muted border-border bg-surface" };
   }
 }
 
@@ -137,11 +137,11 @@ export function LandingActivitySection() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-start gap-3.5 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <ArrowUpRight className="w-5 h-5 text-emerald-500" />
+                      <ArrowUpRight className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-500">
+                        <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                           {payout.status}
                         </span>
                         <span className="font-mono text-xs text-muted">
@@ -159,7 +159,7 @@ export function LandingActivitySection() {
 
                   <div className="flex items-center gap-4 justify-between md:justify-end shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-border">
                     <div className="text-right">
-                      <div className="font-mono text-base font-bold text-emerald-500">
+                      <div className="font-mono text-base font-bold text-emerald-600 dark:text-emerald-400">
                         -{payout.amount} {payout.token}
                       </div>
                       <div className="text-[11px] font-mono text-muted">
@@ -190,14 +190,14 @@ export function LandingActivitySection() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-start gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                      <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+                      <ArrowUpRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground truncate">{act.description}</p>
                       <p className="text-xs text-muted font-mono mt-0.5">{new Date(act.timestamp).toLocaleString()}</p>
                     </div>
                   </div>
-                  <div className="font-mono text-sm font-semibold text-emerald-500">
+                  <div className="font-mono text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                     -{act.amount} {act.token}
                   </div>
                 </div>

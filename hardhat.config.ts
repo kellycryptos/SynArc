@@ -61,11 +61,13 @@ const config: HardhatUserConfig = {
       url: ARC_MAINNET_RPC_URL,
       chainId: 5042,
       accounts: hasDeployerKey ? [DEPLOYER_PRIVATE_KEY] : [],
+      timeout: 180000,
     },
     "arc-mainnet": {
       url: ARC_MAINNET_RPC_URL,
       chainId: 5042,
       accounts: hasDeployerKey ? [DEPLOYER_PRIVATE_KEY] : [],
+      timeout: 180000,
     },
   },
   etherscan: {

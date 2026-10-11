@@ -57,13 +57,13 @@ export function FloatingAIChat() {
                 <BotAvatar type="mech" size={32} state={sendingChat ? "working" : "default"} />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-white tracking-wide">Syn DAO AI Companion</h4>
+                <h4 className="text-xs font-bold text-foreground tracking-wide">Syn DAO AI Companion</h4>
                 <span className="text-[9px] text-muted block">Online · Autonomous Assistant</span>
               </div>
             </div>
             <button
               onClick={() => setIsChatOpen(false)}
-              className="p-1 rounded-lg hover:bg-white/10 text-muted hover:text-white transition-colors cursor-pointer"
+              className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-muted hover:text-foreground transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -107,7 +107,7 @@ export function FloatingAIChat() {
                   disabled={sendingChat}
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  className="flex-1 px-3 py-2 rounded-xl bg-surface border border-border-thin text-xs text-white placeholder-muted focus:border-primary outline-none transition-colors"
+                  className="flex-1 px-3 py-2 rounded-xl bg-surface border border-border-thin text-xs text-foreground placeholder-muted focus:border-primary outline-none transition-colors"
                 />
                 <button
                   type="submit"

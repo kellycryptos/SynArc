@@ -23,8 +23,49 @@ export function parseMarkdown(markdown: string): React.ReactNode[] {
   
   let listItems: { text: string; number?: number }[] = [];
   let listType: 'bullet' | 'ordered' | null = null;
+
+  let inTable = false;
+  let tableHeaders: string[] = [];
+  let tableRows: string[][] = [];
   
   let key = 0;
+
+  const flushTable = () => {
+    if (!inTable) return;
+    if (tableHeaders.length > 0 || tableRows.length > 0) {
+      elements.push(
+        <div key={`tbl-${key++}`} className="overflow-x-auto my-6 rounded-xl border border-card-border/50 bg-card/20 shadow-sm">
+          <table className="w-full text-left text-xs border-collapse">
+            {tableHeaders.length > 0 && (
+              <thead className="bg-white/[0.04] border-b border-border-thin text-foreground font-bold tracking-wide">
+                <tr>
+                  {tableHeaders.map((header, idx) => (
+                    <th key={`th-${idx}`} className="px-4 py-3 border-r border-border-thin/30 last:border-r-0">
+                      {parseInline(header)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            )}
+            <tbody className="divide-y divide-border-thin/30 text-text-secondary/95">
+              {tableRows.map((row, rIdx) => (
+                <tr key={`tr-${rIdx}`} className="hover:bg-white/[0.02] transition-colors">
+                  {row.map((cell, cIdx) => (
+                    <td key={`td-${cIdx}`} className="px-4 py-3 border-r border-border-thin/30 last:border-r-0 align-top">
+                      {parseInline(cell)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+    inTable = false;
+    tableHeaders = [];
+    tableRows = [];
+  };
   
   const flushList = () => {
     if (listType === null) return;
@@ -68,6 +109,7 @@ export function parseMarkdown(markdown: string): React.ReactNode[] {
     // Code block check
     if (line.startsWith('```')) {
       flushList();
+      flushTable();
       if (inCodeBlock) {
         inCodeBlock = false;
         elements.push(
@@ -94,12 +136,54 @@ export function parseMarkdown(markdown: string): React.ReactNode[] {
     const trimmed = line.trim();
     if (trimmed === '') {
       flushList();
+      flushTable();
+      continue;
+    }
+
+    // Markdown table check
+    const isTableRow = trimmed.startsWith('|') && trimmed.endsWith('|') && trimmed.length > 2;
+    const isTableSeparator = isTableRow && /^\|(\s*:?-+:?\s*\|)+$/.test(trimmed);
+
+    if (isTableRow) {
+      flushList();
+      if (isTableSeparator) {
+        continue; // Skip the |---|---| separator row
+      }
+      const cells = trimmed
+        .slice(1, -1)
+        .split('|')
+        .map((c) => c.trim());
+
+      if (!inTable) {
+        inTable = true;
+        tableHeaders = cells;
+      } else {
+        tableRows.push(cells);
+      }
+      continue;
+    } else if (inTable) {
+      flushTable();
+    }
+
+    // Blockquote / Alert check
+    if (trimmed.startsWith('> ')) {
+      flushList();
+      flushTable();
+      elements.push(
+        <blockquote
+          key={`bq-${key++}`}
+          className="my-5 p-4 rounded-xl border-l-4 border-primary/80 bg-primary/[0.04] text-sm text-foreground/90 font-medium"
+        >
+          {parseInline(trimmed.slice(2))}
+        </blockquote>
+      );
       continue;
     }
     
     // Horizontal rule check
     if (trimmed === '***' || trimmed === '---' || trimmed === '___') {
       flushList();
+      flushTable();
       elements.push(<hr key={`hr-${key++}`} className="border-border-thin my-6 opacity-30" />);
       continue;
     }
@@ -107,22 +191,26 @@ export function parseMarkdown(markdown: string): React.ReactNode[] {
     // Headers
     if (trimmed.startsWith('# ')) {
       flushList();
+      flushTable();
       elements.push(<h1 key={`h1-${key++}`} className="text-3xl font-extrabold text-foreground tracking-tight mt-8 mb-4 font-heading">{parseInline(trimmed.slice(2))}</h1>);
       continue;
     }
     if (trimmed.startsWith('## ')) {
       flushList();
+      flushTable();
       elements.push(<h2 key={`h2-${key++}`} className="text-xl font-bold text-foreground tracking-tight mt-10 mb-4 border-b border-border-thin pb-2 font-heading">{parseInline(trimmed.slice(3))}</h2>);
       continue;
     }
     if (trimmed.startsWith('### ')) {
       flushList();
+      flushTable();
       elements.push(<h3 key={`h3-${key++}`} className="text-base font-bold text-foreground tracking-tight mt-6 mb-3 font-heading">{parseInline(trimmed.slice(4))}</h3>);
       continue;
     }
     
     // Bullet lists
     if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+      flushTable();
       if (listType !== 'bullet') {
         flushList();
         listType = 'bullet';
@@ -134,6 +222,7 @@ export function parseMarkdown(markdown: string): React.ReactNode[] {
     // Numbered lists
     const numberMatch = trimmed.match(/^(\d+)\.\s+(.*)/);
     if (numberMatch) {
+      flushTable();
       if (listType !== 'ordered') {
         flushList();
         listType = 'ordered';
@@ -144,6 +233,7 @@ export function parseMarkdown(markdown: string): React.ReactNode[] {
     
     // Default: Paragraph
     flushList();
+    flushTable();
     elements.push(
       <p key={`p-${key++}`} className="text-[14px] leading-[1.7] text-text-secondary/95 my-4 font-medium">
         {parseInline(trimmed)}
@@ -152,6 +242,7 @@ export function parseMarkdown(markdown: string): React.ReactNode[] {
   }
   
   flushList();
+  flushTable();
   return elements;
 }
 

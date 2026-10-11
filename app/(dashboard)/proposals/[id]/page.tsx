@@ -743,7 +743,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
             <GlassCard className="p-6 md:p-8 space-y-6">
               <div>
                 <h3 className="text-sm font-bold text-text-tertiary uppercase tracking-wider mb-4">Description</h3>
-                <div className="prose prose-invert prose-p:text-text-secondary prose-p:leading-relaxed prose-headings:text-text-primary prose-a:text-primary max-w-none">
+                <div className="prose dark:prose-invert prose-p:text-text-secondary prose-p:leading-relaxed prose-headings:text-text-primary prose-a:text-primary max-w-none">
                   {(proposal.description || "No detailed description provided for this governance action.").split('\n\n').map((paragraph, i) => (
                     <p key={i}>{paragraph}</p>
                   ))}

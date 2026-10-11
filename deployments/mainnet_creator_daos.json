@@ -1,0 +1,68 @@
+{
+  "deployedAt": "2026-10-11T19:52:12.775Z",
+  "network": "arcMainnet",
+  "chainId": 5042,
+  "deployer": "0xE819090D7810D89f2E86e167d0b58425dEd745D8",
+  "campaigns": [
+    {
+      "id": "camp-main-001",
+      "title": "Aura Synth Lab",
+      "escrowAddress": "0x99955b487aE5519a2b1Ff677f9bed3A6145b750d",
+      "isAgent": false
+    },
+    {
+      "id": "camp-main-002",
+      "title": "ArcShield AI Sentinel",
+      "escrowAddress": "0x2518d845C9d23AE52650f35C4E4E187BFD797f6B",
+      "isAgent": true
+    },
+    {
+      "id": "camp-main-003",
+      "title": "PixelVerse RPG",
+      "escrowAddress": "0xC6BE1BCE9ADcad9d97a302D652839F399a699460",
+      "isAgent": false
+    },
+    {
+      "id": "camp-main-004",
+      "title": "Krypton Protocol Research",
+      "escrowAddress": "0xd1e4F8dfBD1e7eC75Fa58561909706af223c5e34",
+      "isAgent": false
+    },
+    {
+      "id": "camp-main-005",
+      "title": "Veritas On-Chain Journal",
+      "escrowAddress": "0x8eC5c246E976b512D7c157714e464D1A38CD59B6",
+      "isAgent": false
+    },
+    {
+      "id": "camp-main-006",
+      "title": "Solstice Generative Art",
+      "escrowAddress": "0x11Ae69867785C36ADAcc40D383cd5f19d6288432",
+      "isAgent": false
+    },
+    {
+      "id": "camp-main-007",
+      "title": "Vanguard Liquidity Optimizer",
+      "escrowAddress": "0x55bA23c48e3c5bE2A36a93A9124C3f7Cacac6B81",
+      "isAgent": true
+    },
+    {
+      "id": "camp-main-008",
+      "title": "Nexus SubDAO Creator Hub",
+      "escrowAddress": "0x5821ACB8CD8601cCd3861dD66f459Cd9f0027Dd2",
+      "isAgent": false
+    },
+    {
+      "id": "camp-main-009",
+      "title": "Hyperion Motion Graphics",
+      "escrowAddress": "0xC566D6E70e76886f2aB253f165E6Bd4A69145025",
+      "isAgent": false
+    },
+    {
+      "id": "camp-main-010",
+      "title": "Zenith Eco-Track AI Agent",
+      "escrowAddress": "0x3b56457A3f647CDf04Db064BD6f1Da9e883C185c",
+      "isAgent": true
+    }
+  ]
+}

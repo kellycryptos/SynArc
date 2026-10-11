@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --brand: #2F6FFF;
   --brand-light: #4F8BFF;
@@ -741,10 +743,9 @@ a:focus-visible, button:focus-visible {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Code and mono text in light mode */
-.light code,
-.light .font-mono {
-  color: #1E40AF !important;
+/* Code text in light mode (only inline code without specific color utilities) */
+.light code:not([class*="text-"]) {
+  color: #1E40AF;
 }
 
 /* Table row hover in light mode */
@@ -868,6 +869,30 @@ a:focus-visible, button:focus-visible {
 .light .text-\[\#6B7385\],
 .light .text-\[\#4E566A\] {
   color: #64748B !important;
+}
+
+/* Footer & Prose light mode polish */
+.light footer {
+  background-color: var(--background);
+}
+
+.light .prose {
+  --tw-prose-body: #334155;
+  --tw-prose-headings: #0F172A;
+  --tw-prose-lead: #475569;
+  --tw-prose-links: #2F6FFF;
+  --tw-prose-bold: #0F172A;
+  --tw-prose-counters: #64748B;
+  --tw-prose-bullets: #94A3B8;
+  --tw-prose-hr: #E2E8F0;
+  --tw-prose-quotes: #0F172A;
+  --tw-prose-quote-borders: #E2E8F0;
+  --tw-prose-captions: #64748B;
+  --tw-prose-code: #0F172A;
+  --tw-prose-pre-code: #E2E8F0;
+  --tw-prose-pre-bg: #0F172A;
+  --tw-prose-th-borders: #CBD5E1;
+  --tw-prose-td-borders: #E2E8F0;
 }
 
 /* ==========================================================================

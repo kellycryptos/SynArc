@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useEffect, useState } from "react";
 
 export function MarketingNavbar() {
@@ -55,7 +56,8 @@ export function MarketingNavbar() {
           </Link>
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
           <Link 
             href="/dashboard"
             className="group relative px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl bg-accent-purple text-white-keep text-xs sm:text-sm font-medium hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] overflow-hidden flex items-center gap-2"

@@ -126,9 +126,9 @@ const LEGAL_LINKS: NavItem[] = [
 function FooterNavLink({ item }: { item: NavItem }) {
   if (item.badge === "Coming Soon") {
     return (
-      <div className="inline-flex items-center gap-1.5 text-[#6B7385] cursor-default select-none">
+      <div className="inline-flex items-center gap-1.5 text-muted cursor-default select-none">
         <span>{item.label}</span>
-        <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider bg-[#0B111C] border border-[#1B2536] text-[#6B7385]">
+        <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider bg-surface border border-border text-muted">
           Coming Soon
         </span>
       </div>
@@ -141,11 +141,11 @@ function FooterNavLink({ item }: { item: NavItem }) {
         href={item.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="group inline-flex items-center gap-1.5 text-[#9CA6B8] hover:text-[#F5F7FA] transition-colors"
+        className="group inline-flex items-center gap-1.5 text-muted hover:text-foreground transition-colors"
       >
-        <ChevronRight className="w-2.5 h-2.5 text-[#2F6FFF] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+        <ChevronRight className="w-2.5 h-2.5 text-primary opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
         <span>{item.label}</span>
-        <ExternalLink className="w-2.5 h-2.5 text-[#6B7385] group-hover:text-[#4F8BFF]" />
+        <ExternalLink className="w-2.5 h-2.5 text-muted/60 group-hover:text-primary transition-colors" />
       </a>
     );
   }
@@ -153,12 +153,12 @@ function FooterNavLink({ item }: { item: NavItem }) {
   return (
     <Link
       href={item.href}
-      className="group inline-flex items-center gap-1.5 text-[#9CA6B8] hover:text-[#F5F7FA] transition-colors"
+      className="group inline-flex items-center gap-1.5 text-muted hover:text-foreground transition-colors"
     >
-      <ChevronRight className="w-2.5 h-2.5 text-[#2F6FFF] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+      <ChevronRight className="w-2.5 h-2.5 text-primary opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
       <span>{item.label}</span>
       {item.isNew && (
-        <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+        <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
           New
         </span>
       )}
@@ -166,8 +166,8 @@ function FooterNavLink({ item }: { item: NavItem }) {
         <span
           className={`px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider ${
             item.badge === "Live"
-              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-              : "bg-[#2F6FFF]/10 text-[#4F8BFF] border border-[#2F6FFF]/20"
+              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+              : "bg-primary/10 text-primary border border-primary/20"
           }`}
         >
           {item.badge}
@@ -257,20 +257,19 @@ export function Footer() {
         <div className="absolute top-0 inset-x-1/4 h-[2px] bg-gradient-to-r from-transparent via-[#4F8BFF]/40 to-transparent blur-sm" />
 
         {/* ── Ambient Background Lighting & Grid ── */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#05080F] via-[#070D18] to-[#04060B] dark:block hidden pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-surface/40 to-background dark:hidden pointer-events-none" />
-        <div className="absolute inset-0 grid-overlay opacity-25 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-surface/80 to-background dark:from-[#05080F] dark:via-[#070D18] dark:to-[#04060B] pointer-events-none" />
+        <div className="absolute inset-0 grid-overlay opacity-15 dark:opacity-25 pointer-events-none" />
 
         {/* Dynamic Glow Orbs */}
         <GlowOrb
-          className="-top-32 left-1/4 opacity-30 dark:opacity-100"
+          className="-top-32 left-1/4 opacity-15 dark:opacity-100"
           color="purple"
           size={360}
           blur={120}
           animate
         />
         <GlowOrb
-          className="bottom-10 right-10 opacity-30 dark:opacity-100"
+          className="bottom-10 right-10 opacity-15 dark:opacity-100"
           color="cyan"
           size={300}
           blur={110}
@@ -282,7 +281,7 @@ export function Footer() {
               §1 PRO DISPATCH / NEWSLETTER CARD
               ══════════════════════════════════════════════════════ */}
           <div className="pt-16 pb-12 border-b border-border">
-            <div className="relative rounded-2xl border border-border bg-surface/90 p-6 sm:p-8 lg:p-10 backdrop-blur-xl overflow-hidden shadow-2xl">
+            <div className="relative rounded-2xl border border-border bg-surface/90 p-6 sm:p-8 lg:p-10 backdrop-blur-xl overflow-hidden shadow-lg shadow-slate-900/5 dark:shadow-2xl">
               {/* Subtle inner card accent gradients */}
               <div className="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
               <div className="absolute -left-20 -bottom-20 w-64 h-64 rounded-full bg-primary/5 blur-[70px] pointer-events-none" />
@@ -308,22 +307,22 @@ export function Footer() {
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 flex items-center gap-3 text-sm font-mono"
+                      className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center gap-3 text-sm font-mono"
                     >
-                      <Check className="w-5 h-5 text-emerald-400 shrink-0" />
+                      <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <div>
                         <p className="font-semibold text-foreground">
                           You are subscribed to Syn DAO Dispatches.
                         </p>
-                        <p className="text-xs text-emerald-300/80">
-                          Notification sent to <code className="text-white">devsynarc@gmail.com</code>. Check your inbox for briefings.
+                        <p className="text-xs text-muted mt-0.5">
+                          Notification sent to <code className="font-semibold text-foreground">devsynarc@gmail.com</code>. Check your inbox for briefings.
                         </p>
                       </div>
                     </motion.div>
                   ) : (
                     <form onSubmit={handleSubscribe} className="space-y-3">
                       {subscribeError && (
-                        <div className="p-3 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-xs font-mono flex items-center gap-2">
+                        <div className="p-3 rounded-xl border border-red-500/30 bg-red-500/10 text-red-500 dark:text-red-400 text-xs font-mono flex items-center gap-2">
                           <AlertCircle className="w-4 h-4 shrink-0" />
                           <span>{subscribeError}</span>
                         </div>
@@ -343,14 +342,14 @@ export function Footer() {
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className="px-6 py-3 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-mono font-semibold text-xs tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(47,111,255,0.3)] hover:shadow-[0_0_28px_rgba(47,111,255,0.5)] flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                          className="px-6 py-3 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50 text-white text-white-keep font-mono font-semibold text-xs tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(47,111,255,0.3)] hover:shadow-[0_0_28px_rgba(47,111,255,0.5)] flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                         >
                           {isSubmitting ? (
                             <span>Subscribing...</span>
                           ) : (
                             <>
-                              <span>Subscribe</span>
-                              <Send className="w-3.5 h-3.5" />
+                              <span className="text-white-keep">Subscribe</span>
+                              <Send className="w-3.5 h-3.5 text-white-keep" />
                             </>
                           )}
                         </button>
@@ -377,7 +376,7 @@ export function Footer() {
                       <span className="text-[11px] font-mono text-muted">On-Chain Match</span>
                     </div>
                     <div>
-                      <span className="block font-mono text-base font-bold text-emerald-400">USDC</span>
+                      <span className="block font-mono text-base font-bold text-emerald-600 dark:text-emerald-400">USDC</span>
                       <span className="text-[11px] font-mono text-muted">Native Settlement</span>
                     </div>
                   </div>
@@ -395,7 +394,7 @@ export function Footer() {
                       <h4 className="font-mono text-sm font-bold text-foreground">
                         Have Feedback or Questions?
                       </h4>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                         devsynarc@gmail.com
                       </span>
                     </div>
@@ -414,8 +413,8 @@ export function Footer() {
                   >
                     {copiedEmail ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="text-emerald-400 font-semibold">Copied!</span>
+                        <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Copied!</span>
                       </>
                     ) : (
                       <>
@@ -428,10 +427,10 @@ export function Footer() {
                   <button
                     type="button"
                     onClick={() => setIsContactModalOpen(true)}
-                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-mono text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(47,111,255,0.3)] cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white text-white-keep font-mono text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(47,111,255,0.3)] cursor-pointer"
                   >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    <span>Send Message</span>
+                    <MessageSquare className="w-3.5 h-3.5 text-white-keep" />
+                    <span className="text-white-keep">Send Message</span>
                   </button>
 
                   <Link
@@ -458,7 +457,7 @@ export function Footer() {
                 </span>
                 <span className="text-foreground font-medium">Arc Mainnet</span>
                 <span className="text-muted">ID: 5042</span>
-                <span className="text-emerald-400 font-semibold">• Operational</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">• Operational</span>
               </div>
 
               {/* Quick Copy Treasury Address */}
@@ -472,7 +471,7 @@ export function Footer() {
                   title="Copy full Treasury address"
                 >
                   {copied ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   ) : (
                     <Copy className="w-3.5 h-3.5" />
                   )}
