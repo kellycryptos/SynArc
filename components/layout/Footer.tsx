@@ -95,7 +95,7 @@ const SOCIAL_LINKS: NavItem[] = [
     external: true,
   },
   {
-    label: "Email Team (devsynarc@gmail.com)",
+    label: "Email Team",
     href: "mailto:devsynarc@gmail.com",
     external: true,
   },
@@ -667,13 +667,6 @@ export function Footer() {
               <span>&copy; {new Date().getFullYear()} Syn DAO. All rights reserved.</span>
               <span className="hidden sm:inline text-border">|</span>
               <span>Built on Arc</span>
-              <span className="hidden sm:inline text-border">|</span>
-              <a
-                href="mailto:devsynarc@gmail.com"
-                className="text-primary hover:underline"
-              >
-                devsynarc@gmail.com
-              </a>
             </div>
 
             <p className="text-[11px] text-muted text-center md:text-right max-w-xl">
