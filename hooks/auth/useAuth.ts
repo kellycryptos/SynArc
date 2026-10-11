@@ -12,12 +12,12 @@ export function useAuth() {
   // If Web3Provider has not been mounted yet (guest mode before idle/interaction),
   // return safe stub methods so calling useAuth() in guest UI components
   // never throws a React context error or triggers early Web3 SDK execution.
-  if (deferred && !deferred.isMounted) {
+  if (!deferred || !deferred.isMounted) {
     return {
       ready: true,
       isAuthenticated: false,
       user: null as any,
-      login: deferred.mountWeb3AndLogin,
+      login: deferred?.mountWeb3AndLogin || (() => {}),
       logout: () => {},
       email: "",
       walletAddress: "",

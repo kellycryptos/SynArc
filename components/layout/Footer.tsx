@@ -685,10 +685,12 @@ export function Footer() {
       </footer>
 
       {/* Interactive Contact & Feedback Modal */}
-      <ContactModal
-        isOpen={isContactModalOpen}
-        onClose={() => setIsContactModalOpen(false)}
-      />
+      {isContactModalOpen && (
+        <ContactModal
+          isOpen={isContactModalOpen}
+          onClose={() => setIsContactModalOpen(false)}
+        />
+      )}
     </>
   );
 }

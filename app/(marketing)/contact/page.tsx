@@ -22,7 +22,18 @@ import {
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowOrb } from "@/components/ui/GlowOrb";
-import { useAuth } from "@/hooks/auth/useAuth";
+function getConnectedWalletAddress(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    return (
+      localStorage.getItem("synarc_circle_address") ||
+      (window as any).ethereum?.selectedAddress ||
+      undefined
+    );
+  } catch {
+    return undefined;
+  }
+}
 
 const CATEGORIES = [
   { id: "Feedback", label: "Feedback & Suggestions", icon: Sparkles },
@@ -33,7 +44,6 @@ const CATEGORIES = [
 ];
 
 export default function ContactPage() {
-  const { walletAddress } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [category, setCategory] = useState("Feedback");
@@ -66,6 +76,7 @@ export default function ContactPage() {
 
     setIsSubmitting(true);
     try {
+      const walletAddress = getConnectedWalletAddress();
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

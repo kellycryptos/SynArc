@@ -17,12 +17,23 @@ import {
   AlertCircle,
   ExternalLink,
 } from "lucide-react";
-import { useAuth } from "@/hooks/auth/useAuth";
-
 export interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultCategory?: string;
+}
+
+function getConnectedWalletAddress(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    return (
+      localStorage.getItem("synarc_circle_address") ||
+      (window as any).ethereum?.selectedAddress ||
+      undefined
+    );
+  } catch {
+    return undefined;
+  }
 }
 
 const CATEGORIES = [
@@ -34,7 +45,6 @@ const CATEGORIES = [
 ];
 
 export function ContactModal({ isOpen, onClose, defaultCategory = "Feedback" }: ContactModalProps) {
-  const { walletAddress } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [category, setCategory] = useState(defaultCategory);
@@ -83,6 +93,7 @@ export function ContactModal({ isOpen, onClose, defaultCategory = "Feedback" }: 
 
     setIsSubmitting(true);
     try {
+      const walletAddress = getConnectedWalletAddress();
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
