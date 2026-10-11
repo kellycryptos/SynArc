@@ -60,8 +60,8 @@ export default function CreatorProfilePage({ params }: PageProps) {
 
   useEffect(() => {
     initializeStore();
-    initializeCampaignStore();
-  }, [initializeStore, initializeCampaignStore]);
+    initializeCampaignStore(true);
+  }, [initializeStore, initializeCampaignStore, isArcMainnet]);
 
   // Find creator details
   const creator = creators.find((c) => c.id === id || c.slug === id);

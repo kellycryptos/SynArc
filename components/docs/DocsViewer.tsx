@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { parseMarkdown } from '@/lib/markdown';
 
 import { slugMap, docsNav, normalizeSlug } from '@/lib/docs-config';
-export { slugMap, docsNav, normalizeSlug };
 
 interface DocsViewerProps {
   initialSlug: string;

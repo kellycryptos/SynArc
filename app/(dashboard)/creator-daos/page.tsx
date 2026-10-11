@@ -37,8 +37,8 @@ export default function CampaignsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    initializeStore();
-  }, [initializeStore]);
+    initializeStore(true);
+  }, [initializeStore, isArcMainnet]);
 
   // Calculate dynamic stats
   const totalCampaigns = campaigns.length;
