@@ -79,10 +79,23 @@ The Syn DAO Treasury is integrated with the **Automated Treasury Guard** (Treasu
 - **Auto Rebalancing**: Relocates stablecoins to higher-yield chains when thresholds are reached via native Circle CCTP. (Live)
 - **Auto Payments**: Processes recurring payroll or scheduled payouts autonomously. (Live)
 - **Risk Alerts & Pause**: Pauses operations automatically if low liquidity or abnormal outflows are detected. (Live)
-- **Auto Yield Farming**: Staker/LP placement to generate yield on idle stablecoins. (Coming Soon)
-- **Multi-Chain Sweep**: Automatically pulls incoming deposits from bridges back into the treasury. (Coming Soon)
+- **Auto Yield Farming**: Staker/vault allocations into curated Morpho Blue pools to counter inflation. (Live via `/earn`)
+- **Multi-Chain Sweep**: Programmatically collects incoming bridged deposits back into the treasury. (In Progress)
 
-For more details, see the [Automated Treasury Guard guide](04-ai-agents.md).
+For more details, see the [Automated Treasury Guard guide](04-ai-agents.md) and the [Three-Way Match Architecture guide](07c-three-way-match-architecture.md).
+
+---
+
+## Three-Way Match Release Valve
+
+In addition to traditional governance proposals, Syn DAO's production treasury (`SynArcTreasury.sol`) on Arc Mainnet operates as a **Three-Way Match Release Valve**:
+
+1. **Document-Anchored Disbursements**: Outflows must bind to an immutable document reference (proposal ID, milestone ID, IPFS deliverable CID hash, invoice hash).
+2. **Three-Way Match Verification**: Mathematical agreement between Order Terms, authentic IPFS Receiving Report, and Vendor Invoice claim.
+3. **Autonomous Agent Track ($\le 50$ USDC)**: Authorized AI agents can trigger micro-disbursements autonomously under policy.
+4. **Human Review Gate ($> 50$ USDC)**: Disbursements exceeding 50 USDC immediately halt on-chain with `HumanApprovalRequired` and require explicit signoff via `approveReleaseHuman`.
+5. **Payee Cooldown (48h)**: Beneficiary address changes enforce a mandatory 48-hour timelocked cooldown (`requestPayeeChange` -> `confirmPayeeChange`) to eliminate address hijacking attacks.
+6. **Idempotency Guard**: Deterministic bit-flips in `executedReleases[releaseKey]` guarantee zero double-spend or transaction replay attacks.
 
 ---
 
@@ -110,11 +123,11 @@ Project workspaces use a separate but parallel mechanism:
 
 ## Treasury Dashboard
 
-The **Treasury** page in the SynArc dashboard shows:
+The **Treasury** page in the Syn DAO dashboard shows:
 
-- **Total Reserves** — real-time USDC + EURC balances
-- **Asset Breakdown** — pie chart of liquid vs. yield vs. liquidity allocation
-- **Recent Transactions** — inflow and outflow ledger
+- **Total Reserves** — real-time USDC + EURC balances on active network (Arc Mainnet default)
+- **Asset Breakdown** — breakdown of liquid reserves, yield vault positions, and ecosystem liquidity
+- **Recent Transactions** — 6-field transparent on-chain inflow and outflow ledger
 - **Proposal Queue** — pending treasury proposals awaiting execution
 
 ---
@@ -123,5 +136,5 @@ The **Treasury** page in the SynArc dashboard shows:
 
 - The treasury contract (`SynArcTreasury`) is owned exclusively by the `TimelockController` — not any EOA.
 - No individual wallet address can call `withdraw()` directly.
-- EURC reserves are tracked separately and converted to USD for display only.
-- All treasury balances are read directly from the Arc Testnet chain via `viem`.
+- EURC reserves are tracked separately and converted to USD for portfolio display.
+- All treasury balances and transaction logs are read directly from Arc Mainnet (Chain ID 5042) or Arc Testnet via `viem`.

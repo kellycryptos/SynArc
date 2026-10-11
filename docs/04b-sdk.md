@@ -33,33 +33,57 @@ pnpm add synarc-agent-sdk viem
 
 ## Deployed Contracts & Network Reference
 
-Below is the official network configuration and deployed smart contracts on Arc Testnet (`chainId: 5042002`).
+### Arc Mainnet — Production (`chainId: 5042`)
 
-| Contract / Config | Address / Value | Description |
-| :--- | :--- | :--- |
+| Configuration / Contract | Value / Address | Description |
+|:---|:---|:---|
+| **Chain ID** | `5042` | Arc Mainnet Identifier |
+| **RPC Endpoint** | `https://rpc.mainnet.arc.io` | Official Arc Mainnet RPC Endpoint |
+| **SynArcTreasury (Release Valve)** | `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B` | Three-Way Match Release Valve, Payee Cooldown & Idempotency Guard |
+| **SynArcGovernor** | `0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025` | Document-Anchored Governance Engine (48h timelock) |
+| **SynArcToken (sARC)** | `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4` | Primary Governance Token |
+| **Authorized Operator Agent** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | Autonomous AI Agent executing under-cap releases & rebalances |
+| **Agent Release Cap** | `50.00 USDC` (`50_000_000 micro-USDC`) | Enforced on-chain: releases $\le 50$ autonomous; $> 50$ require human review |
+| **Canonical USDC** | `0x3600000000000000000000000000000000000000` | Native Circle USDC (gas token) |
+| **Canonical EURC** | `0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1` | Native Circle EURC on Arc Mainnet |
+| **CCTP Token Messenger** | `0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d` | Production Circle CCTP Token Messenger |
+| **CCTP Message Transmitter** | `0x81D40F21F12A8F0E3252Bccb954D722d4c464B64` | Production Circle CCTP Message Transmitter |
+| **Crowdfund Escrow Template** | `0xd5374DFC4B01F60115A52Df027704062506b3030` | Deploys new campaign milestone escrows |
+| **Authorized Human Reviewer** | `0xE819090D7810D89f2E86e167d0b58425dEd745D8` | Deployer EOA registered on-chain for emergency signoff |
+
+### Arc Testnet — Developer Sandbox (`chainId: 5042002`)
+
+| Configuration / Contract | Value / Address | Description |
+|:---|:---|:---|
 | **Chain ID** | `5042002` | Arc Testnet Chain Identifier |
-| **RPC Endpoint** | `https://rpc.testnet.arc.network` | Primary Arc Testnet RPC endpoint |
+| **RPC Endpoint** | `https://rpc.testnet.arc.network` | Primary RPC endpoint for testnet calls |
 | **SynArcGovernor** | `0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e` | Governance proposal and voting controller |
-| **Governance Treasury** | `0xFE0F6bF45D363d34CD5fC1781594a7471736dC18` | Timelocked treasury for community balances |
-| **Agent Operating Treasury** | `0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28` | Fast-access agent operating reserves |
+| **Governance Treasury (`treasuryGovernance`)** | `0xFE0F6bF45D363d34CD5fC1781594a7471736dC18` | Timelocked treasury for core DAO balances |
+| **Agent Operating Treasury (`treasuryAgent`)** | `0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28` | Fast-access agent operating reserves |
 | **Crowdfund Escrow Factory** | `0xd5374DFC4B01F60115A52Df027704062506b3030` | Deploys campaign milestone escrows |
 | **SynArcToken (sARC)** | `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e` | Primary governance voting weight token |
 | **EURC Token** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | EURC stablecoin contract address |
 | **USDC (Gas Token)** | `0x3600000000000000000000000000000000000000` | Native USDC stablecoin for fee payment |
 | **Treasury Agent Contract** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | On-chain autonomous agent rules executor |
-| **CCTP Token Messenger** | `0xd0C3da4E20F0D24dB1cE8f1fF36814Ea8F60309e` | Circle CCTP Token Messenger address |
+| **CCTP Token Messenger** | `0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA` | Circle CCTP Token Messenger address |
+| **CCTP Message Transmitter** | `0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275` | Circle CCTP Message Transmitter address |
 | **ERC-8004 Agent Registry** | `0x8004A818BFB912233c491871b3d84c89A494BD9e` | Agent on-chain identity registry |
 
 ### Two-Treasury Architecture
 
 Syn DAO uses two distinct treasury contracts by design:
 
-- **Governance Treasury** (`0xFE0F6bF45D363d34CD5fC1781594a7471736dC18`) — The community-visible, timelocked treasury. All user-facing balance displays, governance proposals, and dashboard stats read from this contract. Withdrawals require a passing governance vote and a 24-hour timelock delay.
-- **Agent Operating Treasury** (`0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28`) — Used exclusively by the autonomous treasury agent for instant CCTP rebalances. Funded via governance-approved transfers from the main treasury.
+- **Governance Treasury** (`0x8205...` on Mainnet, `0xFE0F...` on Testnet) — The community-visible, timelocked treasury. All user-facing balance displays, governance proposals, and dashboard stats read from this contract. Withdrawals require a passing governance vote and a 24-48 hour timelock delay.
+- **Agent Operating Treasury** (`0x88Bd...` on Mainnet, `0xE6bA...` on Testnet) — Used exclusively by the autonomous treasury agent for instant CCTP rebalances and under-cap payouts ($\le 50$ USDC). Funded via governance-approved transfers from the main treasury.
 
-Import addresses directly from the SDK:
+Import addresses and network constants directly from the SDK:
 ```typescript
-import { TREASURY_GOVERNANCE_ADDRESS, TREASURY_AGENT_ADDRESS } from 'synarc-agent-sdk';
+import { 
+  SYNARC_MAINNET, 
+  SYNARC_TESTNET, 
+  MAINNET_TREASURY_ADDRESS, 
+  TREASURY_GOVERNANCE_ADDRESS 
+} from 'synarc-agent-sdk';
 ```
 
 ---
@@ -68,45 +92,51 @@ import { TREASURY_GOVERNANCE_ADDRESS, TREASURY_AGENT_ADDRESS } from 'synarc-agen
 
 The SDK is EVM-agnostic and connects seamlessly with WalletConnect, Circle Programmable Wallets, MetaMask, Rabby, Coinbase Wallet, or raw private keys.
 
-### 1. Read-Only Client
+### 1. Read-Only Client (Arc Mainnet — Default)
 
-Query balances, active campaigns, and treasury stats without connecting a wallet:
+Query live production balances, active campaigns, and treasury stats:
 
 ```typescript
-import { SynArc, SYNARC_TESTNET } from 'synarc-agent-sdk';
+import { SynArc, SYNARC_MAINNET } from 'synarc-agent-sdk';
 
 const synarc = new SynArc({
-  governorAddress: SYNARC_TESTNET.governor,
-  treasuryAddress: SYNARC_TESTNET.treasuryGovernance,
-  tokenAddress: SYNARC_TESTNET.token,
+  network: 'mainnet',
+  governorAddress: SYNARC_MAINNET.governor,
+  treasuryAddress: SYNARC_MAINNET.treasuryGovernance,
+  tokenAddress: SYNARC_MAINNET.token,
+  usdcAddress: SYNARC_MAINNET.usdc,
 });
 
 const balances = await synarc.getTreasuryBalance();
-console.log(`Treasury: ${balances.usdc} USDC / ${balances.eurc} EURC`);
+console.log(`Mainnet Treasury: ${balances.usdc} USDC | ${balances.eurc} EURC`);
 ```
 
 ### 2. Autonomous Agent (Private Key)
 
-Initialize with a hot-wallet private key for autonomous bots and scheduled agent routines:
+Initialize with a hot-wallet private key for autonomous bots, scheduled agent routines, and under-cap releases:
 
 ```typescript
-import { SynArc, SYNARC_TESTNET } from 'synarc-agent-sdk';
+import { SynArc, SYNARC_MAINNET } from 'synarc-agent-sdk';
 
 const synarc = new SynArc({
-  ...SYNARC_TESTNET,
+  network: 'mainnet',
+  ...SYNARC_MAINNET,
   privateKey: process.env.AGENT_PRIVATE_KEY as `0x${string}`,
 });
 ```
 
+> 💡 **Developer Sandbox (Arc Testnet)**: Pass `network: 'testnet'` and `...SYNARC_TESTNET` to run against Arc Testnet (`chainId: 5042002`).
+
 ### 3. Frontend dApp (Injected EIP-1193 Provider)
 
-Initialize with MetaMask, Privy, or Circle embedded wallets:
+Initialize with MetaMask, Privy, Rainbow, or Circle embedded wallets:
 
 ```typescript
-import { SynArc, SYNARC_TESTNET } from 'synarc-agent-sdk';
+import { SynArc, SYNARC_MAINNET } from 'synarc-agent-sdk';
 
 const synarc = new SynArc({
-  ...SYNARC_TESTNET,
+  network: 'mainnet',
+  ...SYNARC_MAINNET,
   provider: window.ethereum,
 });
 ```
@@ -237,18 +267,75 @@ if (health.recommendedAction === 'rebalance') {
 
 ---
 
-## Escrow Release Valve
+## Arc Earn & DeFi Vaults (`SynArcEarn`)
 
-The escrow release valve provides controlled, capped disbursements with role-based allowances and rate limits:
+The `SynArcEarn` module enables autonomous agents and DAO operators to interact directly with curated Morpho vaults on Arc Mainnet and Testnet via Arc App Kit:
 
 ```typescript
-// 1. Check release allowance for an address
-const allowance = await synarc.checkReleaseAllowance("0xExecutorAddress");
-console.log(`Available allowance: ${allowance} USDC`);
+import { SynArc, SynArcEarn, SYNARC_MAINNET } from 'synarc-agent-sdk';
 
-// 2. Authorize and claim release valve disbursement
-const releaseTx = await synarc.releaseMilestone({ proposalId: 42, milestoneId: 1, invoiceHash: "0x..." });
-console.log(`Disbursement claimed! Tx: ${releaseTx}`);
+const synarc = new SynArc({
+  network: 'mainnet',
+  ...SYNARC_MAINNET,
+  privateKey: process.env.AGENT_PRIVATE_KEY as `0x${string}`,
+});
+
+const earn = new SynArcEarn(synarc);
+
+// 1. Explore available curated yield vaults on Arc
+const vaults = await earn.exploreVaults();
+console.log("Available Vaults:", vaults);
+
+// 2. Deposit idle treasury USDC into a Morpho vault
+const depositTx = await earn.deposit("0xVaultAddress...", 100);
+console.log(`Deposited into vault! Tx: ${depositTx}`);
+
+// 3. Read current earning position and accrued yield
+const position = await earn.getPosition("0xVaultAddress...", synarc.account?.address);
+console.log(`Current Position: ${position.assets} USDC (Shares: ${position.shares})`);
+
+// 4. Withdraw principal or yield back to the treasury
+const withdrawTx = await earn.withdraw("0xVaultAddress...", 50);
+console.log(`Withdrawn to treasury! Tx: ${withdrawTx}`);
+```
+
+---
+
+## Escrow Release Valve & Three-Way Match
+
+The escrow release valve (`SynArcTreasury.sol`) enforces contract-level agreement between the Governor order terms, an authentic IPFS deliverable CID, and the payee's claim:
+
+- **$\le 50.00$ USDC Autonomous Track**: Authorized AI agents can trigger micro-disbursements instantly without manual review.
+- **$> 50.00$ USDC Human Review Gate**: Larger disbursements halt on-chain with `HumanApprovalRequired` and require explicit signoff via `approveReleaseHuman` by a designated reviewer or Governor timelock.
+- **Payee Timelocked Cooldown (48h)**: Beneficiary address changes require a mandatory 48-hour cooldown to defeat prompt-injection address substitution attacks.
+- **Idempotency Guard**: Deterministic on-chain bit flips ensure the exact same release cannot execute twice.
+
+```typescript
+// 1. Check on-chain agent release cap (50 USDC)
+const cap = await synarc.getAgentReleaseCap();
+console.log(`On-chain agent release cap: ${cap} USDC`);
+
+// 2. Dry-run zero-gas release simulation (Ghostfolio pattern)
+const simulation = await synarc.simulateRelease({
+  proposalId: 42n,
+  milestoneId: 1n,
+  documentHash: "0x8f1234abcd...", // Keccak256 hash of IPFS deliverable CID
+  invoiceHash: "0x9e5678ef01...",
+  amountUSDC: 25,
+  recipient: "0xRecipientAddress...",
+});
+console.log(`Simulation result (code ${simulation.code}):`, simulation.canRelease);
+
+// 3. Execute milestone release under policy cap
+const releaseTx = await synarc.releaseMilestone({
+  proposalId: 42n,
+  milestoneId: 1n,
+  documentHash: "0x8f1234abcd...",
+  invoiceHash: "0x9e5678ef01...",
+  amountUSDC: 25,
+  recipient: "0xRecipientAddress...",
+});
+console.log(`Disbursement released! Tx: ${releaseTx}`);
 ```
 
 ---
@@ -263,7 +350,7 @@ Participate in Syn DAO's OpenZeppelin-compatible governance protocol.
 const proposalId = await synarc.propose({
   title: "Fund Autonomous Market Maker Development",
   description: "Disburse 500 USDC from Governance Treasury to fund liquidity agent research.",
-  targetContract: SYNARC_TESTNET.treasuryGovernance,
+  targetContract: SYNARC_MAINNET.treasuryGovernance,
   valueUSDC: 500,
   durationDays: 3,
 });
@@ -294,13 +381,13 @@ console.log(`Delegation set! Tx: ${delegateTx}`);
 
 ---
 
-## Cross-Chain USDC Transfers (Circle CCTP)
+## Cross-Chain USDC Transfers (Circle CCTP & Bridge Kit)
 
-Syn DAO natively routes USDC between Arc Testnet and Ethereum Sepolia without wrapped tokens using Circle's Cross-Chain Transfer Protocol (CCTP):
+Syn DAO natively routes USDC between Arc (Mainnet/Testnet) and external chains (Ethereum, Base, Avalanche) without wrapped tokens using Circle's Cross-Chain Transfer Protocol (CCTP) and Circle Bridge Kit:
 
-1. **Burn on Arc**: The agent or user initiates a `depositForBurn` via the Circle Token Messenger contract (`0xd0C3da4E20F0D24dB1cE8f1fF36814Ea8F60309e`).
+1. **Burn on Arc**: The agent or user initiates a `depositForBurn` via the canonical Circle Token Messenger contract (`0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d` on Mainnet, `0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA` on Testnet).
 2. **Iris Attestation**: The system queries Circle's Iris API for cryptographic validator attestations.
-3. **Mint on Ethereum**: `receiveMessage` is executed on Sepolia to mint native USDC directly to the recipient wallet.
+3. **Mint on Destination**: `receiveMessage` is executed on the target network to mint 1:1 native USDC directly to the recipient wallet. Immediate pending tracking and CCTP recovery tooling ensure no transfers are lost.
 
 ---
 

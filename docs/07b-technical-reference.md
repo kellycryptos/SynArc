@@ -81,10 +81,26 @@ Syn DAO's Creator DAO mechanism protects contributors by holding funds in campai
 
 ## Network Specifications
 
-Syn DAO is optimized for the **Arc Testnet**. Here are the official contract parameters and endpoints:
+Syn DAO operates natively on **Arc** (Circle's Layer 1 blockchain where gas is paid natively in USDC):
 
+### Arc Mainnet — Production
+* **EVM Chain ID:** `5042`
+* **Official Primary RPC:** `https://rpc.mainnet.arc.io` (Fallback: `https://rpc.arc.network`)
+* **Block Explorer:** [explorer.arc.io](https://explorer.arc.io)
+* **Canonical USDC (Gas Token):** `0x3600000000000000000000000000000000000000`
+* **Canonical EURC:** `0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1`
+* **SynArcToken (sARC):** `0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4`
+* **SynArc Treasury (Release Valve):** `0x8205e9782Fe54fD2aaD895b436B695db169F3d7B`
+* **SynArc Governor:** `0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025`
+
+### Arc Testnet — Developer Sandbox
 * **EVM Chain ID:** `5042002`
 * **Official RPC URL:** `https://rpc.testnet.arc.network`
-* **Block Explorer:** `https://testnet.arcscan.app`
-* **USDC Contract Address:** `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e` (sARC is matched to this on-chain asset for voting checkpoints)
+* **Block Explorer:** [testnet.arcscan.app](https://testnet.arcscan.app)
+* **Canonical USDC (Gas Token):** `0x3600000000000000000000000000000000000000`
 * **EURC Contract Address:** `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a`
+* **SynArcToken (sARC):** `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e`
+* **SynArc Treasury (Governance):** `0xFE0F6bF45D363d34CD5fC1781594a7471736dC18`
+* **SynArc Treasury (Agent Operating):** `0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28`
+* **SynArc Governor:** `0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e`
+* **ERC-8004 Registry:** `0x8004A818BFB912233c491871b3d84c89A494BD9e`

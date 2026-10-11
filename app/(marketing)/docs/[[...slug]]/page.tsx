@@ -23,6 +23,8 @@ const slugMap: Record<string, string> = {
   "dao-registry": "05-dao-registry.md",
   "bridge": "06-bridge.md",
   "smart-contracts": "07-smart-contracts.md",
+  "three-way-match": "07c-three-way-match-architecture.md",
+  "three-way-match-architecture": "07c-three-way-match-architecture.md",
   "technical-reference": "07b-technical-reference.md",
   "roadmap": "08-roadmap.md",
   "faq": "09-faq.md"
@@ -46,6 +48,7 @@ const docsNav = [
   { label: "DAO Registry", slug: "dao-registry" },
   { label: "Bridge", slug: "bridge" },
   { label: "Smart Contracts", slug: "smart-contracts" },
+  { label: "Three-Way Match", slug: "three-way-match" },
   { label: "Technical Reference", slug: "technical-reference" },
   { label: "Mainnet Roadmap", slug: "roadmap" },
   { label: "FAQ", slug: "faq" },
@@ -74,7 +77,7 @@ export default async function DocsPage({ params }: PageProps) {
   const content = parseMarkdown(markdown);
   
   // Find current index for Prev/Next navigation
-  const navSlug = currentSlug === 'overview' ? '' : currentSlug;
+  const navSlug = currentSlug === 'overview' ? '' : (currentSlug === 'three-way-match-architecture' ? 'three-way-match' : (currentSlug === 'crowdfund' ? 'creator-economy' : currentSlug));
   const currentIndex = docsNav.findIndex(item => item.slug === navSlug);
   const prevItem = currentIndex > 0 ? docsNav[currentIndex - 1] : null;
   const nextItem = currentIndex < docsNav.length - 1 ? docsNav[currentIndex + 1] : null;
@@ -91,7 +94,7 @@ export default async function DocsPage({ params }: PageProps) {
           </div>
           <nav className="flex flex-col gap-1.5">
             {docsNav.map((item) => {
-              const active = item.slug === currentSlug || (item.slug === "" && currentSlug === "overview");
+              const active = item.slug === currentSlug || (item.slug === "" && currentSlug === "overview") || (item.slug === "three-way-match" && currentSlug === "three-way-match-architecture") || (item.slug === "creator-economy" && currentSlug === "crowdfund");
               return (
                 <Link
                   key={item.slug}

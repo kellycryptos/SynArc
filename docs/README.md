@@ -46,12 +46,14 @@ Syn DAO provides the critical payment-safety layer for organizations and agent-r
 | **RPC Endpoint** | `https://rpc.testnet.arc.network` | Primary RPC endpoint for client node calls |
 | **SynArcGovernor** | `0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e` | Governance proposal and voting controller |
 | **Governance Treasury (`treasuryGovernance`)** | `0xFE0F6bF45D363d34CD5fC1781594a7471736dC18` | Timelocked treasury for core DAO balances |
-| **Agent Operating Treasury (`treasuryAgent`)** | `0x302D7cba3553e22E24C7A5C9aFee3942EBC6ea63` | Fast-access agent operating reserves |
+| **Agent Operating Treasury (`treasuryAgent`)** | `0xE6bAC65d7f060B805B8dd6f1c4DBfa6571905f28` | Fast-access agent operating reserves |
 | **Crowdfund Factory / Template** | `0xd5374DFC4B01F60115A52Df027704062506b3030` | Deploys new campaign milestone escrows |
 | **SynArcToken (sARC)** | `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e` | Primary governance voting weight token |
 | **EURC Token** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | EURC stablecoin contract address |
 | **USDC (Gas Token)** | `0x3600000000000000000000000000000000000000` | Native USDC stablecoin for fee payment |
 | **Treasury Agent Contract** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | On-chain autonomous agent rules executor |
+| **CCTP Token Messenger** | `0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA` | Circle CCTP Token Messenger address |
+| **CCTP Message Transmitter** | `0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275` | Circle CCTP Message Transmitter address |
 
 ---
 
@@ -59,9 +61,9 @@ Syn DAO provides the critical payment-safety layer for organizations and agent-r
 
 Syn DAO integrates with the Circle ecosystem and autonomous systems to power its rebalancing, governance, and onboarding systems:
 
-*   **Circle CCTP (Cross-Chain Transfer Protocol)** — *Fully Deployed & Functional*: Handles native burn-and-mint USDC routing between Arc Testnet and Ethereum Sepolia. In `lib/agent/cctp-executor.ts`, the system executes burns, polls Circle's Iris attestation API for validation consensus, and triggers mint receipts on the destination Messenger contract.
+*   **Circle CCTP (Cross-Chain Transfer Protocol)** — *Fully Deployed & Functional*: Handles native burn-and-mint USDC routing between Arc (Mainnet/Testnet) and external EVM chains via Circle Bridge Kit. In `lib/agent/cctp-executor.ts`, the system executes burns, polls Circle's Iris attestation API for validation consensus, and triggers mint receipts on the destination Messenger contract.
 *   **Circle Gateway (x402 Nanopayments)** — *Simulated/Planned*: Tracks AI model execution fees for each inference call in `lib/agent/gateway-payments.ts`. The codebase contains hooks to deduct USDC internally for every Groq API request, awaiting live production endpoints to route actual on-chain fee payments.
-*   **Web3 & Modular Wallets (WalletConnect & Circle W3S)** — *Fully Deployed & Functional*: Flexible wallet connectivity powered by WalletConnect / Reown Cloud, ConnectKit, and RainbowKit for 300+ mobile and browser wallets, alongside Circle's Web3 Services (W3S) user-controlled smart accounts. In `lib/tx-helper.ts`, transactions submitted by Circle embedded wallets are routed via custom EIP-1193 providers and sponsored gaslessly via paymasters.
+*   **Web3 & Modular Wallets (WalletConnect & Circle W3S)** — *Fully Deployed & Functional*: Flexible wallet connectivity powered by WalletConnect / Reown Cloud and RainbowKit for 300+ mobile and browser wallets, alongside Circle's Web3 Services (W3S) user-controlled smart accounts. In `lib/tx-helper.ts`, transactions submitted by Circle embedded wallets are routed via custom EIP-1193 providers and sponsored gaslessly via paymasters.
 *   **Groq AI** — *Fully Deployed & Functional*: Powers the agent's real-time treasury analysis engine in `lib/agent/treasury-agent.ts`. The agent script calls the Groq SDK using the Groq AI Engine to evaluate current balances and autonomously execute or queue rebalancing decisions.
 *   **ERC-8004 Identity Registry** — *Fully Deployed & Functional*: The `SynArcAgent.sol` contract implements the `IERC8004Registry` interface. Upon deployment, the agent calls the registry contract at `0x8004A818BFB912233c491871b3d84c89A494BD9e` to register its identity, capabilities, and IPFS metadata on-chain.
 
@@ -73,25 +75,29 @@ Syn DAO integrates with the Circle ecosystem and autonomous systems to power its
 | Section | What you'll learn |
 | :--- | :--- |
 | [Creator Economy](/docs/creator-economy) | Launching workspaces, micro-funding, and profiles |
-| [Agent SDK](/docs/sdk) | Integration guides and developer tools |
+| [Agent SDK](/docs/sdk) | Integration guides and developer tools (`synarc-agent-sdk`) |
 | [Governance](/docs/governance) | Proposals, community voting, and decision-making |
-| [Treasury](/docs/treasury) | Escrows, fund management, and tranches |
+| [Treasury](/docs/treasury) | Escrows, fund management, and reserve tranches |
 | [Smart Contracts](/docs/smart-contracts) | Contract parameters, security, and verification |
-| [Treasury Agent](/docs/ai-agents) | Automated treasury rules and management |
+| [Three-Way Match](/docs/three-way-match) | Contract-enforced release valve, payee cooldown, and invariants |
+| [Treasury Agent](/docs/ai-agents) | Automated treasury rules and Tameion Dual-Agent mesh |
+| [Bridge](/docs/bridge) | Cross-chain Circle CCTP & Bridge Kit mobility |
+| [Technical Reference](/docs/technical-reference) | Protocol architecture and interface specifications |
+| [Mainnet Roadmap](/docs/roadmap) | Protocol milestones and future phases |
 | [FAQ](/docs/faq) | Common questions answered |
 
 ---
 
 ## How to Connect Your Wallet
 
-Syn DAO features a unified Web3 connection modal powered by **ConnectKit**, **RainbowKit**, and **WalletConnect (Reown)**, with support for Circle User-Controlled Smart Accounts.
+Syn DAO features a unified Web3 connection modal powered by **RainbowKit** and **WalletConnect (Reown)**, with support for Circle User-Controlled Smart Accounts.
 
 1. Click the **Connect Wallet** button in the page header or sidebar.
 2. Choose your preferred connection method:
    * **Mobile Wallets (QR Code)**: Select **WalletConnect** to scan the QR code using any compatible mobile wallet app (MetaMask Mobile, Rainbow, Trust Wallet, Zerion, Coinbase Wallet, etc.).
    * **Browser Extension Wallets**: Click on detected extensions like MetaMask, Rabby, Coinbase Wallet, or OKX Wallet.
    * **Circle Smart Account**: Log in via Circle User-Controlled Wallets for secure, PIN-protected embedded accounts.
-3. If prompted, approve the connection and network configuration for **Arc Testnet** (`chainId: 5042002`).
+3. If prompted, approve the connection and network configuration for **Arc Mainnet** (`chainId: 5042`) or **Arc Testnet** (`chainId: 5042002`).
 
 > 💡 **Developer Note**: Ensure `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` is defined in your `.env.local` or environment settings. You can obtain a free project ID at [cloud.reown.com](https://cloud.reown.com).
 
@@ -99,18 +105,26 @@ Syn DAO features a unified Web3 connection modal powered by **ConnectKit**, **Ra
 
 ---
 
-## How to Switch to Arc Testnet
+## How to Configure Arc Networks in Your Wallet
 
-Syn DAO requires your connected wallet to be configured for Arc Testnet to query balances and execute contract operations.
+Syn DAO operates by default on **Arc Mainnet**, with seamless switching to **Arc Testnet** for development.
 
 ### Method 1: Automatic
 
-If you are on another network, Syn DAO will display a **Switch to Arc** banner on your settings page. Simply click this banner to automatically authorize a network switch in your wallet.
+Click the network selector badge in the top navigation bar to toggle between **Arc Mainnet** and **Arc Testnet**. Your connected wallet will automatically prompt you to approve the network switch.
 
 ### Method 2: Manual Parameters
 
-Add the custom network configuration manually in your wallet:
+If adding manually to your wallet:
 
+#### Arc Mainnet (Production — Default)
+* **Network Name:** Arc Mainnet
+* **Chain ID:** `5042`
+* **RPC URL:** `https://rpc.mainnet.arc.io`
+* **Currency Symbol:** `USDC`
+* **Block Explorer:** `https://explorer.arc.io`
+
+#### Arc Testnet (Developer Sandbox)
 * **Network Name:** Arc Testnet
 * **Chain ID:** `5042002`
 * **RPC URL:** `https://rpc.testnet.arc.network`

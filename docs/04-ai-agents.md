@@ -51,14 +51,26 @@ The agent constantly evaluates four risk metrics to assign a real-time **Risk Sc
 * **Emergency Stop**: Instantly triggers if the owner/community commands an on-chain pause.
 * **Inactivity**: Triggers if the agent has not completed rule checks for more than 6 hours.
 
-### 4. Auto Yield Farming — `COMING SOON`
-To prevent stablecoins from sitting idle and losing value, the agent stakes capital in verified DeFi integrations:
-* **Aave USDC Strategy**: Target yield of 3.2% APY.
-* **Compound Strategy**: Target yield of 2.9% APY.
-* **Morpho Blue Strategy**: Target yield of 4.1% APY.
+### 4. Arc Earn & Morpho Vault Operations — `LIVE`
+To prevent stablecoins from sitting idle, the agent and DAO operators interact directly with curated Morpho vaults on Arc via Arc App Kit and the SDK's `SynArcEarn` module:
+* **Morpho Blue USDC Strategy**: Optimized automated yields on Arc Mainnet and Testnet.
+* Programmatic deposits, balance tracking, and yields sweeps accessible via `/earn`.
 
-### 5. Multi-Chain Auto Sweep — `COMING SOON`
-Instead of manual collections, this feature sweeps bridged assets across Ethereum Mainnet, Base, and Arbitrum directly into the primary DAO treasury vault automatically.
+### 5. Multi-Chain Auto Sweep — `IN PROGRESS`
+Instead of manual collections, sweeps bridged assets across Ethereum Mainnet, Base, and Avalanche directly into the primary DAO treasury vault.
+
+---
+
+## Tameion Dual-Agent Adversarial Mesh & Forensic Auditor
+
+Syn DAO deploys a **Dual-Agent Adversarial Mesh** on Arc Mainnet:
+
+1. **Operator Agent**: Evaluates treasury health, verifies deliverables against on-chain policies, and executes under-cap payouts ($\le 50$ USDC).
+2. **Forensic Auditor**: An independent, adversarial watcher simulating rogue agent vectors (e.g. payee address hijacking, duplicate claims, threshold tampering).
+3. **Adversarial Simulator**: Interactive stress-test console on `/agent` allowing operators to benchmark release valve defenses against prompt injection and spoofed inputs.
+4. **Safety Invariants**:
+   - **0.018 USDC Gas Threshold**: Automated preflight checks ensure sufficient gas floor before initiating on-chain transactions.
+   - **12-Hour Proposal Cooldown**: Enforces pacing between consecutive automated proposals to eliminate flood/DoS vectors.
 
 ---
 
@@ -66,8 +78,8 @@ Instead of manual collections, this feature sweeps bridged assets across Ethereu
 
 To maximize security while maintaining high operational mobility, Syn DAO implements a **Two-Treasury Architecture**:
 
-1. **Governance Treasury (Timelocked)**: Holds the bulk of DAO funds. Any withdrawal or allocation from this treasury requires a standard governance proposal, community vote, and a mandatory 24-hour timelock delay.
-2. **Agent Operating Treasury (Fast-Access)**: A dedicated, smaller treasury used by the Treasury Agent to perform swift rebalances and operations. The agent contract holds withdrawal and execution rights here to respond immediately to changing yields or risk parameters.
+1. **Governance Treasury (Timelocked)**: Holds the bulk of DAO funds (`0x8205...` on Mainnet, `0xFE0F...` on Testnet). Any withdrawal or allocation from this treasury requires a standard governance proposal, community vote, and a mandatory 24-48 hour timelock delay.
+2. **Agent Operating Treasury (Fast-Access)**: A dedicated, smaller treasury used by the Treasury Agent to perform swift rebalances and under-cap payouts. The agent contract holds withdrawal and execution rights here to respond immediately to changing yields or risk parameters.
 
 ### Funding Flow (Governance-Gated)
 
@@ -75,7 +87,7 @@ To fund the Agent Operating Treasury:
 1. A user submits a **Fund Agent Treasury** proposal via the dashboard, specifying the amount of USDC to allocate.
 2. The proposal is voted on by sARC token holders.
 3. Once approved, the proposal is queued in the Governance Treasury's withdrawal queue.
-4. After the **24-hour timelock** expires, the proposal is executed, transferring the USDC to the Agent Operating Treasury.
+4. After the timelock expires, the proposal is executed, transferring the USDC to the Agent Operating Treasury.
 5. Anyone can then call the `syncBalance()` function on the Agent Operating Treasury to update its internal balance state, allowing the agent to begin utilizing the newly allocated capital.
 
 ---
@@ -85,10 +97,10 @@ To fund the Agent Operating Treasury:
 The Automated Treasury Guard incorporates three key pillars of safe stablecoin management:
 
 ### 1. Direct Cross-Chain Bridge
-Used for bidirectional stablecoin rebalancing. Programmatic transfers use `depositForBurn` on Arc Testnet, poll Circle's Iris API, and mint native USDC on the destination chain without relying on wrapper contracts or external liquidity providers.
+Used for bidirectional stablecoin rebalancing. Programmatic transfers use `depositForBurn` on Arc, poll Circle's Iris API, and mint native USDC on the destination chain without relying on wrapper contracts or external liquidity providers.
 
 ### 2. Smart Account Identity
-The guard operates under an **ERC-8004 identity** registered on the Arc Testnet registry at `0x8004A...`. This registry ties the guard's code, ownership, and reputation index (vouched or disavowed by community members) directly to the blockchain. Asset keys are held securely in a modular multisig vault, while execution keys are delegated to the guard's automation scripts.
+The guard operates under an **ERC-8004 identity** registered on the Arc registry at `0x8004A818BFB912233c491871b3d84c89A494BD9e`. This registry ties the guard's code, ownership, and reputation index directly to the blockchain.
 
 ### 3. Micro-gas Payments
 Every inference request and transaction analysis run by the guard is paid for using micro-cent USDC transfers as small as **$0.01**. This ensures that automated operations pay for their own computational gas and API costs, preventing treasury drain.
@@ -100,40 +112,24 @@ Every inference request and transaction analysis run by the guard is paid for us
 Syn DAO’s Treasury Agent is executed programmatically on a **5-minute recurring schedule** via [cron-job.org](https://cron-job.org) rather than native Vercel crons (due to Hobby tier limitations).
 
 ### 1. Run Agent Scan
-* **Method:** `POST` / `GET`
-* **Endpoint:** `https://www.syndaopro.xyz/api/agent/run`
-* **Headers:**
-  - `x-cron-secret`: `<CRON_SECRET>` (shared-secret authentication header)
-* **Payload:** `{}` (optional)
-* **Description:** Triggers the agent's main decision cycle. The agent checks active rules, parses on-chain state, votes on active proposals, and submits transactions/proposals on-chain.
+* **Method:** `GET` or `POST`
+* **Endpoint:** `https://www.syndaopro.xyz/api/agent/run?network=mainnet`
+* **Query Parameters (Required):**
+  - `network`: `mainnet` or `testnet` *(Calling without this query param returns HTTP 400)*
+* **Headers (Required):**
+  - `x-cron-secret: <CRON_SECRET>` or `Authorization: Bearer <CRON_SECRET>`
+* **Description:** Triggers the agent's main decision cycle. The agent checks active rules, evaluates on-chain state, executes under-cap releases ($\le 50$ USDC), votes on active proposals, and syncs balances.
 
 #### Execution Response Shape
-The endpoint returns a structured JSON payload detailing the current agent state, treasury balances, and the specific action evaluated during this tick:
+The endpoint returns a minimal, low-overhead JSON payload (~120 bytes) optimized to prevent buffer bloat on cron services:
 
 ```json
 {
-  "success": true,
-  "action": {
-    "timestamp": "2026-07-06T14:32:00.000Z",
-    "action": "monitoring",
-    "reasoning": "Treasury balance is healthy ($142.50 USDC). No active threshold triggers found. Continuous passive monitoring active.",
-    "status": "executed",
-    "usdcAmount": 0
-  },
-  "treasury": {
-    "usdc": 142.5,
-    "eurc": 50,
-    "sepoliaUsdc": 10
-  },
-  "treasurySource": "live",
-  "recentActions": [
-    {
-      "timestamp": "2026-07-06T14:32:00.000Z",
-      "action": "monitoring",
-      "reasoning": "Treasury balance is healthy ($142.50 USDC). No active threshold triggers found. Continuous passive monitoring active.",
-      "status": "executed"
-    }
-  ]
+  "status": "ok",
+  "network": "mainnet",
+  "actionsExecuted": 0,
+  "action": "monitoring",
+  "timestamp": "2026-10-11T18:25:00.000Z"
 }
 ```
 

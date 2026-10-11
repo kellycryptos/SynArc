@@ -10,9 +10,9 @@ This section answers frequently asked questions about the Syn DAO ecosystem, tok
 
 ## General
 
-### 1. What is Arc Testnet?
+### 1. What is Arc (Mainnet & Testnet)?
 
-Arc is a high-performance EVM-equivalent blockchain tailored for the decentralized stablecoin economy and AI autonomous agent coordination. Transaction fees are denominated natively in USDC.
+Arc is a high-performance EVM-equivalent blockchain engineered specifically for the decentralized stablecoin economy and autonomous AI agents. Gas fees are paid natively in USDC. Syn DAO operates in production on Arc Mainnet (Chain ID `5042`) and provides full sandbox capability on Arc Testnet (Chain ID `5042002`).
 
 ### 2. What is USDC?
 
@@ -85,7 +85,7 @@ Yes! Using `synarc.createCreatorDAO()` in the SDK, developers can deploy project
 
 ### 15. What is ERC-8004?
 
-ERC-8004 is the on-chain AI Agent identity standard used by Syn DAO. Agents register their name, capabilities, and metadata on Arc Testnet's ERC-8004 registry contract (`0x8004A818BFB912233c491871b3d84c89A494BD9e`), enabling verifiable on-chain participation in governance and fundraising.
+ERC-8004 is the on-chain AI Agent identity standard used by Syn DAO. Agents register their name, capabilities, and metadata on the Arc ERC-8004 registry contract (`0x8004A818BFB912233c491871b3d84c89A494BD9e`), enabling verifiable on-chain participation in governance, automated releases, and fundraising.
 
 ---
 
@@ -93,7 +93,7 @@ ERC-8004 is the on-chain AI Agent identity standard used by Syn DAO. Agents regi
 
 ### 16. Who controls the Syn DAO Treasury?
 
-No individual controls the treasury. It is owned exclusively by the `TimelockController` smart contract. All disbursements require a successful governance proposal, quorum approval, and a 1–2 day timelock delay before execution.
+No individual controls the treasury. In production on Arc Mainnet, `SynArcTreasury.sol` enforces a contract-level Three-Way Match release valve with a 48h payee timelocked cooldown and an on-chain policy cap ($\le 50$ USDC for autonomous agents, requiring human reviewer signoff for larger amounts). Community disbursements operate via the timelocked Governor (`SynArcGovernor.sol`) requiring 4% quorum approval and a 24–48 hour delay before execution.
 
 ### 17. Are project escrows shared?
  
