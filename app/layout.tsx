@@ -84,6 +84,7 @@ export default function RootLayout({
       </head>
       <body
         className={`${inter.variable} ${sora.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} ${instrumentSerif.variable} antialiased min-h-screen flex flex-col relative bg-background text-foreground overflow-x-hidden w-full max-w-[100vw]`}
+        suppressHydrationWarning
       >
         <ThemeProvider>
           <ErrorBoundary sectionName="Root Application">
