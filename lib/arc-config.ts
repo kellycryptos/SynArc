@@ -178,6 +178,7 @@ export const CONTRACTS_TESTNET = {
   get token() { return (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e') as `0x${string}` },
   get usdc() { return (process.env.NEXT_PUBLIC_USDC_ADDRESS || '0x3600000000000000000000000000000000000000') as `0x${string}` },
   get eurc() { return (process.env.NEXT_PUBLIC_EURC_CONTRACT_ADDRESS || '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a') as `0x${string}` },
+  get cirBTC() { return (process.env.NEXT_PUBLIC_CIRBTC_CONTRACT_ADDRESS || '0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF') as `0x${string}` },
   get tokenMessenger() { return (process.env.NEXT_PUBLIC_TOKEN_MESSENGER_ADDRESS || '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA') as `0x${string}` },
   get crowdfund() { return (process.env.NEXT_PUBLIC_CROWDFUND_ADDRESS || '0xd5374DFC4B01F60115A52Df027704062506b3030') as `0x${string}` },
 }
@@ -192,6 +193,7 @@ export const CONTRACTS_MAINNET = {
   get token() { return (process.env.NEXT_PUBLIC_MAINNET_TOKEN_ADDRESS || '0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4') as `0x${string}` },
   get usdc() { return (process.env.NEXT_PUBLIC_MAINNET_USDC_ADDRESS || '0x3600000000000000000000000000000000000000') as `0x${string}` },
   get eurc() { return (process.env.NEXT_PUBLIC_MAINNET_EURC_CONTRACT_ADDRESS || process.env.NEXT_PUBLIC_MAINNET_EURC_ADDRESS || '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1') as `0x${string}` },
+  get cirBTC() { return (process.env.NEXT_PUBLIC_MAINNET_CIRBTC_CONTRACT_ADDRESS || '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0') as `0x${string}` },
   get tokenMessenger() { return (process.env.NEXT_PUBLIC_MAINNET_TOKEN_MESSENGER_ADDRESS || '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d') as `0x${string}` },
   get crowdfund() { return (process.env.NEXT_PUBLIC_MAINNET_CROWDFUND_ADDRESS || '0x99955b487aE5519a2b1Ff677f9bed3A6145b750d') as `0x${string}` },
 }

@@ -5,6 +5,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { useTreasuryBalances, invalidateTreasuryBalances } from "@/hooks/useTreasuryBalances";
 import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useEURCBalance, invalidateEURCBalance } from "@/hooks/useEURCBalance";
+import { useCirBTCBalance, invalidateCirBTCBalance } from "@/hooks/useCirBTCBalance";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { ErrorBoundary, SectionErrorBoundary } from "@/components/ErrorBoundary";
@@ -87,6 +88,7 @@ function TreasuryPageContent() {
     balance: combinedTotal, 
     usdcBalance, 
     eurcBalance, 
+    cirBtcBalance,
     activities, 
     queuedWithdrawals,
     isLoading: treasuryLoading, 
@@ -96,6 +98,7 @@ function TreasuryPageContent() {
 
   const { balance: walletUSDC, refetch: refetchWalletUSDC } = useUSDCBalance();
   const { balance: walletEURC, refetch: refetchWalletEURC } = useEURCBalance();
+  const { balance: walletCirBTC, refetch: refetchWalletCirBTC } = useCirBTCBalance();
   // usePrivyWallets and wagmi hooks may not have a wallet when Circle is the only connection.
   // Safe-wrap them so they return empty/noop values instead of crashing.
   const { wallets: privyWallets } = usePrivyWallets();
@@ -205,7 +208,7 @@ function TreasuryPageContent() {
     id: string
     description: string
     amount: number
-    token: 'USDC' | 'EURC'
+    token: 'USDC' | 'EURC' | 'cirBTC'
     date: string
     txHash: string // full 66-character hash
     status: 'pending' | 'confirmed' | 'failed'
@@ -225,7 +228,7 @@ function TreasuryPageContent() {
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [showBridge, setShowBridge] = useState(false);
-  const [selectedToken, setSelectedToken] = useState<"USDC" | "EURC">("USDC");
+  const [selectedToken, setSelectedToken] = useState<"USDC" | "EURC" | "cirBTC">("USDC");
   const [depositAmount, setDepositAmount] = useState("");
   const [txStep, setTxStep] = useState<"idle" | "approving" | "depositing" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -245,8 +248,10 @@ function TreasuryPageContent() {
   };
 
   const currentWalletBalance = useMemo(() => {
-    return selectedToken === "USDC" ? walletUSDC || "0.00" : walletEURC || "0.00";
-  }, [selectedToken, walletUSDC, walletEURC]);
+    if (selectedToken === "USDC") return walletUSDC || "0.00";
+    if (selectedToken === "EURC") return walletEURC || "0.00";
+    return walletCirBTC || "0.00";
+  }, [selectedToken, walletUSDC, walletEURC, walletCirBTC]);
 
   // Combined USD Total simulations
   const chartData = useMemo(() => {
@@ -269,7 +274,7 @@ function TreasuryPageContent() {
         date: new Date(act.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
         balance: Number(Math.max(0, runningBalance).toFixed(2)),
       });
-      const factor = act.token === "EURC" ? 1.08 : 1.0;
+      const factor = act.token === "EURC" ? 1.08 : (act.token === "cirBTC" || act.token === "BTC") ? 95000 : 1.0;
       if (act.type === 'Inflow') {
         runningBalance -= (act.amount * factor);
       } else if (act.type === 'Outflow') {
@@ -311,20 +316,23 @@ function TreasuryPageContent() {
   // Asset Composition details
   const usdcValueInUSD = usdcBalance;
   const eurcValueInUSD = eurcBalance * 1.08;
-  const totalValueInUSD = usdcValueInUSD + eurcValueInUSD;
+  const cirBtcValueInUSD = (cirBtcBalance || 0) * 95000;
+  const totalValueInUSD = usdcValueInUSD + eurcValueInUSD + cirBtcValueInUSD;
 
   const compositionData = useMemo(() => {
     if (totalValueInUSD === 0) {
       return [
         { name: "USDC", value: 100, color: "#2775CA" },
-        { name: "EURC", value: 0, color: "#EC4899" }
+        { name: "EURC", value: 0, color: "#EC4899" },
+        { name: "cirBTC", value: 0, color: "#F7931A" }
       ];
     }
     return [
       { name: "USDC", value: parseFloat(((usdcValueInUSD / totalValueInUSD) * 100).toFixed(1)), color: "#2775CA" },
-      { name: "EURC", value: parseFloat(((eurcValueInUSD / totalValueInUSD) * 100).toFixed(1)), color: "#EC4899" }
+      { name: "EURC", value: parseFloat(((eurcValueInUSD / totalValueInUSD) * 100).toFixed(1)), color: "#EC4899" },
+      { name: "cirBTC", value: parseFloat(((cirBtcValueInUSD / totalValueInUSD) * 100).toFixed(1)), color: "#F7931A" }
     ];
-  }, [usdcValueInUSD, eurcValueInUSD, totalValueInUSD]);
+  }, [usdcValueInUSD, eurcValueInUSD, cirBtcValueInUSD, totalValueInUSD]);
 
   const handleMaxClick = () => {
     const num = parseFloat(currentWalletBalance || "0");
@@ -333,6 +341,8 @@ function TreasuryPageContent() {
       // Leave 0.05 USDC buffer for Arc native gas fees when using external wallets
       const maxWithGasBuffer = Math.max(0, num - 0.05);
       setDepositAmount(maxWithGasBuffer > 0 ? maxWithGasBuffer.toFixed(4).replace(/\.?0+$/, "") : "0");
+    } else if (selectedToken === "cirBTC") {
+      setDepositAmount(num.toFixed(8).replace(/\.?0+$/, ""));
     } else {
       setDepositAmount(num.toString());
     }
@@ -350,7 +360,7 @@ function TreasuryPageContent() {
 
     const balanceVal = parseFloat(currentWalletBalance);
     if (amount > balanceVal) {
-      setErrorMessage(`Insufficient ${token} balance in your wallet. You have ${balanceVal.toFixed(2)} ${token}, but tried to deposit ${amount.toFixed(2)} ${token}.`);
+      setErrorMessage(`Insufficient ${token} balance in your wallet. You have ${balanceVal.toFixed(token === 'cirBTC' ? 6 : 2)} ${token}, but tried to deposit ${amount.toFixed(token === 'cirBTC' ? 6 : 2)} ${token}.`);
       setTxStep("error");
       return;
     }
@@ -368,15 +378,20 @@ function TreasuryPageContent() {
       // Get authenticated client and wallet
       const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, targetChainId, walletAddress);
 
-      const tokenAddress = token === 'USDC' ? (contracts.usdc || USDC_ADDRESS) : (contracts.eurc || getEurcAddress());
+      const tokenAddress = token === 'USDC' 
+        ? (contracts.usdc || USDC_ADDRESS) 
+        : token === 'EURC'
+          ? (contracts.eurc || (isArcTestnet ? '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a' : '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1'))
+          : (contracts.cirBTC || (isArcTestnet ? '0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF' : '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0'));
       
-      // Cleanly parse amount to 6 decimals, preventing float inaccuracies or overflow
+      const decimals = token === 'cirBTC' ? 8 : 6;
+      // Cleanly parse amount to required decimals, preventing float inaccuracies or overflow
       const sanitizedAmountStr = depositAmount.includes('.')
-        ? depositAmount.split('.')[0] + '.' + depositAmount.split('.')[1].slice(0, 6)
+        ? depositAmount.split('.')[0] + '.' + depositAmount.split('.')[1].slice(0, decimals)
         : depositAmount;
-      const amountRaw = parseUnits(sanitizedAmountStr, 6);
+      const amountRaw = parseUnits(sanitizedAmountStr, decimals);
 
-      // ERC20 ABI for checking on-chain balance & allowance
+      // ERC20 ABI for checking on-chain balance & allowance & transfer
       const ERC20_TOKEN_ABI = [
         {
           name: 'allowance',
@@ -397,6 +412,13 @@ function TreasuryPageContent() {
           type: 'function',
           stateMutability: 'nonpayable',
           inputs: [{ name: 'spender', type: 'address' }, { name: 'amount', type: 'uint256' }],
+          outputs: [{ name: '', type: 'bool' }]
+        },
+        {
+          name: 'transfer',
+          type: 'function',
+          stateMutability: 'nonpayable',
+          inputs: [{ name: 'recipient', type: 'address' }, { name: 'amount', type: 'uint256' }],
           outputs: [{ name: '', type: 'bool' }]
         }
       ] as const;
@@ -419,7 +441,7 @@ function TreasuryPageContent() {
       }
 
       if (onchainBalance > 0n && onchainBalance < amountRaw) {
-        const balFormatted = (Number(onchainBalance) / 1_000_000).toFixed(4);
+        const balFormatted = (Number(onchainBalance) / (10 ** decimals)).toFixed(decimals === 8 ? 6 : 4);
         throw new Error(`Insufficient ${token} balance. Your current on-chain balance is ${balFormatted} ${token}, which is less than ${depositAmount} ${token}.`);
       }
 
@@ -435,119 +457,150 @@ function TreasuryPageContent() {
         }
       }
 
-      // 2. Check existing allowance to skip unnecessary approve tx
-      setDepositStatus('Checking allowance...');
-      let existingAllowance = 0n;
-      try {
-        existingAllowance = await publicClient.readContract({
-          address: tokenAddress,
-          abi: ERC20_TOKEN_ABI,
-          functionName: 'allowance',
-          args: [address, contracts.treasury],
-        }) as bigint;
-      } catch (e) {
-        console.warn('Allowance check failed, proceeding with approve:', e);
-      }
+      let depositTx: `0x${string}`;
 
-      if (existingAllowance < amountRaw) {
-        let estimatedApproveGas = 250000n;
+      if (token === 'cirBTC') {
+        // Direct ERC-20 transfer to Treasury contract
+        setDepositStatus('Depositing cirBTC to Treasury...');
+        let estimatedTransferGas = 200000n;
         try {
           const est = await publicClient.estimateContractGas({
+            address: tokenAddress,
+            abi: ERC20_TOKEN_ABI,
+            functionName: 'transfer',
+            args: [contracts.treasury, amountRaw],
+            account: address,
+          });
+          estimatedTransferGas = (est * 150n) / 100n;
+          if (estimatedTransferGas < 200000n) estimatedTransferGas = 200000n;
+        } catch (e) {
+          console.warn('cirBTC transfer gas estimation failed:', e);
+        }
+
+        depositTx = await walletClient.writeContract({
+          address: tokenAddress,
+          abi: ERC20_TOKEN_ABI,
+          functionName: 'transfer',
+          args: [contracts.treasury, amountRaw],
+          account: address,
+          gas: estimatedTransferGas,
+          ...gasParams,
+        });
+      } else {
+        // 2. Check existing allowance to skip unnecessary approve tx (for USDC / EURC)
+        setDepositStatus('Checking allowance...');
+        let existingAllowance = 0n;
+        try {
+          existingAllowance = await publicClient.readContract({
+            address: tokenAddress,
+            abi: ERC20_TOKEN_ABI,
+            functionName: 'allowance',
+            args: [address, contracts.treasury],
+          }) as bigint;
+        } catch (e) {
+          console.warn('Allowance check failed, proceeding with approve:', e);
+        }
+
+        if (existingAllowance < amountRaw) {
+          let estimatedApproveGas = 250000n;
+          try {
+            const est = await publicClient.estimateContractGas({
+              address: tokenAddress,
+              abi: ERC20_TOKEN_ABI,
+              functionName: 'approve',
+              args: [contracts.treasury, amountRaw],
+              account: address,
+            });
+            estimatedApproveGas = (est * 150n) / 100n;
+            if (estimatedApproveGas < 250000n) estimatedApproveGas = 250000n;
+          } catch (e) {
+            console.warn('Approve gas estimation failed:', e);
+          }
+
+          setDepositStatus('Approving ' + token + '...');
+          const approveTx = await walletClient.writeContract({
             address: tokenAddress,
             abi: ERC20_TOKEN_ABI,
             functionName: 'approve',
             args: [contracts.treasury, amountRaw],
             account: address,
+            gas: estimatedApproveGas,
+            ...gasParams,
           });
-          estimatedApproveGas = (est * 150n) / 100n;
-          if (estimatedApproveGas < 250000n) estimatedApproveGas = 250000n;
-        } catch (e) {
-          console.warn('Approve gas estimation failed:', e);
+
+          setDepositStatus('Confirming approval...');
+          await waitForTransaction(publicClient, approveTx);
+
+          // Allow block state to propagate across RPC nodes and verify allowance
+          setDepositStatus('Verifying approval on-chain...');
+          for (let i = 0; i < 6; i++) {
+            await new Promise((resolve) => setTimeout(resolve, 600));
+            try {
+              const updatedAllowance = await publicClient.readContract({
+                address: tokenAddress,
+                abi: ERC20_TOKEN_ABI,
+                functionName: 'allowance',
+                args: [address, contracts.treasury],
+              }) as bigint;
+              if (updatedAllowance >= amountRaw) break;
+            } catch {}
+          }
+        } else {
+          console.log(`[Treasury Deposit] Allowance ${existingAllowance} >= ${amountRaw}. Skipping approve.`);
         }
 
-        setDepositStatus('Approving ' + token + '...');
-        const approveTx = await walletClient.writeContract({
-          address: tokenAddress,
-          abi: ERC20_TOKEN_ABI,
-          functionName: 'approve',
-          args: [contracts.treasury, amountRaw],
-          account: address,
-          gas: estimatedApproveGas,
-          ...gasParams,
-        });
-
-        setDepositStatus('Confirming approval...');
-        await waitForTransaction(publicClient, approveTx);
-
-        // Allow block state to propagate across RPC nodes and verify allowance
-        setDepositStatus('Verifying approval on-chain...');
-        for (let i = 0; i < 6; i++) {
-          await new Promise((resolve) => setTimeout(resolve, 600));
+        // 3. Re-verify on-chain balance after approval (in case approval gas deducted native USDC)
+        if (token === 'USDC' && !isCircle) {
           try {
-            const updatedAllowance = await publicClient.readContract({
+            const postApproveBal = await publicClient.readContract({
               address: tokenAddress,
               abi: ERC20_TOKEN_ABI,
-              functionName: 'allowance',
-              args: [address, contracts.treasury],
+              functionName: 'balanceOf',
+              args: [address],
             }) as bigint;
-            if (updatedAllowance >= amountRaw) break;
-          } catch {}
-        }
-      } else {
-        console.log(`[Treasury Deposit] Allowance ${existingAllowance} >= ${amountRaw}. Skipping approve.`);
-      }
 
-      // 3. Re-verify on-chain balance after approval (in case approval gas deducted native USDC)
-      if (token === 'USDC' && !isCircle) {
-        try {
-          const postApproveBal = await publicClient.readContract({
-            address: tokenAddress,
-            abi: ERC20_TOKEN_ABI,
-            functionName: 'balanceOf',
-            args: [address],
-          }) as bigint;
-
-          if (postApproveBal < amountRaw) {
-            const remBal = (Number(postApproveBal) / 1_000_000).toFixed(4);
-            throw new Error(`Insufficient ${token} balance after approval gas. Remaining balance: ${remBal} ${token}. Please deposit a slightly smaller amount to leave room for gas.`);
+            if (postApproveBal < amountRaw) {
+              const remBal = (Number(postApproveBal) / 1_000_000).toFixed(4);
+              throw new Error(`Insufficient ${token} balance after approval gas. Remaining balance: ${remBal} ${token}. Please deposit a slightly smaller amount to leave room for gas.`);
+            }
+          } catch (e: any) {
+            if (e?.message?.includes('Insufficient')) throw e;
           }
-        } catch (e: any) {
-          if (e?.message?.includes('Insufficient')) throw e;
         }
-      }
 
-      // 4. Deposit
-      let estimatedDepositGas = 300000n;
-      try {
-        const est = await publicClient.estimateContractGas({
+        // 4. Deposit
+        let estimatedDepositGas = 300000n;
+        try {
+          const est = await publicClient.estimateContractGas({
+            address: contracts.treasury,
+            abi: TREASURY_ABI,
+            functionName: token === 'USDC' ? 'depositUSDC' : 'depositEURC',
+            args: [amountRaw],
+            account: address,
+          });
+          estimatedDepositGas = (est * 150n) / 100n;
+          if (estimatedDepositGas < 300000n) estimatedDepositGas = 300000n;
+        } catch (e: any) {
+          console.warn('Deposit gas estimation simulation failed:', e);
+          if (e?.message?.includes('transfer amount exceeds balance')) {
+            throw new Error(`Deposit failed: transfer amount exceeds your available ${token} balance.`);
+          }
+          if (e?.message?.includes('transfer amount exceeds allowance')) {
+            throw new Error(`Deposit failed: approval is still confirming on the network. Please retry in a few seconds.`);
+          }
+        }
+
+        setDepositStatus('Sending deposit transaction...');
+        depositTx = await walletClient.writeContract({
           address: contracts.treasury,
           abi: TREASURY_ABI,
           functionName: token === 'USDC' ? 'depositUSDC' : 'depositEURC',
           args: [amountRaw],
           account: address,
+          gas: estimatedDepositGas,
+          ...gasParams,
         });
-        estimatedDepositGas = (est * 150n) / 100n;
-        if (estimatedDepositGas < 300000n) estimatedDepositGas = 300000n;
-      } catch (e: any) {
-        console.warn('Deposit gas estimation simulation failed:', e);
-        if (e?.message?.includes('transfer amount exceeds balance')) {
-          throw new Error(`Deposit failed: transfer amount exceeds your available ${token} balance.`);
-        }
-        if (e?.message?.includes('transfer amount exceeds allowance')) {
-          throw new Error(`Deposit failed: approval is still confirming on the network. Please retry in a few seconds.`);
-        }
       }
-
-      setDepositStatus('Sending deposit transaction...');
-      const depositTx = await walletClient.writeContract({
-        address: contracts.treasury,
-        abi: TREASURY_ABI,
-        functionName: token === 'USDC' ? 'depositUSDC' : 'depositEURC',
-        args: [amountRaw],
-        account: address,
-        gas: estimatedDepositGas,
-        ...gasParams,
-      });
 
       setTxHash(depositTx);
       setDepositStatus('Confirming deposit...');
@@ -570,8 +623,10 @@ function TreasuryPageContent() {
       refetchTreasury();
       refetchWalletUSDC?.();
       refetchWalletEURC?.();
+      refetchWalletCirBTC?.();
       invalidateUSDCBalance();
       invalidateEURCBalance();
+      invalidateCirBTCBalance();
       invalidateTreasuryBalances();
 
     } catch (error: any) {
@@ -660,7 +715,7 @@ function TreasuryPageContent() {
 
         {/* Balance Overview Cards */}
         <SectionErrorBoundary sectionName="Treasury Balance Overview">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
             {/* Combined Total Reserves */}
             <GlassCard className="p-6 relative overflow-hidden group">
               <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-colors" />
@@ -702,7 +757,7 @@ function TreasuryPageContent() {
             </GlassCard>
 
             {/* EURC Balance */}
-            <GlassCard className="p-6 relative overflow-hidden group sm:col-span-2 lg:col-span-1">
+            <GlassCard className="p-6 relative overflow-hidden group">
               <div className="absolute -right-6 -top-6 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-colors" />
               <div className="flex justify-between items-start mb-4">
                 <div className="p-2 bg-pink-500/10 border border-pink-500/20 rounded-xl flex items-center justify-center">
@@ -719,6 +774,26 @@ function TreasuryPageContent() {
                 )}
               </h3>
               <p className="text-xs text-muted mt-1 font-mono">≈ ${(eurcBalance * 1.08).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</p>
+            </GlassCard>
+
+            {/* cirBTC Balance */}
+            <GlassCard className="p-6 relative overflow-hidden group">
+              <div className="absolute -right-6 -top-6 w-24 h-24 bg-[#F7931A]/10 rounded-full blur-2xl group-hover:bg-[#F7931A]/20 transition-colors" />
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-2 bg-[#F7931A]/10 border border-[#F7931A]/20 rounded-xl flex items-center justify-center">
+                  <TokenIcon symbol="cirBTC" size={24} />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted font-mono">Wrapped BTC</span>
+              </div>
+              <p className="text-xs font-semibold text-muted uppercase tracking-wider font-space">cirBTC Balance</p>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-foreground mt-2 font-mono flex items-center h-[32px]">
+                {treasuryLoading ? (
+                  <span className="inline-block w-28 h-7 bg-surface-elevated animate-pulse rounded" />
+                ) : (
+                  `${(cirBtcBalance || 0).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 6 })} cirBTC`
+                )}
+              </h3>
+              <p className="text-xs text-muted mt-1 font-mono">≈ ${((cirBtcBalance || 0) * 95000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</p>
             </GlassCard>
           </div>
         </SectionErrorBoundary>
@@ -964,8 +1039,8 @@ function TreasuryPageContent() {
             <div className="space-y-4 mb-6">
               <div>
                 <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-2">Select Token</label>
-                <div className="grid grid-cols-2 gap-4">
-                  {(["USDC", "EURC"] as const).map((token) => (
+                <div className="grid grid-cols-3 gap-3">
+                  {(["USDC", "EURC", "cirBTC"] as const).map((token) => (
                     <button
                       key={token}
                       onClick={() => {
@@ -973,7 +1048,7 @@ function TreasuryPageContent() {
                         setDepositAmount("");
                         setTxStep("idle");
                       }}
-                      className={`p-3 rounded-xl border font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      className={`p-3 rounded-xl border font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
                         selectedToken === token
                           ? "bg-accent-purple border-accent-purple text-white-keep shadow-[0_0_15px_rgba(124,58,237,0.12)]"
                           : "bg-surface border-border-thin text-muted hover:text-foreground hover:bg-surface-elevated"
@@ -989,7 +1064,12 @@ function TreasuryPageContent() {
               {/* Balance display */}
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted">Wallet Balance</span>
-                <span className="font-semibold text-text-primary font-mono">{parseFloat(currentWalletBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedToken}</span>
+                <span className="font-semibold text-text-primary font-mono">
+                  {parseFloat(currentWalletBalance || "0").toLocaleString(undefined, {
+                    minimumFractionDigits: selectedToken === 'cirBTC' ? 4 : 2,
+                    maximumFractionDigits: selectedToken === 'cirBTC' ? 8 : 2
+                  })} {selectedToken}
+                </span>
               </div>
 
               {/* Amount input */}

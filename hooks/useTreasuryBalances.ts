@@ -124,11 +124,13 @@ export const KNOWN_MAINNET_TX_HASHES: Record<number, string> = {
 export const MAINNET_TREASURY_BASELINE: {
   usdcBalance: number;
   eurcBalance: number;
+  cirBtcBalance: number;
   combinedBalance: number;
   activities: TreasuryActivity[];
 } = {
   usdcBalance: 0.06,
   eurcBalance: 0,
+  cirBtcBalance: 0,
   combinedBalance: 0.06,
   activities: [
     {
@@ -176,11 +178,13 @@ export const KNOWN_TESTNET_TX_HASHES: Record<number, string> = {
 export const TESTNET_TREASURY_BASELINE: {
   usdcBalance: number;
   eurcBalance: number;
+  cirBtcBalance: number;
   combinedBalance: number;
   activities: TreasuryActivity[];
 } = {
   usdcBalance: 14402.29,
   eurcBalance: 16286.70,
+  cirBtcBalance: 0,
   combinedBalance: 30688.99,
   activities: [
     {
@@ -247,6 +251,7 @@ interface CachedData {
   activities: TreasuryActivity[];
   usdcBalance?: number;
   eurcBalance?: number;
+  cirBtcBalance?: number;
   combinedBalance?: number;
   queuedWithdrawals?: QueuedWithdrawal[];
   lastFetchedBlock: string;
@@ -261,6 +266,7 @@ const getCache = (treasuryAddress: string): CachedData => {
         activities: MAINNET_TREASURY_BASELINE.activities,
         usdcBalance: MAINNET_TREASURY_BASELINE.usdcBalance,
         eurcBalance: MAINNET_TREASURY_BASELINE.eurcBalance,
+        cirBtcBalance: MAINNET_TREASURY_BASELINE.cirBtcBalance,
         combinedBalance: MAINNET_TREASURY_BASELINE.combinedBalance,
         queuedWithdrawals: [],
         lastFetchedBlock: '0',
@@ -270,6 +276,7 @@ const getCache = (treasuryAddress: string): CachedData => {
         activities: TESTNET_TREASURY_BASELINE.activities,
         usdcBalance: TESTNET_TREASURY_BASELINE.usdcBalance,
         eurcBalance: TESTNET_TREASURY_BASELINE.eurcBalance,
+        cirBtcBalance: TESTNET_TREASURY_BASELINE.cirBtcBalance,
         combinedBalance: TESTNET_TREASURY_BASELINE.combinedBalance,
         queuedWithdrawals: [],
         lastFetchedBlock: '0',
@@ -296,6 +303,7 @@ const getCache = (treasuryAddress: string): CachedData => {
             ...parsed,
             usdcBalance: typeof parsed.usdcBalance === 'number' && parsed.usdcBalance > 0 ? parsed.usdcBalance : MAINNET_TREASURY_BASELINE.usdcBalance,
             eurcBalance: typeof parsed.eurcBalance === 'number' ? parsed.eurcBalance : 0,
+            cirBtcBalance: typeof parsed.cirBtcBalance === 'number' ? parsed.cirBtcBalance : 0,
             combinedBalance: typeof parsed.combinedBalance === 'number' && parsed.combinedBalance > 0 ? parsed.combinedBalance : MAINNET_TREASURY_BASELINE.combinedBalance,
             activities: mergedActs.length > 0 ? mergedActs : MAINNET_TREASURY_BASELINE.activities,
           };
@@ -312,6 +320,7 @@ const getCache = (treasuryAddress: string): CachedData => {
             ...parsed,
             usdcBalance: typeof parsed.usdcBalance === 'number' && parsed.usdcBalance > 0 ? parsed.usdcBalance : TESTNET_TREASURY_BASELINE.usdcBalance,
             eurcBalance: typeof parsed.eurcBalance === 'number' ? parsed.eurcBalance : TESTNET_TREASURY_BASELINE.eurcBalance,
+            cirBtcBalance: typeof parsed.cirBtcBalance === 'number' ? parsed.cirBtcBalance : 0,
             combinedBalance: typeof parsed.combinedBalance === 'number' && parsed.combinedBalance > 0 ? parsed.combinedBalance : TESTNET_TREASURY_BASELINE.combinedBalance,
             activities: mergedActs.length > 0 ? mergedActs : TESTNET_TREASURY_BASELINE.activities,
           };
@@ -370,12 +379,14 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
   const rpcUrls = isArcTestnet ? ARC_TESTNET_RPC_URLS : ARC_MAINNET_RPC_URLS;
   const usdcAddress = (contracts.usdc || USDC_DEFAULT_ADDRESS) as `0x${string}`;
   const eurcAddress = (contracts.eurc || (isArcTestnet ? '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a' : '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1')) as `0x${string}`;
+  const cirBtcAddress = (contracts.cirBTC || (isArcTestnet ? '0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF' : '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0')) as `0x${string}`;
 
   const initialCache = useMemo(() => getCache(treasuryAddress), [treasuryAddress]);
 
   const [balance, setBalance] = useState(initialCache.combinedBalance ?? 0); // Combined total in USD
   const [usdcBalance, setUsdcBalance] = useState(initialCache.usdcBalance ?? 0);
   const [eurcBalance, setEurcBalance] = useState(initialCache.eurcBalance ?? 0);
+  const [cirBtcBalance, setCirBtcBalance] = useState(initialCache.cirBtcBalance ?? 0);
   const [activities, setActivities] = useState<TreasuryActivity[]>(initialCache.activities || []);
   const [queuedWithdrawals, setQueuedWithdrawals] = useState<QueuedWithdrawal[]>(initialCache.queuedWithdrawals || []);
   const [loading, setLoading] = useState(
@@ -395,7 +406,8 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
       if (cached.usdcBalance !== undefined && cached.eurcBalance !== undefined) {
         setUsdcBalance(cached.usdcBalance);
         setEurcBalance(cached.eurcBalance);
-        setBalance(cached.combinedBalance ?? (cached.usdcBalance + cached.eurcBalance * 1.08));
+        setCirBtcBalance(cached.cirBtcBalance ?? 0);
+        setBalance(cached.combinedBalance ?? (cached.usdcBalance + cached.eurcBalance * 1.08 + (cached.cirBtcBalance ?? 0) * 95000));
         if (cached.queuedWithdrawals) {
           setQueuedWithdrawals(cached.queuedWithdrawals);
         }
@@ -417,7 +429,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
 
     try {
       // Step 1: Rapid fetch of token balances and queued withdrawals (lightweight calls)
-      const [usdcBalRes, eurcBalRes, rawQueuedRes] = await Promise.allSettled([
+      const [usdcBalRes, eurcBalRes, cirBtcBalRes, rawQueuedRes] = await Promise.allSettled([
         publicClient.readContract({
           address: usdcAddress,
           abi: ERC20_ABI,
@@ -426,6 +438,12 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
         }),
         publicClient.readContract({
           address: eurcAddress,
+          abi: ERC20_ABI,
+          functionName: 'balanceOf',
+          args: [treasuryAddress],
+        }),
+        publicClient.readContract({
+          address: cirBtcAddress,
           abi: ERC20_ABI,
           functionName: 'balanceOf',
           args: [treasuryAddress],
@@ -469,8 +487,12 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
         }
       }
 
+      // Process cirBTC Balance (8 decimals)
+      const cirBtcRaw = cirBtcBalRes.status === 'fulfilled' ? (cirBtcBalRes.value as bigint) : 0n;
+
       const usdcVal = Number(usdcRaw || 0n) / 1_000_000;
       const eurcVal = Number(eurcRaw || 0n) / 1_000_000;
+      const cirBtcVal = Number(cirBtcRaw || 0n) / 100_000_000;
 
       // Process Queued Withdrawals
       const rawQueued = rawQueuedRes.status === 'fulfilled' && Array.isArray(rawQueuedRes.value) ? rawQueuedRes.value : [];
@@ -503,23 +525,28 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
 
       let simulatedUSDC = 0;
       let simulatedEURC = 0;
+      let simulatedCirBTC = 0;
       simulatedActivities.forEach((act) => {
         const val = act.amount;
         if (act.type === 'Inflow') {
           if (act.token === 'USDC') simulatedUSDC += val;
           else if (act.token === 'EURC') simulatedEURC += val;
+          else if (act.token === 'cirBTC' || act.token === 'BTC') simulatedCirBTC += val;
         } else {
           if (act.token === 'USDC') simulatedUSDC -= val;
           else if (act.token === 'EURC') simulatedEURC -= val;
+          else if (act.token === 'cirBTC' || act.token === 'BTC') simulatedCirBTC -= val;
         }
       });
 
       const finalUSDC = usdcVal + simulatedUSDC;
       const finalEURC = eurcVal + simulatedEURC;
-      const combinedVal = finalUSDC + (finalEURC * 1.08);
+      const finalCirBTC = cirBtcVal + simulatedCirBTC;
+      const combinedVal = finalUSDC + (finalEURC * 1.08) + (finalCirBTC * 95000);
 
       setUsdcBalance(finalUSDC);
       setEurcBalance(finalEURC);
+      setCirBtcBalance(finalCirBTC);
       setBalance(combinedVal);
       setLoading(false); // Balances are ready immediately without waiting for tx history!
 
@@ -562,7 +589,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
             return {
               id: `tx-${treasuryAddress.toLowerCase()}-${idx}-${timestampSec}`,
               type: (isOutflow ? 'Outflow' : 'Inflow') as 'Inflow' | 'Outflow',
-              amount: Number(tx.amount || 0n) / 1_000_000,
+              amount: Number(tx.amount || 0n) / (tx.tokenSymbol === 'cirBTC' || tx.tokenSymbol === 'BTC' ? 100_000_000 : 1_000_000),
               token: tx.tokenSymbol || 'USDC',
               timestamp: isoDate,
               description: tx.description || (isOutflow ? 'Treasury Outflow' : 'Treasury Inflow'),
@@ -589,6 +616,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
             activities: allActivities,
             usdcBalance: finalUSDC,
             eurcBalance: finalEURC,
+            cirBtcBalance: finalCirBTC,
             combinedBalance: combinedVal,
             queuedWithdrawals: formattedQueued,
             lastFetchedBlock: '0',
@@ -605,7 +633,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
     } finally {
       setLoading(false);
     }
-  }, [publicClient, treasuryAddress, usdcAddress, eurcAddress, balance, usdcBalance]);
+  }, [publicClient, treasuryAddress, usdcAddress, eurcAddress, cirBtcAddress, balance, usdcBalance]);
 
   useEffect(() => {
     fetchBalances();
@@ -639,6 +667,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
     balance,
     usdcBalance,
     eurcBalance,
+    cirBtcBalance,
     activities,
     queuedWithdrawals,
     loading,

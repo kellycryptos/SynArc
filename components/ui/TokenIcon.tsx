@@ -13,6 +13,8 @@ export interface TokenIconProps {
 const TOKEN_ASSETS: Record<string, string> = {
   usdc: "/tokens/usdc.svg",
   eurc: "/tokens/eurc.svg",
+  cirbtc: "/tokens/cirbtc.svg",
+  btc: "/tokens/cirbtc.svg",
   sarc: "/tokens/sarc.svg",
   arc: "/chains/arc.svg",
 };
