@@ -16,18 +16,35 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { ProofOfAutonomyTimeline } from "@/components/dashboard/ProofOfAutonomyTimeline";
-
-import { AdversarialSimulator } from "@/components/dashboard/AdversarialSimulator";
-import { ReleaseCheckPanel } from "@/components/dashboard/ReleaseCheckPanel";
-
-const CctpStepVisualizer = dynamic(
-  () => import("@/components/dashboard/CctpStepVisualizer").then(m => m.CctpStepVisualizer),
+const ProofOfAutonomyTimeline = dynamic(
+  () => import("@/components/dashboard/ProofOfAutonomyTimeline").then((m) => m.ProofOfAutonomyTimeline),
   {
     ssr: false,
-    loading: () => (
-      <div className="h-40 rounded-2xl bg-white/[0.02] border border-border-thin animate-pulse" />
-    )
+    loading: () => <div className="skeleton h-64 w-full rounded-2xl" />,
+  }
+);
+
+const AdversarialSimulator = dynamic(
+  () => import("@/components/dashboard/AdversarialSimulator").then((m) => m.AdversarialSimulator),
+  {
+    ssr: false,
+    loading: () => <div className="skeleton h-64 w-full rounded-2xl" />,
+  }
+);
+
+const ReleaseCheckPanel = dynamic(
+  () => import("@/components/dashboard/ReleaseCheckPanel").then((m) => m.ReleaseCheckPanel),
+  {
+    ssr: false,
+    loading: () => <div className="skeleton h-48 w-full rounded-2xl" />,
+  }
+);
+
+const CctpStepVisualizer = dynamic(
+  () => import("@/components/dashboard/CctpStepVisualizer").then((m) => m.CctpStepVisualizer),
+  {
+    ssr: false,
+    loading: () => <div className="skeleton h-40 w-full rounded-2xl" />,
   }
 );
 

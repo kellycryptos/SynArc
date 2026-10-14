@@ -34,7 +34,15 @@ import {
   ArrowLeftRight
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { CctpStepVisualizer } from "@/components/dashboard/CctpStepVisualizer";
+import dynamic from "next/dynamic";
+
+const CctpStepVisualizer = dynamic(
+  () => import("@/components/dashboard/CctpStepVisualizer").then((m) => m.CctpStepVisualizer),
+  {
+    ssr: false,
+    loading: () => <div className="skeleton h-48 w-full rounded-2xl" />,
+  }
+);
 import { SectionErrorBoundary } from "@/components/ErrorBoundary";
 import { TokenIcon } from "@/components/ui/TokenIcon";
 import { ChainIcon } from "@/components/ui/ChainIcon";

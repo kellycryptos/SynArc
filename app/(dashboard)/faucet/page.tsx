@@ -25,8 +25,13 @@ import { useWallets } from "@/hooks/useWallets";
 import { getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
 import { ARC_CHAIN, CONTRACTS } from "@/lib/arc-config";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
-import { BridgeModal } from "@/components/BridgeModal";
+import dynamic from "next/dynamic";
 import { toast } from "react-hot-toast";
+
+const BridgeModal = dynamic(
+  () => import("@/components/BridgeModal").then((m) => m.BridgeModal),
+  { ssr: false }
+);
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const COOLDOWN_KEY = "synarc_faucet_last_claim";
