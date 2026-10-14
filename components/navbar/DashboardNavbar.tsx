@@ -4,17 +4,12 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
 import { Menu, LogOut, Wallet } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { TokenIcon } from "@/components/ui/TokenIcon";
-import dynamic from "next/dynamic";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-
-const ConnectButtonCustom = dynamic(
-  () => import('@rainbow-me/rainbowkit').then((m) => m.ConnectButton.Custom),
-  { ssr: false }
-);
 
 /**
  * DashboardNavbar Component
@@ -27,6 +22,11 @@ const ConnectButtonCustom = dynamic(
  * - Theme toggle and logout button
  */
 export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const deferred = useDeferredWeb3();
   const { isAuthenticated, walletAddress, email, user, logout, login, isCircle } = useAuth();
   const activeWalletAddress = walletAddress;
@@ -61,7 +61,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         {/* Arc Network Status Badge with RPC Health */}
         <NetworkStatusBadge />
 
-        {isAuthenticated ? (
+        {mounted && isAuthenticated ? (
           <div className="flex items-center gap-2 sm:gap-3">
 
             {/* USDC Balance Display */}
@@ -109,27 +109,18 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            {deferred?.isMounted ? (
-              <ConnectButtonCustom>
-                {({ openConnectModal, connectModalOpen }) => (
-                  <button
-                    onClick={openConnectModal}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-sm hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
-                  >
-                    <Wallet className="w-3.5 h-3.5 shrink-0" />
-                    <span>{connectModalOpen ? "Connecting..." : "Connect Wallet"}</span>
-                  </button>
-                )}
-              </ConnectButtonCustom>
-            ) : (
-              <button
-                onClick={login}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-sm hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
-              >
-                <Wallet className="w-3.5 h-3.5 shrink-0" />
-                <span>Connect Wallet</span>
-              </button>
-            )}
+            <ConnectButton.Custom>
+              {({ openConnectModal, connectModalOpen, mounted: rkMounted }) => (
+                <button
+                  onClick={openConnectModal}
+                  disabled={!mounted || !rkMounted}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-sm hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-85"
+                >
+                  <Wallet className="w-3.5 h-3.5 shrink-0" />
+                  <span>{connectModalOpen ? "Connecting..." : "Connect Wallet"}</span>
+                </button>
+              )}
+            </ConnectButton.Custom>
           </div>
         )}
 

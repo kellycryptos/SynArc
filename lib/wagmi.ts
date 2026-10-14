@@ -20,6 +20,7 @@ export const wagmiConfig = getDefaultConfig({
   // Free WalletConnect Project ID for mobile wallet QR support
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '4d95e30a7e3788a66e1c27b26698f0ff',
   chains: defaultChains,
+  ssr: true,
   wallets: [
     {
       groupName: 'Popular',
@@ -32,15 +33,10 @@ export const wagmiConfig = getDefaultConfig({
     },
   ],
   transports: {
-    // Arc Testnet: official RPCs (direct, fast) → same-origin proxy
+    // Arc Testnet: official non-blocked RPC → same-origin proxy → secondary
     [arcTestnet.id]: fallback(
       [
         http('https://rpc.testnet.arc.network', {
-          timeout: 8000,
-          retryCount: 2,
-          retryDelay: 500,
-        }),
-        http('https://rpc.testnet.arc.io', {
           timeout: 8000,
           retryCount: 2,
           retryDelay: 500,
@@ -55,20 +51,21 @@ export const wagmiConfig = getDefaultConfig({
             },
           },
         }),
+        http('https://rpc.testnet.arc.io', {
+          timeout: 8000,
+          retryCount: 1,
+          retryDelay: 500,
+        }),
       ],
       {
         retryCount: 2,
         retryDelay: 500,
+        rank: false,
       }
     ),
-    // Arc Mainnet: official Arc RPC (direct, fast) → same-origin proxy
+    // Arc Mainnet: same-origin proxy first (immune to browser adblockers) → direct official Arc RPC fallback
     [arcMainnet.id]: fallback(
       [
-        http('https://rpc.mainnet.arc.io', {
-          timeout: 8000,
-          retryCount: 2,
-          retryDelay: 500,
-        }),
         http(getMainnetProxyUrl(), {
           timeout: 8000,
           retryCount: 2,
@@ -79,10 +76,16 @@ export const wagmiConfig = getDefaultConfig({
             },
           },
         }),
+        http('https://rpc.mainnet.arc.io', {
+          timeout: 8000,
+          retryCount: 1,
+          retryDelay: 500,
+        }),
       ],
       {
         retryCount: 2,
         retryDelay: 500,
+        rank: false,
       }
     ),
     [mainnet.id]: fallback([
@@ -116,7 +119,6 @@ export const wagmiConfig = getDefaultConfig({
       http("https://avalanche-fuji-c-chain-rpc.publicnode.com"),
     ]),
   },
-  ssr: true,
 })
 
 

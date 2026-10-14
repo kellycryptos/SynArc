@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -62,11 +62,18 @@ const activeLinks: ActiveLink[] = [
 const comingSoonLinks: { label: string; icon: any }[] = [];
 
 export function Sidebar({ className, onClick }: { className?: string; onClick?: () => void }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, walletAddress, isCircle } = useAuth();
   const { balance, isLoading, isError } = useUSDCBalance(walletAddress);
   const { isArcTestnet, networkName } = useArcNetwork();
+
+  const effectiveIsTestnet = mounted ? isArcTestnet : false;
 
   // On mainnet, show Claim 10 sARC; hide settings/docs if testnet-only.
   const visibleLinks = activeLinks
@@ -74,14 +81,14 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
       if (link.href === "/faucet") {
         return {
           ...link,
-          label: isArcTestnet ? "Faucet" : "Claim sARC",
+          label: effectiveIsTestnet ? "Faucet" : "Claim sARC",
         };
       }
       return link;
     })
     .filter((link) => {
       if (link.href === "/settings" || link.href === "/docs") {
-        return isArcTestnet;
+        return effectiveIsTestnet;
       }
       return true;
     });
@@ -304,7 +311,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
       </div>
 
       {/* Mobile-only governance stats & status (USDC, Network, Notifications) */}
-      {isAuthenticated && (
+      {mounted && isAuthenticated && (
         <div className="lg:hidden px-6 py-4 border-t border-border-thin space-y-4 bg-surface/30 shrink-0">
           {/* Network Status Badge */}
           <div className="flex items-center justify-between text-xs">

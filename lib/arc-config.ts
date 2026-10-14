@@ -76,8 +76,20 @@ export function getTestnetRpcUrls(): string[] {
 export const ARC_TESTNET_RPC_URLS = createRpcUrlsProxy(getTestnetRpcUrls);
 
 // Arc Mainnet list (chain 5042)
-// Priority: Official Arc Mainnet RPC (https://rpc.mainnet.arc.io) → Same-Origin Proxy → Alchemy
+// In the browser, the same-origin proxy (/api/rpc/mainnet) MUST be the primary endpoint.
+// Ad blockers (uBlock Origin, Brave Shields, etc.) block direct requests to *.arc.io
+// with net::ERR_BLOCKED_BY_CLIENT due to legacy P2P CDN filter lists.
+// The same-origin proxy forwards server-to-server with zero adblock interference.
 export function getMainnetRpcUrls(): string[] {
+  if (typeof window !== 'undefined') {
+    return Array.from(new Set([
+      getMainnetProxyUrl(),
+      process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC,
+      process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC,
+      'https://rpc.mainnet.arc.io',
+      process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL,
+    ].filter(Boolean) as string[]));
+  }
   return Array.from(new Set([
     'https://rpc.mainnet.arc.io',
     process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL,
