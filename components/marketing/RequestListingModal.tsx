@@ -69,8 +69,8 @@ export function RequestListingModal({ isOpen, onClose }: RequestListingModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-lg rounded-2xl border border-primary/20 bg-background/95 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+    <div className="modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+      <div className="modal-content relative w-full max-w-lg rounded-2xl border border-primary/20 bg-background/95 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-xl bg-surface hover:bg-surface-elevated text-muted hover:text-white transition-colors cursor-pointer"

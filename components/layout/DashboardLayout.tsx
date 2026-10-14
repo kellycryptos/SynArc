@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { usePathname } from "next/navigation";
 import { Sidebar } from "../sidebar/Sidebar";
 import { DashboardNavbar } from "../navbar/DashboardNavbar";
 import { WalletGuard } from "../auth/WalletGuard";
@@ -8,17 +9,36 @@ import { PageWrapper } from "@/components/layout/PageWrapper";
 import { DashboardFooter } from "@/components/layout/DashboardFooter";
 import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useSwitchArcNetwork } from "@/hooks/useSwitchArcNetwork";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { ARC_CHAIN } from "@/lib/arc-config";
+import { cn } from "@/lib/utils";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
   const { isAuthenticated, isCircle } = useAuth();
   const { isUnsupported: wagmiUnsupported } = useArcNetwork();
   const { switchToArc, isSwitching } = useSwitchArcNetwork();
+
+  // Close sidebar drawer on route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Lock body scroll on small screens when drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen && typeof window !== "undefined" && window.innerWidth < 1024) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
 
   // Circle wallet does not register with wagmi, so isConnected=false for Circle users.
   // Never show the wrong-network banner for Circle wallet users or guest browsers.
@@ -31,43 +51,21 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <NavigationProgress />
       </Suspense>
 
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block fixed inset-y-0 left-0 z-40">
-        <Sidebar />
-      </div>
+      {/* Sidebar Mobile/Tablet Drawer Overlay */}
+      <div
+        className={cn("sidebar-overlay", mobileMenuOpen && "visible")}
+        onClick={() => setMobileMenuOpen(false)}
+        aria-hidden="true"
+      />
 
-      {/* Mobile Sidebar Overlay */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-              className="fixed inset-y-0 left-0 z-50 w-64 md:hidden"
-            >
-              <Sidebar className="w-full" onClick={() => setMobileMenuOpen(false)} />
-              <button 
-                onClick={() => setMobileMenuOpen(false)} 
-                className="absolute right-4 top-4 p-2 text-muted hover:text-foreground rounded-full hover:bg-surface-elevated transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      {/* Persistent Sidebar on Desktop (>= 1024px) / Slide-in Drawer on Mobile (< 1024px) */}
+      <Sidebar
+        className={cn("sidebar", mobileMenuOpen && "open")}
+        onClick={() => setMobileMenuOpen(false)}
+      />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 md:ml-64 relative">
+      {/* Main Content Area */}
+      <div className="main-content flex-1 flex flex-col min-w-0 relative">
         <DashboardNavbar onMenuClick={() => setMobileMenuOpen(true)} />
         
         {/* Network Warning Banner */}

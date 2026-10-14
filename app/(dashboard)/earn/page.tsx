@@ -142,7 +142,7 @@ export default function EarnPage() {
       </div>
 
       {/* Highlights / Hero Stat Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="stats-grid">
         <GlassCard className="p-4 border border-[#1E293B]">
           <div className="flex items-center justify-between text-xs text-[#8F9CAE] mb-1">
             <span>Peak APY</span>

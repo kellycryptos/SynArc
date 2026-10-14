@@ -1277,7 +1277,7 @@ export default function BridgePage() {
           </div>
 
           {historyOpen && (
-            <div className="p-4 overflow-x-auto animate-fade-in-up">
+            <div className="table-wrapper p-4 overflow-x-auto animate-fade-in-up">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-border-thin text-text-tertiary text-[10px] uppercase tracking-wider font-bold">

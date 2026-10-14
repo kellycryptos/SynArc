@@ -341,7 +341,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div className="modal fixed inset-0 z-50 flex items-center justify-center px-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-background/80 backdrop-blur-md transition-opacity duration-300"
@@ -351,7 +351,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
       {/* Modal Container */}
       <GlassCard
         hover={false}
-        className="w-full max-w-lg p-6 relative z-10 animate-fade-in-up border border-border-thin shadow-2xl shadow-purple-950/20"
+        className="modal-content w-full max-w-lg p-6 relative z-10 animate-fade-in-up border border-border-thin shadow-2xl shadow-purple-950/20"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border-thin pb-4 mb-6">

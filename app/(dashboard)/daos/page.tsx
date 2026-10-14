@@ -294,7 +294,7 @@ export default function DAOsPage() {
       {/* Application Form Modal */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="modal fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
             <div 
               className="absolute inset-0 bg-background/80 backdrop-blur-md" 
@@ -302,7 +302,7 @@ export default function DAOsPage() {
             />
 
             {/* Modal Box */}
-            <div className="relative z-10 w-full max-w-lg bg-surface-elevated border border-white/10 rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col overflow-hidden max-h-[90vh]">
+            <div className="modal-content relative z-10 w-full max-w-lg bg-surface-elevated border border-white/10 rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col overflow-hidden max-h-[90vh]">
               {/* Header */}
               <div className="flex items-center justify-between pb-4 border-b border-border-thin shrink-0">
                 <div className="flex items-center gap-2">

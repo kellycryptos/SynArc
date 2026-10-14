@@ -19,6 +19,7 @@ import dynamic from "next/dynamic";
 import { ProofOfAutonomyTimeline } from "@/components/dashboard/ProofOfAutonomyTimeline";
 
 import { AdversarialSimulator } from "@/components/dashboard/AdversarialSimulator";
+import { ReleaseCheckPanel } from "@/components/dashboard/ReleaseCheckPanel";
 
 const CctpStepVisualizer = dynamic(
   () => import("@/components/dashboard/CctpStepVisualizer").then(m => m.CctpStepVisualizer),
@@ -973,6 +974,11 @@ export default function AgentPage() {
         )}
       </AnimatePresence>
 
+      {/* ════ AUTONOMOUS AGENT RELEASE ENGINE ════ */}
+      <SectionErrorBoundary sectionName="Agent Release Engine">
+        <ReleaseCheckPanel />
+      </SectionErrorBoundary>
+
       {/* ════ FORENSIC SENTINEL & DUAL-AGENT SECURITY MESH ════ */}
       <SectionErrorBoundary sectionName="Forensic Security Sentinel">
         <AdversarialSimulator />
@@ -1756,7 +1762,7 @@ export default function AgentPage() {
                 <Clock className="w-5 h-5 text-warning" />
                 Agent Pending Withdrawals (24h Timelocked)
               </h3>
-              <div className="overflow-x-auto">
+              <div className="table-wrapper overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-border-thin text-text-tertiary text-[10px] uppercase tracking-wider">

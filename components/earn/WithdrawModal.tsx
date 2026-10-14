@@ -95,12 +95,12 @@ export function WithdrawModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-lg bg-[#0A0E17] border border-[#1E293B] rounded-2xl shadow-2xl p-6 overflow-hidden"
+          className="modal-content relative w-full max-w-lg bg-[#0A0E17] border border-[#1E293B] rounded-2xl shadow-2xl p-6 overflow-hidden"
         >
           {/* Header */}
           <div className="flex items-center justify-between pb-4 border-b border-[#1E293B]">

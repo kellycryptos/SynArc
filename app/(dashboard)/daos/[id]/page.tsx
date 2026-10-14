@@ -846,9 +846,9 @@ export default function DAODetailsPage() {
 
       {/* 1. New Proposal Modal */}
       {isProposalModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="modal fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => { if(!submittingProposal) setIsProposalModalOpen(false); }} />
-          <div className="relative z-10 w-full max-w-lg bg-surface-elevated border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col max-h-[90vh] overflow-y-auto space-y-5">
+          <div className="modal-content relative z-10 w-full max-w-lg bg-surface-elevated border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col max-h-[90vh] overflow-y-auto space-y-5">
             <div className="flex justify-between items-center pb-3 border-b border-border-thin">
               <h3 className="font-bold text-white text-lg flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary animate-pulse" />
@@ -954,9 +954,9 @@ export default function DAODetailsPage() {
 
       {/* 2. Treasury Deposit Modal */}
       {isDepositModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="modal fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => { if(!depositing) setIsDepositModalOpen(false); }} />
-          <div className="relative z-10 w-full max-w-sm bg-surface-elevated border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col space-y-5">
+          <div className="modal-content relative z-10 w-full max-w-sm bg-surface-elevated border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col space-y-5">
             <div className="flex justify-between items-center pb-3 border-b border-border-thin">
               <h3 className="font-bold text-white text-lg flex items-center gap-2">
                 <Coins className="w-5 h-5 text-primary animate-pulse" />

@@ -754,7 +754,7 @@ function TreasuryPageContent() {
               <Clock className="w-5 h-5 text-warning" />
               Pending Withdrawals (Timelocked)
             </h3>
-            <div className="overflow-x-auto">
+            <div className="table-wrapper overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-border-thin text-text-tertiary text-xs uppercase tracking-wider">
@@ -850,7 +850,7 @@ function TreasuryPageContent() {
               </span>
             )}
           </div>
-          <div className="overflow-x-auto">
+          <div className="table-wrapper overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border-thin text-text-tertiary text-xs uppercase tracking-wider">
@@ -960,10 +960,10 @@ function TreasuryPageContent() {
 
       {/* Deposit Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div className="modal fixed inset-0 z-50 flex items-center justify-center px-4">
           <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={handleModalClose} />
           
-          <GlassCard className="w-full max-w-md p-6 relative z-10 animate-fade-in-up border border-border-thin">
+          <GlassCard className="modal-content w-full max-w-md p-6 relative z-10 animate-fade-in-up border border-border-thin">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-border-thin pb-4 mb-6">
               <div className="flex items-center gap-2">

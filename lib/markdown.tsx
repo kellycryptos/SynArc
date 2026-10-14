@@ -34,7 +34,7 @@ export function parseMarkdown(markdown: string): React.ReactNode[] {
     if (!inTable) return;
     if (tableHeaders.length > 0 || tableRows.length > 0) {
       elements.push(
-        <div key={`tbl-${key++}`} className="overflow-x-auto my-6 rounded-xl border border-card-border/50 bg-card/20 shadow-sm">
+        <div key={`tbl-${key++}`} className="table-wrapper overflow-x-auto my-6 rounded-xl border border-card-border/50 bg-card/20 shadow-sm">
           <table className="w-full text-left text-xs border-collapse">
             {tableHeaders.length > 0 && (
               <thead className="bg-white/[0.04] border-b border-border-thin text-foreground font-bold tracking-wide">

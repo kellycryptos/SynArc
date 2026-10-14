@@ -202,6 +202,7 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -986,4 +987,233 @@ div[data-connectkit] button:hover {
   --rk-radii-modal: 14px !important;
   --rk-fonts-body: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
+
+/* ==========================================================================
+   Full Mobile and Desktop Responsive Optimization (Syn DAO)
+   ========================================================================== */
+
+/* 1. Navbar — mobile hamburger menu */
+@media (min-width: 768px) {
+  .nav-links { display: flex; gap: 2rem; }
+  .hamburger { display: none; }
+}
+
+@media (max-width: 767px) {
+  .nav-links { display: none; }
+  .nav-links.open { 
+    display: flex; 
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100vh;
+    background: var(--bg-primary);
+    padding: 5rem 2rem 2rem;
+    z-index: 50;
+    gap: 1.5rem;
+    overflow-y: auto;
+  }
+  .hamburger { display: flex; }
+}
+
+/* 2. Hero section — responsive typography */
+h1, .hero-title { font-size: clamp(2rem, 5vw, 4rem); line-height: 1.1; }
+.hero-subtitle { font-size: clamp(1rem, 2vw, 1.25rem); }
+
+@media (max-width: 767px) {
+  .hero { padding: 4rem 1rem 3rem; text-align: center; }
+  .hero-buttons { flex-direction: column; width: 100%; }
+  .hero-buttons a { width: 100%; text-align: center; }
+}
+
+/* 3. "How it works" steps — stack on mobile */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 1023px) {
+  .steps-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .steps-grid { grid-template-columns: 1fr; }
+}
+
+/* 4. "Why Syn DAO" features grid */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 767px) {
+  .features-grid { grid-template-columns: 1fr; }
+}
+
+/* 5. Footer — responsive columns */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr repeat(4, 1fr);
+  gap: 2rem;
+}
+
+@media (max-width: 1023px) {
+  .footer-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .footer-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .footer-brand { text-align: center; }
+  .footer-brand .socials { justify-content: center; }
+}
+
+/* 6. Dashboard sidebar — mobile drawer */
+@media (min-width: 1024px) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    width: 240px;
+    height: 100vh;
+    flex-shrink: 0;
+  }
+  .sidebar-overlay { display: none; }
+}
+
+@media (max-width: 1023px) {
+  .sidebar {
+    position: fixed;
+    top: 0; left: -100%;
+    width: 280px;
+    height: 100vh;
+    z-index: 100;
+    transition: left 0.3s ease;
+  }
+  .sidebar.open { left: 0; }
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+    display: none;
+  }
+  .sidebar-overlay.visible { display: block; }
+  .main-content { width: 100%; }
+}
+
+/* 7. Dashboard cards — responsive grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 1023px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* 8. Tables — horizontal scroll on mobile */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-wrapper table,
+table {
+  min-width: 600px;
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  th, td { 
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+}
+
+/* 9. Modals — full screen / bottom sheet on mobile */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 200;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 16px;
+}
+
+@media (max-width: 767px) {
+  .modal { align-items: flex-end; padding: 0; }
+  .modal-content {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+/* 10. Touch targets — minimum 44px */
+@media (max-width: 767px) {
+  button, a.btn, .nav-link {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* 11. Spacing — reduce padding on mobile */
+.section { padding: 5rem 1.5rem; }
+
+@media (max-width: 767px) {
+  .section { padding: 3rem 1rem; }
+  .container { padding: 0 1rem; }
+}
+
+/* 12. Wallet address display — truncate on mobile */
+.wallet-address {
+  font-family: monospace;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .wallet-address { max-width: 180px; }
+}
+
+/* 13. Skeleton Loader */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+
 

@@ -238,7 +238,7 @@ export default function LeaderboardPage() {
 
       {/* Full ranked table */}
       <GlassCard className="p-0 border border-border overflow-hidden" hover={false}>
-        <div className="overflow-x-auto">
+        <div className="table-wrapper overflow-x-auto">
           <table className="w-full border-collapse text-left text-xs">
             <thead>
               <tr className="border-b border-border-thin bg-surface-elevated/20 text-text-tertiary uppercase font-bold tracking-wider select-none">

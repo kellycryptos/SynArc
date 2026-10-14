@@ -463,7 +463,7 @@ export function Footer() {
               {/* Quick Copy Treasury Address */}
               <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface">
                 <span className="text-muted">Treasury:</span>
-                <code className="text-foreground">{shortTreasury}</code>
+                <code className="wallet-address text-foreground">{shortTreasury}</code>
                 <button
                   onClick={handleCopy}
                   aria-label="Copy Treasury Contract Address"
@@ -506,14 +506,14 @@ export function Footer() {
               §3 MAIN NAVIGATION & BRANDING COLUMNS
               ══════════════════════════════════════════════════════ */}
           <div className="pt-16 pb-16">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
-              {/* ── Brand Section (4 cols on large) ── */}
-              <div className="lg:col-span-4 space-y-6">
+            <div className="footer-grid">
+              {/* ── Brand Section ── */}
+              <div className="footer-brand space-y-6">
                 <Link href="/" className="inline-flex items-center gap-3 group">
                   <div className="relative">
                     <SynArcLogo size={42} animated />
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col text-left">
                     <span className="text-2xl font-bold font-space tracking-tight text-foreground group-hover:text-primary transition-colors">
                       Syn <span className="text-primary">DAO</span>
                     </span>
@@ -528,7 +528,7 @@ export function Footer() {
                 </p>
 
                 {/* Social Icon Row + Contact Trigger */}
-                <div className="pt-2 flex flex-wrap items-center gap-3">
+                <div className="socials pt-2 flex flex-wrap items-center gap-3">
                   <a
                     href="https://x.com/syndaopro"
                     target="_blank"
@@ -566,94 +566,91 @@ export function Footer() {
                 </div>
               </div>
 
-              {/* ── Navigation Columns (8 cols on large, responsive grid) ── */}
-              <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {/* Col 1: Ecosystem */}
-                <div className="space-y-4">
-                  <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-foreground flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5 text-primary" />
-                    Ecosystem
-                  </h4>
+              {/* Col 1: Ecosystem */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-foreground flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-primary" />
+                  Ecosystem
+                </h4>
+                <ul className="space-y-2.5 text-xs font-mono">
+                  {ECOSYSTEM_LINKS.map((item) => (
+                    <li key={item.label}>
+                      <FooterNavLink item={item} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Col 2: Developers */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-foreground flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-primary" />
+                  Developers
+                </h4>
+                <ul className="space-y-2.5 text-xs font-mono">
+                  {DEVELOPER_LINKS.map((item) => (
+                    <li key={item.label}>
+                      <FooterNavLink item={item} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Col 3: Governance */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-foreground flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-primary" />
+                  Governance
+                </h4>
+                <ul className="space-y-2.5 text-xs font-mono">
+                  {GOVERNANCE_LINKS.map((item) => (
+                    <li key={item.label}>
+                      <FooterNavLink item={item} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Col 4: Community & Legal */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-foreground flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-primary" />
+                  Community
+                </h4>
+                <ul className="space-y-2.5 text-xs font-mono">
+                  {SOCIAL_LINKS.map((item) => (
+                    <li key={item.label}>
+                      <FooterNavLink item={item} />
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Sub-section: Legal */}
+                <div className="pt-4 border-t border-border/60">
+                  <h5 className="text-[11px] font-mono font-semibold tracking-wider uppercase text-muted mb-2.5">
+                    Legal & Trust
+                  </h5>
                   <ul className="space-y-2.5 text-xs font-mono">
-                    {ECOSYSTEM_LINKS.map((item) => (
+                    {LEGAL_LINKS.map((item) => (
                       <li key={item.label}>
-                        <FooterNavLink item={item} />
+                        {item.badge === "Coming Soon" ? (
+                          <div className="inline-flex items-center gap-1.5 text-muted cursor-default select-none">
+                            <span>{item.label}</span>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider bg-surface border border-border text-muted">
+                              Coming Soon
+                            </span>
+                          </div>
+                        ) : (
+                          <Link
+                            href={item.href}
+                            className="text-muted hover:text-foreground transition-colors"
+                          >
+                            {item.label}
+                          </Link>
+                        )}
                       </li>
                     ))}
                   </ul>
-                </div>
-
-                {/* Col 2: Developers */}
-                <div className="space-y-4">
-                  <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-foreground flex items-center gap-1.5">
-                    <Cpu className="w-3.5 h-3.5 text-primary" />
-                    Developers
-                  </h4>
-                  <ul className="space-y-2.5 text-xs font-mono">
-                    {DEVELOPER_LINKS.map((item) => (
-                      <li key={item.label}>
-                        <FooterNavLink item={item} />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Col 3: Governance */}
-                <div className="space-y-4">
-                  <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-foreground flex items-center gap-1.5">
-                    <Activity className="w-3.5 h-3.5 text-primary" />
-                    Governance
-                  </h4>
-                  <ul className="space-y-2.5 text-xs font-mono">
-                    {GOVERNANCE_LINKS.map((item) => (
-                      <li key={item.label}>
-                        <FooterNavLink item={item} />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Col 4: Community & Legal */}
-                <div className="space-y-4">
-                  <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-foreground flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 text-primary" />
-                    Community
-                  </h4>
-                  <ul className="space-y-2.5 text-xs font-mono">
-                    {SOCIAL_LINKS.map((item) => (
-                      <li key={item.label}>
-                        <FooterNavLink item={item} />
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Sub-section: Legal */}
-                  <div className="pt-4 border-t border-border/60">
-                    <h5 className="text-[11px] font-mono font-semibold tracking-wider uppercase text-muted mb-2.5">
-                      Legal & Trust
-                    </h5>
-                    <ul className="space-y-2.5 text-xs font-mono">
-                      {LEGAL_LINKS.map((item) => (
-                        <li key={item.label}>
-                          {item.badge === "Coming Soon" ? (
-                            <div className="inline-flex items-center gap-1.5 text-muted cursor-default select-none">
-                              <span>{item.label}</span>
-                              <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider bg-surface border border-border text-muted">
-                                Coming Soon
-                              </span>
-                            </div>
-                          ) : (
-                            <Link
-                              href={item.href}
-                              className="text-muted hover:text-foreground transition-colors"
-                            >
-                              {item.label}
-                            </Link>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
                 </div>
               </div>
             </div>

@@ -95,7 +95,7 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           §1  HERO
           ════════════════════════════════════════════════════════ */}
-      <section className="relative pt-28 pb-20 md:pt-40 md:pb-28 overflow-hidden px-4">
+      <section className="hero relative pt-28 pb-20 md:pt-40 md:pb-28 overflow-hidden px-4">
         {/* Background glow */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] opacity-[0.06] dark:opacity-[0.15] bg-[#2F6FFF] blur-[130px] rounded-full" />
@@ -109,8 +109,8 @@ export default function LandingPage() {
             Live on Arc Mainnet
           </div>
 
-          {/* Headline — monospace, per brief */}
-          <h1 className="font-mono text-4xl sm:text-5xl md:text-[56px] font-bold tracking-tight leading-[1.1] text-foreground mb-6">
+          {/* Headline — responsive typography */}
+          <h1 className="hero-title font-mono font-bold tracking-tight text-foreground mb-6">
             Funding and governance{" "}
             <span
               className="text-primary"
@@ -122,24 +122,24 @@ export default function LandingPage() {
             <span className="text-foreground">built on Arc.</span>
           </h1>
 
-          {/* Sub-headline — the core loop sentence, verbatim from brief */}
-          <p className="font-mono text-base sm:text-lg text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
+          {/* Sub-headline — responsive typography */}
+          <p className="hero-subtitle font-mono text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
             Fund USDC into the DAO treasury → vote on a proposal → release to a
             human or agent once the three-way match clears.
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="hero-buttons flex items-center justify-center gap-3">
             <Link
               href="/dashboard"
-              className="w-full sm:w-auto px-7 py-3.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-mono font-semibold text-sm transition-colors shadow-[0_0_24px_rgba(47,111,255,0.25)] flex items-center justify-center gap-2"
+              className="btn px-7 py-3.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-mono font-semibold text-sm transition-colors shadow-[0_0_24px_rgba(47,111,255,0.25)] flex items-center justify-center gap-2"
             >
               Launch App
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/docs"
-              className="w-full sm:w-auto px-7 py-3.5 rounded-lg border border-border bg-surface hover:border-primary/40 text-foreground font-mono font-medium text-sm transition-colors flex items-center justify-center gap-2 shadow-xs"
+              className="btn px-7 py-3.5 rounded-lg border border-border bg-surface hover:border-primary/40 text-foreground font-mono font-medium text-sm transition-colors flex items-center justify-center gap-2 shadow-xs"
             >
               Read the docs
             </Link>
@@ -167,7 +167,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="steps-grid">
             <StepCard
               step={1}
               icon={Wallet}
@@ -220,7 +220,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="features-grid">
             <DiffCard
               icon={FileText}
               title="Document-anchored treasury entries"

@@ -43,7 +43,7 @@ export function OverviewCards() {
 
   if (!initialized) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+      <div className="stats-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="glass-card p-5 space-y-4 animate-pulse bg-background-surface border border-border h-[130px] rounded-2xl flex flex-col justify-between">
             <div className="flex items-start justify-between">
@@ -90,7 +90,7 @@ export function OverviewCards() {
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#151C29] border border-[#151C29] rounded-[10px] overflow-hidden"
+      className="stats-grid gap-px bg-[#151C29] border border-[#151C29] rounded-[10px] overflow-hidden"
     >
       {cards.map((card) => {
         const Icon = card.icon;

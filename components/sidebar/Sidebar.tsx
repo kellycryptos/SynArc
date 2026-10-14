@@ -22,6 +22,7 @@ import {
   Zap,
   Search,
   TrendingUp,
+  X,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { TokenIcon } from "@/components/ui/TokenIcon";
@@ -122,9 +123,9 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
   };
 
   return (
-    <aside className={cn("w-64 bg-background border-r border-border flex flex-col h-full", className)}>
-      {/* Logo */}
-      <div className="h-16 flex items-center px-5 border-b border-border shrink-0">
+    <aside className={cn("sidebar bg-background border-r border-border flex flex-col h-full", className)}>
+      {/* Logo & Close Drawer button */}
+      <div className="h-16 flex items-center justify-between px-5 border-b border-border shrink-0">
         <Link
           href="/"
           prefetch={true}
@@ -136,6 +137,16 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
             Syn DAO
           </span>
         </Link>
+        {onClick && (
+          <button
+            type="button"
+            onClick={onClick}
+            className="lg:hidden p-1.5 text-muted hover:text-foreground rounded-lg hover:bg-surface cursor-pointer transition-colors"
+            aria-label="Close sidebar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Quick Search Pill */}

@@ -258,7 +258,7 @@ export default function FaucetPage() {
       ) : null}
 
       {/* Token Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="stats-grid grid grid-cols-1 md:grid-cols-3 gap-6">
 
         {/* ── SynDAO Token (sARC) ─────────────────────────────────────────── */}
         <GlassCard className="p-6 flex flex-col gap-5 border border-primary/20 bg-gradient-to-br from-primary/[0.04] to-transparent relative overflow-hidden">

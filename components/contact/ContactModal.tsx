@@ -130,7 +130,7 @@ export function ContactModal({ isOpen, onClose, defaultCategory = "Feedback" }: 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div className="modal fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -148,7 +148,7 @@ export function ContactModal({ isOpen, onClose, defaultCategory = "Feedback" }: 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-surface-elevated/95 p-6 sm:p-8 shadow-2xl backdrop-blur-xl text-foreground flex flex-col overflow-hidden max-h-[92vh]"
+            className="modal-content relative z-10 w-full max-w-lg rounded-2xl border border-border bg-surface-elevated/95 p-6 sm:p-8 shadow-2xl backdrop-blur-xl text-foreground flex flex-col overflow-hidden max-h-[92vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Ambient Background Accent Glow */}

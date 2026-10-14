@@ -38,7 +38,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
       {/* Left side */}
       <div className="flex items-center gap-4">
         {/* Syn DAO Logo & Name (Mobile Only) */}
-        <div className="flex items-center gap-2.5 md:hidden">
+        <div className="flex items-center gap-2.5 lg:hidden">
           {onMenuClick && (
             <button onClick={onMenuClick} className="p-1 text-muted hover:text-foreground">
               <Menu className="w-5 h-5" />
@@ -51,13 +51,13 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </div>
 
         {/* Desktop Breadcrumb */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden lg:flex items-center gap-2">
           <span className="text-sm font-medium font-space text-muted">Dashboard</span>
         </div>
       </div>
       
       {/* Right side (Desktop Only) */}
-      <div className="hidden md:flex items-center gap-3 sm:gap-4 font-mono text-xs">
+      <div className="hidden lg:flex items-center gap-3 sm:gap-4 font-mono text-xs">
         {/* Arc Network Status Badge with RPC Health */}
         <NetworkStatusBadge />
 
@@ -83,11 +83,11 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
               <span className="text-xs font-mono flex items-center gap-1.5">
                 {isCircle ? (
                   <>
-                    <span>⭕ Circle Wallet ({shortAddress})</span>
+                    <span>⭕ Circle Wallet (<span className="wallet-address">{shortAddress}</span>)</span>
                   </>
                 ) : (
                   <>
-                    <span>Arc Wallet ({shortAddress})</span>
+                    <span>Arc Wallet (<span className="wallet-address">{shortAddress}</span>)</span>
                   </>
                 )}
               </span>
@@ -132,8 +132,8 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         <ThemeToggle />
       </div>
 
-      {/* Mobile Controls (Mobile Only) */}
-      <div className="flex items-center gap-1 md:hidden">
+      {/* Mobile Controls (Mobile & Tablet < 1024px) */}
+      <div className="flex items-center gap-1 lg:hidden">
         <ThemeToggle />
         <button 
           className="p-2 text-muted hover:text-foreground transition-colors cursor-pointer" 
