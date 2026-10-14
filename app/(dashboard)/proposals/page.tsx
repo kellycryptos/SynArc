@@ -25,28 +25,28 @@ import {
 function ProposalSkeleton() {
   return (
     <GlassCard className="p-6">
-      <div className="flex flex-col md:flex-row gap-6 justify-between animate-pulse">
+      <div className="flex flex-col md:flex-row gap-6 justify-between">
         <div className="flex-1 space-y-4">
           <div className="flex items-center gap-3">
-            <div className="h-6 w-20 bg-surface-elevated rounded-full" />
-            <div className="h-6 w-28 bg-surface-elevated rounded-full" />
+            <div className="skeleton h-6 w-20 rounded-full" />
+            <div className="skeleton h-6 w-28 rounded-full" />
           </div>
           <div className="space-y-2">
-            <div className="h-6 w-3/4 bg-surface-elevated rounded" />
-            <div className="h-4 w-full bg-surface-elevated rounded" />
-            <div className="h-4 w-5/6 bg-surface-elevated rounded" />
+            <div className="skeleton h-6 w-3/4 rounded" />
+            <div className="skeleton h-4 w-full rounded" />
+            <div className="skeleton h-4 w-5/6 rounded" />
           </div>
           <div className="flex items-center gap-4">
-            <div className="h-4 w-32 bg-surface-elevated rounded" />
-            <div className="h-4 w-24 bg-surface-elevated rounded" />
+            <div className="skeleton h-4 w-32 rounded" />
+            <div className="skeleton h-4 w-24 rounded" />
           </div>
         </div>
         <div className="w-full md:w-72 space-y-4 md:border-l md:border-border-thin md:pl-6">
           <div className="space-y-3">
-            <div className="h-4 bg-surface-elevated rounded" />
-            <div className="h-2 bg-surface-elevated rounded-full" />
-            <div className="h-4 bg-surface-elevated rounded" />
-            <div className="h-2 bg-surface-elevated rounded-full" />
+            <div className="skeleton h-4 w-full rounded" />
+            <div className="skeleton h-2 w-full rounded-full" />
+            <div className="skeleton h-4 w-full rounded" />
+            <div className="skeleton h-2 w-full rounded-full" />
           </div>
         </div>
       </div>
