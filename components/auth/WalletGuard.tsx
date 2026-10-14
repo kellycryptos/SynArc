@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ShieldAlert, Wallet, Sparkles, RefreshCw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
+import { GlassCard } from "@/components/ui/GlassCard";
 
 const ConnectButtonCustom = dynamic(
   () => import('@rainbow-me/rainbowkit').then((m) => m.ConnectButton.Custom),

@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60,
     remotePatterns: [
       {
         protocol: "https",
@@ -11,7 +12,6 @@ const nextConfig: NextConfig = {
     ],
   },
   compiler: {
-    // Strip console.* calls in production to reduce bundle size
     removeConsole: process.env.NODE_ENV === "production"
       ? { exclude: ["error", "warn"] }
       : false,
@@ -22,8 +22,18 @@ const nextConfig: NextConfig = {
       static: 300,
     },
     optimizeCss: true,
-    optimizePackageImports: ["lucide-react", "framer-motion", "@radix-ui/react-icons", "recharts", "@rainbow-me/rainbowkit", "viem", "ethers"],
+    optimizePackageImports: [
+      "lucide-react",
+      "framer-motion",
+      "@radix-ui/react-icons",
+      "recharts",
+      "@rainbow-me/rainbowkit",
+      "viem",
+      "ethers",
+      "@privy-io/react-auth",
+    ],
   },
+  poweredByHeader: false,
 };
 
 export default nextConfig;

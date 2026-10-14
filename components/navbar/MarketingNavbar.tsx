@@ -105,6 +105,7 @@ export function MarketingNavbar() {
           </Link>
           <Link 
             href="/treasury" 
+            prefetch={true}
             onClick={() => setIsOpen(false)}
             className="nav-link text-sm font-medium text-muted hover:text-foreground transition-colors"
           >
@@ -112,6 +113,7 @@ export function MarketingNavbar() {
           </Link>
           <Link 
             href="/docs" 
+            prefetch={true}
             onClick={() => setIsOpen(false)}
             className="nav-link text-sm font-medium text-muted hover:text-foreground transition-colors"
           >
@@ -119,6 +121,7 @@ export function MarketingNavbar() {
           </Link>
           <Link 
             href="/docs/sdk" 
+            prefetch={true}
             onClick={() => setIsOpen(false)}
             className="nav-link text-sm font-medium text-muted hover:text-foreground transition-colors"
           >
@@ -126,6 +129,7 @@ export function MarketingNavbar() {
           </Link>
           <Link 
             href="/agent" 
+            prefetch={true}
             onClick={() => setIsOpen(false)}
             className="nav-link text-sm font-medium text-muted hover:text-foreground transition-colors"
           >
@@ -133,6 +137,7 @@ export function MarketingNavbar() {
           </Link>
           <Link 
             href="/contact" 
+            prefetch={true}
             onClick={() => setIsOpen(false)}
             className="nav-link text-sm font-medium text-muted hover:text-foreground transition-colors"
           >
@@ -143,6 +148,7 @@ export function MarketingNavbar() {
           <div className="md:hidden pt-4 mt-auto border-t border-border flex flex-col gap-3">
             <Link 
               href="/dashboard"
+              prefetch={true}
               onClick={() => setIsOpen(false)}
               className="btn w-full px-6 py-3 rounded-xl bg-accent-purple text-white-keep text-sm font-medium text-center flex items-center justify-center gap-2 shadow-md"
             >
@@ -157,6 +163,7 @@ export function MarketingNavbar() {
 
           <Link 
             href="/dashboard"
+            prefetch={true}
             className="btn hidden sm:inline-flex group relative px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl bg-accent-purple text-white-keep text-xs sm:text-sm font-medium hover:bg-accent-purple/90 transition-all shadow-[0_0_20px_rgba(124,58,237,0.2)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] overflow-hidden items-center gap-2"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-accent-purple via-accent-blue to-accent-purple opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[length:200%_auto] animate-gradient" />
