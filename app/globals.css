@@ -203,6 +203,7 @@
 html {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
 }
 
 body {
@@ -212,6 +213,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 .light body {
@@ -1028,13 +1031,13 @@ div[data-connectkit] button:hover {
 }
 
 /* 2. Hero section — responsive typography */
-h1, .hero-title { font-size: clamp(2rem, 5vw, 4rem); line-height: 1.1; }
-.hero-subtitle { font-size: clamp(1rem, 2vw, 1.25rem); }
+h1, .hero-title { font-size: clamp(1.75rem, 5vw, 4rem); line-height: 1.1; }
+.hero-subtitle { font-size: clamp(0.875rem, 2.5vw, 1.125rem); }
 
 @media (max-width: 767px) {
   .hero { padding: 4rem 1rem 3rem; text-align: center; }
-  .hero-buttons { flex-direction: column; width: 100%; }
-  .hero-buttons a { width: 100%; text-align: center; }
+  .hero-buttons { flex-direction: column; align-items: stretch; width: 100%; gap: 0.75rem; }
+  .hero-buttons a, .hero-buttons > * { width: 100%; text-align: center; min-width: 0; }
 }
 
 /* 3. "How it works" steps — stack on mobile */
@@ -1059,8 +1062,12 @@ h1, .hero-title { font-size: clamp(2rem, 5vw, 4rem); line-height: 1.1; }
   gap: 1.5rem;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 479px) {
   .features-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 767px) {
+  .features-grid { gap: 1rem; }
 }
 
 /* 5. Footer — responsive columns */
@@ -1130,16 +1137,21 @@ h1, .hero-title { font-size: clamp(2rem, 5vw, 4rem); line-height: 1.1; }
   .stats-grid { grid-template-columns: 1fr; }
 }
 
-/* 8. Tables — horizontal scroll on mobile */
+/* 8. Tables — horizontal scroll on mobile.
+   IMPORTANT: global `table` only gets min-width when inside .table-wrapper.
+   A bare `table` rule with min-width:600px causes page-level overflow on mobile. */
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-.table-wrapper table,
-table {
+.table-wrapper table {
   min-width: 600px;
+  width: 100%;
+}
+
+table:not(.table-wrapper table) {
   width: 100%;
 }
 
@@ -1179,14 +1191,13 @@ table {
   }
 }
 
-/* 10. Touch targets — minimum 44px */
+/* 10. Touch targets — minimum 44px height for interactive elements.
+   Scoped to specific selectors to avoid breaking layout containers. */
 @media (max-width: 767px) {
-  button, a.btn, .nav-link {
+  button:not([class*="absolute"]):not([class*="fixed"]),
+  a.btn,
+  .nav-link {
     min-height: 44px;
-    min-width: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
   }
 }
 
