@@ -74,6 +74,39 @@ Syn DAO deploys a **Dual-Agent Adversarial Mesh** on Arc Mainnet:
 
 ---
 
+## Autonomous Milestone Release Engine (Arc Mainnet)
+
+Syn DAO features an **Autonomous Milestone Release Engine** (`lib/agent/release-engine.ts`, `/api/agent/release`) that allows the AI agent to independently audit deliverables and execute milestone releases directly on Arc Mainnet:
+
+```
+Campaign Milestone Submitted
+        ↓
+Agent Scans Escrows & Deliverables
+        ↓
+AI Evaluates Criteria & IPFS Proof (Score 0-100)
+        ↓
+Decision: PASS (Score ≥ 70 & ≤ 50 USDC Cap)
+        ↓
+Autonomous Execution on Arc Mainnet
+(releaseMilestone with 950k Gas Limit & 30 Gwei Floor)
+        ↓
+Escrow Disburses USDC to Creator
+```
+
+### 1. Deliverable Scoring & Evidence Verification
+- **Automated Scanning**: The engine scans active `SynArcCrowdfund` campaign escrows for pending milestones.
+- **Criteria Auditing**: Groq/Llama-powered evaluation parses the milestone title, target description, and attached IPFS deliverable CIDs against pre-agreed criteria.
+- **Scoring Output**: Yields an explainable audit report containing `score` (0–100), `criteriaMet` boolean, confidence metric, and cryptographic evidence hash.
+
+### 2. Autonomous On-Chain Execution Rails
+When a deliverable achieves a passing score ($\ge 70$) and falls within policy limits:
+- **Direct Mainnet Execution**: The agent calls `releaseMilestone(milestoneId)` directly on the campaign's deployed `SynArcCrowdfund` contract on Arc Mainnet (`chainId: 5042`).
+- **950,000 Gas Limit**: Escrow milestone payouts perform multiple internal accounting updates, milestone status flips, and USDC transfer calls. The agent automatically sets an explicit `950,000` gas limit to prevent EVM out-of-gas errors.
+- **Dynamic Aggressive Gas Pricing**: To ensure prompt confirmation during high network activity, the agent dynamically queries network gas price and enforces a minimum **30 Gwei floor** (`30_000_000_000n wei`).
+- **Interactive UI Panel**: The `/agent` and `/dashboard` interfaces provide a live **Release Engine Check Panel** allowing operators to view recent audits, simulate releases, and inspect transaction hashes on Arc Explorer.
+
+---
+
 ## Two-Treasury Architecture & Governance Gating
 
 To maximize security while maintaining high operational mobility, Syn DAO implements a **Two-Treasury Architecture**:

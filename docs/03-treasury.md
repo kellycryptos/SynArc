@@ -8,14 +8,14 @@ The Syn DAO Treasury manages workspace funds, tracks inflows, and handles reserv
 
 ---
 
-The Syn DAO Treasury is a fully secure workspace vault. The treasury can hold multiple stable digital assets (USDC and EURC), allowing teams to manage reserves across different currencies.
+The Syn DAO Treasury is a fully secure workspace vault. The treasury can hold multiple stable digital assets and tokenized Bitcoin (USDC, EURC, and cirBTC), allowing teams to manage reserves across different currencies and store-of-value assets.
  
 All capital inflows, allocations, and outflows are tracked inside a transparent ledger, ensuring full accountability.
 
 ### Treasury Architecture
 
 ```
-Contributor Deposit
+Contributor Deposit (USDC / EURC / cirBTC)
         ↓
   SynArcTreasury (vault)
         ↓
@@ -56,6 +56,17 @@ In addition to USDC, Syn DAO natively supports EURC stablecoin deposits:
 2. Input your desired deposit amount in EURC.
 3. Authorize the approval transaction followed by the deposit transaction.
 4. Once validated, your EURC will populate the treasury reserves separately, with the frontend converting its value dynamically to USD (at a 1.08 exchange rate) for portfolio mapping.
+
+---
+
+## How to Deposit cirBTC
+
+Syn DAO supports **cirBTC** deposits directly into the Treasury vault on Arc Mainnet and Testnet:
+
+1. Toggle the token selector inside the **Deposit Portal** to **cirBTC**.
+2. Input your desired deposit amount in cirBTC.
+3. Authorize the ERC-20 approval transaction if required, followed by the deposit transaction.
+4. The treasury interface immediately tracks your cirBTC balance alongside USDC and EURC, with portfolio value pegged against live BTC index valuations. Built-in allowance protection prevents double-approvals and ensures transactions only trigger when valid allowance is confirmed.
 
 ---
 
@@ -125,8 +136,9 @@ Project workspaces use a separate but parallel mechanism:
 
 The **Treasury** page in the Syn DAO dashboard shows:
 
-- **Total Reserves** — real-time USDC + EURC balances on active network (Arc Mainnet default)
+- **Total Reserves** — real-time USDC, EURC, and cirBTC balances on active network (Arc Mainnet default)
 - **Asset Breakdown** — breakdown of liquid reserves, yield vault positions, and ecosystem liquidity
+- **Multi-Asset Balances** — granular token cards showing wallet holdings, allowance status, and treasury reserves
 - **Recent Transactions** — 6-field transparent on-chain inflow and outflow ledger
 - **Proposal Queue** — pending treasury proposals awaiting execution
 
@@ -136,5 +148,6 @@ The **Treasury** page in the Syn DAO dashboard shows:
 
 - The treasury contract (`SynArcTreasury`) is owned exclusively by the `TimelockController` — not any EOA.
 - No individual wallet address can call `withdraw()` directly.
-- EURC reserves are tracked separately and converted to USD for portfolio display.
+- EURC and cirBTC reserves are tracked separately with real-time portfolio conversion.
+- Built-in transaction flow protections prevent duplicate approvals and ensure allowances are properly confirmed before calling deposits.
 - All treasury balances and transaction logs are read directly from Arc Mainnet (Chain ID 5042) or Arc Testnet via `viem`.

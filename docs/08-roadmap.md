@@ -45,6 +45,15 @@ This section outlines Syn DAO's multi-phase roadmap towards providing secure fun
 * **Status:** _Completed / Live on Arc Mainnet (Chain ID 5042)_
 * **Description:** Contract-enforced Three-Way Match release valve (`SynArcTreasury.sol`), 48h payee timelocked cooldown, idempotency bit-flip guard, Iris witness attestations, authentic IPFS pinning, and dual-agent adversarial mesh with forensic auditor. Releases $\le 50$ USDC are autonomous; $> 50$ USDC require mandatory human multisig signoff.
 
+### Phase 7b: Autonomous Release Engine, cirBTC & High-Resilience Infrastructure
+
+* **Status:** _Completed / Live on Arc Mainnet (October 2026)_
+* **Description:** 
+  - **Autonomous Milestone Release Engine**: AI agent independently scores project deliverables and triggers `releaseMilestone` on Arc Mainnet with a 950,000 gas limit and 30 Gwei gas price floor.
+  - **Multi-Asset Treasury (cirBTC)**: Full treasury support for `cirBTC` alongside USDC and EURC with real-time balance tracking and allowance-protected deposit flows.
+  - **High-Resilience CCTP Bridge Architecture**: Dedicated server-side balance proxy route (`/api/bridge/balance`) with 6-second in-memory caching, micro-balance UI precision, and multi-RPC fallback arrays (Base, Ethereum, Avalanche).
+  - **RPC Resiliency & Store Batching**: Batched on-chain hydration (concurrency 3 with 50ms pauses) and increased timeouts (4.5s–8s) across `useCampaignStore`, `useCreatorStore`, and `useGovernanceStore` to eliminate RPC throttling.
+
 ### Phase 8: DeFi Yield Automation & ZK Privacy
 
 * **Status:** _In Progress / Planned_

@@ -13,9 +13,10 @@ Welcome to **Syn DAO** — the payment-safety and governance rail for humans and
 Syn DAO provides the critical payment-safety layer for organizations and agent-run businesses on Arc:
 
 - 🛡️ **Three-Way Match Release Valve** — Enforce contract-level agreement between Governor proposals, IPFS deliverable CIDs, and payee claims with a 48h payee cooldown and idempotency guard.
-- 🤖 **Autonomous Agent Rails** — Autonomous agents trigger micro-payouts under an on-chain policy cap ($\le 50$ USDC), escalating larger disbursements to human review.
+- 🤖 **Autonomous Agent Rails & Release Engine** — Autonomous agents audit deliverables, score acceptance criteria, and trigger micro-payouts under an on-chain policy cap ($\le 50$ USDC) directly on Arc Mainnet, escalating larger disbursements to human review.
+- 🏦 **Multi-Asset Treasury Vaults** — Native support for USDC, EURC, and cirBTC with real-time balance tracking and allowance protection.
 - 🎨 **Launch Milestone Escrows** — Deploy template-based Creator DAOs with milestone locks that release funds progressively as milestones pass community votes.
-- 🌉 **Bidirectional CCTP Bridging** — Native Circle burn-and-mint bridging between Arc and external EVM chains without wrapper tokens.
+- 🌉 **High-Resilience CCTP Bridging** — Native Circle burn-and-mint bridging between Arc and external EVM chains with a server-side balance proxy and multi-RPC redundancy.
 - 🔗 **Developer Agent SDK** — Public TypeScript package (`synarc-agent-sdk`) allowing external AI agents (Eliza, LangChain, AutoGPT) to govern treasuries and execute payouts programmatically.
 
 
@@ -37,6 +38,7 @@ Syn DAO provides the critical payment-safety layer for organizations and agent-r
 | **Authorized Human Reviewer** | `0xE819090D7810D89f2E86e167d0b58425dEd745D8` | Deployer EOA registered on-chain for emergency overrides & multisig signoff | [Inspect](https://explorer.arc.io/address/0xE819090D7810D89f2E86e167d0b58425dEd745D8) |
 | **Canonical USDC** | `0x3600000000000000000000000000000000000000` | Native Circle USDC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0x3600000000000000000000000000000000000000) |
 | **Canonical EURC** | `0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1` | Native Circle EURC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1) |
+| **Canonical cirBTC** | `0x171A4217b86A807A64eB94757Db6849fb4bDbAA0` | Native Circle cirBTC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0x171A4217b86A807A64eB94757Db6849fb4bDbAA0) |
 | **Agent Release Cap** | `50.00 USDC` (`50_000_000 micro-USDC`) | Enforced on-chain: releases $\le 50$ autonomous; $> 50$ require human review | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
 
 > ℹ️ All 10 Creator DAO Crowdfund contracts deployed on Arc Mainnet are verified with exact match on Sourcify. See [`docs/07-smart-contracts.md`](/docs/smart-contracts) for the complete list of creator escrow addresses.
@@ -53,6 +55,7 @@ Syn DAO provides the critical payment-safety layer for organizations and agent-r
 | **Crowdfund Factory / Template** | `0xd5374DFC4B01F60115A52Df027704062506b3030` | Deploys new campaign milestone escrows |
 | **SynArcToken (sARC)** | `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e` | Primary governance voting weight token |
 | **EURC Token** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | EURC stablecoin contract address |
+| **cirBTC Token** | `0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF` | cirBTC token contract address |
 | **USDC (Gas Token)** | `0x3600000000000000000000000000000000000000` | Native USDC stablecoin for fee payment |
 | **Treasury Agent Contract** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | On-chain autonomous agent rules executor |
 | **CCTP Token Messenger** | `0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA` | Circle CCTP Token Messenger address |

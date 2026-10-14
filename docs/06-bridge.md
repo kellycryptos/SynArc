@@ -79,6 +79,25 @@ If your connection was interrupted during the attestation or mint phase:
 
 ---
 
+## High-Resilience Bridge Architecture
+
+To eliminate RPC timeouts, browser CORS errors, and adblocker interference when querying cross-chain balances, Syn DAO implements a multi-tiered balance hydration pipeline:
+
+### 1. Server-Side Balance Proxy (`/api/bridge/balance`)
+- **Direct Edge Routing**: Proxies balance checks through Next.js server routes, protecting client IP privacy and completely bypassing browser adblockers or Cloudflare CORS restrictions.
+- **In-Memory Caching (6-Second TTL)**: Prevents hammering public RPC providers when users rapidly toggle between chains or types.
+- **Dual Arc Balance Resolution**: On Arc chains, the route reads both ERC-20 `balanceOf` and native gas token balance, ensuring correct balance reporting whether funds are held in ERC-20 or native format.
+
+### 2. Dual-Strategy Client Fallback
+- **Strategy 1 (Primary)**: Queries the server `/api/bridge/balance` endpoint.
+- **Strategy 2 (Fallback)**: If the server is unreachable, falls back to direct client-side on-chain reads using `viem` with redundant RPC arrays (`publicnode`, `drpc`, `1rpc`, `tenderly`).
+
+### 3. Micro-Balance Precision & Real-Time Sync
+- **Fractional Precision**: Displays micro-balances down to 4 decimal places for small amounts ($< 0.01\text{ USDC}$) so nanopayments and dust balances are clearly visible.
+- **Window Focus & Event Revalidation**: Auto-refreshes balances whenever the browser tab regains focus, on a background 12-second polling cycle, or upon cross-app transaction events (`synarc_usdc_changed`).
+
+---
+
 ## Official CCTP Deployed Contracts
 
 Syn DAO coordinates with the following verified Circle contract endpoints:
