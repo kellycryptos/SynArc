@@ -75,12 +75,14 @@ Syn DAO simplifies the funding and governance lifecycle:
 
 ### 🏛️ Governance & Treasury
 *   **Proposals & Voting**: Secure on-chain proposals and cryptographic voting signatures.
-*   **Multi-Asset Treasury**: Vault management supporting both USDC and EURC stablecoins.
+*   **Multi-Asset Treasury**: Vault management supporting USDC, EURC, and tokenized Bitcoin (cirBTC) with real-time balance tracking and protected deposit allowance flows.
 *   **Autonomous Rebalancing**: Real-time monitoring and rebalancing of treasury allocations via an AI agent.
 *   **Adversarial Three-Way Match**: Contract-level Three-Way Match (Order == Receipt == Invoice), document-anchored entries (Odoo model), 48h payee timelocked cooldown, AI model score gating (input only, never direct trigger), dual-key multisig human review (>50 USDC), loud custom errors, and zero-gas dry-run simulation (Ghostfolio pattern).
 
-### 🌉 Circle CCTP Bridge
-*   **Bidirectional Routing**: Slippage-free stablecoin bridging between Arc Testnet and external chains (Ethereum Sepolia, Base Sepolia, Avalanche Fuji, Solana Devnet).
+### 🌉 Circle CCTP Bridge & High-Resilience Routing
+*   **Bidirectional Routing**: Slippage-free stablecoin bridging between Arc (Mainnet & Testnet) and external chains (Ethereum, Base, Avalanche).
+*   **Dual-Strategy Balance Architecture**: Server-side proxy route (`/api/bridge/balance`) with 6-second in-memory caching to bypass browser CORS & adblockers, backed by redundant client-side multi-RPC fallbacks.
+*   **Micro-Balance Precision**: Displaying fractional USDC balances down to 4 decimal places for micro-funding and dust amounts.
 *   **Native Burns & Mints**: Secure attestation polling without using risky wrapper tokens or liquidity pools.
 
 ---
@@ -99,6 +101,7 @@ Agent can release under an on-chain cap (default: **50.00 USDC**). Over the cap 
 ### On-Chain Permissions & Approval Thresholds
 *   **Autonomous Agent Track ($\le 50.00\text{ USDC}$)**: Authorized agents trigger `releaseMilestone` autonomously with deliverable proof. Zero delay, instant settlement.
 *   **Human Review Gate ($> 50.00\text{ USDC}$)**: Amounts exceeding 50 USDC immediately halt with `HumanApprovalRequired(releaseKey, amount, threshold)`. Execution requires on-chain signoff via `approveReleaseHuman(releaseKey)` by the Governor, Owner, or an authorized Human Reviewer.
+*   **Autonomous Release Engine Rails**: Implemented in `lib/agent/release-engine.ts` and `/api/agent/release`. Scans active campaign escrows, evaluates deliverables using AI against criteria, and executes `releaseMilestone` directly on Arc Mainnet with a 950,000 gas limit and dynamic aggressive gas price (30 Gwei floor).
 *   **Official Social & Community**: Follow [@syndaopro](https://x.com/syndaopro) on X. Web portal: [syndaopro.xyz](https://www.syndaopro.xyz/).
 
 ---
@@ -372,6 +375,10 @@ synarc-dao/
 
 Below is the verified status of core milestones:
 
+*   **Autonomous Release Engine**: ✅ Deployed and Live on Arc Mainnet. Agent reads milestone submissions, scores deliverables, and autonomously calls `releaseMilestone` on Arc Mainnet with 950k gas limit and 30 Gwei gas price floor.
+*   **Multi-Asset Treasury (cirBTC & EURC)**: ✅ Completed. Native Treasury support for `cirBTC` token deposits and balances alongside USDC and EURC, with allowance transaction protection.
+*   **High-Resilience CCTP Bridge Architecture**: ✅ Completed. Dedicated `/api/bridge/balance` server proxy route with 6-second in-memory cache, micro-balance UI precision, and multi-RPC fallback arrays (Base, Ethereum, Avalanche).
+*   **RPC Resiliency & Store Batching**: ✅ Completed. Batched on-chain hydration (concurrency 3 with 50ms pauses) and lengthened RPC timeouts to prevent HTTP 429 rate-limiting across all stores.
 *   **Milestone Fix**: ✅ Deployed and Verified. Creator DAOs deploy isolated `SynArcCrowdfund` milestone escrow contracts (such as template version `0xd5374DFC4B01F60115A52Df027704062506b3030`) with backer-voting release logic.
 *   **Timelock Fix**: ✅ Completed. Governance system has reverted to utilizing the timelocked primary treasury (`0xFE0F6bF45D363d34CD5fC1781594a7471736dC18`) as the main source of truth for dashboard and voter balances.
 *   **Agent Funding Flow**: ✅ Completed. Implemented a two-treasury separation (Governance vs Operating Agent) with governance-gated transfer proposals and on-chain balance synchronization.
@@ -420,6 +427,7 @@ https://www.syndaopro.xyz/
 | **Authorized Human Reviewer** | `0xE819090D7810D89f2E86e167d0b58425dEd745D8` | Deployer EOA registered on-chain for emergency overrides & multisig signoff | [Inspect](https://explorer.arc.io/address/0xE819090D7810D89f2E86e167d0b58425dEd745D8) |
 | **Canonical USDC** | `0x3600000000000000000000000000000000000000` | Native Circle USDC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0x3600000000000000000000000000000000000000) |
 | **Canonical EURC** | `0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1` | Native Circle EURC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1) |
+| **Canonical cirBTC** | `0x171A4217b86A807A64eB94757Db6849fb4bDbAA0` | Native Circle cirBTC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0x171A4217b86A807A64eB94757Db6849fb4bDbAA0) |
 | **Agent Release Cap** | `50.00 USDC` (`50_000_000 micro-USDC`) | Enforced on-chain: releases $\le 50$ autonomous; $> 50$ require human review | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
 
 #### Arc Mainnet — Verified Creator DAO Escrow Contracts (`SynArcCrowdfund.sol`)
@@ -451,6 +459,7 @@ All 10 Creator DAOs are deployed on Arc Mainnet (Chain ID `5042`) and **100% ver
 | **Crowdfund Factory / Template** | `0xd5374DFC4B01F60115A52Df027704062506b3030` | Deploys new campaign milestone escrows | [Inspect](https://testnet.arcscan.app/address/0xd5374DFC4B01F60115A52Df027704062506b3030) |
 | **SynArcToken (sARC)** | `0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e` | Primary governance voting weight token | [Inspect](https://testnet.arcscan.app/address/0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e) |
 | **EURC Token** | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | EURC stablecoin contract address | [Inspect](https://testnet.arcscan.app/address/0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a) |
+| **cirBTC Token** | `0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF` | cirBTC token contract address | [Inspect](https://testnet.arcscan.app/address/0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF) |
 | **USDC (Gas Token)** | `0x3600000000000000000000000000000000000000` | Native USDC stablecoin for fee payment | [Inspect](https://testnet.arcscan.app/address/0x3600000000000000000000000000000000000000) |
 | **Treasury Agent Contract** | `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D` | On-chain autonomous agent rules executor | [Inspect](https://testnet.arcscan.app/address/0x88BdF819466C1802ce6C780a9fbdF3A314cab07D) |
 
