@@ -327,7 +327,15 @@ function TreasuryPageContent() {
   }, [usdcValueInUSD, eurcValueInUSD, totalValueInUSD]);
 
   const handleMaxClick = () => {
-    setDepositAmount(currentWalletBalance);
+    const num = parseFloat(currentWalletBalance || "0");
+    if (isNaN(num) || num <= 0) return;
+    if (selectedToken === "USDC" && !isCircle) {
+      // Leave 0.05 USDC buffer for Arc native gas fees when using external wallets
+      const maxWithGasBuffer = Math.max(0, num - 0.05);
+      setDepositAmount(maxWithGasBuffer > 0 ? maxWithGasBuffer.toFixed(4).replace(/\.?0+$/, "") : "0");
+    } else {
+      setDepositAmount(num.toString());
+    }
   };
 
   const handleDepositSubmit = async () => {
@@ -347,186 +355,190 @@ function TreasuryPageContent() {
       return;
     }
 
-    setDepositStatus('Preparing...')
+    if (token === "USDC" && !isCircle && balanceVal - amount < 0.01) {
+      setErrorMessage(`Please leave at least 0.02 USDC in your wallet to cover network gas fees.`);
+      setTxStep("error");
+      return;
+    }
+
+    setDepositStatus('Preparing...');
     setErrorMessage("");
 
     try {
-
-
-      const activeWallet = selectActiveWallet(wallets, walletAddress);
-      const isEmbedded = activeWallet?.walletClientType === 'privy';
-
-      if (isEmbedded && activeWallet) {
-        setDepositStatus('Preparing...');
-        const eip1193Provider = await enforceChain(activeWallet, targetChainId);
-        const provider = new BrowserProvider(eip1193Provider);
-        const signer = await provider.getSigner();
-
-        const tokenAddress = token === 'USDC' ? (contracts.usdc || USDC_ADDRESS) : (contracts.eurc || getEurcAddress());
-        const amountRaw = BigInt(Math.floor(amount * 1_000_000));
-
-        // ERC20 Contract instance
-        const erc20 = new Contract(
-          tokenAddress,
-          [
-            'function approve(address spender, uint256 amount) returns (bool)',
-            'function allowance(address owner, address spender) view returns (uint256)',
-          ],
-          signer
-        );
-
-        // Treasury Contract instance
-        const treasury = new Contract(
-          contracts.treasury,
-          [
-            'function depositUSDC(uint256 amount) external',
-            'function depositEURC(uint256 amount) external',
-          ],
-          signer
-        );
-
-        // Step 1 — Check existing allowance to skip unnecessary approve tx
-        setDepositStatus('Checking allowance...');
-        const signerAddress = await signer.getAddress();
-        const existingAllowance: bigint = await erc20.allowance(signerAddress, contracts.treasury);
-        
-        if (existingAllowance < amountRaw) {
-          // Need to approve — either no allowance or insufficient
-          setDepositStatus('Approving ' + token + '...');
-          const approveTx = await erc20.approve(
-            contracts.treasury,
-            amountRaw
-          );
-
-          setDepositStatus('Confirming approval...');
-          const approveReceipt = await approveTx.wait(1);
-          if (!approveReceipt || approveReceipt.status !== 1) {
-            throw new Error('Approval failed on-chain.');
-          }
-          // Brief sync delay after approve
-          await new Promise((resolve) => setTimeout(resolve, 800));
-        } else {
-          console.log(`[Treasury Deposit] Existing allowance ${existingAllowance} >= ${amountRaw}. Skipping approve.`);
-        }
-
-        // Step 2 — Deposit
-        setDepositStatus('Depositing ' + token + ' to treasury...');
-        const depositFn = token === 'USDC' ? 'depositUSDC' : 'depositEURC';
-        const depositTx = await treasury[depositFn](
-          amountRaw
-        );
-
-        setTxHash(depositTx.hash);
-        setDepositStatus('Confirming deposit...');
-        const depositReceipt = await depositTx.wait(1);
-        if (!depositReceipt || depositReceipt.status !== 1) {
-          throw new Error('Deposit failed on-chain.');
-        }
-
-        setDepositStatus('Deposit successful!');
-        toast.success(`${amount} ${token} deposited to treasury`);
-
-        addTransaction({
-          description: `${token} Deposit`,
-          amount: amount,
-          token: token,
-          date: new Date().toLocaleDateString('en-GB'),
-          txHash: depositTx.hash,
-          status: 'confirmed',
-        });
-
-        setDepositAmount("");
-        refetchTreasury();
-        refetchWalletUSDC?.();
-        refetchWalletEURC?.();
-        invalidateUSDCBalance();
-        invalidateEURCBalance();
-        invalidateTreasuryBalances();
-        return;
-      }
-
-      // Get provider and client — Privy wallet, Circle wallet OR external wallet
+      // Get authenticated client and wallet
       const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, targetChainId, walletAddress);
 
       const tokenAddress = token === 'USDC' ? (contracts.usdc || USDC_ADDRESS) : (contracts.eurc || getEurcAddress());
-      const amountRaw = BigInt(Math.floor(amount * 1_000_000));
+      
+      // Cleanly parse amount to 6 decimals, preventing float inaccuracies or overflow
+      const sanitizedAmountStr = depositAmount.includes('.')
+        ? depositAmount.split('.')[0] + '.' + depositAmount.split('.')[1].slice(0, 6)
+        : depositAmount;
+      const amountRaw = parseUnits(sanitizedAmountStr, 6);
+
+      // ERC20 ABI for checking on-chain balance & allowance
+      const ERC20_TOKEN_ABI = [
+        {
+          name: 'allowance',
+          type: 'function',
+          stateMutability: 'view',
+          inputs: [{ name: 'owner', type: 'address' }, { name: 'spender', type: 'address' }],
+          outputs: [{ name: '', type: 'uint256' }]
+        },
+        {
+          name: 'balanceOf',
+          type: 'function',
+          stateMutability: 'view',
+          inputs: [{ name: 'account', type: 'address' }],
+          outputs: [{ name: '', type: 'uint256' }]
+        },
+        {
+          name: 'approve',
+          type: 'function',
+          stateMutability: 'nonpayable',
+          inputs: [{ name: 'spender', type: 'address' }, { name: 'amount', type: 'uint256' }],
+          outputs: [{ name: '', type: 'bool' }]
+        }
+      ] as const;
 
       // Dynamically estimate fees using low-latency and aggressive parameters
       const gasParams = await getAggressiveGasParams(publicClient);
 
-      // Step 1 — Check existing allowance to skip unnecessary approve tx
+      // 1. Verify on-chain balance BEFORE doing anything
+      setDepositStatus('Checking balance...');
+      let onchainBalance = 0n;
+      try {
+        onchainBalance = await publicClient.readContract({
+          address: tokenAddress,
+          abi: ERC20_TOKEN_ABI,
+          functionName: 'balanceOf',
+          args: [address],
+        }) as bigint;
+      } catch (e) {
+        console.warn('Failed to read onchain balance:', e);
+      }
+
+      if (onchainBalance > 0n && onchainBalance < amountRaw) {
+        const balFormatted = (Number(onchainBalance) / 1_000_000).toFixed(4);
+        throw new Error(`Insufficient ${token} balance. Your current on-chain balance is ${balFormatted} ${token}, which is less than ${depositAmount} ${token}.`);
+      }
+
+      // Check native gas balance for external wallets
+      if (token === 'USDC' && !isCircle) {
+        try {
+          const nativeGasWei = await publicClient.getBalance({ address });
+          if (nativeGasWei < 5000000000000000n) { // 0.005 USDC
+            throw new Error(`Low native USDC balance. You need at least 0.01 USDC in your wallet to cover Arc network transaction gas fees.`);
+          }
+        } catch (e: any) {
+          if (e?.message?.includes('Low native USDC')) throw e;
+        }
+      }
+
+      // 2. Check existing allowance to skip unnecessary approve tx
       setDepositStatus('Checking allowance...');
-      const ERC20_ALLOWANCE_ABI = [{
-        name: 'allowance',
-        type: 'function',
-        stateMutability: 'view',
-        inputs: [{ name: 'owner', type: 'address' }, { name: 'spender', type: 'address' }],
-        outputs: [{ name: '', type: 'uint256' }]
-      }] as const;
-      
       let existingAllowance = 0n;
       try {
         existingAllowance = await publicClient.readContract({
           address: tokenAddress,
-          abi: ERC20_ALLOWANCE_ABI,
+          abi: ERC20_TOKEN_ABI,
           functionName: 'allowance',
           args: [address, contracts.treasury],
         }) as bigint;
       } catch (e) {
         console.warn('Allowance check failed, proceeding with approve:', e);
       }
-      
+
       if (existingAllowance < amountRaw) {
-        // Need to approve — either no allowance or insufficient
         let estimatedApproveGas = 250000n;
         try {
           const est = await publicClient.estimateContractGas({
             address: tokenAddress,
-            abi: ERC20_ABI,
+            abi: ERC20_TOKEN_ABI,
             functionName: 'approve',
             args: [contracts.treasury, amountRaw],
             account: address,
-          })
+          });
           estimatedApproveGas = (est * 150n) / 100n;
           if (estimatedApproveGas < 250000n) estimatedApproveGas = 250000n;
         } catch (e) {
-          console.warn('Approve gas estimation failed:', e)
+          console.warn('Approve gas estimation failed:', e);
         }
 
         setDepositStatus('Approving ' + token + '...');
         const approveTx = await walletClient.writeContract({
           address: tokenAddress,
-          abi: ERC20_ABI,
+          abi: ERC20_TOKEN_ABI,
           functionName: 'approve',
           args: [contracts.treasury, amountRaw],
           account: address,
           gas: estimatedApproveGas,
           ...gasParams,
-        })
+        });
 
         setDepositStatus('Confirming approval...');
         await waitForTransaction(publicClient, approveTx);
+
+        // Allow block state to propagate across RPC nodes and verify allowance
+        setDepositStatus('Verifying approval on-chain...');
+        for (let i = 0; i < 6; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 600));
+          try {
+            const updatedAllowance = await publicClient.readContract({
+              address: tokenAddress,
+              abi: ERC20_TOKEN_ABI,
+              functionName: 'allowance',
+              args: [address, contracts.treasury],
+            }) as bigint;
+            if (updatedAllowance >= amountRaw) break;
+          } catch {}
+        }
       } else {
         console.log(`[Treasury Deposit] Allowance ${existingAllowance} >= ${amountRaw}. Skipping approve.`);
       }
 
-      // Step 2 — Deposit
-      let estimatedDepositGas = 300000n; // Slightly higher gas limit
+      // 3. Re-verify on-chain balance after approval (in case approval gas deducted native USDC)
+      if (token === 'USDC' && !isCircle) {
+        try {
+          const postApproveBal = await publicClient.readContract({
+            address: tokenAddress,
+            abi: ERC20_TOKEN_ABI,
+            functionName: 'balanceOf',
+            args: [address],
+          }) as bigint;
+
+          if (postApproveBal < amountRaw) {
+            const remBal = (Number(postApproveBal) / 1_000_000).toFixed(4);
+            throw new Error(`Insufficient ${token} balance after approval gas. Remaining balance: ${remBal} ${token}. Please deposit a slightly smaller amount to leave room for gas.`);
+          }
+        } catch (e: any) {
+          if (e?.message?.includes('Insufficient')) throw e;
+        }
+      }
+
+      // 4. Deposit
+      let estimatedDepositGas = 300000n;
       try {
-        estimatedDepositGas = await publicClient.estimateContractGas({
+        const est = await publicClient.estimateContractGas({
           address: contracts.treasury,
           abi: TREASURY_ABI,
           functionName: token === 'USDC' ? 'depositUSDC' : 'depositEURC',
           args: [amountRaw],
           account: address,
-        })
-        estimatedDepositGas = (estimatedDepositGas * 150n) / 100n;
+        });
+        estimatedDepositGas = (est * 150n) / 100n;
         if (estimatedDepositGas < 300000n) estimatedDepositGas = 300000n;
-      } catch (e) {
-        console.warn('Deposit gas estimation failed:', e)
+      } catch (e: any) {
+        console.warn('Deposit gas estimation simulation failed:', e);
+        if (e?.message?.includes('transfer amount exceeds balance')) {
+          throw new Error(`Deposit failed: transfer amount exceeds your available ${token} balance.`);
+        }
+        if (e?.message?.includes('transfer amount exceeds allowance')) {
+          throw new Error(`Deposit failed: approval is still confirming on the network. Please retry in a few seconds.`);
+        }
       }
 
-      setDepositStatus('Sending transaction...');
+      setDepositStatus('Sending deposit transaction...');
       const depositTx = await walletClient.writeContract({
         address: contracts.treasury,
         abi: TREASURY_ABI,
@@ -535,13 +547,14 @@ function TreasuryPageContent() {
         account: address,
         gas: estimatedDepositGas,
         ...gasParams,
-      })
+      });
+
       setTxHash(depositTx);
       setDepositStatus('Confirming deposit...');
       await waitForTransaction(publicClient, depositTx);
 
-      setDepositStatus('Deposit successful!')
-      toast.success(`${amount} ${token} deposited to treasury`)
+      setDepositStatus('Deposit successful!');
+      toast.success(`${amount} ${token} deposited to treasury`);
       
       // Store in activity log
       addTransaction({
@@ -562,7 +575,7 @@ function TreasuryPageContent() {
       invalidateTreasuryBalances();
 
     } catch (error: any) {
-      setDepositStatus('')
+      setDepositStatus('');
       setTxStep("error");
       const errorText = parseArcError(error);
       setErrorMessage(errorText);
@@ -997,7 +1010,9 @@ function TreasuryPageContent() {
                   <Info className="w-3.5 h-3.5 text-muted" />
                   Gas Fee
                 </span>
-                <span className="text-success font-semibold">Gasless via Paymaster</span>
+                <span className="text-success font-semibold">
+                  {isCircle ? "Gasless via Paymaster" : "~0.01 USDC (Native Gas)"}
+                </span>
               </div>
             </div>
 

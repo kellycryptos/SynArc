@@ -171,14 +171,15 @@ export const useUSDCBalance = (walletAddress?: string | undefined) => {
         throw new Error('RPC balance read failed')
       }
 
-      // ERC20 USDC uses 6 decimals; Arc native gas USDC uses 18 decimals (wei)
-      const erc20Num = Number(formatUnits(raw, 6))
-      const nativeNum = Number(formatUnits(nativeRaw, 18))
-      const totalNum = erc20Num + nativeNum
+      // On Arc, the native gas token (18 decimals) and canonical ERC20 0x3600... (6 decimals)
+      // represent the exact same underlying USDC balance. They should not be summed together.
+      const erc20Num = contractResult.status === 'fulfilled' ? Number(formatUnits(raw, 6)) : 0
+      const nativeNum = balanceResult.status === 'fulfilled' ? Number(formatUnits(nativeRaw, 18)) : 0
+      const actualNum = Math.max(erc20Num, nativeNum)
 
       const erc20Formatted = erc20Num.toFixed(2)
       const nativeFormatted = nativeNum.toFixed(2)
-      const formatted = totalNum.toFixed(2)
+      const formatted = actualNum.toFixed(2)
 
       setNativeBalance(nativeFormatted)
       setErc20Balance(erc20Formatted)

@@ -101,7 +101,8 @@ export function useToken(userAddress: string | null): UseTokenReturn {
       const nativeUsdcBal = typeof nativeBalRaw === "bigint"
         ? Number(formatUnits(nativeBalRaw, 18))
         : 0;
-      const totalUsdc = usdcBal + nativeUsdcBal;
+      // On Arc, usdcBal (ERC20) and nativeUsdcBal represent the exact same underlying USDC balance
+      const totalUsdc = Math.max(usdcBal, nativeUsdcBal);
 
       setSarcBalance(sarcBal);
       setVotingPower(sarcVotes);
