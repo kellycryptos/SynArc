@@ -251,7 +251,7 @@ function TreasuryPageContent() {
   const currentWalletBalance = useMemo(() => {
     if (selectedToken === "USDC") return walletUSDC || "0.00";
     if (selectedToken === "EURC") return walletEURC || "0.00";
-    return walletCirBTC || "0.00";
+    return walletCirBTC || "0.000000";
   }, [selectedToken, walletUSDC, walletEURC, walletCirBTC]);
 
   // Combined USD Total simulations
@@ -730,13 +730,15 @@ function TreasuryPageContent() {
                 <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-primary font-mono">Total Reserves</span>
               </div>
               <p className="text-xs font-semibold text-muted uppercase tracking-wider font-space">Combined Valuation</p>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-foreground mt-2 font-mono flex items-center h-[32px]">
+              <div className="mt-2 min-h-[36px] flex items-baseline">
                 {treasuryLoading ? (
                   <span className="inline-block w-28 h-7 bg-surface-elevated animate-pulse rounded" />
                 ) : (
-                  `$${combinedTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  <span className="text-xl sm:text-2xl font-extrabold text-foreground font-mono tracking-tight">
+                    ${combinedTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
                 )}
-              </h3>
+              </div>
               <p className="text-xs text-muted mt-1 font-mono">USD Net Asset Value</p>
             </GlassCard>
 
@@ -747,16 +749,23 @@ function TreasuryPageContent() {
                 <div className="p-2 bg-[#2775CA]/10 border border-[#2775CA]/20 rounded-xl flex items-center justify-center">
                   <TokenIcon symbol="USDC" size={24} />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted font-mono">Stable</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-[#2775CA] font-mono">Stable</span>
               </div>
               <p className="text-xs font-semibold text-muted uppercase tracking-wider font-space">USDC Balance</p>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-foreground mt-2 font-mono flex items-center h-[32px]">
+              <div className="mt-2 min-h-[36px] flex items-baseline gap-1.5 flex-wrap">
                 {treasuryLoading ? (
                   <span className="inline-block w-28 h-7 bg-surface-elevated animate-pulse rounded" />
                 ) : (
-                  `${usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC`
+                  <>
+                    <span className="text-xl sm:text-2xl font-extrabold text-foreground font-mono tracking-tight">
+                      {usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-xs sm:text-sm font-semibold text-[#2775CA] font-space tracking-wide">
+                      USDC
+                    </span>
+                  </>
                 )}
-              </h3>
+              </div>
               <p className="text-xs text-muted mt-1 font-mono">${usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</p>
             </GlassCard>
 
@@ -767,16 +776,23 @@ function TreasuryPageContent() {
                 <div className="p-2 bg-pink-500/10 border border-pink-500/20 rounded-xl flex items-center justify-center">
                   <TokenIcon symbol="EURC" size={24} />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted font-mono">Stable</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-pink-400 font-mono">Stable</span>
               </div>
               <p className="text-xs font-semibold text-muted uppercase tracking-wider font-space">EURC Balance</p>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-foreground mt-2 font-mono flex items-center h-[32px]">
+              <div className="mt-2 min-h-[36px] flex items-baseline gap-1.5 flex-wrap">
                 {treasuryLoading ? (
                   <span className="inline-block w-28 h-7 bg-surface-elevated animate-pulse rounded" />
                 ) : (
-                  `${eurcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EURC`
+                  <>
+                    <span className="text-xl sm:text-2xl font-extrabold text-foreground font-mono tracking-tight">
+                      {eurcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-xs sm:text-sm font-semibold text-pink-400 font-space tracking-wide">
+                      EURC
+                    </span>
+                  </>
                 )}
-              </h3>
+              </div>
               <p className="text-xs text-muted mt-1 font-mono">≈ ${(eurcBalance * 1.08).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</p>
             </GlassCard>
 
@@ -787,16 +803,23 @@ function TreasuryPageContent() {
                 <div className="p-2 bg-[#F7931A]/10 border border-[#F7931A]/20 rounded-xl flex items-center justify-center">
                   <TokenIcon symbol="cirBTC" size={24} />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted font-mono">Wrapped BTC</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-[#F7931A] font-mono">Wrapped BTC</span>
               </div>
               <p className="text-xs font-semibold text-muted uppercase tracking-wider font-space">cirBTC Balance</p>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-foreground mt-2 font-mono flex items-center h-[32px]">
+              <div className="mt-2 min-h-[36px] flex items-baseline gap-1.5 flex-wrap">
                 {treasuryLoading ? (
                   <span className="inline-block w-28 h-7 bg-surface-elevated animate-pulse rounded" />
                 ) : (
-                  `${(cirBtcBalance || 0).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 6 })} cirBTC`
+                  <>
+                    <span className="text-xl sm:text-2xl font-extrabold text-foreground font-mono tracking-tight">
+                      {(cirBtcBalance || 0).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 6 })}
+                    </span>
+                    <span className="text-xs sm:text-sm font-bold text-[#F7931A] font-space tracking-wide">
+                      cirBTC
+                    </span>
+                  </>
                 )}
-              </h3>
+              </div>
               <p className="text-xs text-muted mt-1 font-mono">≈ ${((cirBtcBalance || 0) * 95000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</p>
             </GlassCard>
           </div>
@@ -1091,7 +1114,8 @@ function TreasuryPageContent() {
                     type="number"
                     value={depositAmount}
                     onChange={(e) => setDepositAmount(e.target.value)}
-                    placeholder="0.00"
+                    placeholder={selectedToken === 'cirBTC' ? "0.000000" : "0.00"}
+                    step={selectedToken === 'cirBTC' ? "0.00000001" : "0.01"}
                     disabled={txStep === "approving" || txStep === "depositing"}
                     className="w-full pl-4 pr-16 py-3 rounded-xl bg-surface border border-border-thin focus:border-primary outline-none transition-colors text-text-primary font-mono text-sm disabled:opacity-50"
                   />
