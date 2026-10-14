@@ -267,6 +267,15 @@ Respond in JSON:
     const govAddress = CONTRACTS_MAINNET.governor // 0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025
     const treasuryAddress = CONTRACTS_MAINNET.treasury // 0x8205e9782Fe54fD2aaD895b436B695db169F3d7B
 
+    // Calculate dynamic gas price with Arc Mainnet 20-30 Gwei floor
+    let aggressiveGasPrice = 30000000000n
+    try {
+      const currentGasPrice = await this.publicClient.getGasPrice()
+      aggressiveGasPrice = currentGasPrice > 25000000000n ? (currentGasPrice * 120n) / 100n : 30000000000n
+    } catch {
+      aggressiveGasPrice = 30000000000n
+    }
+
     // First attempt: Call Governor directly
     try {
       const txHash = await this.walletClient.writeContract({
@@ -275,7 +284,7 @@ Respond in JSON:
         functionName: 'releaseMilestone',
         args: [params.proposalId, params.cid, params.amount],
         gas: 300000n,
-        gasPrice: 10000000n,
+        gasPrice: aggressiveGasPrice,
       })
 
       await this.publicClient.waitForTransactionReceipt({ hash: txHash })
@@ -305,7 +314,7 @@ Respond in JSON:
               params.cid,
             ],
             gas: 300000n,
-            gasPrice: 10000000n,
+            gasPrice: aggressiveGasPrice,
           })
           await this.publicClient.waitForTransactionReceipt({ hash: regTx })
           console.log(`[ReleaseEngine] Mainnet Order registered: ${regTx}`)
@@ -329,7 +338,7 @@ Respond in JSON:
             aiConfidence,
           ],
           gas: 350000n,
-          gasPrice: 10000000n,
+          gasPrice: aggressiveGasPrice,
         })
 
         await this.publicClient.waitForTransactionReceipt({ hash: txHash })
