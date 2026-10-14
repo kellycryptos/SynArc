@@ -282,8 +282,8 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         (_, i) => isMainnet ? (i + 1) : (totalCount - i)
       );
 
-      // Fetch in small parallel chunks (concurrency 5) with a 4000ms timeout per call to avoid RPC throttling
-      const CHUNK_SIZE = 5;
+      // Fetch in small parallel chunks (concurrency 3) with an 8000ms timeout per call to avoid RPC throttling
+      const CHUNK_SIZE = 3;
       const settled: PromiseSettledResult<{ i: number; p: any; proposalStateNum: any }>[] = [];
       for (let c = 0; c < proposalIndices.length; c += CHUNK_SIZE) {
         const chunk = proposalIndices.slice(c, c + CHUNK_SIZE);
@@ -295,24 +295,27 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
               [p, proposalStateNum] = await withTimeout(Promise.all([
                 governorContract.getProposal(i),
                 governorContract.state(i),
-              ]), 4000);
+              ]), 8000);
             } catch {
               // Fallback for standard OpenZeppelin governor contracts that expose proposals(uint256)
               [p, proposalStateNum] = await withTimeout(Promise.all([
                 governorContract.proposals(i),
                 governorContract.state(i),
-              ]), 4000);
+              ]), 8000);
             }
             return { i, p, proposalStateNum };
           })
         );
         settled.push(...chunkResults);
+        if (c + CHUNK_SIZE < proposalIndices.length) {
+          await new Promise((r) => setTimeout(r, 50));
+        }
       }
 
       const loadedProposals: Proposal[] = [];
       for (const result of settled) {
         if (result.status === 'rejected') {
-          console.error(`Failed to load a proposal:`, result.reason);
+          console.warn(`Failed to load a proposal:`, result.reason);
           continue;
         }
         const { p, proposalStateNum } = result.value;

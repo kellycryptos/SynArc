@@ -1,8 +1,7 @@
 import { create } from "zustand";
 import { Campaign, Milestone, CampaignAIAnalysis } from "@/types";
-import { createPublicClient, http } from "viem";
 import { ARC_CHAIN, getActiveNetwork } from "@/lib/arc-config";
-import { getArcRpcUrl } from "@/lib/rpc/config";
+import { getCachedPublicClient } from "@/lib/rpc/provider-cache";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 
 interface CampaignState {
@@ -17,19 +16,6 @@ interface CampaignState {
   syncOnChainCampaign: (campaignId: string) => Promise<void>;
 }
 
-// Client instance per chain to prevent cross-network caching issues
-const publicClients: Record<number, any> = {};
-function getSharedPublicClient() {
-  const chainId = ARC_CHAIN.id;
-  if (!publicClients[chainId]) {
-    publicClients[chainId] = createPublicClient({
-      chain: ARC_CHAIN,
-      transport: http(getArcRpcUrl())
-    });
-  }
-  return publicClients[chainId];
-}
-
 let lastFetchTime = 0;
 const CACHE_DURATION = 15000; // 15 seconds cache
 
@@ -40,7 +26,7 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
   }
 
   try {
-    const client = getSharedPublicClient();
+    const client = getCachedPublicClient(ARC_CHAIN.id);
 
     const readPromise = Promise.all([
       client.readContract({
@@ -61,7 +47,7 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
     ]);
 
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("RPC readContract timeout")), 2000)
+      setTimeout(() => reject(new Error("RPC readContract timeout")), 6000)
     );
 
     const [totalRaisedBigInt, totalContributorsBigInt, onChainMilestones] = await Promise.race([
@@ -132,38 +118,47 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
           });
           lastFetchTime = Date.now();
 
-          // Asynchronously hydrate on-chain parameters without blocking store initialization
-          Promise.allSettled(
-            rawCampaigns.map(async (c) => {
-              const onChain = await fetchOnChainCampaignMetrics(c.escrowAddress);
-              if (onChain) {
-                let state = c.state;
-                if (onChain.raised >= c.goal && c.state === 'Active') {
-                  state = 'Voting';
-                }
-                const allMilestonesClaimed = onChain.milestones.every(m => m.status === 'completed');
-                if (allMilestonesClaimed && onChain.milestones.length > 0) {
-                  state = 'Completed';
-                } else if (onChain.milestones.some(m => m.status === 'active' && m.title.includes("approved"))) {
-                  state = 'Voting';
-                }
+          // Asynchronously hydrate on-chain parameters in small batches to prevent RPC rate-limiting
+          (async () => {
+            const BATCH_SIZE = 3;
+            const hydrated = [...rawCampaigns];
+            for (let i = 0; i < rawCampaigns.length; i += BATCH_SIZE) {
+              const batch = rawCampaigns.slice(i, i + BATCH_SIZE);
+              await Promise.allSettled(
+                batch.map(async (c, bIdx) => {
+                  const targetIdx = i + bIdx;
+                  const onChain = await fetchOnChainCampaignMetrics(c.escrowAddress);
+                  if (onChain) {
+                    let state = c.state;
+                    if (onChain.raised >= c.goal && c.state === 'Active') {
+                      state = 'Voting';
+                    }
+                    const allMilestonesClaimed = onChain.milestones.every(m => m.status === 'completed');
+                    if (allMilestonesClaimed && onChain.milestones.length > 0) {
+                      state = 'Completed';
+                    } else if (onChain.milestones.some(m => m.status === 'active' && m.title.includes("approved"))) {
+                      state = 'Voting';
+                    }
 
-                return {
-                  ...c,
-                  raised: onChain.raised,
-                  contributors: onChain.contributors,
-                  milestones: onChain.milestones,
-                  state
-                };
+                    hydrated[targetIdx] = {
+                      ...c,
+                      raised: onChain.raised,
+                      contributors: onChain.contributors,
+                      milestones: onChain.milestones,
+                      state
+                    };
+                  }
+                })
+              );
+              // Brief 50ms pause between batches
+              if (i + BATCH_SIZE < rawCampaigns.length) {
+                await new Promise(r => setTimeout(r, 50));
               }
-              return c;
-            })
-          ).then((results) => {
-            const hydratedRaw = results.map((r, i) => r.status === 'fulfilled' ? r.value : rawCampaigns[i]);
+            }
             set({
-              campaigns: [...simulatedCampaigns, ...hydratedRaw]
+              campaigns: [...simulatedCampaigns, ...hydrated]
             });
-          });
+          })();
         }
       }
     } catch (error) {

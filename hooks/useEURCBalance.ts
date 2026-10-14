@@ -88,7 +88,8 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const primaryEurcAddress = (contracts?.eurc || (isArcTestnet ? TESTNET_EURC_ADDRESS : MAINNET_EURC_ADDRESS)) as `0x${string}`;
+  const isTargetMainnet = arcChain?.id === 5042 || (!isArcTestnet && arcChain?.id !== 5042002);
+  const primaryEurcAddress = (isTargetMainnet ? MAINNET_EURC_ADDRESS : TESTNET_EURC_ADDRESS) as `0x${string}`;
 
   const fetchBalance = useCallback(async () => {
     let safeAddress: `0x${string}` | null = null;
@@ -173,20 +174,15 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
 
       // Strategy 2: Fast-Path via window.ethereum (instant, 0 CORS, bypasses Cloudflare)
       if (typeof window !== 'undefined' && (window as any).ethereum) {
-        let rawInjected = await queryBalanceViaInjected(primaryEurcAddress, safeAddress);
-
-        // Cross-contract resilience: If primary returned 0n or null, also check Mainnet EURC
-        if ((!rawInjected || rawInjected === 0n) && primaryEurcAddress.toLowerCase() !== MAINNET_EURC_ADDRESS.toLowerCase()) {
-          const mainnetInjected = await queryBalanceViaInjected(MAINNET_EURC_ADDRESS, safeAddress);
-          if (mainnetInjected && mainnetInjected > 0n) {
-            rawInjected = mainnetInjected;
+        try {
+          const rawInjected = await queryBalanceViaInjected(primaryEurcAddress, safeAddress);
+          if (rawInjected !== null && rawInjected > 0n) {
+            const formatted = formatEurcBalance(rawInjected);
+            cachedBalance[key] = { balance: formatted, timestamp: Date.now() };
+            return formatted;
           }
-        }
-
-        if (rawInjected !== null && rawInjected > 0n) {
-          const formatted = formatEurcBalance(rawInjected);
-          cachedBalance[key] = { balance: formatted, timestamp: Date.now() };
-          return formatted;
+        } catch {
+          // Continue to public client
         }
       }
 
@@ -209,25 +205,9 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
           functionName: 'balanceOf',
           args: [safeAddress],
         });
-      } catch (primaryErr) {
-        console.warn('[useEURCBalance] Primary contract read error:', primaryErr);
-      }
-
-      // Cross-contract fallback: If primary read is 0 and primary isn't mainnet, check mainnet address
-      if (rawBalance === 0n && primaryEurcAddress.toLowerCase() !== MAINNET_EURC_ADDRESS.toLowerCase()) {
-        try {
-          const mainnetBal = await client.readContract({
-            address: MAINNET_EURC_ADDRESS as `0x${string}`,
-            abi: ERC20_ABI,
-            functionName: 'balanceOf',
-            args: [safeAddress],
-          });
-          if (mainnetBal > 0n) {
-            rawBalance = mainnetBal;
-          }
-        } catch (mainnetErr) {
-          // Ignore
-        }
+      } catch {
+        // Contract not deployed or returning 0x; keep balance as 0n
+        rawBalance = 0n;
       }
 
       const formatted = formatEurcBalance(rawBalance);
@@ -243,11 +223,8 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
       const formatted = await fetchPromise;
       setBalance(formatted);
       setLoading(false);
-    } catch (err) {
-      console.warn('EURC balance fetch failed:', err);
-      if (!cachedBalance[key]?.balance) {
-        setError('Error fetching balance');
-      }
+    } catch {
+      setBalance('0.00');
       setLoading(false);
     } finally {
       delete pendingFetches[key];

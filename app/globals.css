@@ -498,6 +498,18 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   background: rgba(47, 111, 255, 0.45);
 }
 
+/* ── Hide Scrollbar Utilities ── */
+.hide-scrollbar,
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.hide-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Selection ── */
 ::selection {
   background: rgba(47, 111, 255, 0.25);

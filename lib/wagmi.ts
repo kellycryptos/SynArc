@@ -7,13 +7,13 @@ import {
 } from '@rainbow-me/rainbowkit/wallets'
 import { http, fallback } from 'wagmi'
 import { arcTestnet, arcMainnet, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK, getTestnetProxyUrl, getMainnetProxyUrl, CANTEEN_TESTNET_RPC } from '@/lib/arc-config'
-import { sepolia, baseSepolia, avalancheFuji } from 'viem/chains'
+import { sepolia, baseSepolia, avalancheFuji, mainnet, base as baseChain, avalanche } from 'viem/chains'
 
 // Documented public fallback constant for Arc Testnet
 export const ARC_TESTNET_FALLBACK_RPC = 'https://rpc.testnet.arc.network';
 
 // Default network on any fresh page load with no wallet connected is always mainnet first
-const defaultChains = [arcMainnet, arcTestnet, sepolia, baseSepolia, avalancheFuji] as const;
+const defaultChains = [arcMainnet, arcTestnet, mainnet, baseChain, avalanche, sepolia, baseSepolia, avalancheFuji] as const;
 
 export const wagmiConfig = getDefaultConfig({
   appName: 'Syn DAO',
@@ -85,9 +85,36 @@ export const wagmiConfig = getDefaultConfig({
         retryDelay: 500,
       }
     ),
-    [sepolia.id]: http("https://ethereum-sepolia-rpc.publicnode.com"),
-    [baseSepolia.id]: http("https://sepolia.base.org"),
-    [avalancheFuji.id]: http("https://api.avax-test.network/ext/bc/C/rpc"),
+    [mainnet.id]: fallback([
+      http("https://ethereum-rpc.publicnode.com"),
+      http("https://eth.drpc.org"),
+      http("https://1rpc.io/eth"),
+    ]),
+    [baseChain.id]: fallback([
+      http("https://mainnet.base.org"),
+      http("https://base-rpc.publicnode.com"),
+      http("https://base.gateway.tenderly.co"),
+      http("https://1rpc.io/base"),
+    ]),
+    [avalanche.id]: fallback([
+      http("https://api.avax.network/ext/bc/C/rpc"),
+      http("https://avalanche-c-chain-rpc.publicnode.com"),
+      http("https://1rpc.io/avax/c"),
+    ]),
+    [sepolia.id]: fallback([
+      http("https://ethereum-sepolia-rpc.publicnode.com"),
+      http("https://sepolia.drpc.org"),
+      http("https://1rpc.io/sepolia"),
+    ]),
+    [baseSepolia.id]: fallback([
+      http("https://base-sepolia.drpc.org"),
+      http("https://sepolia.base.org"),
+      http("https://base-sepolia-rpc.publicnode.com"),
+    ]),
+    [avalancheFuji.id]: fallback([
+      http("https://api.avax-test.network/ext/bc/C/rpc"),
+      http("https://avalanche-fuji-c-chain-rpc.publicnode.com"),
+    ]),
   },
   ssr: true,
 })

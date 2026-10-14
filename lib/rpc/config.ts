@@ -37,7 +37,7 @@ export async function initializeResilientRpc(chain: any) {
     if (!primaryUrl) return;
     
     console.log(`Verifying primary RPC node: ${primaryUrl}`);
-    const health = await checkRpcHealth(primaryUrl, 2500); // 2.5 second timeout
+    const health = await checkRpcHealth(primaryUrl, 4500); // 4.5 second timeout
     
     if (!health.isHealthy) {
       console.warn(`Primary RPC ${primaryUrl} is rate-limited or offline (${health.error || 'unresponsive'}). Dynamically swapping to backup RPCs...`);
@@ -69,7 +69,7 @@ export async function initializeResilientRpc(chain: any) {
  * the entire app while it waits for a TCP response.
  */
 export async function getResilientProvider(): Promise<JsonRpcProvider> {
-  const TIMEOUT_MS = 2500;
+  const TIMEOUT_MS = 4500;
   const isMainnet = getActiveNetwork() === 'mainnet';
   const network = isMainnet ? ARC_MAINNET_NETWORK : ARC_TESTNET_NETWORK;
   const validUrls = Array.from(RPC_URLS).filter(url => Boolean(url) && !url.includes('rpc.mainnet.arc.network'));

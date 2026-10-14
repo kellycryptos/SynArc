@@ -38,30 +38,32 @@ const erc20Abi = parseAbi([
 // Testnet source networks config
 export const TESTNET_SOURCE_CHAINS = [
   {
+    id: "BASE_SEPOLIA",
+    chainId: 84532,
+    name: "Base Sepolia",
+    tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    rpcUrl: "https://base-sepolia.drpc.org",
+    rpcUrls: [
+      "https://base-sepolia.drpc.org",
+      "https://sepolia.base.org",
+      "https://base-sepolia-rpc.publicnode.com",
+    ],
+    icon: "BASE",
+    color: "text-blue-500",
+  },
+  {
     id: "ETH_SEPOLIA",
     chainId: 11155111,
     name: "Ethereum Sepolia",
     tokenAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-    rpcUrl: "https://rpc.ankr.com/eth_sepolia",
+    rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
     rpcUrls: [
-      "https://rpc.ankr.com/eth_sepolia",
-      "https://ethereum-sepolia-rpc.publicnode.com"
+      "https://ethereum-sepolia-rpc.publicnode.com",
+      "https://sepolia.drpc.org",
+      "https://1rpc.io/sepolia",
     ],
     icon: "ETH",
-    color: "text-blue-400"
-  },
-  {
-    id: "BASE_SEPOLIA",
-    chainId: 84532,
-    name: "Base Sepolia",
-    tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dcf7e",
-    rpcUrl: "https://sepolia.base.org",
-    rpcUrls: [
-      "https://sepolia.base.org",
-      "https://base-sepolia-rpc.publicnode.com"
-    ],
-    icon: "BASE",
-    color: "text-blue-500"
+    color: "text-blue-400",
   },
   {
     id: "AVAX_FUJI",
@@ -70,10 +72,11 @@ export const TESTNET_SOURCE_CHAINS = [
     tokenAddress: "0x5425890298aed601595a70AB815c96711a31Bc65",
     rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc",
     rpcUrls: [
-      "https://api.avax-test.network/ext/bc/C/rpc"
+      "https://api.avax-test.network/ext/bc/C/rpc",
+      "https://avalanche-fuji-c-chain-rpc.publicnode.com",
     ],
     icon: "AVAX",
-    color: "text-red-500"
+    color: "text-red-500",
   },
   {
     id: "SOL_DEVNET",
@@ -83,25 +86,12 @@ export const TESTNET_SOURCE_CHAINS = [
     rpcUrl: "https://api.devnet.solana.com",
     rpcUrls: ["https://api.devnet.solana.com"],
     icon: "SOL",
-    color: "text-purple-400"
+    color: "text-purple-400",
   },
 ];
 
 // Mainnet source networks config
 export const MAINNET_SOURCE_CHAINS = [
-  {
-    id: "ETH_MAINNET",
-    chainId: 1,
-    name: "Ethereum",
-    tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-    rpcUrl: "https://eth.llamarpc.com",
-    rpcUrls: [
-      "https://cloudflare-eth.com",
-      "https://ethereum-rpc.publicnode.com"
-    ],
-    icon: "ETH",
-    color: "text-blue-400"
-  },
   {
     id: "BASE_MAINNET",
     chainId: 8453,
@@ -110,10 +100,26 @@ export const MAINNET_SOURCE_CHAINS = [
     rpcUrl: "https://mainnet.base.org",
     rpcUrls: [
       "https://mainnet.base.org",
-      "https://base-rpc.publicnode.com"
+      "https://base-rpc.publicnode.com",
+      "https://base.gateway.tenderly.co",
+      "https://1rpc.io/base",
     ],
     icon: "BASE",
-    color: "text-blue-500"
+    color: "text-blue-500",
+  },
+  {
+    id: "ETH_MAINNET",
+    chainId: 1,
+    name: "Ethereum",
+    tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    rpcUrl: "https://ethereum-rpc.publicnode.com",
+    rpcUrls: [
+      "https://ethereum-rpc.publicnode.com",
+      "https://eth.drpc.org",
+      "https://1rpc.io/eth",
+    ],
+    icon: "ETH",
+    color: "text-blue-400",
   },
   {
     id: "AVAX_MAINNET",
@@ -123,10 +129,11 @@ export const MAINNET_SOURCE_CHAINS = [
     rpcUrl: "https://api.avax.network/ext/bc/C/rpc",
     rpcUrls: [
       "https://api.avax.network/ext/bc/C/rpc",
-      "https://avalanche-c-chain-rpc.publicnode.com"
+      "https://avalanche-c-chain-rpc.publicnode.com",
+      "https://1rpc.io/avax/c",
     ],
     icon: "AVAX",
-    color: "text-red-500"
+    color: "text-red-500",
   },
 ];
 
@@ -240,7 +247,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
 
   // Load USDC balance on source chain
   const fetchSourceBalance = async () => {
-    const rawTarget = activeWallet?.address || walletAddress;
+    const rawTarget = walletAddress || activeWallet?.address;
     if (!rawTarget) {
       setSourceBalance("0.00");
       return;
@@ -257,11 +264,30 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
       return;
     }
     setBalanceLoading(true);
+
+    // 1. Try server-side bridge balance API route (resilient against browser CORS/adblockers)
+    try {
+      const res = await fetch(`/api/bridge/balance?address=${targetAddress}&chainId=${selectedChain.chainId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.balance !== undefined) {
+          const num = parseFloat(data.balance);
+          const formatted = isNaN(num) ? "0.00" : (num > 0 && num < 0.01 ? num.toFixed(4) : num.toFixed(2));
+          setSourceBalance(formatted);
+          setBalanceLoading(false);
+          return;
+        }
+      }
+    } catch (apiErr) {
+      console.warn("[BridgeModal] Server balance API failed, trying direct RPC fallback:", apiErr);
+    }
+
+    // 2. Direct client-side on-chain read fallback
     try {
       const urls: string[] = (selectedChain as any).rpcUrls || [selectedChain.rpcUrl];
       const client = createPublicClient({
         transport: fallback(
-          urls.map((u: string) => http(u, { timeout: 8000, retryCount: 2 }))
+          urls.map((u: string) => http(u, { timeout: 6000, retryCount: 2 }))
         ),
       });
 
@@ -278,7 +304,9 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
         functionName: "balanceOf",
         args: [targetAddress],
       });
-      setSourceBalance(parseFloat(formatUnits(rawBalance, 6)).toFixed(2));
+      const num = parseFloat(formatUnits(rawBalance, 6));
+      const formatted = isNaN(num) ? "0.00" : (num > 0 && num < 0.01 ? num.toFixed(4) : num.toFixed(2));
+      setSourceBalance(formatted);
     } catch (err) {
       console.warn(`Failed to fetch balance on ${selectedChain.name}:`, err);
       setSourceBalance("0.00");
@@ -288,8 +316,11 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   };
 
   useEffect(() => {
-    if (isOpen && activeWallet?.address) fetchSourceBalance();
-  }, [isOpen, selectedChain, activeWallet?.address]);
+    const target = walletAddress || activeWallet?.address;
+    if (isOpen && target) {
+      fetchSourceBalance();
+    }
+  }, [isOpen, selectedChain, walletAddress, activeWallet?.address]);
 
   useEffect(() => {
     if (bridgeState.status === "success") {

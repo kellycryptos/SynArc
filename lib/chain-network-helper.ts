@@ -57,7 +57,7 @@ export const CHAIN_METADATA: Record<number, AddEthereumChainParameter> = {
       symbol: 'ETH',
       decimals: 18,
     },
-    rpcUrls: ['https://cloudflare-eth.com', 'https://ethereum-rpc.publicnode.com'],
+    rpcUrls: ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org', 'https://1rpc.io/eth'],
     blockExplorerUrls: ['https://etherscan.io'],
   },
   // Ethereum Sepolia
@@ -69,7 +69,7 @@ export const CHAIN_METADATA: Record<number, AddEthereumChainParameter> = {
       symbol: 'ETH',
       decimals: 18,
     },
-    rpcUrls: ['https://rpc.ankr.com/eth_sepolia', 'https://ethereum-sepolia-rpc.publicnode.com'],
+    rpcUrls: ['https://ethereum-sepolia-rpc.publicnode.com', 'https://sepolia.drpc.org', 'https://1rpc.io/sepolia'],
     blockExplorerUrls: ['https://sepolia.etherscan.io'],
   },
   // Base Mainnet
@@ -81,7 +81,7 @@ export const CHAIN_METADATA: Record<number, AddEthereumChainParameter> = {
       symbol: 'ETH',
       decimals: 18,
     },
-    rpcUrls: ['https://mainnet.base.org', 'https://base-rpc.publicnode.com'],
+    rpcUrls: ['https://mainnet.base.org', 'https://base-rpc.publicnode.com', 'https://1rpc.io/base'],
     blockExplorerUrls: ['https://basescan.org'],
   },
   // Base Sepolia
@@ -93,7 +93,7 @@ export const CHAIN_METADATA: Record<number, AddEthereumChainParameter> = {
       symbol: 'ETH',
       decimals: 18,
     },
-    rpcUrls: ['https://sepolia.base.org', 'https://base-sepolia-rpc.publicnode.com'],
+    rpcUrls: ['https://base-sepolia.drpc.org', 'https://sepolia.base.org', 'https://base-sepolia-rpc.publicnode.com'],
     blockExplorerUrls: ['https://sepolia.basescan.org'],
   },
   // Avalanche C-Chain Mainnet

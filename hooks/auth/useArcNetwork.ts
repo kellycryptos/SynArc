@@ -17,6 +17,8 @@ export const ARC_TESTNET_CHAIN_ID = 5042002;
 export const ARC_MAINNET_CHAIN_ID = 5042;
 export const TARGET_CHAIN_ID = ARC_MAINNET_CHAIN_ID;
 
+let lastDispatchedNetwork: string | null = null;
+
 function subscribeToNetwork(callback: () => void) {
   if (typeof window === 'undefined') return () => {};
   window.addEventListener('synarc_network_changed', callback);
@@ -150,7 +152,12 @@ function useActiveArcNetwork(): ArcNetworkState {
     setActiveNetwork(activeNetwork);
     if (typeof window !== 'undefined') {
       localStorage.setItem('synarc_active_network_mode', activeNetwork);
-      window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork } }));
+      if (lastDispatchedNetwork !== null && lastDispatchedNetwork !== activeNetwork) {
+        lastDispatchedNetwork = activeNetwork;
+        window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork } }));
+      } else if (lastDispatchedNetwork === null) {
+        lastDispatchedNetwork = activeNetwork;
+      }
     }
   }, [activeNetwork]);
 

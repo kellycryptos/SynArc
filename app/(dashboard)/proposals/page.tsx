@@ -24,9 +24,9 @@ import {
 // Skeleton card for loading state
 function ProposalSkeleton() {
   return (
-    <GlassCard className="p-6">
-      <div className="flex flex-col md:flex-row gap-6 justify-between">
-        <div className="flex-1 space-y-4">
+    <GlassCard className="p-4 sm:p-6">
+      <div className="flex flex-col md:flex-row gap-5 md:gap-6 justify-between">
+        <div className="flex-1 space-y-4 min-w-0">
           <div className="flex items-center gap-3">
             <div className="skeleton h-6 w-20 rounded-full" />
             <div className="skeleton h-6 w-28 rounded-full" />
@@ -41,7 +41,7 @@ function ProposalSkeleton() {
             <div className="skeleton h-4 w-24 rounded" />
           </div>
         </div>
-        <div className="w-full md:w-72 space-y-4 md:border-l md:border-border-thin md:pl-6">
+        <div className="w-full md:w-72 space-y-4 pt-3 border-t border-border-thin md:border-t-0 md:pt-0 md:border-l md:pl-6 shrink-0">
           <div className="space-y-3">
             <div className="skeleton h-4 w-full rounded" />
             <div className="skeleton h-2 w-full rounded-full" />

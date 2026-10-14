@@ -53,27 +53,12 @@ const erc20Abi = parseAbi([
 
 const TESTNET_SOURCE_CHAINS = [
   { 
-    id: "ETH_SEPOLIA", 
-    name: "Ethereum Sepolia", 
-    tokenAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", 
-    rpcUrl: "https://rpc.ankr.com/eth_sepolia",
-    rpcUrls: [
-      "https://rpc.ankr.com/eth_sepolia",
-      "https://ethereum-sepolia-rpc.publicnode.com",
-    ],
-    icon: "ETH",
-    color: "bg-blue-500/10 border-blue-500/20 text-blue-400",
-    chainId: 11155111,
-    bgClass: "from-blue-500/20 to-transparent",
-    borderClass: "border-blue-500/30",
-    blockExplorerUrl: "https://sepolia.etherscan.io"
-  },
-  { 
     id: "BASE_SEPOLIA", 
     name: "Base Sepolia", 
-    tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dcf7e", 
-    rpcUrl: "https://sepolia.base.org",
+    tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e", 
+    rpcUrl: "https://base-sepolia.drpc.org",
     rpcUrls: [
+      "https://base-sepolia.drpc.org",
       "https://sepolia.base.org",
       "https://base-sepolia-rpc.publicnode.com",
     ],
@@ -85,12 +70,30 @@ const TESTNET_SOURCE_CHAINS = [
     blockExplorerUrl: "https://sepolia.basescan.org"
   },
   { 
+    id: "ETH_SEPOLIA", 
+    name: "Ethereum Sepolia", 
+    tokenAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", 
+    rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
+    rpcUrls: [
+      "https://ethereum-sepolia-rpc.publicnode.com",
+      "https://sepolia.drpc.org",
+      "https://1rpc.io/sepolia",
+    ],
+    icon: "ETH",
+    color: "bg-blue-500/10 border-blue-500/20 text-blue-400",
+    chainId: 11155111,
+    bgClass: "from-blue-500/20 to-transparent",
+    borderClass: "border-blue-500/30",
+    blockExplorerUrl: "https://sepolia.etherscan.io"
+  },
+  { 
     id: "AVAX_FUJI", 
     name: "Avalanche Fuji", 
     tokenAddress: "0x5425890298aed601595a70AB815c96711a31Bc65", 
     rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc",
     rpcUrls: [
       "https://api.avax-test.network/ext/bc/C/rpc",
+      "https://avalanche-fuji-c-chain-rpc.publicnode.com",
     ],
     icon: "AVAX",
     color: "bg-red-500/10 border-red-500/20 text-red-500",
@@ -116,24 +119,6 @@ const TESTNET_SOURCE_CHAINS = [
 
 const MAINNET_SOURCE_CHAINS = [
   { 
-    id: "ETH_MAINNET", 
-    name: "Ethereum", 
-    tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 
-    rpcUrl: "https://cloudflare-eth.com",
-    rpcUrls: [
-      "https://cloudflare-eth.com",
-      "https://ethereum-rpc.publicnode.com",
-      "https://rpc.ankr.com/eth",
-      "https://eth.llamarpc.com",
-    ],
-    icon: "ETH",
-    color: "bg-blue-500/10 border-blue-500/20 text-blue-400",
-    chainId: 1,
-    bgClass: "from-blue-500/20 to-transparent",
-    borderClass: "border-blue-500/30",
-    blockExplorerUrl: "https://etherscan.io"
-  },
-  { 
     id: "BASE_MAINNET", 
     name: "Base", 
     tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", 
@@ -141,7 +126,8 @@ const MAINNET_SOURCE_CHAINS = [
     rpcUrls: [
       "https://mainnet.base.org",
       "https://base-rpc.publicnode.com",
-      "https://base.llamarpc.com",
+      "https://base.gateway.tenderly.co",
+      "https://1rpc.io/base",
     ],
     icon: "BASE",
     color: "bg-blue-600/10 border-blue-600/20 text-blue-500",
@@ -151,6 +137,23 @@ const MAINNET_SOURCE_CHAINS = [
     blockExplorerUrl: "https://basescan.org"
   },
   { 
+    id: "ETH_MAINNET", 
+    name: "Ethereum", 
+    tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 
+    rpcUrl: "https://ethereum-rpc.publicnode.com",
+    rpcUrls: [
+      "https://ethereum-rpc.publicnode.com",
+      "https://eth.drpc.org",
+      "https://1rpc.io/eth",
+    ],
+    icon: "ETH",
+    color: "bg-blue-500/10 border-blue-500/20 text-blue-400",
+    chainId: 1,
+    bgClass: "from-blue-500/20 to-transparent",
+    borderClass: "border-blue-500/30",
+    blockExplorerUrl: "https://etherscan.io"
+  },
+  { 
     id: "AVAX_MAINNET", 
     name: "Avalanche", 
     tokenAddress: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E", 
@@ -158,6 +161,7 @@ const MAINNET_SOURCE_CHAINS = [
     rpcUrls: [
       "https://api.avax.network/ext/bc/C/rpc",
       "https://avalanche-c-chain-rpc.publicnode.com",
+      "https://1rpc.io/avax/c",
     ],
     icon: "AVAX",
     color: "bg-red-500/10 border-red-500/20 text-red-500",
@@ -580,20 +584,15 @@ export default function BridgePage() {
     return bridgeHistory.reduce((sum, tx) => sum + tx.amount, 0);
   }, [bridgeHistory]);
 
-  // Load balance for the selected EVM source chain
+  // Load balance for the selected EVM source chain with resilient dual-strategy (Server API + Direct RPC)
   const fetchSourceBalance = useCallback(async () => {
-    if (!walletAddress) {
+    const rawTarget = walletAddress || activeWallet?.address;
+    if (!rawTarget) {
       setSourceBalance("0.00");
       return;
     }
 
     if (selectedChain.id === "SOL_DEVNET" || selectedChain.id === "SOL_MAINNET") {
-      setSourceBalance("0.00");
-      return;
-    }
-
-    const rawTarget = activeWallet?.address || walletAddress;
-    if (!rawTarget) {
       setSourceBalance("0.00");
       return;
     }
@@ -607,6 +606,25 @@ export default function BridgePage() {
     }
 
     setBalanceLoading(true);
+
+    // Strategy 1: Server-side API proxy (bypasses browser CORS & adblockers)
+    try {
+      const res = await fetch(`/api/bridge/balance?address=${targetAddress}&chainId=${selectedChain.chainId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.balance !== undefined) {
+          const num = parseFloat(data.balance);
+          const formatted = isNaN(num) ? "0.00" : (num > 0 && num < 0.01 ? num.toFixed(4) : num.toFixed(2));
+          setSourceBalance(formatted);
+          setBalanceLoading(false);
+          return;
+        }
+      }
+    } catch (apiErr) {
+      console.warn("[BridgePage] Server balance API failed, attempting direct RPC fallback:", apiErr);
+    }
+
+    // Strategy 2: Direct client-side on-chain read fallback
     try {
       const urls: string[] = (selectedChain as any).rpcUrls || [selectedChain.rpcUrl];
       const client = createPublicClient({
@@ -629,8 +647,9 @@ export default function BridgePage() {
         args: [targetAddress],
       });
 
-      const formatted = formatUnits(rawBalance, 6);
-      setSourceBalance(parseFloat(formatted).toFixed(2));
+      const num = parseFloat(formatUnits(rawBalance, 6));
+      const formatted = isNaN(num) ? "0.00" : (num > 0 && num < 0.01 ? num.toFixed(4) : num.toFixed(2));
+      setSourceBalance(formatted);
     } catch (err) {
       console.warn(`Failed to fetch balance on ${selectedChain.name}:`, err);
       setSourceBalance("0.00"); 
@@ -639,9 +658,36 @@ export default function BridgePage() {
     }
   }, [walletAddress, selectedChain, activeWallet?.address]);
 
+  // Initial and reactive fetch on chain/wallet changes
   useEffect(() => {
     fetchSourceBalance();
-  }, [selectedChain, walletAddress, fetchSourceBalance]);
+  }, [selectedChain, walletAddress, activeWallet?.address, bridgeNetwork, fetchSourceBalance]);
+
+  // Window focus listener to refresh source balance
+  useEffect(() => {
+    const onFocus = () => {
+      fetchSourceBalance();
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [fetchSourceBalance]);
+
+  // Listen to cross-app balance change events
+  useEffect(() => {
+    const onUsdcChange = () => {
+      fetchSourceBalance();
+    };
+    window.addEventListener("synarc_usdc_changed", onUsdcChange);
+    return () => window.removeEventListener("synarc_usdc_changed", onUsdcChange);
+  }, [fetchSourceBalance]);
+
+  // Polling every 12 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      fetchSourceBalance();
+    }, 12000);
+    return () => clearInterval(timer);
+  }, [fetchSourceBalance]);
 
   // Determine what is currently "From" and what is "To"
   const fromChain = direction === "in" ? selectedChain : activeArcChain;
@@ -908,7 +954,10 @@ export default function BridgePage() {
                             <Loader2 className="w-3 h-3 animate-spin text-primary" />
                           ) : (
                             <span className="font-bold text-white font-mono">
-                              {parseFloat(fromBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                              {parseFloat(fromBalance || "0").toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: parseFloat(fromBalance || "0") > 0 && parseFloat(fromBalance || "0") < 0.01 ? 4 : 2,
+                              })} USDC
                             </span>
                           )}
                           <button
@@ -1005,7 +1054,10 @@ export default function BridgePage() {
                             <Loader2 className="w-3 h-3 animate-spin text-primary" />
                           ) : (
                             <span className="font-bold text-white font-mono">
-                              {parseFloat(toBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                              {parseFloat(toBalance || "0").toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: parseFloat(toBalance || "0") > 0 && parseFloat(toBalance || "0") < 0.01 ? 4 : 2,
+                              })} USDC
                             </span>
                           )}
                         </div>

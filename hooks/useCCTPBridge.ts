@@ -48,9 +48,9 @@ export const SOURCE_CHAINS = {
     tokenMessenger: CCTP_MAINNET_MESSENGER,
     messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
-      "https://ethereum.reth.rs/rpc",
-      "https://rpc.ankr.com/eth",
-      "https://eth.llamarpc.com",
+      "https://ethereum-rpc.publicnode.com",
+      "https://eth.drpc.org",
+      "https://1rpc.io/eth",
     ],
     icon: "ETH",
     isTestnet: false
@@ -64,9 +64,9 @@ export const SOURCE_CHAINS = {
     tokenMessenger: CCTP_MAINNET_MESSENGER,
     messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
-      "https://ethereum.reth.rs/rpc",
-      "https://rpc.ankr.com/eth",
-      "https://eth.llamarpc.com",
+      "https://ethereum-rpc.publicnode.com",
+      "https://eth.drpc.org",
+      "https://1rpc.io/eth",
     ],
     icon: "ETH",
     isTestnet: false
@@ -81,7 +81,8 @@ export const SOURCE_CHAINS = {
     messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
       "https://mainnet.base.org",
-      "https://base.llamarpc.com",
+      "https://base-rpc.publicnode.com",
+      "https://1rpc.io/base",
     ],
     icon: "BASE",
     isTestnet: false
@@ -96,7 +97,8 @@ export const SOURCE_CHAINS = {
     messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
       "https://mainnet.base.org",
-      "https://base.llamarpc.com",
+      "https://base-rpc.publicnode.com",
+      "https://1rpc.io/base",
     ],
     icon: "BASE",
     isTestnet: false
@@ -111,7 +113,8 @@ export const SOURCE_CHAINS = {
     messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
       "https://api.avax.network/ext/bc/C/rpc",
-      "https://avalanche.public-rpc.com",
+      "https://avalanche-c-chain-rpc.publicnode.com",
+      "https://1rpc.io/avax/c",
     ],
     icon: "AVAX",
     isTestnet: false
@@ -126,7 +129,8 @@ export const SOURCE_CHAINS = {
     messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
       "https://api.avax.network/ext/bc/C/rpc",
-      "https://avalanche.public-rpc.com",
+      "https://avalanche-c-chain-rpc.publicnode.com",
+      "https://1rpc.io/avax/c",
     ],
     icon: "AVAX",
     isTestnet: false
@@ -165,9 +169,9 @@ export const SOURCE_CHAINS = {
     tokenMessenger: CCTP_TESTNET_MESSENGER,
     messageTransmitter: CCTP_TESTNET_TRANSMITTER,
     rpcUrls: [
-      "https://rpc.ankr.com/eth_sepolia",
       "https://ethereum-sepolia-rpc.publicnode.com",
-      "https://eth-sepolia.public.blastapi.io",
+      "https://sepolia.drpc.org",
+      "https://1rpc.io/sepolia",
     ],
     icon: "ETH",
     isTestnet: true
@@ -181,6 +185,7 @@ export const SOURCE_CHAINS = {
     tokenMessenger: CCTP_TESTNET_MESSENGER,
     messageTransmitter: CCTP_TESTNET_TRANSMITTER,
     rpcUrls: [
+      "https://base-sepolia.drpc.org",
       "https://sepolia.base.org",
       "https://base-sepolia-rpc.publicnode.com",
     ],

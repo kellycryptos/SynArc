@@ -5,9 +5,8 @@
 
 import { create } from "zustand";
 import { Creator, Campaign } from "@/types";
-import { createPublicClient, http } from "viem";
 import { ARC_CHAIN, getActiveNetwork } from "@/lib/arc-config";
-import { getArcRpcUrl } from "@/lib/rpc/config";
+import { getCachedPublicClient } from "@/lib/rpc/provider-cache";
 import { SynArcCrowdfundABI } from "@/lib/governance/SynArcCrowdfund";
 
 const MOCK_CREATORS: Creator[] = [];
@@ -29,20 +28,6 @@ interface CreatorStoreState {
   supportCreator: (creatorId: string, amount: number, senderAddress: string, txHash: string) => void;
 }
 
-// Reuse client instances keyed by network
-let publicClients: Record<string, any> = {};
-function getSharedPublicClient() {
-  const currentNet = getActiveNetwork();
-  const netKey = currentNet === 'mainnet' ? 'mainnet' : 'testnet';
-  if (!publicClients[netKey]) {
-    publicClients[netKey] = createPublicClient({
-      chain: ARC_CHAIN,
-      transport: http(getArcRpcUrl())
-    });
-  }
-  return publicClients[netKey];
-}
-
 let lastFetchTime = 0;
 const CACHE_DURATION = 15000; // 15 seconds cache
 
@@ -53,7 +38,7 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
   }
 
   try {
-    const client = getSharedPublicClient();
+    const client = getCachedPublicClient(ARC_CHAIN.id);
 
     const readPromise = Promise.all([
       client.readContract({
@@ -69,7 +54,7 @@ async function fetchOnChainCampaignMetrics(escrowAddress: string) {
     ]);
 
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("RPC readContract timeout")), 2000)
+      setTimeout(() => reject(new Error("RPC readContract timeout")), 6000)
     );
 
     const [totalRaisedBigInt, totalContributorsBigInt] = await Promise.race([
@@ -163,35 +148,34 @@ export const useCreatorStore = create<CreatorStoreState>((set, get) => ({
           });
           lastFetchTime = Date.now();
 
-          // Asynchronously hydrate on-chain metrics
-          Promise.allSettled(
-            rawCampaigns.map(async (c) => {
-              const onChain = await fetchOnChainCampaignMetrics(c.escrowAddress);
-              if (onChain) {
-                return { id: c.id, raised: onChain.raised, supporters: onChain.contributors };
+          // Asynchronously hydrate on-chain metrics in small batches to prevent RPC rate-limiting
+          (async () => {
+            const BATCH_SIZE = 3;
+            const currentCreators = [...mappedCreators];
+            for (let i = 0; i < rawCampaigns.length; i += BATCH_SIZE) {
+              const batch = rawCampaigns.slice(i, i + BATCH_SIZE);
+              await Promise.allSettled(
+                batch.map(async (c) => {
+                  const onChain = await fetchOnChainCampaignMetrics(c.escrowAddress);
+                  if (onChain) {
+                    const idx = currentCreators.findIndex(cr => cr.id === c.id);
+                    if (idx !== -1) {
+                      currentCreators[idx] = {
+                        ...currentCreators[idx],
+                        raised: onChain.raised,
+                        supporters: onChain.contributors
+                      };
+                    }
+                  }
+                })
+              );
+              // Brief 50ms pause between batches
+              if (i + BATCH_SIZE < rawCampaigns.length) {
+                await new Promise(r => setTimeout(r, 50));
               }
-              return null;
-            })
-          ).then((results) => {
-            const updates = results
-              .filter((r): r is PromiseFulfilledResult<{ id: string; raised: number; supporters: number }> => r.status === 'fulfilled' && r.value !== null)
-              .map(r => r.value);
-
-            if (updates.length > 0) {
-              const currentCreators = [...get().creators];
-              updates.forEach(u => {
-                const idx = currentCreators.findIndex(c => c.id === u.id);
-                if (idx !== -1) {
-                  currentCreators[idx] = {
-                    ...currentCreators[idx],
-                    raised: u.raised,
-                    supporters: u.supporters
-                  };
-                }
-              });
-              set({ creators: currentCreators });
             }
-          });
+            set({ creators: currentCreators });
+          })();
         }
       }
 
