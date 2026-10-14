@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { OverviewCards } from "@/components/dashboard/OverviewCards";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -11,28 +10,38 @@ import { ArrowRight, Rocket, Plus, Coins, Users, Trophy, Zap, Bot, Activity } fr
 import Link from "next/link";
 import { useCreatorStore } from "@/hooks/useCreatorStore";
 import { SectionErrorBoundary } from "@/components/ErrorBoundary";
-import { GovernanceHeroSection } from "@/components/dashboard/GovernanceHeroSection";
 
 // --- Lazy-loaded components ---
-// WalletFaucetCard: 618 lines, imports framer-motion + BridgeModal + fires 2 fetch()
-// calls on mount. Below-the-fold; no reason to be in the synchronous hydration burst.
+const OverviewCards = dynamic(
+  () => import("@/components/dashboard/OverviewCards").then((m) => m.OverviewCards),
+  {
+    ssr: false,
+    loading: () => <div className="skeleton h-32 w-full rounded-xl" />,
+  }
+);
+
+const GovernanceHeroSection = dynamic(
+  () => import("@/components/dashboard/GovernanceHeroSection").then((m) => m.GovernanceHeroSection),
+  {
+    ssr: false,
+    loading: () => <div className="skeleton h-48 w-full rounded-xl" />,
+  }
+);
+
 const WalletFaucetCard = dynamic(
   () => import("@/components/dashboard/WalletFaucetCard").then((m) => m.WalletFaucetCard),
   {
     ssr: false,
     loading: () => (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 h-[220px] rounded-2xl bg-white/[0.02] border border-border-thin animate-pulse" />
-        <div className="h-[220px] rounded-2xl bg-white/[0.02] border border-border-thin animate-pulse" />
-        <div className="lg:col-span-3 h-[280px] rounded-2xl bg-white/[0.02] border border-border-thin animate-pulse" />
+        <div className="lg:col-span-2 skeleton h-[220px] rounded-2xl" />
+        <div className="skeleton h-[220px] rounded-2xl" />
+        <div className="lg:col-span-3 skeleton h-[280px] rounded-2xl" />
       </div>
     ),
   }
 );
 
-// ProposalFeed: calls initializeStore() on mount (already async-safe) but also
-// imports framer-motion GlassCard stagger animations. Deferring keeps it off the
-// critical TBT path.
 const ProposalFeed = dynamic(
   () => import("@/components/proposals/ProposalFeed").then((m) => m.ProposalFeed),
   {
@@ -40,7 +49,7 @@ const ProposalFeed = dynamic(
     loading: () => (
       <div className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-[88px] rounded-2xl bg-white/[0.02] border border-border-thin animate-pulse" />
+          <div key={i} className="skeleton h-[88px] rounded-2xl" />
         ))}
       </div>
     ),
@@ -50,7 +59,7 @@ const ProposalFeed = dynamic(
 const GovernanceAnalytics = dynamic(
   () => import("@/components/analytics/GovernanceAnalytics").then((m) => m.GovernanceAnalytics),
   {
-    loading: () => <div className="h-[400px] w-full bg-surface-elevated/40 animate-pulse rounded-xl border border-border-thin" />,
+    loading: () => <div className="skeleton h-[400px] w-full rounded-xl" />,
     ssr: false,
   }
 );

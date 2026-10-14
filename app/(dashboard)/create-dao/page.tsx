@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useCreatorStore } from "@/hooks/useCreatorStore";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
@@ -679,10 +680,12 @@ export default function CreateDaoPage() {
                 <div className="border border-dashed border-border hover:border-primary/50 rounded-2xl p-6 bg-surface/30 transition-all flex flex-col items-center justify-center gap-3 relative min-h-[140px] overflow-hidden">
                   {imageUrl ? (
                     <>
-                      <img 
+                      <Image 
                         src={imageUrl} 
                         alt="Cover Preview" 
-                        className="absolute inset-0 w-full h-full object-cover opacity-60"
+                        fill
+                        unoptimized
+                        className="object-cover opacity-60"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
                       <div className="relative z-10 flex flex-col items-center gap-2 text-center p-2">

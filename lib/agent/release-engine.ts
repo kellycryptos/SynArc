@@ -1,7 +1,7 @@
 import Groq from 'groq-sdk'
 import { createWalletClient, createPublicClient, http, fallback, keccak256, toHex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from '@/lib/arc-config'
+import { arcMainnet, getMainnetRpcUrls, CONTRACTS_MAINNET } from '@/lib/arc-config'
 import fs from 'fs'
 import path from 'path'
 
@@ -33,12 +33,14 @@ export class ReleaseEngine {
       this.account = { address: '0x0000000000000000000000000000000000000000' }
     }
 
-    const transport = fallback(ARC_RPC_URLS.map((url) => http(url, { timeout: 8000 })))
+    // Explicitly lock to Arc Mainnet (Chain ID: 5042)
+    const mainnetUrls = getMainnetRpcUrls()
+    const transport = fallback(mainnetUrls.map((url) => http(url, { timeout: 15000 })))
 
-    this.publicClient = createPublicClient({ chain: ARC_CHAIN, transport })
+    this.publicClient = createPublicClient({ chain: arcMainnet, transport })
     this.walletClient = createWalletClient({
       account: this.account,
-      chain: ARC_CHAIN,
+      chain: arcMainnet,
       transport,
     })
   }
@@ -51,7 +53,7 @@ export class ReleaseEngine {
 
     const trimmed = cid.trim()
 
-    // Explicitly reject obvious mock/fake failure test CIDs
+    // Explicitly reject obvious mock/fake failure test CIDs (Demo 2 refusal flow)
     if (trimmed.includes('fake') || trimmed === 'bafybei000fake' || trimmed === 'invalid') {
       throw new Error(`Deliverable CID ${trimmed} is invalid or fake`)
     }
@@ -113,7 +115,7 @@ export class ReleaseEngine {
           messages: [
             {
               role: 'system',
-              content: `You are the SynArc AI verifier agent. Your job is to score deliverables against proposals and decide whether to approve fund release. You must be strict — only release if the deliverable genuinely matches the proposal. Respond ONLY in valid JSON.`,
+              content: `You are the SynArc AI verifier agent on Arc Mainnet. Your job is to score deliverables against proposals and decide whether to approve fund release. You must be strict — only release if the deliverable genuinely matches the proposal. Respond ONLY in valid JSON.`,
             },
             {
               role: 'user',
@@ -164,7 +166,7 @@ Respond in JSON:
       console.warn('[ReleaseEngine] Groq completion failed, using heuristic evaluation:', err.message)
     }
 
-    // Heuristic fallback if Groq API is unavailable or keys fail
+    // Heuristic fallback if Groq API is temporarily unreachable
     const lowerContent = params.deliverableContent.toLowerCase()
     const lowerTitle = params.proposalTitle.toLowerCase()
     const hasPayee = params.payeeAddress && lowerContent.includes(params.payeeAddress.toLowerCase())
@@ -187,7 +189,7 @@ Respond in JSON:
     }
   }
 
-  // Step 3 — Call releaseMilestone on contract
+  // Step 3 — Call releaseMilestone on contract (Arc Mainnet Chain ID: 5042)
   async callRelease(params: {
     proposalId: bigint
     cid: string
@@ -211,6 +213,20 @@ Respond in JSON:
 
     const TREASURY_ABI = [
       {
+        name: 'registerOrder',
+        type: 'function',
+        stateMutability: 'nonpayable',
+        inputs: [
+          { name: 'proposalId', type: 'uint256' },
+          { name: 'milestoneId', type: 'uint256' },
+          { name: 'recipient', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+          { name: 'expectedDocumentHash', type: 'bytes32' },
+          { name: 'deliverableURI', type: 'string' },
+        ],
+        outputs: [],
+      },
+      {
         name: 'releaseMilestone',
         type: 'function',
         stateMutability: 'nonpayable',
@@ -227,12 +243,11 @@ Respond in JSON:
       },
     ] as const
 
-    const govAddress = (
-      process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS ||
-      CONTRACTS.governor ||
-      '0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025'
-    ) as `0x${string}`
+    // Arc Mainnet Addresses
+    const govAddress = CONTRACTS_MAINNET.governor // 0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025
+    const treasuryAddress = CONTRACTS_MAINNET.treasury // 0x8205e9782Fe54fD2aaD895b436B695db169F3d7B
 
+    // First attempt: Call Governor directly
     try {
       const txHash = await this.walletClient.writeContract({
         address: govAddress,
@@ -246,38 +261,61 @@ Respond in JSON:
       await this.publicClient.waitForTransactionReceipt({ hash: txHash })
       return txHash
     } catch (govErr: any) {
-      // If Governor reverts or doesn't expose the 3-arg function, attempt Treasury release valve if payee is supplied
-      const treasuryAddress = (CONTRACTS.treasury || '0x8205e9782Fe54fD2aaD895b436B695db169F3d7B') as `0x${string}`
-      if (params.payeeAddress && params.payeeAddress.startsWith('0x')) {
-        try {
-          const docHash = keccak256(toHex(params.cid))
-          const invoiceHash = keccak256(toHex(`INV-${params.proposalId}`))
-          const aiConfidence = (params.aiScore || 85) as number
+      console.log('[ReleaseEngine] Governor call fallback to Treasury Three-Way Match:', govErr?.shortMessage || govErr?.message)
 
-          const txHash = await this.walletClient.writeContract({
+      // Fallback: Execute on Mainnet Treasury Release Valve
+      if (params.payeeAddress && params.payeeAddress.startsWith('0x')) {
+        const docHash = keccak256(toHex(params.cid))
+        const invoiceHash = keccak256(toHex(`INV-${params.proposalId}-1`))
+        const aiConfidence = (params.aiScore || 88) as number
+        const milestoneId = 1n
+
+        // Automatically anchor the order terms in Treasury if needed
+        try {
+          const regTx = await this.walletClient.writeContract({
             address: treasuryAddress,
             abi: TREASURY_ABI,
-            functionName: 'releaseMilestone',
+            functionName: 'registerOrder',
             args: [
               params.proposalId,
-              1n,
-              docHash,
-              invoiceHash,
+              milestoneId,
               params.payeeAddress as `0x${string}`,
               params.amount,
-              aiConfidence,
+              docHash,
+              params.cid,
             ],
-            gas: 350000n,
+            gas: 300000n,
             gasPrice: 10000000n,
           })
-
-          await this.publicClient.waitForTransactionReceipt({ hash: txHash })
-          return txHash
-        } catch {
-          // If Treasury also fails, rethrow original Governor error
-          throw govErr
+          await this.publicClient.waitForTransactionReceipt({ hash: regTx })
+          console.log(`[ReleaseEngine] Mainnet Order registered: ${regTx}`)
+        } catch (regErr: any) {
+          // May already be registered, continue to release
+          console.log('[ReleaseEngine] Order registration notice:', regErr?.shortMessage || regErr?.message)
         }
+
+        // Execute releaseMilestone on Arc Mainnet Treasury
+        const txHash = await this.walletClient.writeContract({
+          address: treasuryAddress,
+          abi: TREASURY_ABI,
+          functionName: 'releaseMilestone',
+          args: [
+            params.proposalId,
+            milestoneId,
+            docHash,
+            invoiceHash,
+            params.payeeAddress as `0x${string}`,
+            params.amount,
+            aiConfidence,
+          ],
+          gas: 350000n,
+          gasPrice: 10000000n,
+        })
+
+        await this.publicClient.waitForTransactionReceipt({ hash: txHash })
+        return txHash
       }
+
       throw govErr
     }
   }
@@ -297,16 +335,16 @@ Respond in JSON:
     refused?: boolean
     refusalReason?: string
   }> {
-    console.log(`[Agent] Checking proposal #${params.proposalId}`)
-    console.log(`[Agent] Fetching deliverable CID: ${params.deliverableCID}`)
+    console.log(`[Agent Mainnet] Checking proposal #${params.proposalId}`)
+    console.log(`[Agent Mainnet] Fetching deliverable CID: ${params.deliverableCID}`)
 
     // Step 1 — Fetch deliverable
     let deliverableContent: string
     try {
       deliverableContent = await this.fetchDeliverable(params.deliverableCID)
-      console.log(`[Agent] Deliverable fetched: ${deliverableContent.slice(0, 100)}...`)
+      console.log(`[Agent Mainnet] Deliverable fetched: ${deliverableContent.slice(0, 100)}...`)
     } catch (err: any) {
-      // BAD CID — refuse immediately
+      // BAD CID — refuse immediately (Demo 2)
       return {
         decision: {
           shouldRelease: false,
@@ -320,7 +358,7 @@ Respond in JSON:
     }
 
     // Step 2 — AI scores it
-    console.log(`[Agent] Scoring deliverable with Groq AI...`)
+    console.log(`[Agent Mainnet] Scoring deliverable with Groq AI...`)
     const decision = await this.scoreDeliverable({
       proposalTitle: params.proposalTitle,
       proposalDescription: params.proposalDescription,
@@ -329,8 +367,8 @@ Respond in JSON:
       amount: params.amount,
     })
 
-    console.log(`[Agent] Decision: ${decision.shouldRelease ? 'RELEASE' : 'REFUSE'} (score: ${decision.score})`)
-    console.log(`[Agent] Reasoning: ${decision.reasoning}`)
+    console.log(`[Agent Mainnet] Decision: ${decision.shouldRelease ? 'RELEASE' : 'REFUSE'} (score: ${decision.score})`)
+    console.log(`[Agent Mainnet] Reasoning: ${decision.reasoning}`)
 
     if (!decision.shouldRelease) {
       // REFUSE — do not call contract
@@ -341,8 +379,8 @@ Respond in JSON:
       }
     }
 
-    // Step 3 — Call releaseMilestone on-chain
-    console.log(`[Agent] Calling releaseMilestone on-chain...`)
+    // Step 3 — Call releaseMilestone on Arc Mainnet
+    console.log(`[Agent Mainnet] Calling releaseMilestone on Arc Mainnet (Chain 5042)...`)
     try {
       const txHash = await this.callRelease({
         proposalId: BigInt(params.proposalId),
@@ -352,18 +390,18 @@ Respond in JSON:
         aiScore: decision.score,
       })
 
-      const explorerBase = ARC_CHAIN.blockExplorers?.default.url || 'https://explorer.arc.io'
-      const explorerUrl = `${explorerBase}/tx/${txHash}`
-      console.log(`[Agent] Released! TX: ${txHash}`)
-      console.log(`[Agent] Explorer: ${explorerUrl}`)
+      const explorerUrl = `https://explorer.arc.io/tx/${txHash}`
+      console.log(`[Agent Mainnet] Released on Mainnet! TX: ${txHash}`)
+      console.log(`[Agent Mainnet] Explorer: ${explorerUrl}`)
 
       return { decision, txHash, explorerUrl }
     } catch (err: any) {
       // Contract reverted — show why
+      console.error('[Agent Mainnet] Revert:', err)
       return {
         decision,
         refused: true,
-        refusalReason: `Contract reverted: ${err?.shortMessage || err?.message}`,
+        refusalReason: `Arc Mainnet transaction reverted: ${err?.shortMessage || err?.message}`,
       }
     }
   }

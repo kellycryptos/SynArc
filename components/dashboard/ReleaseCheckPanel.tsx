@@ -42,8 +42,10 @@ export function ReleaseCheckPanel() {
   const [deliverableCID, setDeliverableCID] = useState<string>(
     "invoice.txt"
   );
-  const [payeeAddress, setPayeeAddress] = useState<string>("");
-  const [amount, setAmount] = useState<number>(5);
+  const [payeeAddress, setPayeeAddress] = useState<string>(
+    "0x7f67D351Cc3A6e9695c0B8AA6DE2bE5Ce58b3d73"
+  );
+  const [amount, setAmount] = useState<number>(0.01);
 
   const [checking, setChecking] = useState<boolean>(false);
   const [result, setResult] = useState<ReleaseResult | null>(null);
@@ -55,10 +57,10 @@ export function ReleaseCheckPanel() {
       "Milestone 1 payout for UI landing page design delivery and smart contract security audit review."
     );
     setDeliverableCID("invoice.txt");
-    setPayeeAddress("");
-    setAmount(5);
+    setPayeeAddress("0x7f67D351Cc3A6e9695c0B8AA6DE2bE5Ce58b3d73");
+    setAmount(0.01);
     setResult(null);
-    toast.success("Loaded valid invoice");
+    toast.success("Loaded Demo 1 (Valid Mainnet deliverable)");
   };
 
   const handleFillDemo2 = () => {
@@ -68,10 +70,10 @@ export function ReleaseCheckPanel() {
       "Suspicious deliverable milestone payout with missing or malformed IPFS storage CID."
     );
     setDeliverableCID("bafybei000fake");
-    setPayeeAddress("");
-    setAmount(5);
+    setPayeeAddress("0x7f67D351Cc3A6e9695c0B8AA6DE2bE5Ce58b3d73");
+    setAmount(0.01);
     setResult(null);
-    toast.error("Loaded bad CID");
+    toast.error("Loaded Demo 2 (Bad CID Mainnet refusal)");
   };
 
   const handleReleaseCheck = async (e: React.FormEvent) => {
@@ -129,6 +131,9 @@ export function ReleaseCheckPanel() {
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
               <Bot className="w-3 h-3 text-purple-400" />
               Autonomous Verifier
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-blue-500/20 text-blue-300 border border-blue-500/30">
+              Arc Mainnet (Chain ID 5042)
             </span>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
               Read → Score → Decide → Call
