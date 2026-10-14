@@ -4,14 +4,14 @@ import { PageWrapper } from "@/components/layout/PageWrapper";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div className="flex flex-col min-h-screen w-full overflow-x-hidden">
       <MarketingNavbar />
-      <main className="flex-grow pt-20">
+      <main className="flex-grow pt-16 sm:pt-20 w-full overflow-x-hidden">
         <PageWrapper>
           {children}
         </PageWrapper>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

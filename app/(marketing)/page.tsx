@@ -90,18 +90,18 @@ function DiffCard({
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen w-full overflow-x-hidden">
 
       {/* ════════════════════════════════════════════════════════
           §1  HERO
           ════════════════════════════════════════════════════════ */}
-      <section className="hero relative pt-28 pb-20 md:pt-40 md:pb-28 overflow-hidden px-4">
+      <section className="hero relative pt-24 pb-16 sm:pt-28 sm:pb-20 md:pt-40 md:pb-28 overflow-hidden px-4 w-full">
         {/* Background glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] opacity-[0.06] dark:opacity-[0.15] bg-[#2F6FFF] blur-[130px] rounded-full" />
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[700px] h-[350px] opacity-[0.06] dark:opacity-[0.15] bg-[#2F6FFF] blur-[130px] rounded-full" />
         </div>
 
-        <div className="max-w-4xl mx-auto relative z-10 text-center">
+        <div className="w-full max-w-4xl mx-auto relative z-10 text-center">
 
           {/* Network badge — no fake stats */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-8 rounded-full border border-border bg-surface/80 text-xs font-mono text-muted shadow-xs">
@@ -110,7 +110,7 @@ export default function LandingPage() {
           </div>
 
           {/* Headline — responsive typography */}
-          <h1 className="hero-title font-mono font-bold tracking-tight text-foreground mb-6">
+          <h1 className="hero-title font-mono font-bold tracking-tight text-foreground mb-6 break-words">
             Funding and governance{" "}
             <span
               className="text-primary"
@@ -123,23 +123,23 @@ export default function LandingPage() {
           </h1>
 
           {/* Sub-headline — responsive typography */}
-          <p className="hero-subtitle font-mono text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="hero-subtitle font-mono text-muted max-w-2xl mx-auto mb-10 leading-relaxed break-words">
             Fund USDC into the DAO treasury → vote on a proposal → release to a
             human or agent once the three-way match clears.
           </p>
 
           {/* CTAs */}
-          <div className="hero-buttons flex items-center justify-center gap-3">
+          <div className="hero-buttons flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
             <Link
               href="/dashboard"
-              className="btn px-7 py-3.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-mono font-semibold text-sm transition-colors shadow-[0_0_24px_rgba(47,111,255,0.25)] flex items-center justify-center gap-2"
+              className="btn w-full sm:w-auto px-7 py-3.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-mono font-semibold text-sm transition-colors shadow-[0_0_24px_rgba(47,111,255,0.25)] flex items-center justify-center gap-2"
             >
               Launch App
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/docs"
-              className="btn px-7 py-3.5 rounded-lg border border-border bg-surface hover:border-primary/40 text-foreground font-mono font-medium text-sm transition-colors flex items-center justify-center gap-2 shadow-xs"
+              className="btn w-full sm:w-auto px-7 py-3.5 rounded-lg border border-border bg-surface hover:border-primary/40 text-foreground font-mono font-medium text-sm transition-colors flex items-center justify-center gap-2 shadow-xs"
             >
               Read the docs
             </Link>
@@ -152,9 +152,9 @@ export default function LandingPage() {
           ════════════════════════════════════════════════════════ */}
       <section
         id="how-it-works"
-        className="py-24 px-4 border-t border-border"
+        className="py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
       >
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto w-full">
           <div className="mb-12 text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-surface text-xs font-mono font-medium text-muted uppercase tracking-wider mb-4">
               Mechanism
@@ -205,9 +205,9 @@ export default function LandingPage() {
           ════════════════════════════════════════════════════════ */}
       <section
         id="why"
-        className="py-24 px-4 border-t border-border"
+        className="py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
       >
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto w-full">
           <div className="mb-12 text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-surface text-xs font-mono font-medium text-muted uppercase tracking-wider mb-4">
               Differentiators
@@ -257,8 +257,8 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           §5  FINAL CTA
           ════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 border-t border-border">
-        <div className="max-w-2xl mx-auto text-center">
+      <section className="py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden">
+        <div className="max-w-2xl mx-auto text-center w-full">
           <h2 className="font-mono text-2xl sm:text-3xl font-semibold text-foreground mb-4 tracking-tight">
             Ready to participate?
           </h2>
