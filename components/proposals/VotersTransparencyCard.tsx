@@ -48,7 +48,7 @@ export function VotersTransparencyCard({
                     href={`${explorerUrl}/address/${v.voter}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-mono text-primary hover:underline"
+                    className="wallet-address font-mono text-primary hover:underline inline-block"
                   >
                     {v.voter.slice(0, 6)}...{v.voter.slice(-4)}
                   </a>

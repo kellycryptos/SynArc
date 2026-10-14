@@ -5,8 +5,13 @@ import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { ARC_CHAIN } from "@/lib/arc-config";
 import { Wallet, LogOut, Copy, ExternalLink, ChevronUp, ChevronDown, Check } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import dynamic from "next/dynamic";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
+
+const ConnectButtonCustom = dynamic(
+  () => import('@rainbow-me/rainbowkit').then((m) => m.ConnectButton.Custom),
+  { ssr: false }
+);
 
 export function WalletConnectButton() {
   const deferred = useDeferredWeb3();
@@ -64,7 +69,7 @@ export function WalletConnectButton() {
     return (
       <div className="space-y-2.5 w-full flex flex-col items-center">
         {deferred?.isMounted ? (
-          <ConnectButton.Custom>
+          <ConnectButtonCustom>
             {({ openConnectModal, connectModalOpen }) => (
               <button
                 onClick={openConnectModal}
@@ -74,7 +79,7 @@ export function WalletConnectButton() {
                 <span>{connectModalOpen ? "Connecting..." : "Connect Wallet"}</span>
               </button>
             )}
-          </ConnectButton.Custom>
+          </ConnectButtonCustom>
         ) : (
           <button
             onClick={login}
@@ -109,7 +114,7 @@ export function WalletConnectButton() {
             <div className="w-2 h-2 rounded-full bg-[#22C55E] absolute bottom-0 right-0 border border-surface" />
           </div>
           <div className="flex flex-col text-left truncate">
-            <span className="font-mono text-xs font-medium text-foreground truncate">{truncatedAddress}</span>
+            <span className="wallet-address font-mono text-xs font-medium text-foreground truncate">{truncatedAddress}</span>
             <span className="text-[10px] text-primary font-mono flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" /> Connected
             </span>

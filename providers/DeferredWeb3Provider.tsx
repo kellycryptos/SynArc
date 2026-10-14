@@ -1,7 +1,12 @@
 "use client";
 
-import { ReactNode, createContext, useContext } from "react";
-import { Web3Provider } from "./Web3Provider";
+import { ReactNode, createContext, useContext, useState, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
+
+const Web3Provider = dynamic(
+  () => import("./Web3Provider").then((m) => m.Web3Provider),
+  { ssr: false }
+);
 
 interface DeferredWeb3ContextType {
   isMounted: boolean;
@@ -26,15 +31,33 @@ export function DeferredWeb3Provider({
   children: ReactNode;
   initialHasSession?: boolean;
 }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const mountWeb3 = useCallback(() => {
+    setMounted(true);
+  }, []);
+
+  const mountWeb3AndLogin = useCallback(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <DeferredWeb3Context.Provider
       value={{
-        isMounted: true,
-        mountWeb3: () => {},
-        mountWeb3AndLogin: () => {},
+        isMounted: mounted,
+        mountWeb3,
+        mountWeb3AndLogin,
       }}
     >
-      <Web3Provider>{children}</Web3Provider>
+      {mounted ? (
+        <Web3Provider>{children}</Web3Provider>
+      ) : (
+        <>{children}</>
+      )}
     </DeferredWeb3Context.Provider>
   );
 }

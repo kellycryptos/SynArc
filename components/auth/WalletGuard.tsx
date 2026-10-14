@@ -4,9 +4,13 @@ import { ReactNode, useState, useEffect } from "react";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { usePathname } from "next/navigation";
 import { ShieldAlert, Wallet, Sparkles, RefreshCw } from "lucide-react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import dynamic from "next/dynamic";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
+
+const ConnectButtonCustom = dynamic(
+  () => import('@rainbow-me/rainbowkit').then((m) => m.ConnectButton.Custom),
+  { ssr: false }
+);
 
 const PROTECTED_ROUTES = ['/settings'];
 
@@ -88,7 +92,7 @@ export function WalletGuard({ children }: { children: ReactNode }) {
           </div>
 
           {deferred?.isMounted ? (
-            <ConnectButton.Custom>
+            <ConnectButtonCustom>
               {({ openConnectModal, connectModalOpen }) => (
                 <button 
                   onClick={openConnectModal}
@@ -98,7 +102,7 @@ export function WalletGuard({ children }: { children: ReactNode }) {
                   {connectModalOpen ? "Connecting..." : "Connect Wallet to Participate"}
                 </button>
               )}
-            </ConnectButton.Custom>
+            </ConnectButtonCustom>
           ) : (
             <button 
               onClick={login}

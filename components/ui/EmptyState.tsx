@@ -17,7 +17,9 @@ export function EmptyState({
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.3 }}
       className="flex flex-col items-center justify-center py-16 px-4 text-center"
     >
       <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] mb-4">

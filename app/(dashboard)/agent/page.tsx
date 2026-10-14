@@ -1842,12 +1842,12 @@ export default function AgentPage() {
       {/* Edit Limit Modal */}
       <AnimatePresence>
         {showLimitModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
+              className="modal-content w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
             >
               <button 
                 onClick={() => setShowLimitModal(false)}
@@ -1907,12 +1907,12 @@ export default function AgentPage() {
       {/* Queue Withdrawal Modal */}
       <AnimatePresence>
         {showWithdrawalModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
+              className="modal-content w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
             >
               <button 
                 onClick={() => setShowWithdrawalModal(false)}
@@ -1995,12 +1995,12 @@ export default function AgentPage() {
       {/* ─── Alert Settings Modal ──────────────────────────────────────────────── */}
       <AnimatePresence>
         {showAlertSettings && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
+              className="modal-content w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
             >
               <button
                 onClick={() => setShowAlertSettings(false)}
@@ -2077,12 +2077,12 @@ export default function AgentPage() {
       {/* Return Proposal Confirmation Modal */}
       <AnimatePresence>
         {showReturnModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
+              className="modal-content w-full max-w-md bg-surface-elevated border border-border-thin p-6 rounded-2xl shadow-2xl relative"
             >
               <button
                 onClick={() => setShowReturnModal(false)}

@@ -309,7 +309,7 @@ export function WalletFaucetCard() {
               </div>
               <div className="flex items-center gap-2 mt-0.5 text-xs text-text-tertiary">
                 {email && <span className="mr-1">{email}</span>}
-                <span className="font-mono text-text-secondary select-all">{formattedAddress}</span>
+                <span className="wallet-address font-mono text-text-secondary select-all">{formattedAddress}</span>
                 <button 
                   onClick={copyAddress}
                   className="p-1 hover:text-primary transition-colors hover:bg-surface-elevated rounded cursor-pointer"

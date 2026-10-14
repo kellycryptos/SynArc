@@ -42,9 +42,7 @@ export function ReleaseCheckPanel() {
   const [deliverableCID, setDeliverableCID] = useState<string>(
     "invoice.txt"
   );
-  const [payeeAddress, setPayeeAddress] = useState<string>(
-    "0x7f67D351Cc3A6e9695c0B8AA6DE2bE5Ce58b3d73"
-  );
+  const [payeeAddress, setPayeeAddress] = useState<string>("");
   const [amount, setAmount] = useState<number>(5);
 
   const [checking, setChecking] = useState<boolean>(false);
@@ -57,10 +55,10 @@ export function ReleaseCheckPanel() {
       "Milestone 1 payout for UI landing page design delivery and smart contract security audit review."
     );
     setDeliverableCID("invoice.txt");
-    setPayeeAddress("0x7f67D351Cc3A6e9695c0B8AA6DE2bE5Ce58b3d73");
+    setPayeeAddress("");
     setAmount(5);
     setResult(null);
-    toast.success("Loaded Demo 1 (Valid invoice deliverable)");
+    toast.success("Loaded valid invoice");
   };
 
   const handleFillDemo2 = () => {
@@ -70,10 +68,10 @@ export function ReleaseCheckPanel() {
       "Suspicious deliverable milestone payout with missing or malformed IPFS storage CID."
     );
     setDeliverableCID("bafybei000fake");
-    setPayeeAddress("0x7f67D351Cc3A6e9695c0B8AA6DE2bE5Ce58b3d73");
+    setPayeeAddress("");
     setAmount(5);
     setResult(null);
-    toast.error("Loaded Demo 2 (Bad CID refusal simulation)");
+    toast.error("Loaded bad CID");
   };
 
   const handleReleaseCheck = async (e: React.FormEvent) => {
@@ -144,7 +142,7 @@ export function ReleaseCheckPanel() {
           </p>
         </div>
 
-        {/* Quick Demo preset buttons */}
+        {/* Quick preset buttons */}
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
@@ -153,7 +151,7 @@ export function ReleaseCheckPanel() {
             className="px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-200 border border-purple-500/30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
           >
             <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            <span>Demo 1 (Valid)</span>
+            <span>Valid invoice</span>
           </button>
           <button
             type="button"
@@ -162,7 +160,7 @@ export function ReleaseCheckPanel() {
             className="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-200 border border-red-500/30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
           >
             <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
-            <span>Demo 2 (Bad CID)</span>
+            <span>Bad CID</span>
           </button>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useAccount, useSwitchChain } from 'wagmi';
 import { useCircleWallet } from '@/hooks/useCircleWallet';
 import { ARC_CHAIN } from '@/lib/arc-config';
+import { useDeferredWeb3 } from '@/providers/DeferredWeb3Provider';
 
 export interface SynArcConnectedWallet {
   address: string;
@@ -15,13 +16,18 @@ export interface SynArcConnectedWallet {
   switchChain: (targetChainId: number) => Promise<any>;
 }
 
-/**
- * useWallets — Universal wallet hook for Syn DAO
- *
- * Provides a drop-in replacement for useWallets / usePrivyWallets,
- * exposing connected Wagmi wallets (via RainbowKit) and Circle Smart Accounts.
- */
 export function useWallets() {
+  const deferred = useDeferredWeb3();
+  if (!deferred?.isMounted) {
+    return {
+      wallets: [],
+      ready: true,
+    };
+  }
+  return useActiveWallets();
+}
+
+function useActiveWallets() {
   const { address, isConnected, connector, chainId } = useAccount();
   const { switchChainAsync } = useSwitchChain();
   const { circleConnected, circleAddress } = useCircleWallet();

@@ -28,7 +28,8 @@ export function AuthPromptBanner({ action = "vote or create proposals" }: AuthPr
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-50px' }}
         exit={{ opacity: 0, y: -8 }}
         transition={{ duration: 0.3 }}
         className="flex items-center justify-between gap-4 px-4 py-3 mb-6 rounded-2xl bg-primary/5 border border-primary/15 backdrop-blur-sm"

@@ -1371,7 +1371,7 @@ export default function BridgePage() {
         {/* CCTP Attestation & Claim Recovery Modal */}
         <AnimatePresence>
           {recoveryModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="modal fixed inset-0 z-50 flex items-center justify-center p-4">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -1384,7 +1384,7 @@ export default function BridgePage() {
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="w-full max-w-lg bg-[#160B2E] border border-border-thin p-6 rounded-3xl shadow-2xl relative z-10 space-y-5 text-left"
+                className="modal-content w-full max-w-lg bg-[#160B2E] border border-border-thin p-6 rounded-3xl shadow-2xl relative z-10 space-y-5 text-left"
               >
                 {/* Header */}
                 <div className="flex justify-between items-center border-b border-border-thin pb-4">

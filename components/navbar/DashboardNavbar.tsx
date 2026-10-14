@@ -7,9 +7,14 @@ import { Menu, LogOut, Wallet } from "lucide-react";
 import { useMemo } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { TokenIcon } from "@/components/ui/TokenIcon";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import dynamic from "next/dynamic";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+
+const ConnectButtonCustom = dynamic(
+  () => import('@rainbow-me/rainbowkit').then((m) => m.ConnectButton.Custom),
+  { ssr: false }
+);
 
 /**
  * DashboardNavbar Component
@@ -105,7 +110,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         ) : (
           <div className="flex items-center gap-2">
             {deferred?.isMounted ? (
-              <ConnectButton.Custom>
+              <ConnectButtonCustom>
                 {({ openConnectModal, connectModalOpen }) => (
                   <button
                     onClick={openConnectModal}
@@ -115,7 +120,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
                     <span>{connectModalOpen ? "Connecting..." : "Connect Wallet"}</span>
                   </button>
                 )}
-              </ConnectButton.Custom>
+              </ConnectButtonCustom>
             ) : (
               <button
                 onClick={login}

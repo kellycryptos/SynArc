@@ -89,7 +89,8 @@ export function OverviewCards() {
     <motion.div 
       variants={containerVariants}
       initial="hidden"
-      animate="show"
+      whileInView="show"
+      viewport={{ once: true, margin: '-50px' }}
       className="stats-grid gap-px bg-[#151C29] border border-[#151C29] rounded-[10px] overflow-hidden"
     >
       {cards.map((card) => {

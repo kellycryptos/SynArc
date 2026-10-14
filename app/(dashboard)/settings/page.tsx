@@ -329,7 +329,7 @@ export default function SettingsPage() {
                 <div key={contract.id} className="flex items-center justify-between gap-3 p-4 bg-surface-elevated rounded-xl border border-border-thin w-full">
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-muted uppercase tracking-wider">{contract.name}</p>
-                    <span className="font-mono text-xs sm:text-sm text-foreground block truncate" title={contract.address}>
+                    <span className="wallet-address font-mono text-xs sm:text-sm text-foreground block truncate" title={contract.address}>
                       {contract.address.slice(0, 6)}...{contract.address.slice(-4)}
                     </span>
                   </div>

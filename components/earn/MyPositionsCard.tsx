@@ -95,7 +95,7 @@ export function MyPositionsCard({
                     <h5 className="font-semibold text-sm text-[#F8FAFC]">
                       {pos.vaultName || "Morpho Vault"}
                     </h5>
-                    <span className="text-xs text-[#94A3B8] font-mono">
+                    <span className="wallet-address text-xs text-[#94A3B8] font-mono inline-block">
                       {pos.vaultAddress.slice(0, 6)}...{pos.vaultAddress.slice(-4)}
                     </span>
                   </div>

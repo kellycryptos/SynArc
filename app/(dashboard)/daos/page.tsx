@@ -5,6 +5,7 @@ import { DAO_REGISTRY, DAOInfo } from "@/data/daos";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Grid, Users, Shield, ArrowRight, Award, Plus, X, Globe, MessageSquare, Send, CheckCircle2, Clock, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { AnimatePresence } from "framer-motion";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
@@ -174,13 +175,12 @@ export default function DAOsPage() {
                     : "from-white/10 to-white/5"
                 }`}>
                   {dao.logo ? (
-                    <img 
+                    <Image 
                       src={dao.logo} 
                       alt={dao.name} 
+                      width={56}
+                      height={56}
                       className="w-full h-full object-cover" 
-                      onError={(e) => {
-                        e.currentTarget.src = '/dao-placeholder.png';
-                      }}
                     />
                   ) : (
                     <span className="text-sm font-extrabold text-white">{logoInitials}</span>
@@ -204,7 +204,7 @@ export default function DAOsPage() {
                       {dao.category}
                     </span>
                     {dao.governorAddress ? (
-                      <span className="text-[10px] text-primary/70 font-mono tracking-wider break-all">
+                      <span className="wallet-address text-[10px] text-primary/70 font-mono tracking-wider break-all">
                         {dao.governorAddress.slice(0, 6)}...{dao.governorAddress.slice(-4)}
                       </span>
                     ) : (

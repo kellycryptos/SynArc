@@ -11,6 +11,7 @@ import {
 } from '@/lib/arc-config';
 import { ensureWalletOnChain, updateWalletChainRpc } from '@/lib/chain-network-helper';
 import { useEffect, useCallback, useSyncExternalStore } from 'react';
+import { useDeferredWeb3 } from '@/providers/DeferredWeb3Provider';
 
 export const ARC_TESTNET_CHAIN_ID = 5042002;
 export const ARC_MAINNET_CHAIN_ID = 5042;
@@ -60,7 +61,57 @@ export interface ArcNetworkState {
   isConnected: boolean;
 }
 
+function useFallbackArcNetwork(): ArcNetworkState {
+  const unconnectedNetwork = useSyncExternalStore(
+    subscribeToNetwork,
+    getNetworkSnapshot,
+    getServerSnapshot
+  );
+
+  const isArcTestnet = unconnectedNetwork === 'testnet';
+  const isArcMainnet = !isArcTestnet;
+  const activeNetwork: 'mainnet' | 'testnet' = isArcTestnet ? 'testnet' : 'mainnet';
+  const currentChainId = isArcTestnet ? ARC_TESTNET_CHAIN_ID : ARC_MAINNET_CHAIN_ID;
+  const networkName = isArcTestnet ? 'Arc Testnet' : 'Arc';
+  const contractSetLabel = isArcTestnet ? 'testnet' : 'mainnet';
+  const contracts = isArcTestnet ? CONTRACTS_TESTNET : CONTRACTS_MAINNET;
+  const explorerUrl = isArcTestnet ? 'https://explorer.testnet.arc.io' : 'https://explorer.arc.io';
+  const faucetUrl = isArcTestnet ? 'https://faucet.circle.com' : undefined;
+  const arcChain = isArcTestnet ? arcTestnet : arcMainnet;
+
+  return {
+    chainId: currentChainId,
+    currentChainId,
+    isArcTestnet,
+    isArcMainnet,
+    isArc: true,
+    isUnsupported: false,
+    isSwitching: false,
+    switchNetwork: async () => {},
+    switchToMainnet: async () => {},
+    switchToTestnet: async () => {},
+    updateWalletRpc: async () => false,
+    arcChain,
+    targetChainId: TARGET_CHAIN_ID,
+    networkName,
+    activeNetwork,
+    contractSetLabel,
+    contracts,
+    explorerUrl,
+    faucetUrl,
+    isConnected: false,
+  };
+}
+
 export function useArcNetwork(): ArcNetworkState {
+  const deferred = useDeferredWeb3();
+  if (!deferred?.isMounted) {
+    return useFallbackArcNetwork();
+  }
+  return useActiveArcNetwork();
+}
+
+function useActiveArcNetwork(): ArcNetworkState {
   const chainId = useChainId();
   const { isConnected } = useAccount();
   const { switchChain, switchChainAsync, isPending: isSwitching } = useSwitchChain();
