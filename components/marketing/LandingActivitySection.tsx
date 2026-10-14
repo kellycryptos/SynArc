@@ -81,9 +81,9 @@ export function LandingActivitySection() {
   return (
     <section
       id="activity"
-      className="py-24 px-4 border-t border-border"
+      className="py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
     >
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-5xl mx-auto w-full">
         {/* Section header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
