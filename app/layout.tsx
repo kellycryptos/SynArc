@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Sora, Space_Grotesk, IBM_Plex_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
@@ -16,6 +16,16 @@ const sora = Sora({ subsets: ["latin"], variable: "--font-sora", display: "optio
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space", display: "optional" });
 const ibmPlexMono = IBM_Plex_Mono({ weight: ["400", "500", "600"], subsets: ["latin"], variable: "--font-mono", display: "optional" });
 const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"], variable: "--font-serif", display: "swap" });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F8FAFC" },
+    { media: "(prefers-color-scheme: dark)", color: "#05080F" },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.syndaopro.xyz"),
@@ -73,17 +83,17 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} ${sora.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} ${instrumentSerif.variable} antialiased min-h-screen flex flex-col relative bg-background text-foreground`}
+        className={`${inter.variable} ${sora.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} ${instrumentSerif.variable} antialiased min-h-screen flex flex-col relative bg-background text-foreground overflow-x-hidden w-full max-w-[100vw]`}
       >
         <ThemeProvider>
           <ErrorBoundary sectionName="Root Application">
             {/* Ambient page background */}
-            <div className="fixed inset-0 pointer-events-none z-0">
+            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
               <div className="absolute inset-0 bg-background" />
               <div className="absolute inset-0 grid-overlay opacity-30" />
               {/* Subtle top glow */}
               <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] opacity-15"
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[400px] opacity-15"
                 style={{
                   background:
                     "radial-gradient(ellipse at top, rgba(47,111,255,0.2) 0%, rgba(34,211,238,0.1) 45%, transparent 70%)",
@@ -91,7 +101,7 @@ export default function RootLayout({
               />
             </div>
 
-            <div className="relative z-10 flex flex-col min-h-screen">
+            <div className="relative z-10 flex flex-col min-h-screen w-full overflow-x-hidden">
               {children}
             </div>
           </ErrorBoundary>
