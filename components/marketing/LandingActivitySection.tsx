@@ -100,27 +100,27 @@ export function LandingActivitySection() {
           </div>
 
           {/* Toggle Tabs */}
-          <div className="inline-flex p-1 bg-surface border border-border rounded-lg self-start sm:self-auto">
+          <div className="grid grid-cols-2 sm:flex p-1 bg-surface border border-border rounded-lg w-full sm:w-auto gap-1">
             <button
               onClick={() => setActiveTab("payouts")}
-              className={`px-4 py-2 text-xs font-mono font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+              className={`px-2.5 sm:px-4 py-2 text-[11px] sm:text-xs font-mono font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${
                 activeTab === "payouts"
                   ? "bg-primary text-white shadow-xs"
                   : "text-muted hover:text-foreground"
               }`}
             >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              Verified Payouts ({VERIFIED_PAYOUT_PROOFS.length})
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Verified Payouts ({VERIFIED_PAYOUT_PROOFS.length})</span>
             </button>
             <button
               onClick={() => setActiveTab("proposals")}
-              className={`px-4 py-2 text-xs font-mono font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+              className={`px-2.5 sm:px-4 py-2 text-[11px] sm:text-xs font-mono font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${
                 activeTab === "proposals"
                   ? "bg-primary text-white shadow-xs"
                   : "text-muted hover:text-foreground"
               }`}
             >
-              Proposals & Votes ({proposals.length > 0 ? proposals.length : "..."})
+              <span className="truncate">Proposals ({proposals.length > 0 ? proposals.length : "..."})</span>
             </button>
           </div>
         </div>
@@ -151,7 +151,7 @@ export function LandingActivitySection() {
                       <h4 className="text-sm font-semibold text-foreground mt-1 truncate">
                         {payout.title}
                       </h4>
-                      <p className="text-xs text-muted mt-0.5 font-mono">
+                      <p className="text-xs text-muted mt-0.5 font-mono break-words">
                         Beneficiary: {payout.contractor} • {payout.mechanism}
                       </p>
                     </div>
@@ -188,16 +188,16 @@ export function LandingActivitySection() {
                 className="p-5 border border-border"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-start gap-3 min-w-0">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
                     <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
                       <ArrowUpRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-foreground truncate">{act.description}</p>
                       <p className="text-xs text-muted font-mono mt-0.5">{new Date(act.timestamp).toLocaleString()}</p>
                     </div>
                   </div>
-                  <div className="font-mono text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                  <div className="font-mono text-sm font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
                     -{act.amount} {act.token}
                   </div>
                 </div>

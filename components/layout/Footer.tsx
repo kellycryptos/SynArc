@@ -96,7 +96,7 @@ const SOCIAL_LINKS: NavItem[] = [
   },
   {
     label: "Email Team",
-    href: "mailto:devsynarc@gmail.com",
+    href: "mailto:hello@syndaopro.xyz",
     external: true,
   },
   {
@@ -203,7 +203,7 @@ export function Footer() {
 
   const handleCopyEmail = () => {
     if (navigator?.clipboard) {
-      navigator.clipboard.writeText("devsynarc@gmail.com");
+      navigator.clipboard.writeText("hello@syndaopro.xyz");
       setCopiedEmail(true);
       setTimeout(() => setCopiedEmail(false), 2000);
     }
@@ -235,7 +235,7 @@ export function Footer() {
     } catch (err: any) {
       console.error("Subscription error:", err);
       setSubscribeError(
-        err.message || "Failed to subscribe. You can email devsynarc@gmail.com directly."
+        err.message || "Failed to subscribe. You can email hello@syndaopro.xyz directly."
       );
     } finally {
       setIsSubmitting(false);
@@ -261,20 +261,22 @@ export function Footer() {
         <div className="absolute inset-0 grid-overlay opacity-15 dark:opacity-25 pointer-events-none" />
 
         {/* Dynamic Glow Orbs */}
-        <GlowOrb
-          className="-top-32 left-1/4 opacity-15 dark:opacity-100"
-          color="purple"
-          size={360}
-          blur={120}
-          animate
-        />
-        <GlowOrb
-          className="bottom-10 right-10 opacity-15 dark:opacity-100"
-          color="cyan"
-          size={300}
-          blur={110}
-          animate
-        />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <GlowOrb
+            className="-top-32 left-1/4 opacity-15 dark:opacity-100"
+            color="purple"
+            size={360}
+            blur={120}
+            animate
+          />
+          <GlowOrb
+            className="bottom-10 right-10 opacity-15 dark:opacity-100"
+            color="cyan"
+            size={300}
+            blur={110}
+            animate
+          />
+        </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* ══════════════════════════════════════════════════════
@@ -315,7 +317,7 @@ export function Footer() {
                           You are subscribed to Syn DAO Dispatches.
                         </p>
                         <p className="text-xs text-muted mt-0.5">
-                          Notification sent to <code className="font-semibold text-foreground">devsynarc@gmail.com</code>. Check your inbox for briefings.
+                          Notification sent to <code className="font-semibold text-foreground">hello@syndaopro.xyz</code>. Check your inbox for briefings.
                         </p>
                       </div>
                     </motion.div>
@@ -395,7 +397,7 @@ export function Footer() {
                         Have Feedback or Questions?
                       </h4>
                       <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                        devsynarc@gmail.com
+                        hello@syndaopro.xyz
                       </span>
                     </div>
                     <p className="text-xs text-muted mt-0.5">
@@ -551,7 +553,7 @@ export function Footer() {
                     type="button"
                     onClick={() => setIsContactModalOpen(true)}
                     className="h-9 inline-flex items-center gap-1.5 px-3 rounded-lg border border-border bg-surface hover:border-primary/40 text-xs font-mono text-muted hover:text-foreground transition-colors shrink-0 cursor-pointer shadow-xs"
-                    title="Send message to devsynarc@gmail.com"
+                    title="Send message to hello@syndaopro.xyz"
                   >
                     <Mail className="w-3.5 h-3.5 text-primary" />
                     <span>Contact</span>
