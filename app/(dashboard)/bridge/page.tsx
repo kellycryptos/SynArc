@@ -745,14 +745,14 @@ export default function BridgePage() {
           </div>
 
           {/* Network Mode Switcher (Mainnet vs Testnet) */}
-          <div className="flex items-center bg-[#160B2E]/90 border border-border-thin rounded-xl p-0.5 shadow-inner shrink-0">
+          <div className="flex items-center bg-surface border border-border rounded-xl p-1 shadow-inner shrink-0">
             <button
               type="button"
               onClick={() => handleNetworkChange("mainnet")}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 bridgeNetwork === "mainnet"
-                  ? "bg-primary text-black shadow-md font-extrabold"
-                  : "text-muted hover:text-white"
+                  ? "bg-primary text-white shadow-xs font-semibold"
+                  : "text-muted hover:text-foreground"
               }`}
             >
               Mainnet
@@ -760,10 +760,10 @@ export default function BridgePage() {
             <button
               type="button"
               onClick={() => handleNetworkChange("testnet")}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 bridgeNetwork === "testnet"
-                  ? "bg-amber-500 text-black shadow-md font-extrabold"
-                  : "text-muted hover:text-white"
+                  ? "bg-amber-500 text-white shadow-xs font-semibold"
+                  : "text-muted hover:text-foreground"
               }`}
             >
               Testnet
@@ -771,18 +771,18 @@ export default function BridgePage() {
           </div>
 
           {/* Volume Indicator */}
-          <div className="bg-surface-elevated/40 border border-border-thin px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-md shrink-0 backdrop-blur-md">
+          <div className="bg-surface border border-border px-4 py-2 rounded-xl flex items-center gap-3 shadow-xs shrink-0">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <div className="text-[10px] text-text-tertiary font-bold uppercase tracking-wider">
+              <div className="text-[10px] text-muted font-bold uppercase tracking-wider font-space">
                 Your Bridged Volume
               </div>
-              <div className="text-sm font-bold font-mono text-white mt-0.5">
+              <div className="text-sm font-bold font-mono text-foreground mt-0.5">
                 {isAuthenticated
                   ? `$${totalVolumeToDisplay.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC`
-                  : <span className="text-text-tertiary text-xs font-normal">Connect wallet to view</span>
+                  : <span className="text-muted text-xs font-normal">Connect wallet to view</span>
                 }
               </div>
             </div>

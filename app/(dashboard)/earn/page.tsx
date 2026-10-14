@@ -92,7 +92,7 @@ export default function EarnPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold font-space text-[#F5F7FA] tracking-tight">
+            <h1 className="text-2xl font-bold font-space text-foreground tracking-tight">
               Earn & Vaults
             </h1>
             <span
@@ -105,7 +105,7 @@ export default function EarnPage() {
               {isArcMainnet ? "Mainnet" : "Testnet"}
             </span>
           </div>
-          <p className="text-sm text-[#8F9CAE] mt-1">
+          <p className="text-sm text-muted mt-1">
             Non-custodial DeFi lending yield on Arc powered by Circle App Kit & Morpho protocols.
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function EarnPage() {
               }
             }}
             disabled={isSwitching}
-            className="px-3.5 py-2 rounded-xl bg-[#0A0E17] border border-[#1E293B] hover:border-primary/40 text-xs font-semibold text-[#F8FAFC] transition-colors flex items-center gap-2 cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-surface border border-border hover:border-primary/40 text-xs font-semibold text-foreground transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
           >
             <ArrowRightLeft className="w-3.5 h-3.5 text-primary" />
             <span>Switch to {isArcMainnet ? "Arc Testnet" : "Arc Mainnet"}</span>
@@ -133,7 +133,7 @@ export default function EarnPage() {
               if (walletAddress) fetchPositions();
             }}
             disabled={isLoadingVaults}
-            className="p-2 rounded-xl bg-[#0A0E17] border border-[#1E293B] hover:border-[#334155] text-[#8F9CAE] hover:text-[#F8FAFC] transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-surface border border-border hover:border-primary/40 text-muted hover:text-foreground transition-colors cursor-pointer shadow-xs"
             title="Refresh Vaults"
           >
             <RefreshCw className={`w-4 h-4 ${isLoadingVaults ? "animate-spin text-primary" : ""}`} />
@@ -143,64 +143,64 @@ export default function EarnPage() {
 
       {/* Highlights / Hero Stat Banner */}
       <div className="stats-grid">
-        <GlassCard className="p-4 border border-[#1E293B]">
-          <div className="flex items-center justify-between text-xs text-[#8F9CAE] mb-1">
+        <GlassCard className="p-4">
+          <div className="flex items-center justify-between text-xs text-muted mb-1 font-space">
             <span>Peak APY</span>
             <Percent className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="text-2xl font-bold font-mono text-emerald-400">
             {(maxApy * 100).toFixed(2)}%
           </div>
-          <span className="text-[11px] text-[#8F9CAE] block mt-0.5">Underlying Morpho protocols</span>
+          <span className="text-[11px] text-muted block mt-0.5">Underlying Morpho protocols</span>
         </GlassCard>
 
-        <GlassCard className="p-4 border border-[#1E293B]">
-          <div className="flex items-center justify-between text-xs text-[#8F9CAE] mb-1">
+        <GlassCard className="p-4">
+          <div className="flex items-center justify-between text-xs text-muted mb-1 font-space">
             <span>Active Vaults</span>
             <TrendingUp className="w-4 h-4 text-primary" />
           </div>
-          <div className="text-2xl font-bold font-mono text-[#F8FAFC]">
+          <div className="text-2xl font-bold font-mono text-foreground">
             {vaults.filter((v) => v.status === "active").length}
           </div>
-          <span className="text-[11px] text-[#8F9CAE] block mt-0.5">
+          <span className="text-[11px] text-muted block mt-0.5">
             {vaults.length} total on {networkName}
           </span>
         </GlassCard>
 
-        <GlassCard className="p-4 border border-[#1E293B]">
-          <div className="flex items-center justify-between text-xs text-[#8F9CAE] mb-1">
+        <GlassCard className="p-4">
+          <div className="flex items-center justify-between text-xs text-muted mb-1 font-space">
             <span>Your Yield Positions</span>
             <Coins className="w-4 h-4 text-amber-400" />
           </div>
-          <div className="text-2xl font-bold font-mono text-[#F8FAFC]">
+          <div className="text-2xl font-bold font-mono text-foreground">
             {activePositionCount}
           </div>
-          <span className="text-[11px] text-[#8F9CAE] block mt-0.5">
+          <span className="text-[11px] text-muted block mt-0.5">
             {isAuthenticated ? "Live connected wallet" : "Connect wallet to view"}
           </span>
         </GlassCard>
 
-        <GlassCard className="p-4 border border-[#1E293B]">
-          <div className="flex items-center justify-between text-xs text-[#8F9CAE] mb-1">
+        <GlassCard className="p-4">
+          <div className="flex items-center justify-between text-xs text-muted mb-1 font-space">
             <span>Wallet Available</span>
             <ShieldCheck className="w-4 h-4 text-blue-400" />
           </div>
-          <div className="text-2xl font-bold font-mono text-[#F8FAFC] flex items-center gap-2">
+          <div className="text-2xl font-bold font-mono text-foreground flex items-center gap-2">
             <TokenIcon symbol="USDC" size={20} />
             <span>{parseFloat(usdcBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC</span>
           </div>
-          <span className="text-[11px] text-[#8F9CAE] block mt-0.5">Ready to deploy into vaults</span>
+          <span className="text-[11px] text-muted block mt-0.5">Ready to deploy into vaults</span>
         </GlassCard>
       </div>
 
       {/* Main Tabs Navigation */}
-      <div className="flex items-center gap-2 border-b border-[#151C29] pb-2">
+      <div className="flex items-center gap-2 border-b border-border pb-2">
         <button
           onClick={() => setActiveTab("explore")}
           className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === "explore"
-              ? "bg-[#151C29] text-[#F8FAFC] border border-[#1E293B] shadow-sm"
-              : "text-[#8F9CAE] hover:text-[#F8FAFC]"
+              ? "bg-surface text-foreground border border-border shadow-xs"
+              : "text-muted hover:text-foreground"
           }`}
         >
           <TrendingUp className="w-4 h-4 text-primary" />
@@ -211,8 +211,8 @@ export default function EarnPage() {
           onClick={() => setActiveTab("positions")}
           className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === "positions"
-              ? "bg-[#151C29] text-[#F8FAFC] border border-[#1E293B] shadow-sm"
-              : "text-[#8F9CAE] hover:text-[#F8FAFC]"
+              ? "bg-surface text-foreground border border-border shadow-xs"
+              : "text-muted hover:text-foreground"
           }`}
         >
           <Coins className="w-4 h-4 text-emerald-400" />
@@ -224,16 +224,16 @@ export default function EarnPage() {
       {activeTab === "explore" ? (
         <div className="space-y-4">
           {/* Filters Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#0A0E17] border border-[#1E293B] p-3 rounded-2xl">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-surface border border-border p-3 rounded-2xl">
             {/* Search Input */}
             <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8F9CAE]" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
               <input
                 type="text"
                 placeholder="Search vaults by name, address, curator..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#05080F] border border-[#1E293B] rounded-xl pl-9 pr-3 py-2 text-xs text-[#F8FAFC] placeholder:text-[#8F9CAE]/60 focus:outline-none focus:border-primary"
+                className="w-full bg-background border border-border rounded-xl pl-9 pr-3 py-2 text-xs text-foreground placeholder:text-muted/60 focus:outline-none focus:border-primary"
               />
             </div>
 
@@ -246,7 +246,7 @@ export default function EarnPage() {
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
                     selectedAsset === asset
                       ? "bg-primary text-white"
-                      : "bg-[#05080F] text-[#8F9CAE] hover:text-[#F8FAFC] border border-[#1E293B]"
+                      : "bg-background text-muted hover:text-foreground border border-border"
                   }`}
                 >
                   {asset !== "ALL" && <TokenIcon symbol={asset} size={14} />}
@@ -254,12 +254,12 @@ export default function EarnPage() {
                 </button>
               ))}
 
-              <label className="flex items-center gap-1.5 text-xs text-[#8F9CAE] ml-2 cursor-pointer select-none">
+              <label className="flex items-center gap-1.5 text-xs text-muted ml-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={activeOnly}
                   onChange={(e) => setActiveOnly(e.target.checked)}
-                  className="rounded border-[#1E293B] text-primary focus:ring-0 bg-[#05080F]"
+                  className="rounded border-border text-primary focus:ring-0 bg-background"
                 />
                 <span>Active only</span>
               </label>
@@ -270,19 +270,19 @@ export default function EarnPage() {
           {isLoadingVaults ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <GlassCard key={i} className="p-6 border border-[#1E293B] animate-pulse h-64">
-                  <div className="h-6 w-32 bg-[#151C29] rounded mb-3" />
-                  <div className="h-8 w-20 bg-[#151C29] rounded mb-4" />
-                  <div className="h-20 bg-[#05080F] rounded mb-4" />
-                  <div className="h-10 bg-[#151C29] rounded" />
+                <GlassCard key={i} className="p-6 animate-pulse h-64">
+                  <div className="h-6 w-32 bg-surface-elevated rounded mb-3" />
+                  <div className="h-8 w-20 bg-surface-elevated rounded mb-4" />
+                  <div className="h-20 bg-surface rounded mb-4" />
+                  <div className="h-10 bg-surface-elevated rounded" />
                 </GlassCard>
               ))}
             </div>
           ) : filteredVaults.length === 0 ? (
-            <GlassCard className="p-12 text-center border border-[#1E293B]">
+            <GlassCard className="p-12 text-center">
               <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto mb-3" />
-              <h3 className="text-base font-semibold text-[#F8FAFC]">No Vaults Found</h3>
-              <p className="text-xs text-[#8F9CAE] max-w-sm mx-auto mt-1 mb-4">
+              <h3 className="text-base font-semibold text-foreground">No Vaults Found</h3>
+              <p className="text-xs text-muted max-w-sm mx-auto mt-1 mb-4">
                 No vaults matching your current search or filter criteria on {networkName}.
               </p>
               <button
@@ -291,7 +291,7 @@ export default function EarnPage() {
                   setSearchQuery("");
                   setActiveOnly(false);
                 }}
-                className="px-4 py-2 rounded-xl bg-[#151C29] text-xs font-semibold text-[#F8FAFC] border border-[#1E293B] hover:border-primary cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-surface text-xs font-semibold text-foreground border border-border hover:border-primary cursor-pointer shadow-xs"
               >
                 Reset Filters
               </button>

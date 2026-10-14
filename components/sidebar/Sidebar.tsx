@@ -162,7 +162,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4 px-3.5 space-y-1">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3.5 space-y-1">
         {/* AGENT — Primary Feature Card */}
         {(() => {
           const href = "/agent";
@@ -177,13 +177,13 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
                 active && "border-primary/40 bg-surface-elevated"
               )}
             >
-              <span className="text-[13px] font-medium text-foreground flex items-center gap-2.5 font-space">
+              <span className="text-[13px] font-medium text-foreground flex items-center gap-2.5 font-space min-w-0 truncate">
                 <div className="w-6 h-6 flex items-center justify-center shrink-0">
                   <BotAvatar type="ghost" size={24} state="working" />
                 </div>
-                Treasury Agent
+                <span className="truncate">Treasury Agent</span>
               </span>
-              <div className="shrink-0 flex items-center">
+              <div className="shrink-0 flex items-center ml-2">
                 <MetalBadge>LIVE</MetalBadge>
               </div>
             </Link>
@@ -222,14 +222,14 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
                   active ? "stroke-primary" : "stroke-muted group-hover:stroke-foreground"
                 )}
               />
-              <span>{link.label}</span>
+              <span className="truncate">{link.label}</span>
               {link.isNew && !active && (
-                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-mono bg-background border border-border text-primary">
+                <span className="ml-auto inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-mono bg-background border border-border text-primary shrink-0">
                   NEW
                 </span>
               )}
               {active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
               )}
             </Link>
           );
@@ -305,7 +305,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
 
       {/* Mobile-only governance stats & status (USDC, Network, Notifications) */}
       {isAuthenticated && (
-        <div className="md:hidden px-6 py-4 border-t border-border-thin space-y-4 bg-surface/30 shrink-0">
+        <div className="lg:hidden px-6 py-4 border-t border-border-thin space-y-4 bg-surface/30 shrink-0">
           {/* Network Status Badge */}
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted">Network</span>

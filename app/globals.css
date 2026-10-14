@@ -490,17 +490,17 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.25);
+  background: rgba(47, 111, 255, 0.25);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.4);
+  background: rgba(47, 111, 255, 0.45);
 }
 
 /* ── Selection ── */
 ::selection {
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(47, 111, 255, 0.25);
   color: inherit;
 }
 
@@ -1076,6 +1076,7 @@ h1, .hero-title { font-size: clamp(2rem, 5vw, 4rem); line-height: 1.1; }
     width: 240px;
     height: 100vh;
     flex-shrink: 0;
+    overflow-x: hidden;
   }
   .sidebar-overlay { display: none; }
 }
@@ -1087,6 +1088,7 @@ h1, .hero-title { font-size: clamp(2rem, 5vw, 4rem); line-height: 1.1; }
     width: 280px;
     height: 100vh;
     z-index: 100;
+    overflow-x: hidden;
     transition: left 0.3s ease;
   }
   .sidebar.open { left: 0; }

@@ -610,108 +610,118 @@ function TreasuryPageContent() {
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">DAO Treasury</h1>
-            <p className="text-muted text-xs sm:text-sm mt-1">Multi-asset capital reserves and smart treasury contracts on {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}.</p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-space">
+              DAO Treasury
+            </h1>
+            <p className="text-muted text-xs sm:text-sm mt-1">
+              Multi-asset capital reserves and smart treasury contracts on {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}.
+            </p>
           </div>
           
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 w-full lg:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0">
             {!isAuthenticated ? (
               <button 
                 onClick={login}
-                className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer shrink-0 w-full lg:w-auto"
+                className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-md shadow-[#2F6FFF]/20 hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Wallet className="w-4.5 h-4.5" />
+                <Wallet className="w-4 h-4" />
                 Connect Wallet to Deposit
               </button>
             ) : (
               <>
                 <button 
                   onClick={() => setShowBridge(true)}
-                  className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-surface-elevated hover:bg-surface-elevated/80 text-text-primary font-semibold text-sm transition-all border border-border-thin flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] shrink-0 w-full lg:w-auto"
+                  className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-surface border border-border hover:border-primary/40 hover:bg-surface-elevated text-foreground font-space font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
                   Bridge USDC to Arc
                 </button>
 
                 <Link
                   href="/earn"
-                  className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-semibold text-sm transition-all border border-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] shrink-0 w-full lg:w-auto"
+                  className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-space font-semibold text-xs transition-all border border-emerald-500/25 flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
-                  <TrendingUp className="w-4.5 h-4.5" />
+                  <TrendingUp className="w-3.5 h-3.5" />
                   Earn Yield
                 </Link>
 
                 <button 
                   onClick={() => setModalOpen(true)}
-                  className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-accent-purple hover:bg-accent-purple/90 text-white-keep font-semibold text-sm transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] flex items-center justify-center gap-2 cursor-pointer shrink-0 w-full lg:w-auto"
+                  className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-md shadow-[#2F6FFF]/20 hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <PlusCircle className="w-4.5 h-4.5" />
+                  <PlusCircle className="w-3.5 h-3.5" />
                   Deposit Assets
                 </button>
               </>
             )}
-            
-            <div className="bg-surface-elevated border border-border-thin px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl flex items-center gap-3 shadow-md shrink-0 w-full lg:w-auto justify-between lg:justify-start">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                <Wallet className="w-4 h-4 text-primary" />
-              </div>
-              <div className="text-right lg:text-left flex-1 lg:flex-none">
-                <div className="text-[10px] text-text-tertiary font-bold uppercase tracking-wider">Combined Total</div>
-                <div className="text-base sm:text-lg font-bold font-mono text-text-primary flex items-center justify-end lg:justify-start h-[28px]">
-                  {treasuryLoading ? (
-                    <span className="inline-block w-20 h-5 bg-white/5 animate-pulse rounded mt-0.5" />
-                  ) : (
-                    `$${combinedTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
         {/* Balance Overview Cards */}
         <SectionErrorBoundary sectionName="Treasury Balance Overview">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <GlassCard className="p-6 relative overflow-hidden group">
-            <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-2 bg-[#2775CA]/10 border border-[#2775CA]/20 rounded-xl flex items-center justify-center">
-                <TokenIcon symbol="USDC" size={24} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            {/* Combined Total Reserves */}
+            <GlassCard className="p-6 relative overflow-hidden group">
+              <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-colors" />
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-2.5 bg-primary/10 border border-primary/25 rounded-xl flex items-center justify-center text-primary">
+                  <Wallet className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-primary font-mono">Total Reserves</span>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted">Stable</span>
-            </div>
-            <p className="text-xs font-semibold text-muted uppercase tracking-wider">USDC Balance</p>
-            <h3 className="text-xl sm:text-2xl font-extrabold text-text-primary mt-2 font-mono flex items-center h-[32px]">
-              {treasuryLoading ? (
-                <span className="inline-block w-28 h-7 bg-white/5 animate-pulse rounded" />
-              ) : (
-                `${usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC`
-              )}
-            </h3>
-            <p className="text-[11px] text-text-tertiary mt-1 font-mono">${usdcBalance.toLocaleString()} USD</p>
-          </GlassCard>
+              <p className="text-xs font-semibold text-muted uppercase tracking-wider font-space">Combined Valuation</p>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-foreground mt-2 font-mono flex items-center h-[32px]">
+                {treasuryLoading ? (
+                  <span className="inline-block w-28 h-7 bg-surface-elevated animate-pulse rounded" />
+                ) : (
+                  `$${combinedTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                )}
+              </h3>
+              <p className="text-xs text-muted mt-1 font-mono">USD Net Asset Value</p>
+            </GlassCard>
 
-          <GlassCard className="p-6 relative overflow-hidden group">
-            <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-2 bg-pink-500/10 border border-pink-500/20 rounded-xl flex items-center justify-center">
-                <TokenIcon symbol="EURC" size={24} />
+            {/* USDC Balance */}
+            <GlassCard className="p-6 relative overflow-hidden group">
+              <div className="absolute -right-6 -top-6 w-24 h-24 bg-[#2775CA]/10 rounded-full blur-2xl group-hover:bg-[#2775CA]/20 transition-colors" />
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-2 bg-[#2775CA]/10 border border-[#2775CA]/20 rounded-xl flex items-center justify-center">
+                  <TokenIcon symbol="USDC" size={24} />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted font-mono">Stable</span>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted">Stable</span>
-            </div>
-            <p className="text-xs font-semibold text-muted uppercase tracking-wider">EURC Balance</p>
-            <h3 className="text-xl sm:text-2xl font-extrabold text-text-primary mt-2 font-mono flex items-center h-[32px]">
-              {treasuryLoading ? (
-                <span className="inline-block w-28 h-7 bg-white/5 animate-pulse rounded" />
-              ) : (
-                `${eurcBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })} EURC`
-              )}
-            </h3>
-            <p className="text-[11px] text-pink-400 mt-1 font-mono">≈ ${(eurcBalance * 1.08).toLocaleString(undefined, { maximumFractionDigits: 2 })} USD</p>
-          </GlassCard>
-        </div>
-      </SectionErrorBoundary>
+              <p className="text-xs font-semibold text-muted uppercase tracking-wider font-space">USDC Balance</p>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-foreground mt-2 font-mono flex items-center h-[32px]">
+                {treasuryLoading ? (
+                  <span className="inline-block w-28 h-7 bg-surface-elevated animate-pulse rounded" />
+                ) : (
+                  `${usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC`
+                )}
+              </h3>
+              <p className="text-xs text-muted mt-1 font-mono">${usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</p>
+            </GlassCard>
+
+            {/* EURC Balance */}
+            <GlassCard className="p-6 relative overflow-hidden group sm:col-span-2 lg:col-span-1">
+              <div className="absolute -right-6 -top-6 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-colors" />
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-2 bg-pink-500/10 border border-pink-500/20 rounded-xl flex items-center justify-center">
+                  <TokenIcon symbol="EURC" size={24} />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-muted font-mono">Stable</span>
+              </div>
+              <p className="text-xs font-semibold text-muted uppercase tracking-wider font-space">EURC Balance</p>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-foreground mt-2 font-mono flex items-center h-[32px]">
+                {treasuryLoading ? (
+                  <span className="inline-block w-28 h-7 bg-surface-elevated animate-pulse rounded" />
+                ) : (
+                  `${eurcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EURC`
+                )}
+              </h3>
+              <p className="text-xs text-muted mt-1 font-mono">≈ ${(eurcBalance * 1.08).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</p>
+            </GlassCard>
+          </div>
+        </SectionErrorBoundary>
 
         {/* Charts Row */}
         <SectionErrorBoundary sectionName="Treasury Valuation & Composition Charts">

@@ -84,15 +84,20 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
             ) : null}
 
             {/* User Profile Card */}
-            <div className="flex items-center gap-2 bg-surface border border-border rounded-lg px-3 py-2 text-primary font-mono">
+            <div className="flex items-center gap-2 bg-surface border border-border rounded-lg px-3 py-1.5 text-foreground font-mono shrink-0">
               <span className="text-xs font-mono flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
                 {isCircle ? (
                   <>
-                    <span>⭕ Circle Wallet (<span className="wallet-address">{shortAddress}</span>)</span>
+                    <span className="text-muted">Circle:</span>
+                    <span className="wallet-address text-foreground font-medium">{shortAddress}</span>
                   </>
                 ) : (
                   <>
-                    <span>Arc Wallet (<span className="wallet-address">{shortAddress}</span>)</span>
+                    <span className="text-muted">Arc Wallet</span>
+                    <span className="text-muted/60">(</span>
+                    <span className="wallet-address text-foreground font-medium">{shortAddress}</span>
+                    <span className="text-muted/60">)</span>
                   </>
                 )}
               </span>

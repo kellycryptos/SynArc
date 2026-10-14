@@ -168,7 +168,7 @@ export default function ProposalsPage() {
                   router.push("/proposals/create");
                 }
               }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-purple text-white-keep font-semibold text-sm hover:bg-accent-purple/90 transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-md shadow-[#2F6FFF]/20 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Create Proposal

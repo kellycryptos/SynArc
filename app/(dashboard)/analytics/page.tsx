@@ -357,7 +357,7 @@ export default function AnalyticsPage() {
                 onClick={() => setDateFilter(range)}
                 className={`px-3.5 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
                   dateFilter === range
-                    ? "bg-accent-purple text-white-keep shadow-[0_0_15px_rgba(124,58,237,0.25)]"
+                    ? "bg-primary text-white shadow-sm font-space"
                     : "text-muted hover:text-foreground hover:bg-surface-elevated"
                 }`}
               >
@@ -379,8 +379,8 @@ export default function AnalyticsPage() {
                 <div className="h-10 bg-surface-elevated rounded animate-pulse" />
               ) : (
                 <>
-                  <h3 className="text-3xl font-extrabold text-white">{filteredProposals.length}</h3>
-                  <p className="text-xs text-primary-glow mt-2">Active + Resolved</p>
+                  <h3 className="text-3xl font-extrabold text-foreground">{filteredProposals.length}</h3>
+                  <p className="text-xs text-primary mt-2">Active + Resolved</p>
                 </>
               )}
             </GlassCard>
@@ -394,7 +394,7 @@ export default function AnalyticsPage() {
                 <div className="h-10 bg-surface-elevated rounded animate-pulse" />
               ) : (
                 <>
-                  <h3 className="text-3xl font-extrabold text-white">
+                  <h3 className="text-3xl font-extrabold text-foreground">
                     {totalVotesCast >= 1_000_000
                       ? `${(totalVotesCast / 1_000_000).toFixed(2)}M`
                       : totalVotesCast >= 1_000
@@ -415,7 +415,7 @@ export default function AnalyticsPage() {
                 <div className="h-10 bg-surface-elevated rounded animate-pulse" />
               ) : (
                 <>
-                  <h3 className="text-3xl font-extrabold text-white">{avgParticipation}%</h3>
+                  <h3 className="text-3xl font-extrabold text-foreground">{avgParticipation}%</h3>
                   <p className="text-xs text-success mt-2">of 15M sARC supply</p>
                 </>
               )}
@@ -430,7 +430,7 @@ export default function AnalyticsPage() {
                 <div className="h-10 bg-surface-elevated rounded animate-pulse" />
               ) : (
                 <>
-                  <h3 className="text-3xl font-extrabold text-white">{proposalPassRate}%</h3>
+                  <h3 className="text-3xl font-extrabold text-foreground">{proposalPassRate}%</h3>
                   <p className="text-xs text-muted mt-2">{executedCount} execution target hits</p>
                 </>
               )}
