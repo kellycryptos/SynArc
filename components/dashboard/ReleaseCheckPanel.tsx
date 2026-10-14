@@ -42,9 +42,7 @@ export function ReleaseCheckPanel() {
   const [deliverableCID, setDeliverableCID] = useState<string>(
     "invoice.txt"
   );
-  const [payeeAddress, setPayeeAddress] = useState<string>(
-    "0x7f67D351Cc3A6e9695c0B8AA6DE2bE5Ce58b3d73"
-  );
+  const [payeeAddress, setPayeeAddress] = useState<string>("");
   const [amount, setAmount] = useState<number>(0.01);
 
   const [checking, setChecking] = useState<boolean>(false);
@@ -57,10 +55,10 @@ export function ReleaseCheckPanel() {
       "Milestone 1 payout for UI landing page design delivery and smart contract security audit review."
     );
     setDeliverableCID("invoice.txt");
-    setPayeeAddress("0x7f67D351Cc3A6e9695c0B8AA6DE2bE5Ce58b3d73");
+    setPayeeAddress("");
     setAmount(0.01);
     setResult(null);
-    toast.success("Loaded Demo 1 (Valid Mainnet deliverable)");
+    toast.success("Loaded valid invoice");
   };
 
   const handleFillDemo2 = () => {
@@ -70,10 +68,10 @@ export function ReleaseCheckPanel() {
       "Suspicious deliverable milestone payout with missing or malformed IPFS storage CID."
     );
     setDeliverableCID("bafybei000fake");
-    setPayeeAddress("0x7f67D351Cc3A6e9695c0B8AA6DE2bE5Ce58b3d73");
+    setPayeeAddress("");
     setAmount(0.01);
     setResult(null);
-    toast.error("Loaded Demo 2 (Bad CID Mainnet refusal)");
+    toast.error("Loaded bad CID");
   };
 
   const handleReleaseCheck = async (e: React.FormEvent) => {
