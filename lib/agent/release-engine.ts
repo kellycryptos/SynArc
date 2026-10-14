@@ -337,7 +337,7 @@ Respond in JSON:
             params.amount,
             aiConfidence,
           ],
-          gas: 350000n,
+          gas: 950000n,
           gasPrice: aggressiveGasPrice,
         })
 
