@@ -96,15 +96,16 @@ function TreasuryPageContent() {
     refetch: refetchTreasury 
   } = useTreasuryBalances();
 
-  const { balance: walletUSDC, refetch: refetchWalletUSDC } = useUSDCBalance();
-  const { balance: walletEURC, refetch: refetchWalletEURC } = useEURCBalance();
-  const { balance: walletCirBTC, refetch: refetchWalletCirBTC } = useCirBTCBalance();
   // usePrivyWallets and wagmi hooks may not have a wallet when Circle is the only connection.
   // Safe-wrap them so they return empty/noop values instead of crashing.
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   const { isAuthenticated, login, walletAddress, isCircle } = useAuth();
   const { isArcMainnet, isArcTestnet, contracts, arcChain, explorerUrl } = useArcNetwork();
+
+  const { balance: walletUSDC, refetch: refetchWalletUSDC } = useUSDCBalance(walletAddress);
+  const { balance: walletEURC, refetch: refetchWalletEURC } = useEURCBalance(walletAddress);
+  const { balance: walletCirBTC, refetch: refetchWalletCirBTC } = useCirBTCBalance(walletAddress);
 
   const [executingId, setExecutingId] = useState<string | null>(null);
   const [cancelingId, setCancelingId] = useState<string | null>(null);
@@ -344,7 +345,8 @@ function TreasuryPageContent() {
     } else if (selectedToken === "cirBTC") {
       setDepositAmount(num.toFixed(8).replace(/\.?0+$/, ""));
     } else {
-      setDepositAmount(num.toString());
+      const cleanEurc = currentWalletBalance.includes('.') ? currentWalletBalance.replace(/\.?0+$/, "") : currentWalletBalance;
+      setDepositAmount(cleanEurc);
     }
   };
 
@@ -360,7 +362,8 @@ function TreasuryPageContent() {
 
     const balanceVal = parseFloat(currentWalletBalance);
     if (amount > balanceVal) {
-      setErrorMessage(`Insufficient ${token} balance in your wallet. You have ${balanceVal.toFixed(token === 'cirBTC' ? 6 : 2)} ${token}, but tried to deposit ${amount.toFixed(token === 'cirBTC' ? 6 : 2)} ${token}.`);
+      const decimalsToShow = token === 'cirBTC' ? 6 : balanceVal < 0.01 ? 4 : 2;
+      setErrorMessage(`Insufficient ${token} balance in your wallet. You have ${balanceVal.toFixed(decimalsToShow)} ${token}, but tried to deposit ${amount.toFixed(decimalsToShow)} ${token}.`);
       setTxStep("error");
       return;
     }
@@ -378,11 +381,12 @@ function TreasuryPageContent() {
       // Get authenticated client and wallet
       const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, targetChainId, walletAddress);
 
+      const isMainnet = isArcMainnet || targetChainId === 5042;
       const tokenAddress = token === 'USDC' 
         ? (contracts.usdc || USDC_ADDRESS) 
         : token === 'EURC'
-          ? (contracts.eurc || (isArcTestnet ? '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a' : '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1'))
-          : (contracts.cirBTC || (isArcTestnet ? '0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF' : '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0'));
+          ? (isMainnet ? '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1' : (contracts.eurc || '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a'))
+          : (isMainnet ? '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0' : (contracts.cirBTC || '0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF'));
       
       const decimals = token === 'cirBTC' ? 8 : 6;
       // Cleanly parse amount to required decimals, preventing float inaccuracies or overflow
@@ -1065,10 +1069,17 @@ function TreasuryPageContent() {
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted">Wallet Balance</span>
                 <span className="font-semibold text-text-primary font-mono">
-                  {parseFloat(currentWalletBalance || "0").toLocaleString(undefined, {
-                    minimumFractionDigits: selectedToken === 'cirBTC' ? 4 : 2,
-                    maximumFractionDigits: selectedToken === 'cirBTC' ? 8 : 2
-                  })} {selectedToken}
+                  {(() => {
+                    const val = parseFloat(currentWalletBalance || "0");
+                    if (val === 0) return `0.00 ${selectedToken}`;
+                    if (selectedToken === 'cirBTC') {
+                      return `${val.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 8 })} cirBTC`;
+                    }
+                    if (val < 0.01) {
+                      return `${val.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 6 })} ${selectedToken}`;
+                    }
+                    return `${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} ${selectedToken}`;
+                  })()}
                 </span>
               </div>
 

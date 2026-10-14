@@ -885,10 +885,10 @@ export default function AgentPage() {
           { label: "Governance Treasury (USDC)", value: `${(govUsdcBalance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, isLoading: govLoading, unit: "USDC", tokenSymbol: "USDC", icon: Landmark, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", isBalance: true },
           { label: "Actions Today", value: actions.length.toString(), isLoading: loading, unit: "actions", icon: Zap, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", isBalance: false },
           { label: "Inference Paid", value: (payments?.totalSpent || 0).toFixed(4), isLoading: loading, unit: "USDC", tokenSymbol: "USDC", icon: CreditCard, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", isBalance: false },
-        ].map((stat) => {
+        ].map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <motion.div key={stat.label} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
+            <motion.div key={stat.label} whileHover={{ y: -2 }} transition={{ duration: 0.2 }} className={idx === 4 ? "col-span-2 md:col-span-1" : ""}>
               <GlassCard className="p-4 space-y-3" hover={false}>
                 <div className="flex items-center justify-between">
                   <div className={`p-2 rounded-lg ${stat.bg} border ${stat.border} flex items-center justify-center`}>

@@ -159,9 +159,9 @@ export function ProofOfAutonomyTimeline({ limit = 10 }: { limit?: number }) {
                       <p className="text-[11px] text-muted leading-relaxed line-clamp-2 mt-1">{action.description.split("\n\n")[0]}</p>
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-border-thin/40 pt-2 text-[10px]">
-                      <span className="text-muted">Proposer Address:</span>
-                      <span className="font-mono text-text-secondary select-all">{action.proposer}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-t border-border-thin/40 pt-2 text-[10px]">
+                      <span className="text-muted shrink-0">Proposer Address:</span>
+                      <span className="font-mono text-text-secondary select-all truncate">{action.proposer}</span>
                     </div>
 
                     <div className="flex gap-2.5 pt-1.5">

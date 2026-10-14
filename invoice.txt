@@ -1,6 +1,6 @@
 Invoice #001
 Deliverable: Landing page design and smart contract security audit review
-Payee: 0x7f67D351Cc3A6e9695c0B8AA6DE2bE5Ce58b3d73
-Amount: 5 USDC
+Payee: 0x1BDA1797E1839861C1CF539359246e2bb77c8E53
+Amount: 0.05 USDC
 Date: October 14, 2026
-Delivered by: SynArc Contractor
+Delivered by: SynArc Sentinel Contractor

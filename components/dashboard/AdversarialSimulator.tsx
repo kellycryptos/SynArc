@@ -71,7 +71,7 @@ export function AdversarialSimulator() {
   };
 
   return (
-    <GlassCard className="p-6 space-y-6 border border-primary/25 relative overflow-hidden bg-gradient-to-br from-[#120826]/90 via-[#0d041c]/95 to-[#160B2E]/90 shadow-2xl rounded-3xl" hover={false}>
+    <GlassCard className="p-4 sm:p-6 space-y-6 border border-primary/25 relative overflow-hidden bg-gradient-to-br from-[#120826]/90 via-[#0d041c]/95 to-[#160B2E]/90 shadow-2xl rounded-3xl" hover={false}>
       {/* Decorative Glow */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-red-500/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
@@ -80,28 +80,28 @@ export function AdversarialSimulator() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-thin/80 pb-5 relative z-10">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="p-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400">
+            <span className="p-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 shrink-0">
               <ShieldAlert className="w-5 h-5 text-red-400 animate-pulse" />
             </span>
             <div>
-              <h2 className="text-lg font-bold font-heading text-text-primary flex items-center gap-2">
-                Autonomous Security Sentinel
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-primary uppercase font-bold">
+              <h2 className="text-base sm:text-lg font-bold font-heading text-text-primary flex items-center gap-2 flex-wrap">
+                <span>Autonomous Security Sentinel</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-primary uppercase font-bold shrink-0">
                   Dual-Agent Mesh Active
                 </span>
               </h2>
               <p className="text-xs text-muted mt-0.5">
-                Active defense verification for the six non-double-entry vulnerability vectors in autonomous accounting.
+                Active defense verification for non-double-entry vulnerability vectors in autonomous accounting.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="w-full sm:w-auto">
           <button
             onClick={() => runSimulation(selectedScenario)}
             disabled={isRunning}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 via-primary to-accent-blue text-white text-xs font-bold hover:opacity-95 transition-all shadow-lg hover:shadow-primary/20 disabled:opacity-50 cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 via-primary to-accent-blue text-white text-xs font-bold hover:opacity-95 transition-all shadow-lg hover:shadow-primary/20 disabled:opacity-50 cursor-pointer"
           >
             {isRunning ? (
               <>
@@ -119,7 +119,7 @@ export function AdversarialSimulator() {
       </div>
 
       {/* Scenario Selector Pills */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 relative z-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 relative z-10">
         {SCENARIOS.map((s) => {
           const isSelected = selectedScenario === s.id;
           return (
@@ -127,17 +127,30 @@ export function AdversarialSimulator() {
               key={s.id}
               onClick={() => handleSelectScenario(s.id)}
               disabled={isRunning}
-              className={`p-3 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden ${
+              className={`flex flex-col items-start justify-between w-full p-3.5 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden ${
                 isSelected
                   ? "bg-primary/15 border-primary shadow-[0_0_15px_rgba(124,58,237,0.25)]"
                   : "bg-surface-elevated/40 border-border-thin hover:border-border hover:bg-surface-elevated/70"
               }`}
             >
-              <div className="text-base mb-1.5">{s.icon}</div>
-              <p className={`text-xs font-bold leading-tight ${isSelected ? "text-white" : "text-text-secondary"}`}>
-                {s.label}
-              </p>
-              <p className="text-[10px] text-muted truncate mt-0.5">{s.tag}</p>
+              <div className="flex items-center justify-between w-full mb-2">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider ${
+                  isSelected 
+                    ? "bg-primary/25 text-primary border border-primary/40" 
+                    : "bg-surface text-muted border border-border-thin"
+                }`}>
+                  {s.icon}
+                </span>
+                {isSelected && (
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                )}
+              </div>
+              <div className="w-full">
+                <p className={`text-xs font-bold leading-snug ${isSelected ? "text-white" : "text-text-secondary"}`}>
+                  {s.label}
+                </p>
+                <p className="text-[10px] text-muted mt-1 leading-normal">{s.tag}</p>
+              </div>
             </button>
           );
         })}
@@ -154,7 +167,7 @@ export function AdversarialSimulator() {
             <span className="font-mono text-muted text-[10px]">Step {currentStep} of 4</span>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 text-[11px]">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
             <div className={`p-2.5 rounded-xl border text-center transition-all ${
               currentStep >= 1 ? "bg-amber-500/15 border-amber-500/40 text-amber-300 font-bold" : "bg-surface/40 border-border-thin text-muted"
             }`}>
@@ -251,38 +264,38 @@ export function AdversarialSimulator() {
           </div>
 
           {/* Dual-Agent Live Execution Trace */}
-          <div className="p-4 bg-black/60 border border-border-thin rounded-2xl space-y-3 font-mono text-xs">
+          <div className="p-4 bg-black/60 border border-border-thin rounded-2xl space-y-3 font-mono text-xs overflow-x-auto">
             <div className="flex items-center gap-2 text-text-secondary pb-2 border-b border-white/10 text-[11px] font-bold uppercase tracking-wider">
-              <Terminal className="w-4 h-4 text-primary" />
-              Dual-Agent Security Trace Logs
+              <Terminal className="w-4 h-4 text-primary shrink-0" />
+              <span>Dual-Agent Security Trace Logs</span>
             </div>
 
             <div className="space-y-2 text-[11px] leading-relaxed">
-              <div className="text-amber-400/90 flex items-start gap-2">
-                <span className="text-amber-500 font-bold select-none">[AGENT 1 - OPERATOR]</span>
-                <span>{result.operatorLog}</span>
+              <div className="text-amber-400/90 flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
+                <span className="text-amber-500 font-bold select-none shrink-0">[AGENT 1 - OPERATOR]</span>
+                <span className="break-all">{result.operatorLog}</span>
               </div>
 
-              <div className="text-cyan-400/90 flex items-start gap-2">
-                <span className="text-cyan-400 font-bold select-none">[AGENT 2 - SENTINEL]</span>
-                <span>{result.sentinelLog}</span>
+              <div className="text-cyan-400/90 flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
+                <span className="text-cyan-400 font-bold select-none shrink-0">[AGENT 2 - SENTINEL]</span>
+                <span className="break-all">{result.sentinelLog}</span>
               </div>
 
-              <div className="text-purple-400/90 flex items-start gap-2">
-                <span className="text-purple-400 font-bold select-none">[ARC CONTRACT]</span>
-                <span className="font-bold">{result.smartContractRevert}</span>
+              <div className="text-purple-400/90 flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
+                <span className="text-purple-400 font-bold select-none shrink-0">[ARC CONTRACT]</span>
+                <span className="font-bold break-all">{result.smartContractRevert}</span>
               </div>
             </div>
           </div>
 
           {/* Cryptographic Audit Ticket Inspector */}
           <div className="p-4 bg-surface-elevated/40 border border-border-thin rounded-2xl space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <span className="text-xs font-bold text-text-primary flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-primary" />
-                Cryptographic Forensic Audit Ticket
+                <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span>Cryptographic Forensic Audit Ticket</span>
               </span>
-              <span className="text-[10px] font-mono text-muted">
+              <span className="text-[10px] font-mono text-muted break-all">
                 ID: {result.auditTicket.ticketId}
               </span>
             </div>

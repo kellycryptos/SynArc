@@ -44,11 +44,6 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="flex items-center gap-4">
         {/* Syn DAO Logo & Name (Mobile Only) */}
         <div className="flex items-center gap-2.5 lg:hidden">
-          {onMenuClick && (
-            <button onClick={onMenuClick} className="p-1 text-muted hover:text-foreground">
-              <Menu className="w-5 h-5" />
-            </button>
-          )}
           <SynArcLogo size={24} animated />
           <span className="text-lg font-bold tracking-tight">
             <span className="gradient-text">Syn DAO</span>

@@ -1,9 +1,18 @@
+import dotenv from 'dotenv'
+import path from 'path'
+import fs from 'fs'
+
+if (fs.existsSync(path.resolve(process.cwd(), '.env.local'))) {
+  dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
+}
+if (fs.existsSync(path.resolve(process.cwd(), '.env'))) {
+  dotenv.config({ path: path.resolve(process.cwd(), '.env') })
+}
+
 import Groq from 'groq-sdk'
 import { createWalletClient, createPublicClient, http, fallback, keccak256, toHex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { arcMainnet, getMainnetRpcUrls, CONTRACTS_MAINNET } from '@/lib/arc-config'
-import fs from 'fs'
-import path from 'path'
 
 const groqApiKey = process.env.GROQ_API_KEY || 'mock_groq_api_key'
 const groq = new Groq({ apiKey: groqApiKey })
@@ -21,14 +30,25 @@ export class ReleaseEngine {
   private account: any
 
   constructor() {
-    const rawKey =
+    let rawKey = (
       process.env.AGENT_PRIVATE_KEY ||
       process.env.DEPLOYER_PRIVATE_KEY ||
-      '0x0000000000000000000000000000000000000000000000000000000000000001'
+      ''
+    ).trim()
+
+    if (rawKey.startsWith('"') || rawKey.startsWith("'")) {
+      rawKey = rawKey.slice(1, -1).trim()
+    }
+
+    if (!rawKey) {
+      rawKey = '0x0000000000000000000000000000000000000000000000000000000000000001'
+    }
+
     const privateKey = (rawKey.startsWith('0x') ? rawKey : `0x${rawKey}`) as `0x${string}`
 
     try {
       this.account = privateKeyToAccount(privateKey)
+      console.log(`[ReleaseEngine] Initialized with signer: ${this.account.address}`)
     } catch {
       this.account = { address: '0x0000000000000000000000000000000000000000' }
     }

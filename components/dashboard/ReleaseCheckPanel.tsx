@@ -42,8 +42,8 @@ export function ReleaseCheckPanel() {
   const [deliverableCID, setDeliverableCID] = useState<string>(
     "invoice.txt"
   );
-  const [payeeAddress, setPayeeAddress] = useState<string>("");
-  const [amount, setAmount] = useState<number>(0.01);
+  const [payeeAddress, setPayeeAddress] = useState<string>("0x1BDA1797E1839861C1CF539359246e2bb77c8E53");
+  const [amount, setAmount] = useState<number>(0.05);
 
   const [checking, setChecking] = useState<boolean>(false);
   const [result, setResult] = useState<ReleaseResult | null>(null);
@@ -55,10 +55,10 @@ export function ReleaseCheckPanel() {
       "Milestone 1 payout for UI landing page design delivery and smart contract security audit review."
     );
     setDeliverableCID("invoice.txt");
-    setPayeeAddress("");
-    setAmount(0.01);
+    setPayeeAddress("0x1BDA1797E1839861C1CF539359246e2bb77c8E53");
+    setAmount(0.05);
     setResult(null);
-    toast.success("Loaded valid invoice");
+    toast.success("Loaded valid invoice (0.05 USDC)");
   };
 
   const handleFillDemo2 = () => {
@@ -68,8 +68,8 @@ export function ReleaseCheckPanel() {
       "Suspicious deliverable milestone payout with missing or malformed IPFS storage CID."
     );
     setDeliverableCID("bafybei000fake");
-    setPayeeAddress("");
-    setAmount(0.01);
+    setPayeeAddress("0x1BDA1797E1839861C1CF539359246e2bb77c8E53");
+    setAmount(0.05);
     setResult(null);
     toast.error("Loaded bad CID");
   };
@@ -79,7 +79,7 @@ export function ReleaseCheckPanel() {
     setChecking(true);
     setResult(null);
 
-    const toastId = toast.loading("🤖 Agent analyzing deliverable & verifying proposal...");
+    const toastId = toast.loading("Agent analyzing deliverable & verifying proposal...");
 
     try {
       const res = await fetch("/api/agent/release", {
@@ -104,9 +104,9 @@ export function ReleaseCheckPanel() {
       setResult(data.result);
 
       if (data.result.refused) {
-        toast.error("⛔ Fund release REFUSED by agent", { id: toastId });
+        toast.error("Fund release refused by agent", { id: toastId });
       } else {
-        toast.success("✅ Milestone APPROVED and released on-chain!", { id: toastId });
+        toast.success("Milestone approved and released on-chain!", { id: toastId });
       }
     } catch (err: any) {
       console.error("[ReleaseCheck Error]", err);
@@ -117,31 +117,20 @@ export function ReleaseCheckPanel() {
   };
 
   return (
-    <GlassCard className="p-6 relative overflow-hidden border border-purple-500/25 bg-surface-elevated/70 shadow-[0_0_30px_rgba(124,58,237,0.08)] mb-6" hover={false}>
+    <GlassCard className="p-4 sm:p-6 relative overflow-hidden border border-purple-500/25 bg-surface-elevated/70 shadow-[0_0_30px_rgba(124,58,237,0.08)] mb-6" hover={false}>
       {/* Decorative ambient gradients */}
       <div className="absolute -right-20 -top-20 w-60 h-60 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -left-20 -bottom-20 w-60 h-60 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-thin pb-5 relative z-10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-thin pb-4 relative z-10">
         <div>
-          <div className="flex items-center gap-2 flex-wrap mb-1.5">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
-              <Bot className="w-3 h-3 text-purple-400" />
-              Autonomous Verifier
-            </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-blue-500/20 text-blue-300 border border-blue-500/30">
-              Arc Mainnet (Chain ID 5042)
-            </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-              Read → Score → Decide → Call
-            </span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white flex items-center gap-2">
-            <span>🤖 Agent Release Engine</span>
+          <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <Bot className="w-5 h-5 text-purple-400" />
+            <span>Agent Release Engine</span>
           </h2>
-          <p className="text-xs sm:text-sm text-text-tertiary mt-1">
-            Agent reads deliverable from IPFS, scores it with Llama 3.3 AI, then decides to release or refuse.
+          <p className="text-xs text-text-tertiary mt-1">
+            Automated milestone deliverable verification and fund release.
           </p>
         </div>
 
@@ -153,7 +142,7 @@ export function ReleaseCheckPanel() {
             disabled={checking}
             className="px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-200 border border-purple-500/30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
           >
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+            <CheckCircle className="w-3.5 h-3.5 text-purple-400" />
             <span>Valid invoice</span>
           </button>
           <button
@@ -281,12 +270,12 @@ export function ReleaseCheckPanel() {
               {checking ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin text-purple-300" />
-                  <span>⏳ Agent analyzing & evaluating on-chain...</span>
+                  <span>Evaluating release...</span>
                 </>
               ) : (
                 <>
                   <Zap className="w-4 h-4 text-purple-200" />
-                  <span>▶ Run Release Check</span>
+                  <span>Run Release Check</span>
                 </>
               )}
             </button>
@@ -298,7 +287,7 @@ export function ReleaseCheckPanel() {
           <div className="flex-1 rounded-2xl bg-surface/80 border border-border-thin p-5 flex flex-col">
             <h3 className="text-sm font-extrabold text-white uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-border-thin/60 pb-3">
               <ShieldCheck className="w-4 h-4 text-purple-400" />
-              <span>Agent Decision Output</span>
+              <span>Decision Output</span>
             </h3>
 
             {!result && !checking && (
@@ -308,7 +297,7 @@ export function ReleaseCheckPanel() {
                 </div>
                 <p className="text-xs text-text-secondary font-medium">Ready for verification</p>
                 <p className="text-[11px] text-muted mt-1 max-w-[220px]">
-                  Click <strong>&quot;Run Release Check&quot;</strong> to watch the agent fetch, score, and decide fund release.
+                  Submit details to verify deliverable and trigger release.
                 </p>
               </div>
             )}
@@ -319,8 +308,8 @@ export function ReleaseCheckPanel() {
                   <RefreshCw className="w-6 h-6 text-purple-400 animate-spin" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-bold text-purple-300">Reading Deliverable & Scoring...</p>
-                  <p className="text-[11px] text-muted">Running Llama 3.3 verification model</p>
+                  <p className="text-xs font-bold text-purple-300">Evaluating Deliverable...</p>
+                  <p className="text-[11px] text-muted">Verifying on-chain requirements</p>
                 </div>
               </div>
             )}
@@ -343,7 +332,7 @@ export function ReleaseCheckPanel() {
                       )}
                       <span className="font-semibold text-text-primary">
                         {result.refused && result.decision.score === 0
-                          ? "Failed to fetch deliverable from IPFS"
+                          ? "Failed to fetch deliverable"
                           : "Fetched deliverable from IPFS"}
                       </span>
                     </div>
@@ -352,7 +341,7 @@ export function ReleaseCheckPanel() {
                     <div className="flex items-center justify-between p-2 rounded-xl bg-surface-elevated/40 border border-border-thin text-xs">
                       <div className="flex items-center gap-2.5">
                         <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <span className="font-semibold text-text-primary">AI scored deliverable</span>
+                        <span className="font-semibold text-text-primary">Deliverable verification</span>
                       </div>
                       <span
                         className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
@@ -377,13 +366,13 @@ export function ReleaseCheckPanel() {
                         <>
                           <XCircle className="w-4 h-4 text-red-400 shrink-0" />
                           <span className="font-bold">
-                            REFUSED: {result.refusalReason || "Requirements not met"}
+                            Refused: {result.refusalReason || "Requirements not met"}
                           </span>
                         </>
                       ) : (
                         <>
                           <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                          <span className="font-bold">RELEASED — on-chain contract called</span>
+                          <span className="font-bold">Released — on-chain contract called</span>
                         </>
                       )}
                     </div>
@@ -393,7 +382,7 @@ export function ReleaseCheckPanel() {
                   <div className="p-3.5 rounded-xl bg-surface-elevated border border-border-thin space-y-1.5">
                     <h4 className="text-[11px] font-bold text-text-secondary uppercase tracking-wider flex items-center gap-1.5">
                       <Bot className="w-3.5 h-3.5 text-purple-400" />
-                      Agent Reasoning
+                      Verification Analysis
                     </h4>
                     <p className="text-xs text-text-primary leading-relaxed">
                       {result.decision.reasoning}
@@ -406,17 +395,17 @@ export function ReleaseCheckPanel() {
                       href={result.explorerUrl || `https://explorer.arc.io/tx/${result.txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-xl bg-purple-600/15 hover:bg-purple-600/25 border border-purple-500/30 text-purple-200 transition-colors flex items-center justify-between text-xs font-bold"
+                      className="p-3 rounded-xl bg-purple-600/15 hover:bg-purple-600/25 border border-purple-500/30 text-purple-200 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold"
                     >
                       <div className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-purple-400" />
+                        <Zap className="w-4 h-4 text-purple-400 shrink-0" />
                         <span>View Release TX on Arc Explorer</span>
                       </div>
                       <div className="flex items-center gap-1 font-mono text-[11px] text-purple-300">
                         <code>
                           {result.txHash.slice(0, 8)}...{result.txHash.slice(-6)}
                         </code>
-                        <ExternalLink className="w-3.5 h-3.5 ml-1" />
+                        <ExternalLink className="w-3.5 h-3.5 ml-1 shrink-0" />
                       </div>
                     </a>
                   )}
@@ -426,11 +415,11 @@ export function ReleaseCheckPanel() {
                     <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/25 space-y-1">
                       <h4 className="text-xs font-extrabold text-red-400 flex items-center gap-1.5">
                         <AlertTriangle className="w-3.5 h-3.5" />
-                        ⛔ Release Refused
+                        Release Refused
                       </h4>
                       <p className="text-xs text-red-200/90">{result.refusalReason}</p>
                       <p className="text-[11px] text-gray-400 pt-1">
-                        Contract was NOT called. Treasury funds remain locked.
+                        Contract was not called. Treasury funds remain locked.
                       </p>
                     </div>
                   )}
