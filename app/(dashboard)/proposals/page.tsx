@@ -113,9 +113,9 @@ export default function ProposalsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">Governance Proposals</h1>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-primary/10 border border-primary/20 text-primary">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-primary/10 border border-primary/20 text-primary shrink-0 whitespace-nowrap">
                 {proposals.length > 0 ? `${proposals.length} Total` : isLoading ? "..." : "0 Total"}
               </span>
             </div>
@@ -125,8 +125,8 @@ export default function ProposalsPage() {
               </p>
               {/* Voting power pill */}
               {isAuthenticated && totalDisplayPower > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/10 border border-purple-500/20 text-purple-300">
-                  <Zap className="w-3 h-3" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/10 border border-purple-500/20 text-purple-300 shrink-0">
+                  <Zap className="w-3 h-3 shrink-0" />
                   {usdcBalance > 0 && <>{usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC + </>}
                   {sarcVotes > 0
                     ? <>{sarcVotes.toLocaleString(undefined, { maximumFractionDigits: 0 })} sARC</>
@@ -141,21 +141,21 @@ export default function ProposalsPage() {
               {isAuthenticated && totalDisplayPower === 0 && (
                 <Link
                   href="/faucet"
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-all"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-all shrink-0"
                 >
-                  <Zap className="w-3 h-3" />
+                  <Zap className="w-3 h-3 shrink-0" />
                   Claim 10 sARC to Vote & Propose →
                 </Link>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
             {/* Refresh button */}
             <button
               onClick={handleRefresh}
               disabled={isRefreshing || isLoading}
               title="Refresh proposals"
-              className="p-2.5 rounded-xl bg-surface-elevated border border-border-thin text-muted hover:text-white hover:bg-surface transition-colors disabled:opacity-40 cursor-pointer"
+              className="p-2.5 rounded-xl bg-surface-elevated border border-border-thin text-muted hover:text-white hover:bg-surface transition-colors disabled:opacity-40 cursor-pointer shrink-0"
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
             </button>
@@ -168,19 +168,19 @@ export default function ProposalsPage() {
                   router.push("/proposals/create");
                 }
               }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-md shadow-[#2F6FFF]/20 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-md shadow-[#2F6FFF]/20 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 shrink-0" />
               Create Proposal
             </button>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-surface-elevated/50 p-4 rounded-2xl border border-border-thin">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="w-4 h-4 text-text-tertiary" />
-            <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-stretch sm:items-center bg-surface-elevated/50 p-3 sm:p-4 rounded-2xl border border-border-thin">
+          <div className="flex items-center gap-2 min-w-0 w-full sm:w-auto">
+            <Filter className="w-4 h-4 text-text-tertiary shrink-0" />
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 hide-scrollbar min-w-0 flex-1 scroll-smooth">
               {["All", "Active", "Pending", "Executed", "Defeated"].map((status) => {
                 const count = status === "All"
                   ? proposals.length
@@ -189,15 +189,15 @@ export default function ProposalsPage() {
                   <button
                     key={status}
                     onClick={() => setFilter(status)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all ${
                       filter === status
-                        ? "bg-accent-purple text-white-keep border-accent-purple"
+                        ? "bg-accent-purple text-white-keep border-accent-purple shadow-xs"
                         : "bg-surface border-border-thin text-text-secondary hover:text-foreground"
-                    } border flex items-center gap-1.5`}
+                    } border flex items-center gap-1.5 cursor-pointer`}
                   >
                     <span>{status}</span>
                     {!isLoading && (
-                      <span className={`px-1.5 py-0.2 rounded text-[10px] ${
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                         filter === status
                           ? "bg-white/20 text-white-keep"
                           : "bg-surface-elevated text-muted"
@@ -211,7 +211,7 @@ export default function ProposalsPage() {
             </div>
           </div>
           
-          <div className="relative w-full sm:w-64">
+          <div className="relative w-full sm:w-64 shrink-0">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
             <input 
               type="text" 
@@ -265,17 +265,17 @@ export default function ProposalsPage() {
 
               return (
                 <Link href={`/proposals/${proposal.id}`} key={proposal.id} className="block group">
-                  <GlassCard delay={i * 0.05} className="p-6 relative overflow-hidden h-full group-hover:border-primary/30 transition-all duration-300 group-hover:shadow-[0_0_30px_rgba(124,58,237,0.1)]">
+                  <GlassCard delay={i * 0.05} className="p-4 sm:p-6 relative overflow-hidden h-full group-hover:border-primary/30 transition-all duration-300 group-hover:shadow-[0_0_30px_rgba(124,58,237,0.1)]">
                     {/* Visual Glow background on active proposals */}
                     {isProposalActive && (
                       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/15 transition-all duration-500 pointer-events-none" />
                     )}
 
-                    <div className="flex flex-col md:flex-row gap-6 justify-between">
+                    <div className="flex flex-col md:flex-row gap-5 md:gap-6 justify-between">
                       {/* Left Column: Details */}
-                      <div className="flex-1 space-y-4">
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <span className={`text-xs px-3 py-1 rounded-full font-semibold border ${
+                      <div className="flex-1 space-y-3 sm:space-y-4 min-w-0">
+                        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                          <span className={`text-xs px-2.5 sm:px-3 py-1 rounded-full font-semibold border shrink-0 ${
                             proposal.status === 'Active' ? 'bg-success/10 border-success/20 text-success' :
                             proposal.status === 'Executed' ? 'bg-primary/10 border-primary/20 text-purple-400' :
                             'bg-surface-elevated border-border-thin text-muted'
@@ -283,44 +283,44 @@ export default function ProposalsPage() {
                             {proposal.status}
                           </span>
                           {agents.some(a => a.address.toLowerCase() === proposal.proposer.toLowerCase()) && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold tracking-wider bg-purple-500/15 border border-purple-400/25 text-purple-300 animate-pulse">
+                            <span className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-extrabold tracking-wider bg-purple-500/15 border border-purple-400/25 text-purple-300 animate-pulse shrink-0">
                               AI AGENT PROPOSAL
                             </span>
                           )}
-                          <span className="text-xs text-text-secondary font-bold bg-surface-elevated border border-border-thin px-2.5 py-1 rounded-full">
+                          <span className="text-xs text-text-secondary font-bold bg-surface-elevated border border-border-thin px-2.5 py-1 rounded-full shrink-0">
                             {proposal.category}
                           </span>
                           {userVoteRecord && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                              <Check className="w-3.5 h-3.5" />
+                            <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shrink-0">
+                              <Check className="w-3.5 h-3.5 shrink-0" />
                               Voted {userVoteRecord.option}
                             </span>
                           )}
                         </div>
                         <div>
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <h2 className="text-xl font-bold font-heading text-text-primary group-hover:text-primary transition-colors duration-300">
+                          <div className="flex items-baseline gap-2.5 sm:gap-3 flex-wrap">
+                            <h2 className="text-lg sm:text-xl font-bold font-heading text-text-primary group-hover:text-primary transition-colors duration-300 break-words">
                               {proposal.title}
                             </h2>
-                            <span className="text-xs font-mono text-text-tertiary bg-surface-elevated px-2 py-0.5 rounded border border-border-subtle">{proposal.id}</span>
+                            <span className="text-xs font-mono text-text-tertiary bg-surface-elevated px-2 py-0.5 rounded border border-border-subtle shrink-0">{proposal.id}</span>
                           </div>
                           <p className="text-muted text-sm leading-relaxed max-w-3xl mt-2 line-clamp-2">
                             {proposal.description}
                           </p>
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-text-tertiary flex-wrap">
-                          <div className="flex items-center gap-1">
-                            <FileText className="w-3.5 h-3.5" />
+                        <div className="flex items-center gap-3 sm:gap-4 text-xs text-text-tertiary flex-wrap">
+                          <div className="flex items-center gap-1 shrink-0">
+                            <FileText className="w-3.5 h-3.5 shrink-0" />
                             <span>Proposed by <span className="font-mono text-text-secondary">{proposal.proposer.slice(0,6)}...{proposal.proposer.slice(-4)}</span></span>
                           </div>
-                          <span>•</span>
-                          <span>Ends {new Date(proposal.votingEnds).toLocaleDateString()}</span>
+                          <span className="hidden xs:inline">•</span>
+                          <span className="shrink-0">Ends {new Date(proposal.votingEnds).toLocaleDateString()}</span>
                         </div>
                       </div>
 
                       {/* Right Column: Voting Metrics */}
-                      <div className="w-full md:w-72 space-y-4 md:border-l md:border-border-thin md:pl-6 shrink-0 flex flex-col justify-center">
-                        <div className="space-y-3">
+                      <div className="w-full md:w-72 space-y-3 sm:space-y-4 pt-3.5 border-t border-border-thin md:border-t-0 md:pt-0 md:border-l md:pl-6 shrink-0 flex flex-col justify-center">
+                        <div className="space-y-2.5 sm:space-y-3">
                           {/* For Progress */}
                           <div className="space-y-1">
                             <div className="flex justify-between text-xs font-semibold">
