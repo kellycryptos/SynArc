@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
     const apiKey = process.env.RESEND_API_KEY;
     const emailFrom = "Syn DAO <onboarding@resend.dev>";
-    const emailTo = "devsynarc@gmail.com";
+    const emailTo = "hello@syndaopro.xyz";
 
     if (!apiKey) {
       console.warn("RESEND_API_KEY is not defined. Simulating email send for local development.");

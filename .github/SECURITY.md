@@ -6,7 +6,7 @@ If you discover a security vulnerability in SynArc, please report it responsibly
 
 Do not open a public GitHub issue.
 
-Instead, email us directly at: devsynarc@gmail.com
+Instead, email us directly at: hello@syndaopro.xyz
 
 Include:
 - Description of the vulnerability

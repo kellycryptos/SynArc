@@ -55,7 +55,7 @@ export default function ContactPage() {
 
   const handleCopyEmail = () => {
     if (navigator?.clipboard) {
-      navigator.clipboard.writeText("devsynarc@gmail.com");
+      navigator.clipboard.writeText("hello@syndaopro.xyz");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -101,7 +101,7 @@ export default function ContactPage() {
     } catch (err: any) {
       setErrorMsg(
         err.message ||
-          "Failed to send message. You can reach out directly to devsynarc@gmail.com."
+          "Failed to send message. You can reach out directly to hello@syndaopro.xyz."
       );
     } finally {
       setIsSubmitting(false);
@@ -152,7 +152,7 @@ export default function ContactPage() {
                     Send Us a Message
                   </h2>
                   <p className="text-xs text-muted">
-                    Delivered directly to <strong className="text-primary font-mono">devsynarc@gmail.com</strong>
+                    Delivered directly to <strong className="text-primary font-mono">hello@syndaopro.xyz</strong>
                   </p>
                 </div>
                 <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-border bg-background text-[11px] font-mono text-muted">
@@ -172,7 +172,7 @@ export default function ContactPage() {
                     </h3>
                     <p className="text-sm text-muted max-w-md mx-auto leading-relaxed">
                       Thank you for contacting us. Your message has been delivered to{" "}
-                      <span className="text-foreground font-semibold">devsynarc@gmail.com</span>. We will follow up via your email shortly.
+                      <span className="text-foreground font-semibold">hello@syndaopro.xyz</span>. We will follow up via your email shortly.
                     </p>
                   </div>
                   <div className="pt-4">
@@ -276,7 +276,7 @@ export default function ContactPage() {
                     className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-mono font-semibold text-xs tracking-wider uppercase transition-all shadow-[0_0_24px_rgba(47,111,255,0.3)] hover:shadow-[0_0_30px_rgba(47,111,255,0.5)] flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {isSubmitting ? (
-                      <span>Sending to devsynarc@gmail.com...</span>
+                      <span>Sending to hello@syndaopro.xyz...</span>
                     ) : (
                       <>
                         <span>Submit Message</span>
@@ -309,10 +309,10 @@ export default function ContactPage() {
 
               <div className="p-3.5 rounded-xl border border-border bg-background flex items-center justify-between gap-3">
                 <a
-                  href="mailto:devsynarc@gmail.com"
+                  href="mailto:hello@syndaopro.xyz"
                   className="font-mono text-xs sm:text-sm font-semibold text-primary hover:underline truncate"
                 >
-                  devsynarc@gmail.com
+                  hello@syndaopro.xyz
                 </a>
                 <button
                   type="button"

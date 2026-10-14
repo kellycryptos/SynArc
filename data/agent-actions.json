@@ -1,5 +1,149 @@
 [
   {
+    "timestamp": "2026-10-14T16:28:07.666Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.16 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:23:07.655Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.16 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:53.419Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #131 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xcceb869ebcea3ecfa7887a1edf4279d93f754ad88e93dfa784ac94c1b605b0c9",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:50.217Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #130 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xebf4f9fe1c278556a1530e584fabfc93d7b6eff0c8a4425973ab2385903bc4e7",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:48.106Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #129 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xc9941184049571afe1a686c2cfa383700fc055489033a99ed4b4f662f9977fbb",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:44.731Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #128 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xd519590a80c32200c31137b87a31f98c77e97eecc6ceb07dc326f6f71becb431",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:41.419Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #127 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xcbad207d30a6f41c2890a7da0f958c475cc7fcdde181cfdcaac78f980d08a8a6",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:38.202Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #126 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xd2635b48af842a70418b7d7a51ec4f2c9174998c25fbba894f117b54179f5e7e",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:35.277Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #125 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x14c4a144cf10ce63544a4fc6007f95261176034a2eda5f596d8b247bc543d8ef",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:33.039Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #124 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x57a9b4a8a521233de052e7949f23ddcd3a0f085629605bf60b1edfbbd4ca5d09",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:30.977Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #123 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x4a1046fdce8574644a07ba36b808ec30973928a22eda1194e044db1166d7ceaf",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:28.934Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #122 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x340540b54db3f080dd44bdca3483300123c610d718d416a24e99e092032290f4",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:26.675Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #121 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xb917e6120cbf9ce660c1d9636be35998abe419a9527980201c4c9d09cdc008ff",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:24.530Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #120 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x201350cd3128c135d885636ba1c674778872bda62ae1878c23c8ca577b17681f",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:22.264Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #119 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x3f96896a9665280b0fb521637650d2d03d79141cb40a0f1f3533848de0af1c89",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:19.552Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #118 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0xea9f3286c1f90375147da54a9862d18059aa898cc7009fe78167d3de42408092",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:15.229Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #117 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x3aed39dc6be7b6c5dd67968362d006d48dccae3532e2ba037440f17ac898c5c2",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-14T16:11:13.365Z",
+    "action": "vote_for_proposal",
+    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #116 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
+    "txHash": "0x0ebd3eb89a87ef1566980a0829aa799e3110c281968cb8c2dbbf338dc62e356f",
+    "status": "executed",
+    "network": "mainnet"
+  },
+  {
     "timestamp": "2026-10-10T06:32:08.876Z",
     "action": "emergency_funding",
     "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
@@ -248,152 +392,6 @@
     "txHash": "0x667b91e26ecfd04b5274df7e435cde5ea9e96506e7c1b31d31d1d0433df869f9",
     "status": "executed",
     "usdcAmount": 50,
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:38:09.794Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #38 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xe31ffa80f46f66761958209229d7a5c8ef2ccf09e0a2ddfc90c878efaa058faf",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:32:44.960Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
-    "txHash": "0xf41a71e32aab266a059485f9d925987aab2e4abfa3c45c1aa8a292999952e411",
-    "status": "executed",
-    "usdcAmount": 50,
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:33:08.325Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #37 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xc13e64cbbc69ac8436e08315abdc8516ccad9cc1141e8f9f40226fa9e1db09fd",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:27:44.984Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
-    "txHash": "0xc057c7928546363df1c1c04d0bcb29de4e944d3de1a300c46e63be20c989098f",
-    "status": "executed",
-    "usdcAmount": 50,
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:38.925Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #36 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xd3555cd4efc12f70ea02a462e974e765e6f4266d68b8945e40b2a0f253fda967",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:34.013Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #35 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x8ddf34472ae919477ec385a7576f4a802cca64ac65339a4b2924a0394e630d0a",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:30.532Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #34 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xa9a3ddf9f71581e06ae60caadbc8ed17120b078acbbfd82d4f2401e529b3cb7b",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:27.897Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #33 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xe8bf8b58f1e44102a075261e194505c700df27e3cc3ac8e9abf179ff65930976",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:25.876Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #32 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xbd4801ffefc70bbf838149ab6e48a88a1e0ed2e552cc2247f7abea2ed23acd5a",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:21.987Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #31 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xe3bb1636c46ed6f9772a97c20ceb8d307196a065d52771c2a31c0cf1fad35514",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:19.446Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #30 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x42349a3b98c420644f2cb1a85e92e1eaf1ab0f67dfb6737007cc429cd86c117e",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:16.461Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #29 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x3ecd541160adc0bf59b692301d8aec43f8bdd17d786959bff81a27452e6f1c13",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:14.097Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #28 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x6fd62262c7c8d91b80c2c8eed8354f480f72a4faf5a327c16d533eee2b50ff18",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:11.409Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #27 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xa2758330fed55c26d8613cb0abe5ff5af6ed514ba4d038da1a602c9a13772278",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:08.819Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #26 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x9b5b63cc8c62ba6995f33078666eab7570f07aeedeed42a3d83c63a6e7aa0f8b",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:06.178Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #25 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x949c52401a6a17d0d46b18611d3a446af92e47cbae54a560a0b9c069aba47d48",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:02.617Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #24 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x18da3984f3a8aeb22b302d0a3dafe44586fd51ac28f20f0794b77f9437bc1a6b",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:28:00.117Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #23 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xafa2504504c9d5fd5c215b0ad32986a517035c4dbf4da934a0a82799c6ead4f8",
-    "status": "executed",
     "network": "mainnet"
   }
 ]

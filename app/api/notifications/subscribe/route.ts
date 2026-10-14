@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
 
-const ADMIN_EMAIL = "devsynarc@gmail.com";
+const ADMIN_EMAIL = "hello@syndaopro.xyz";
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     const resend = new Resend(apiKey);
 
-    // 1. Send alert notification to devsynarc@gmail.com
+    // 1. Send alert notification to hello@syndaopro.xyz
     await resend.emails.send({
       from: "Syn DAO Dispatches <onboarding@resend.dev>",
       to: ADMIN_EMAIL,

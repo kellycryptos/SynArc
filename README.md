@@ -102,7 +102,7 @@ Agent can release under an on-chain cap (default: **50.00 USDC**). Over the cap 
 *   **Autonomous Agent Track ($\le 50.00\text{ USDC}$)**: Authorized agents trigger `releaseMilestone` autonomously with deliverable proof. Zero delay, instant settlement.
 *   **Human Review Gate ($> 50.00\text{ USDC}$)**: Amounts exceeding 50 USDC immediately halt with `HumanApprovalRequired(releaseKey, amount, threshold)`. Execution requires on-chain signoff via `approveReleaseHuman(releaseKey)` by the Governor, Owner, or an authorized Human Reviewer.
 *   **Autonomous Release Engine Rails**: Implemented in `lib/agent/release-engine.ts` and `/api/agent/release`. Scans active campaign escrows, evaluates deliverables using AI against criteria, and executes `releaseMilestone` directly on Arc Mainnet with a 950,000 gas limit and dynamic aggressive gas price (30 Gwei floor).
-*   **Official Social & Community**: Follow [@syndaopro](https://x.com/syndaopro) on X. Web portal: [syndaopro.xyz](https://www.syndaopro.xyz/).
+*   **Official Social & Community**: Follow [@syndaopro](https://x.com/syndaopro) on X. Email: [hello@syndaopro.xyz](mailto:hello@syndaopro.xyz). Web portal: [syndaopro.xyz](https://www.syndaopro.xyz/).
 
 ---
 
@@ -539,7 +539,7 @@ This repository is licensed under the **MIT License**. Check [LICENSE](./LICENSE
 
 **Built for the Arc agentic economy.**
 
-[Website](https://www.syndaopro.xyz/) · [Twitter](https://x.com/syndaopro) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
+[Website](https://www.syndaopro.xyz/) · [Twitter](https://x.com/syndaopro) · [Email](mailto:hello@syndaopro.xyz) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
 
 <sub>© 2026 Syn DAO. All rights reserved.</sub>
 

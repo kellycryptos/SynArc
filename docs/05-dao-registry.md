@@ -20,7 +20,7 @@ Get your community listed on the Syn DAO Registry:
 
 1. Click the **Apply for Your DAO** button on the DAOs page.
 2. Fill in your community and contract details.
-3. Your application is automatically sent to the core team at `devsynarc@gmail.com`.
+3. Your application is automatically sent to the core team at `hello@syndaopro.xyz`.
 4. Review and verification takes approximately 48 hours.
 5. For support or direct contact, reach out to `@Kellycryptos` on Telegram.
 

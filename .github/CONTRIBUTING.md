@@ -22,4 +22,4 @@ We use conventional commits:
 
 ## Contact
 
-For questions reach out at devsynarc@gmail.com or @Kellycryptos on Telegram.
+For questions reach out at hello@syndaopro.xyz or @Kellycryptos on Telegram.

@@ -67,9 +67,9 @@ export function DashboardFooter() {
         {/* Right: Social & Explorer */}
         <div className="flex items-center gap-3">
           <a
-            href="mailto:devsynarc@gmail.com"
+            href="mailto:hello@syndaopro.xyz"
             className="text-muted hover:text-primary transition-colors p-1"
-            title="Email devsynarc@gmail.com"
+            title="Email hello@syndaopro.xyz"
             aria-label="Email support"
           >
             <Mail className="w-3.5 h-3.5" />

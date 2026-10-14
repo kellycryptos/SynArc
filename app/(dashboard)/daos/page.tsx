@@ -328,7 +328,7 @@ export default function DAOsPage() {
                     <div className="space-y-2">
                       <h4 className="font-bold text-white text-lg">Application Submitted!</h4>
                       <p className="text-sm text-muted max-w-sm mx-auto">
-                        Your application has been received and emailed to devsynarc@gmail.com. We will review your project details and get in touch with you shortly.
+                        Your application has been received and emailed to hello@syndaopro.xyz. We will review your project details and get in touch with you shortly.
                       </p>
                     </div>
                     <button

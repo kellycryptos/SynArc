@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
 
-const ADMIN_EMAIL = "devsynarc@gmail.com";
+const ADMIN_EMAIL = "hello@syndaopro.xyz";
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     const resend = new Resend(apiKey);
 
-    // 1. Dispatch email to devsynarc@gmail.com with reply_to set to user's email
+    // 1. Dispatch email to hello@syndaopro.xyz with reply_to set to user's email
     await resend.emails.send({
       from: "Syn DAO Portal <onboarding@resend.dev>",
       to: ADMIN_EMAIL,

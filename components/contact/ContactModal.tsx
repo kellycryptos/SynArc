@@ -72,7 +72,7 @@ export function ContactModal({ isOpen, onClose, defaultCategory = "Feedback" }: 
 
   const handleCopyEmail = () => {
     if (navigator?.clipboard) {
-      navigator.clipboard.writeText("devsynarc@gmail.com");
+      navigator.clipboard.writeText("hello@syndaopro.xyz");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -116,7 +116,7 @@ export function ContactModal({ isOpen, onClose, defaultCategory = "Feedback" }: 
       setEmail("");
       setMessage("");
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to deliver message. You can email us directly at devsynarc@gmail.com.");
+      setErrorMsg(err.message || "Failed to deliver message. You can email us directly at hello@syndaopro.xyz.");
     } finally {
       setIsSubmitting(false);
     }
@@ -167,7 +167,7 @@ export function ContactModal({ isOpen, onClose, defaultCategory = "Feedback" }: 
                 </h3>
                 <p className="text-xs text-muted">
                   Send updates, feature requests, or queries to{" "}
-                  <code className="text-primary font-mono font-semibold">devsynarc@gmail.com</code>
+                  <code className="text-primary font-mono font-semibold">hello@syndaopro.xyz</code>
                 </p>
               </div>
 
@@ -201,7 +201,7 @@ export function ContactModal({ isOpen, onClose, defaultCategory = "Feedback" }: 
                     </h4>
                     <p className="text-xs text-muted max-w-sm mx-auto leading-relaxed">
                       Your message has been sent to{" "}
-                      <strong className="text-foreground">devsynarc@gmail.com</strong>. Our core contributors will review your feedback and get back to you shortly.
+                      <strong className="text-foreground">hello@syndaopro.xyz</strong>. Our core contributors will review your feedback and get back to you shortly.
                     </p>
                   </div>
 
@@ -231,10 +231,10 @@ export function ContactModal({ isOpen, onClose, defaultCategory = "Feedback" }: 
                       <div className="flex-1">
                         <p>{errorMsg}</p>
                         <a
-                          href="mailto:devsynarc@gmail.com"
+                          href="mailto:hello@syndaopro.xyz"
                           className="inline-flex items-center gap-1 text-primary hover:underline mt-1"
                         >
-                          Email directly at devsynarc@gmail.com
+                          Email directly at hello@syndaopro.xyz
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       </div>
@@ -325,7 +325,7 @@ export function ContactModal({ isOpen, onClose, defaultCategory = "Feedback" }: 
                     className="w-full py-3 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-mono font-semibold text-xs tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(47,111,255,0.25)] hover:shadow-[0_0_26px_rgba(47,111,255,0.4)] flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {isSubmitting ? (
-                      <span>Sending to devsynarc@gmail.com...</span>
+                      <span>Sending to hello@syndaopro.xyz...</span>
                     ) : (
                       <>
                         <span>Send Message</span>
@@ -342,10 +342,10 @@ export function ContactModal({ isOpen, onClose, defaultCategory = "Feedback" }: 
               <div className="flex items-center gap-2">
                 <span>Or email directly:</span>
                 <a
-                  href="mailto:devsynarc@gmail.com"
+                  href="mailto:hello@syndaopro.xyz"
                   className="text-foreground hover:text-primary transition-colors font-medium underline underline-offset-2"
                 >
-                  devsynarc@gmail.com
+                  hello@syndaopro.xyz
                 </a>
                 <button
                   type="button"
