@@ -685,7 +685,7 @@ export const waitForTransaction = async (
   
   console.log(`[waitForTransaction] Transaction receipt received:`, receipt);
   if (receipt.status !== 'success') {
-    throw new Error('Transaction execution failed on-chain. Please verify your token balance and ensure enough native USDC remains to cover gas fees.');
+    throw new Error('Transaction execution was reverted on-chain by the smart contract or network.');
   }
 
   // Fast 300ms settlement delay for RPC state synchronization

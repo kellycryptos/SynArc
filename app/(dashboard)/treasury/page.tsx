@@ -463,9 +463,9 @@ function TreasuryPageContent() {
 
       let depositTx: `0x${string}`;
 
-      if (token === 'cirBTC') {
-        // Direct ERC-20 transfer to Treasury contract
-        setDepositStatus('Depositing cirBTC to Treasury...');
+      if (token === 'cirBTC' || token === 'EURC') {
+        // Direct ERC-20 transfer to Treasury contract (EURC and cirBTC)
+        setDepositStatus(`Depositing ${token} to Treasury...`);
         let estimatedTransferGas = 200000n;
         try {
           const est = await publicClient.estimateContractGas({
@@ -478,7 +478,7 @@ function TreasuryPageContent() {
           estimatedTransferGas = (est * 150n) / 100n;
           if (estimatedTransferGas < 200000n) estimatedTransferGas = 200000n;
         } catch (e) {
-          console.warn('cirBTC transfer gas estimation failed:', e);
+          console.warn(`${token} transfer gas estimation failed:`, e);
         }
 
         depositTx = await walletClient.writeContract({
@@ -491,7 +491,7 @@ function TreasuryPageContent() {
           ...gasParams,
         });
       } else {
-        // 2. Check existing allowance to skip unnecessary approve tx (for USDC / EURC)
+        // 2. Check existing allowance to skip unnecessary approve tx (for USDC)
         setDepositStatus('Checking allowance...');
         let existingAllowance = 0n;
         try {
