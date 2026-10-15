@@ -37,10 +37,11 @@ export function getMainnetProxyUrl(): string {
   return `${siteUrl.replace(/\/$/, '')}/api/rpc/mainnet`;
 }
 
-// Canonical Arc Testnet RPC endpoint
+// Canonical Arc Testnet RPC endpoint (Canteen Swarm as primary testnet node)
 export const CANTEEN_TESTNET_RPC = 
   process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC || 
-  ARC_TESTNET_FALLBACK_RPC;
+  process.env.ARC_TESTNET_RPC_URL || 
+  'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_0009d65decffd41513652bd6eea966abc868aaacbbe84897e13c724d8fbf1be2';
 
 function createRpcUrlsProxy(getUrls: () => string[]): string[] {
   return new Proxy([] as string[], {
@@ -64,9 +65,10 @@ function createRpcUrlsProxy(getUrls: () => string[]): string[] {
   });
 }
 
-// Arc Testnet list (chain 5042002) - Official Arc testnet RPCs
+// Arc Testnet list (chain 5042002) - Canteen primary, followed by official and proxy fallbacks
 export function getTestnetRpcUrls(): string[] {
   return Array.from(new Set([
+    CANTEEN_TESTNET_RPC,
     'https://rpc.testnet.arc.network',
     'https://rpc.testnet.arc.io',
     getTestnetProxyUrl(),
@@ -235,6 +237,7 @@ export const CIRCLE_CCTP_TESTNET = {
     messageTransmitter: '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275' as `0x${string}`,
     tokenMinter: '0xb43db544E2c27092c107639Ad201b3dEfAbcF192' as `0x${string}`,
     usdc: '0x3600000000000000000000000000000000000000' as `0x${string}`,
+    eurc: '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a' as `0x${string}`,
   },
   ethereum: {
     domain: 0,
@@ -243,6 +246,7 @@ export const CIRCLE_CCTP_TESTNET = {
     tokenMessenger: '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA' as `0x${string}`,
     messageTransmitter: '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275' as `0x${string}`,
     usdc: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' as `0x${string}`,
+    eurc: '0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4' as `0x${string}`,
     explorer: 'https://sepolia.etherscan.io',
   },
   base: {
@@ -252,6 +256,7 @@ export const CIRCLE_CCTP_TESTNET = {
     tokenMessenger: '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA' as `0x${string}`,
     messageTransmitter: '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275' as `0x${string}`,
     usdc: '0x036CbD53842c5426634e7929541eC2318f3dCF7e' as `0x${string}`,
+    eurc: '0x808456652fdb597867f38412077A9182bf77359F' as `0x${string}`,
     explorer: 'https://sepolia.basescan.org',
   },
   avalanche: {
@@ -261,6 +266,7 @@ export const CIRCLE_CCTP_TESTNET = {
     tokenMessenger: '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA' as `0x${string}`,
     messageTransmitter: '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275' as `0x${string}`,
     usdc: '0x5425890298aed601595a70AB815c96711a31Bc65' as `0x${string}`,
+    eurc: '0x5E44db7996c682E92a960b65AC713a54AD815c6B' as `0x${string}`,
     explorer: 'https://testnet.snowtrace.io',
   }
 } as const;
@@ -276,6 +282,7 @@ export const CIRCLE_CCTP_MAINNET = {
     messageTransmitter: '0x81D40F21F12A8F0E3252Bccb954D722d4c464B64' as `0x${string}`,
     tokenMinter: '0xfd78EE919681417d192449715b2594ab58f5D002' as `0x${string}`,
     usdc: '0x3600000000000000000000000000000000000000' as `0x${string}`,
+    eurc: '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1' as `0x${string}`,
   },
   ethereum: {
     domain: 0,
@@ -284,6 +291,7 @@ export const CIRCLE_CCTP_MAINNET = {
     tokenMessenger: '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d' as `0x${string}`,
     messageTransmitter: '0x81D40F21F12A8F0E3252Bccb954D722d4c464B64' as `0x${string}`,
     usdc: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' as `0x${string}`,
+    eurc: '0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c' as `0x${string}`,
     explorer: 'https://etherscan.io',
   },
   base: {
@@ -293,6 +301,7 @@ export const CIRCLE_CCTP_MAINNET = {
     tokenMessenger: '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d' as `0x${string}`,
     messageTransmitter: '0x81D40F21F12A8F0E3252Bccb954D722d4c464B64' as `0x${string}`,
     usdc: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as `0x${string}`,
+    eurc: '0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42' as `0x${string}`,
     explorer: 'https://basescan.org',
   },
   avalanche: {
@@ -302,6 +311,7 @@ export const CIRCLE_CCTP_MAINNET = {
     tokenMessenger: '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d' as `0x${string}`,
     messageTransmitter: '0x81D40F21F12A8F0E3252Bccb954D722d4c464B64' as `0x${string}`,
     usdc: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E' as `0x${string}`,
+    eurc: '0xC891EB4cbdEFf6e073e859e987815Ed1505c2ACD' as `0x${string}`,
     explorer: 'https://snowtrace.io',
   }
 } as const;

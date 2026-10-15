@@ -5,8 +5,13 @@ import { useWallets } from "@/hooks/useWallets";
 import { useSwitchChain, useAccount } from "wagmi";
 import {
   createPublicClient,
+  createWalletClient,
+  custom,
   http,
-  fallback
+  fallback,
+  parseUnits,
+  decodeEventLog,
+  keccak256
 } from "viem";
 
 import { selectActiveWallet } from "@/lib/tx-helper";
@@ -14,6 +19,7 @@ import { EVM_BRIDGE_CHAINS, ACTIVE_NETWORK, ARC_MAINNET_RPC_URLS, ARC_TESTNET_RP
 import { wrapEip1193ProviderWithAutoAdd, ensureWalletOnChain } from "@/lib/chain-network-helper";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
+import { isOKXWallet, sanitizeAdapterSignatures, ERC20_ALLOWANCE_ABI, CCTP_TOKEN_MESSENGER_ABI, CCTP_MESSAGE_TRANSMITTER_ABI } from "@/lib/eip712-helper";
 
 // Circle CCTP V2 canonical addresses
 export const CCTP_TESTNET_MESSENGER = '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA' as const;
@@ -45,6 +51,7 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Ethereum" as const,
     domain: 0,
     usdcAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    eurcAddress: "0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c",
     tokenMessenger: CCTP_MAINNET_MESSENGER,
     messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
@@ -61,6 +68,7 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Ethereum" as const,
     domain: 0,
     usdcAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    eurcAddress: "0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c",
     tokenMessenger: CCTP_MAINNET_MESSENGER,
     messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
@@ -77,6 +85,7 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Base" as const,
     domain: 6,
     usdcAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    eurcAddress: "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
     tokenMessenger: CCTP_MAINNET_MESSENGER,
     messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
@@ -93,6 +102,7 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Base" as const,
     domain: 6,
     usdcAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    eurcAddress: "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
     tokenMessenger: CCTP_MAINNET_MESSENGER,
     messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
@@ -109,6 +119,7 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Avalanche" as const,
     domain: 1,
     usdcAddress: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+    eurcAddress: "0xC891EB4cbdEFf6e073e859e987815Ed1505c2ACD",
     tokenMessenger: CCTP_MAINNET_MESSENGER,
     messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
@@ -125,6 +136,7 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Avalanche" as const,
     domain: 1,
     usdcAddress: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+    eurcAddress: "0xC891EB4cbdEFf6e073e859e987815Ed1505c2ACD",
     tokenMessenger: CCTP_MAINNET_MESSENGER,
     messageTransmitter: CCTP_MAINNET_TRANSMITTER,
     rpcUrls: [
@@ -141,6 +153,7 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Solana" as const,
     domain: 5,
     usdcAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    eurcAddress: "HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr",
     tokenMessenger: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
     messageTransmitter: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
     rpcUrls: ["https://api.mainnet-beta.solana.com"],
@@ -153,6 +166,7 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Solana" as const,
     domain: 5,
     usdcAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    eurcAddress: "HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr",
     tokenMessenger: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
     messageTransmitter: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
     rpcUrls: ["https://api.mainnet-beta.solana.com"],
@@ -166,6 +180,7 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Ethereum_Sepolia" as const,
     domain: 0,
     usdcAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+    eurcAddress: "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4",
     tokenMessenger: CCTP_TESTNET_MESSENGER,
     messageTransmitter: CCTP_TESTNET_TRANSMITTER,
     rpcUrls: [
@@ -182,6 +197,7 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Base_Sepolia" as const,
     domain: 6,
     usdcAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    eurcAddress: "0x808456652fdb597867f38412077A9182bf77359F",
     tokenMessenger: CCTP_TESTNET_MESSENGER,
     messageTransmitter: CCTP_TESTNET_TRANSMITTER,
     rpcUrls: [
@@ -198,6 +214,7 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Avalanche_Fuji" as const,
     domain: 1,
     usdcAddress: "0x5425890298aed601595a70AB815c96711a31Bc65",
+    eurcAddress: "0x5E44db7996c682E92a960b65AC713a54AD815c6B",
     tokenMessenger: CCTP_TESTNET_MESSENGER,
     messageTransmitter: CCTP_TESTNET_TRANSMITTER,
     rpcUrls: [
@@ -213,6 +230,7 @@ export const SOURCE_CHAINS = {
     bridgeKitId: "Solana_Devnet" as const,
     domain: 5,
     usdcAddress: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+    eurcAddress: "HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr",
     tokenMessenger: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
     messageTransmitter: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
     rpcUrls: ["https://api.devnet.solana.com"],
@@ -227,6 +245,7 @@ export const ARC_CHAIN_TESTNET_CONFIG = {
   bridgeKitId: "Arc_Testnet" as const,
   domain: 26,
   usdcAddress: "0x3600000000000000000000000000000000000000" as `0x${string}`,
+  eurcAddress: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as `0x${string}`,
   tokenMessenger: CCTP_TESTNET_MESSENGER,
   messageTransmitter: CCTP_TESTNET_TRANSMITTER,
   rpcUrl: getTestnetProxyUrl(),
@@ -242,6 +261,7 @@ export const ARC_CHAIN_MAINNET_CONFIG = {
   bridgeKitId: "Arc" as const,
   domain: 26,
   usdcAddress: "0x3600000000000000000000000000000000000000" as `0x${string}`,
+  eurcAddress: "0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1" as `0x${string}`,
   tokenMessenger: CCTP_MAINNET_MESSENGER,
   messageTransmitter: CCTP_MAINNET_TRANSMITTER,
   rpcUrl: getMainnetProxyUrl(),
@@ -335,6 +355,7 @@ export function useCCTPBridge() {
     return {
       state: INITIAL_STATE,
       bridgeUSDC: async () => {},
+      bridgeToken: async () => {},
       resetState: () => {},
     };
   }
@@ -369,11 +390,13 @@ function useActiveCCTPBridge() {
   // -------------------------------------------------------
   // Try to use Circle Bridge Kit for fast/reliable bridging
   // Falls back to manual CCTP if Kit is unavailable
+  // Supports both USDC and EURC across Mainnet and Testnet
   // -------------------------------------------------------
-  const bridgeUSDC = async (
+  const bridgeToken = async (
     sourceKey: keyof typeof SOURCE_CHAINS,
     amountString: string,
-    direction: "in" | "out" = "in"
+    direction: "in" | "out" = "in",
+    tokenSymbol: "USDC" | "EURC" = "USDC"
   ) => {
     const chainConfig = SOURCE_CHAINS[sourceKey];
     const isTestnetRoute = Boolean((chainConfig as any).isTestnet);
@@ -396,7 +419,7 @@ function useActiveCCTPBridge() {
       setState(prev => ({
         ...prev,
         status: "error",
-        errorMessage: "Please connect your wallet to bridge USDC."
+        errorMessage: `Please connect your wallet to bridge ${tokenSymbol}.`
       }));
       return;
     }
@@ -426,20 +449,21 @@ function useActiveCCTPBridge() {
         chainConfig,
         arcConfig,
         amountString,
-        direction
+        direction,
+        tokenSymbol
       );
       return;
     } catch (kitErr: any) {
-      console.warn("[CCTP] Bridge Kit failed:", kitErr?.message);
+      console.warn("[CCTP] Bridge Kit failed, checking on-chain fallback:", kitErr?.message);
       const errMsg = (kitErr?.message || "").toLowerCase();
-      // If user rejected in wallet, abort without retrying in manual flow
+      // If user manually rejected in wallet (and NOT due to OKX signature risk warning), abort
       if (
-        errMsg.includes("user rejected") ||
-        errMsg.includes("user denied") ||
-        errMsg.includes("user_rejected") ||
-        errMsg.includes("cancelled") ||
-        errMsg.includes("rejected the request") ||
-        kitErr?.code === 4001
+        (errMsg.includes("user rejected") ||
+         errMsg.includes("user denied") ||
+         errMsg.includes("rejected the request") ||
+         kitErr?.code === 4001) &&
+        !errMsg.includes("risky") &&
+        !errMsg.includes("signature type")
       ) {
         setState(prev => ({
           ...prev,
@@ -448,6 +472,7 @@ function useActiveCCTPBridge() {
         }));
         return;
       }
+
       if (errMsg.includes("insufficient") && (errMsg.includes("gas") || errMsg.includes("funds"))) {
         setState(prev => ({
           ...prev,
@@ -456,31 +481,56 @@ function useActiveCCTPBridge() {
         }));
         return;
       }
-      if (errMsg.includes("401") || errMsg.includes("unauthorized") || errMsg.includes("thecanteenapp")) {
+
+      // If OKX or wallet flagged signature as risky, or if BridgeKit encountered any error:
+      // Fall back to standard canonical on-chain CCTP (ERC-20 approve + depositForBurn)
+      try {
+        console.log("[CCTP] Falling back to standard on-chain CCTP transfer...");
+        await bridgeManualOnChain(
+          activeWallet,
+          chainConfig,
+          arcConfig,
+          amountString,
+          direction,
+          tokenSymbol
+        );
+        return;
+      } catch (manualErr: any) {
+        console.error("[CCTP] Standard on-chain CCTP fallback error:", manualErr);
+        const manualErrMsg = (manualErr?.message || "").toLowerCase();
+        if (
+          manualErrMsg.includes("user rejected") ||
+          manualErrMsg.includes("user denied") ||
+          manualErrMsg.includes("cancelled") ||
+          manualErr?.code === 4001
+        ) {
+          setState(prev => ({
+            ...prev,
+            status: "error",
+            errorMessage: "Transaction rejected by user."
+          }));
+          return;
+        }
         setState(prev => ({
           ...prev,
           status: "error",
-          errorMessage: "Wallet RPC unauthorized (401). Please click 'Sync Official RPC to Wallet' in the top network menu."
+          errorMessage: manualErr?.message || "Bridge transfer failed. Please try again."
         }));
-        return;
       }
-      setState(prev => ({
-        ...prev,
-        status: "error",
-        errorMessage: kitErr?.message || "Bridge transfer failed. Please try again."
-      }));
     }
   };
 
   // -------------------------------------------------------
-  // Fast Path: Circle Bridge Kit (adapter-viem-v2)
+  // Path A: Circle Bridge Kit with EIP-712 Sanitization
+  // Uses TransferSpeed.SLOW for OKX wallet to ensure standard on-chain approve + burn
   // -------------------------------------------------------
   const bridgeWithKit = async (
     activeWallet: any,
     chainConfig: (typeof SOURCE_CHAINS)[keyof typeof SOURCE_CHAINS],
     arcConfig: typeof ARC_CHAIN_MAINNET_CONFIG | typeof ARC_CHAIN_TESTNET_CONFIG,
     amountString: string,
-    direction: "in" | "out"
+    direction: "in" | "out",
+    tokenSymbol: "USDC" | "EURC" = "USDC"
   ) => {
     // Dynamic import to avoid SSR issues and gracefully handle missing package
     let BridgeKit: any, createViemAdapterFromProvider: any;
@@ -502,14 +552,15 @@ function useActiveCCTPBridge() {
       activeWallet.getEthereumProvider?.() ||
       (activeWallet as any).getProvider?.() ||
       (activeWallet as any).getEip1193Provider?.() ||
-      (typeof window !== "undefined" ? (window as any).ethereum : null)
+      (typeof window !== "undefined" ? (window as any).okxwallet || (window as any).ethereum : null)
     );
 
     if (!rawProvider) throw new Error("Could not get EIP-1193 provider from wallet");
     const provider = wrapEip1193ProviderWithAutoAdd(rawProvider);
+    const isOKX = isOKXWallet(rawProvider, connector);
 
     // Build adapter from the connected browser wallet with auto-chain addition and CORS-free RPCs
-    const adapter = await createViemAdapterFromProvider({
+    const baseAdapter = await createViemAdapterFromProvider({
       provider,
       capabilities: { addressContext: "user-controlled" },
       getPublicClient: ({ chain }: { chain: any }) => {
@@ -530,13 +581,16 @@ function useActiveCCTPBridge() {
       }
     });
 
+    // Sanitize any EIP-712 typed data signatures so OKX risk detector is not triggered
+    const adapter = sanitizeAdapterSignatures(baseAdapter, rawProvider);
+
     const kit = new BridgeKit();
 
     const fromChainId = direction === "in" ? chainConfig.bridgeKitId : arcConfig.bridgeKitId;
     const toChainId   = direction === "in" ? arcConfig.bridgeKitId : chainConfig.bridgeKitId;
 
     // Wire up Kit events → bridge state
-    setState({ ...INITIAL_STATE, status: "approving", progress: 5, stepDetail: "Requesting USDC approval…" });
+    setState({ ...INITIAL_STATE, status: "approving", progress: 5, stepDetail: `Requesting ${tokenSymbol} approval…` });
 
     kit.on("approve", (event: any) => {
       console.log("[Kit] approve event:", event);
@@ -570,7 +624,6 @@ function useActiveCCTPBridge() {
         progress: 65,
         stepDetail: `Circle attestation received — preparing mint on ${destChainName}…`
       }));
-      // Stop elapsed timer since we have the attestation
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -583,7 +636,7 @@ function useActiveCCTPBridge() {
         ...prev,
         status: "minting",
         progress: 85,
-        stepDetail: `Minting USDC on ${destChainName}…`
+        stepDetail: `Minting ${tokenSymbol} on ${destChainName}…`
       }));
     });
 
@@ -603,12 +656,16 @@ function useActiveCCTPBridge() {
       });
     }, 1000);
 
-    // Execute bridge via Kit
+    // For OKX Web3 wallet, use canonical SLOW transfer speed (standard on-chain CCTP approve + depositForBurn)
+    // to avoid triggering OKX's "risky signature type" risk detection on off-chain Gateway burn intents
+    const transferSpeed = isOKX ? "SLOW" : "FAST";
+
     const result = await kit.bridge({
       from: { adapter, chain: fromChainId },
       to:   { adapter, chain: toChainId },
       amount: amountString,
-      config: { transferSpeed: "FAST" }
+      token: tokenSymbol,
+      config: { transferSpeed }
     });
 
     if (timerRef.current) {
@@ -625,15 +682,286 @@ function useActiveCCTPBridge() {
       progress: 100,
       txHash: mintStep?.txHash || prev.txHash,
       burnTxHash: burnStep?.txHash || prev.burnTxHash,
-      stepDetail: `Bridge complete! Funds arrived on ${destChainName}.`
+      stepDetail: `Bridge complete! ${tokenSymbol} arrived on ${destChainName}.`
     }));
 
     console.log("[Kit] Bridge complete:", result);
   };
 
+  // -------------------------------------------------------
+  // Path B: Direct Standard On-Chain CCTP (Zero Off-Chain Permits)
+  // 100% on-chain standard ERC-20 approve + depositForBurn + Iris attestation + receiveMessage
+  // Immune to OKX "risky signature type" warnings.
+  // -------------------------------------------------------
+  const bridgeManualOnChain = async (
+    activeWallet: any,
+    chainConfig: (typeof SOURCE_CHAINS)[keyof typeof SOURCE_CHAINS],
+    arcConfig: typeof ARC_CHAIN_MAINNET_CONFIG | typeof ARC_CHAIN_TESTNET_CONFIG,
+    amountString: string,
+    direction: "in" | "out",
+    tokenSymbol: "USDC" | "EURC" = "USDC"
+  ) => {
+    const rawProvider = await (
+      connector?.getProvider?.() ||
+      activeWallet.getEthereumProvider?.() ||
+      (activeWallet as any).getProvider?.() ||
+      (activeWallet as any).getEip1193Provider?.() ||
+      (typeof window !== "undefined" ? (window as any).okxwallet || (window as any).ethereum : null)
+    );
+    if (!rawProvider) throw new Error("Could not get EIP-1193 provider from wallet");
+    const provider = wrapEip1193ProviderWithAutoAdd(rawProvider);
 
+    const isTestnetRoute = Boolean((chainConfig as any).isTestnet);
+    const sourceChain = direction === "in" ? chainConfig : arcConfig;
+    const destChain   = direction === "in" ? arcConfig : chainConfig;
+    const sourceChainName = sourceChain.name;
+    const destChainName   = destChain.name;
 
-  return { state, bridgeUSDC, resetState };
+    const sourceTokenMessenger = sourceChain.tokenMessenger as `0x${string}`;
+    const destTransmitter = destChain.messageTransmitter as `0x${string}`;
+    const sourceTokenAddress = (tokenSymbol === "EURC" ? (sourceChain as any).eurcAddress : sourceChain.usdcAddress) as `0x${string}`;
+    const destinationDomain = destChain.domain;
+
+    const irisApiUrl = isTestnetRoute ? IRIS_API_SANDBOX_URL : IRIS_API_MAINNET_URL;
+
+    const sourceRpcUrls = (sourceChain as any).rpcUrls || [(sourceChain as any).rpcUrl];
+    const destRpcUrls   = (destChain as any).rpcUrls || [(destChain as any).rpcUrl];
+
+    const sourcePublicClient = createPublicClient({
+      transport: fallback(sourceRpcUrls.map((u: string) => http(u, { timeout: 10_000, retryCount: 2 }))),
+    });
+
+    const destPublicClient = createPublicClient({
+      transport: fallback(destRpcUrls.map((u: string) => http(u, { timeout: 10_000, retryCount: 2 }))),
+    });
+
+    const userAddress = (activeWallet.address || (await provider.request({ method: 'eth_accounts' }))?.[0]) as `0x${string}`;
+    const amountRaw = parseUnits(amountString, 6);
+
+    // 1. Switch to source chain
+    setState({ ...INITIAL_STATE, status: "approving", progress: 5, stepDetail: `Switching to ${sourceChainName}…` });
+    await switchToChain(activeWallet, sourceChain, switchChainAsync);
+
+    // 2. Check and approve allowance
+    setState(prev => ({
+      ...prev,
+      status: "approving",
+      progress: 10,
+      stepDetail: `Checking ${tokenSymbol} allowance on ${sourceChainName}…`,
+    }));
+
+    const allowance = await sourcePublicClient.readContract({
+      address: sourceTokenAddress,
+      abi: ERC20_ALLOWANCE_ABI,
+      functionName: "allowance",
+      args: [userAddress, sourceTokenMessenger],
+    });
+
+    const sourceViemChain = EVM_BRIDGE_CHAINS[sourceChain.id];
+    const walletClient = createWalletClient({
+      account: userAddress,
+      chain: sourceViemChain,
+      transport: custom(provider),
+    });
+
+    if (allowance < amountRaw) {
+      setState(prev => ({
+        ...prev,
+        status: "approving",
+        progress: 15,
+        stepDetail: `Please approve ${amountString} ${tokenSymbol} in your wallet…`,
+      }));
+
+      const approveTx = await walletClient.writeContract({
+        address: sourceTokenAddress,
+        abi: ERC20_ALLOWANCE_ABI,
+        functionName: "approve",
+        args: [sourceTokenMessenger, amountRaw],
+        chain: sourceViemChain,
+      });
+
+      setState(prev => ({
+        ...prev,
+        status: "approving",
+        progress: 25,
+        stepDetail: `Confirming approval: ${approveTx.slice(0, 10)}…`,
+      }));
+
+      await sourcePublicClient.waitForTransactionReceipt({ hash: approveTx });
+    }
+
+    // 3. Deposit for burn
+    setState(prev => ({
+      ...prev,
+      status: "burning",
+      progress: 35,
+      stepDetail: `Please confirm burn transaction on ${sourceChainName}…`,
+    }));
+
+    const mintRecipient = `0x000000000000000000000000${userAddress.slice(2)}` as `0x${string}`;
+    const zeroBytes32 = "0x0000000000000000000000000000000000000000000000000000000000000000" as `0x${string}`;
+
+    let burnTx: `0x${string}`;
+    try {
+      burnTx = await walletClient.writeContract({
+        address: sourceTokenMessenger,
+        abi: CCTP_TOKEN_MESSENGER_ABI,
+        functionName: "depositForBurn",
+        args: [amountRaw, destinationDomain, mintRecipient, sourceTokenAddress, zeroBytes32, 0n, 0],
+        chain: sourceViemChain,
+      });
+    } catch {
+      // Fallback for 4-param CCTP v1
+      burnTx = await walletClient.writeContract({
+        address: sourceTokenMessenger,
+        abi: CCTP_TOKEN_MESSENGER_ABI,
+        functionName: "depositForBurn",
+        args: [amountRaw, destinationDomain, mintRecipient, sourceTokenAddress],
+        chain: sourceViemChain,
+      });
+    }
+
+    setState(prev => ({
+      ...prev,
+      status: "burning",
+      progress: 45,
+      burnTxHash: burnTx,
+      stepDetail: `Burn broadcasted! Waiting for confirmation on ${sourceChainName}…`,
+    }));
+
+    const burnReceipt = await sourcePublicClient.waitForTransactionReceipt({ hash: burnTx });
+
+    // 4. Extract messageBytes from MessageSent event
+    let messageBytes: `0x${string}` | null = null;
+    const MESSAGE_SENT_TOPIC = "0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036";
+
+    for (const log of burnReceipt.logs) {
+      if (log.topics && log.topics[0] && log.topics[0].toLowerCase() === MESSAGE_SENT_TOPIC.toLowerCase()) {
+        try {
+          const decoded = decodeEventLog({
+            abi: CCTP_MESSAGE_TRANSMITTER_ABI,
+            data: log.data,
+            topics: log.topics,
+          });
+          if (decoded.eventName === "MessageSent") {
+            messageBytes = (decoded.args as any).message;
+            break;
+          }
+        } catch {}
+      }
+    }
+
+    if (!messageBytes) {
+      for (const log of burnReceipt.logs) {
+        if (log.data && log.data.length > 200) {
+          messageBytes = log.data as `0x${string}`;
+          break;
+        }
+      }
+    }
+
+    if (!messageBytes) {
+      throw new Error("Could not extract CCTP message bytes from burn transaction receipt.");
+    }
+
+    const messageHash = keccak256(messageBytes);
+    console.log(`[CCTP Manual] Message hash: ${messageHash}`);
+
+    // 5. Poll Circle Iris Attestation API
+    setState(prev => ({
+      ...prev,
+      status: "waiting-attestation",
+      progress: 60,
+      stepDetail: `Circle attestation in progress… (usually 10-60s)`,
+    }));
+
+    let attestationSignature: `0x${string}` | null = null;
+    const pollInterval = 4000;
+    const maxPollAttempts = 60; // 4 minutes max
+
+    for (let i = 0; i < maxPollAttempts; i++) {
+      await new Promise(r => setTimeout(r, pollInterval));
+      try {
+        const attestationRes = await fetch(`${irisApiUrl}/${messageHash}`);
+        if (attestationRes.ok) {
+          const attestationData = await attestationRes.json();
+          if (attestationData.status === "complete" && attestationData.attestation) {
+            attestationSignature = attestationData.attestation as `0x${string}`;
+            break;
+          }
+        }
+      } catch (pollErr) {
+        console.warn("[CCTP Manual] Polling attestation error:", pollErr);
+      }
+    }
+
+    if (!attestationSignature) {
+      throw new Error(`Attestation timed out for message ${messageHash}. You can claim funds later.`);
+    }
+
+    // 6. Switch to destination chain
+    setState(prev => ({
+      ...prev,
+      status: "minting",
+      progress: 80,
+      stepDetail: `Switching to ${destChainName} to mint ${tokenSymbol}…`,
+    }));
+
+    await switchToChain(activeWallet, destChain, switchChainAsync);
+
+    // 7. Receive message on destination MessageTransmitter
+    setState(prev => ({
+      ...prev,
+      status: "minting",
+      progress: 88,
+      stepDetail: `Please confirm mint transaction on ${destChainName}…`,
+    }));
+
+    const destViemChain = EVM_BRIDGE_CHAINS[destChain.id];
+    const destWalletClient = createWalletClient({
+      account: userAddress,
+      chain: destViemChain,
+      transport: custom(provider),
+    });
+
+    const mintTx = await destWalletClient.writeContract({
+      address: destTransmitter,
+      abi: CCTP_MESSAGE_TRANSMITTER_ABI,
+      functionName: "receiveMessage",
+      args: [messageBytes, attestationSignature],
+      chain: destViemChain,
+    });
+
+    setState(prev => ({
+      ...prev,
+      status: "minting",
+      progress: 95,
+      txHash: mintTx,
+      stepDetail: `Confirming mint transaction on ${destChainName}…`,
+    }));
+
+    await destPublicClient.waitForTransactionReceipt({ hash: mintTx });
+
+    setState(prev => ({
+      ...prev,
+      status: "success",
+      progress: 100,
+      txHash: mintTx,
+      burnTxHash: burnTx,
+      stepDetail: `Bridge complete! ${tokenSymbol} arrived on ${destChainName}.`,
+    }));
+
+    console.log("[CCTP Manual] Bridge complete. Burn:", burnTx, "Mint:", mintTx);
+  };
+
+  const bridgeUSDC = (
+    sourceKey: keyof typeof SOURCE_CHAINS,
+    amountString: string,
+    direction: "in" | "out" = "in",
+    tokenSymbol: "USDC" | "EURC" = "USDC"
+  ) => bridgeToken(sourceKey, amountString, direction, tokenSymbol);
+
+  return { state, bridgeUSDC, bridgeToken, resetState };
 }
 
 // ============================================================

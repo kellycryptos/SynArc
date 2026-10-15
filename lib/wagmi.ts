@@ -3,6 +3,8 @@ import {
   rainbowWallet,
   base,
   metaMaskWallet,
+  okxWallet,
+  rabbyWallet,
   walletConnectWallet,
 } from '@rainbow-me/rainbowkit/wallets'
 import { http, fallback } from 'wagmi'
@@ -25,17 +27,24 @@ export const wagmiConfig = getDefaultConfig({
     {
       groupName: 'Popular',
       wallets: [
+        okxWallet,
+        rabbyWallet,
+        metaMaskWallet,
         rainbowWallet,
         base,
-        metaMaskWallet,
         walletConnectWallet,
       ],
     },
   ],
   transports: {
-    // Arc Testnet: official non-blocked RPC → same-origin proxy → secondary
+    // Arc Testnet: Canteen RPC primary → official non-blocked RPC → same-origin proxy → secondary
     [arcTestnet.id]: fallback(
       [
+        http(CANTEEN_TESTNET_RPC, {
+          timeout: 8000,
+          retryCount: 2,
+          retryDelay: 500,
+        }),
         http('https://rpc.testnet.arc.network', {
           timeout: 8000,
           retryCount: 2,

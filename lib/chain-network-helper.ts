@@ -33,7 +33,7 @@ export const CHAIN_METADATA: Record<number, AddEthereumChainParameter> = {
       symbol: 'USDC',
       decimals: 18,
     },
-    rpcUrls: ['https://rpc.mainnet.arc.io', getMainnetProxyUrl()],
+    rpcUrls: ['https://rpc.mainnet.arc.io'],
     blockExplorerUrls: ['https://explorer.arc.io'],
   },
   // Arc Testnet
@@ -46,7 +46,7 @@ export const CHAIN_METADATA: Record<number, AddEthereumChainParameter> = {
       decimals: 18,
     },
     rpcUrls: ['https://rpc.testnet.arc.network', 'https://rpc.testnet.arc.io'],
-    blockExplorerUrls: ['https://testnet.arcscan.app'],
+    blockExplorerUrls: ['https://explorer.testnet.arc.io'],
   },
   // Ethereum Mainnet
   1: {
@@ -173,6 +173,10 @@ export function wrapEip1193ProviderWithAutoAdd(rawProvider: any): any {
                 errMsg.includes('unrecognized') ||
                 errMsg.includes('unknown chain') ||
                 errMsg.includes('not found') ||
+                errMsg.includes('not added') ||
+                errMsg.includes('does not exist') ||
+                errMsg.includes('unsupported chain') ||
+                (errMsg.includes('chain') && (errMsg.includes('not') || errMsg.includes('missing') || errMsg.includes('unknown'))) ||
                 errMsg.includes('could not find chain');
 
               if (isUnrecognized && chainIdNum) {

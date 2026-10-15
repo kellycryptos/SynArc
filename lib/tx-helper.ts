@@ -144,7 +144,26 @@ export function selectActiveWallet(wallets?: any[], activeAddress?: string | nul
     };
   }
 
-  if (!wallets || wallets.length === 0) return null;
+  if (!wallets || wallets.length === 0) {
+    if (typeof window !== 'undefined' && (window as any).okxwallet && activeAddress) {
+      const okx = (window as any).okxwallet;
+      return {
+        address: activeAddress,
+        walletClientType: 'okx',
+        chainId: `eip155:${ARC_CHAIN.id}`,
+        getEthereumProvider: async () => okx,
+        getEip1193Provider: async () => okx,
+        getProvider: async () => okx,
+        switchChain: async (targetId: number) => {
+          return await okx.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: `0x${targetId.toString(16)}` }]
+          });
+        }
+      };
+    }
+    return null;
+  }
   
   if (activeAddress) {
     const target = activeAddress.toLowerCase();

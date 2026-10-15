@@ -8,7 +8,11 @@ const RATE_LIMIT_WINDOW_SECONDS = 60; // 1 minute
 const RATE_LIMIT_WINDOW_MS = RATE_LIMIT_WINDOW_SECONDS * 1000;
 const MAX_REQUESTS_PER_WINDOW = 300; // 300 requests / min per IP to prevent false rate limits
 
-// Canonical Arc Testnet RPC endpoints
+// Canonical Arc Testnet RPC endpoints (Canteen Swarm primary → Arc official fallbacks)
+const CANTEEN_TESTNET_RPC = 
+  process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC?.trim() || 
+  process.env.ARC_TESTNET_RPC_URL?.trim() || 
+  "https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_0009d65decffd41513652bd6eea966abc868aaacbbe84897e13c724d8fbf1be2";
 const PRIMARY_TESTNET_RPC = "https://rpc.testnet.arc.network";
 const SECONDARY_TESTNET_RPC = "https://rpc.testnet.arc.io";
 
@@ -209,50 +213,43 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const upstreamUrl = 
-      process.env.ARC_TESTNET_RPC_URL?.trim() || 
-      PRIMARY_TESTNET_RPC;
     const bodyText = await req.text();
+    const candidateUrls = Array.from(new Set([
+      process.env.ARC_TESTNET_RPC_URL?.trim(),
+      CANTEEN_TESTNET_RPC,
+      PRIMARY_TESTNET_RPC,
+      SECONDARY_TESTNET_RPC,
+    ])).filter(Boolean) as string[];
 
-    let response: Response;
-    try {
-      response = await fetch(upstreamUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: bodyText,
-        signal: AbortSignal.timeout(5000),
-      });
+    let response: Response | null = null;
+    let lastError: any = null;
 
-      // If upstream failed with non-2xx and isn't the secondary backup, fall back to secondary backup
-      if (!response.ok && upstreamUrl !== SECONDARY_TESTNET_RPC) {
-        response = await fetch(SECONDARY_TESTNET_RPC, {
+    for (const endpoint of candidateUrls) {
+      try {
+        const res = await fetch(endpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
           body: bodyText,
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(6000),
         });
+
+        if (res.ok) {
+          response = res;
+          break;
+        }
+
+        // If upstream returned 401/429/5xx, capture error and fallback to next endpoint
+        lastError = new Error(`Endpoint ${endpoint} failed with HTTP ${res.status}`);
+      } catch (networkError) {
+        lastError = networkError;
       }
-    } catch (networkError) {
-      // If primary fetch threw (network error / timeout) and wasn't the secondary backup, try backup
-      if (upstreamUrl !== SECONDARY_TESTNET_RPC) {
-        response = await fetch(SECONDARY_TESTNET_RPC, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: bodyText,
-          signal: AbortSignal.timeout(8000),
-        });
-      } else {
-        throw networkError;
-      }
+    }
+
+    if (!response) {
+      throw lastError || new Error("All testnet RPC upstream endpoints failed");
     }
 
     const responseBody = await response.text();

@@ -12,15 +12,14 @@ const DEPLOYER_PRIVATE_KEY = rawDeployerKey.length > 0
   : "0x0000000000000000000000000000000000000000000000000000000000000000";
 const hasDeployerKey = DEPLOYER_PRIVATE_KEY !== "0x0000000000000000000000000000000000000000000000000000000000000000" && DEPLOYER_PRIVATE_KEY.length === 66;
 
-// RPC priority (testnet): Arc official → Canteen CLI testnet node (optional) → Alchemy → hardcoded fallback
+// RPC priority (testnet): Canteen primary → Arc official → Alchemy → hardcoded fallback
 // Note: Canteen's RPC is bundled into their ARC CLI and targets their hosted testnet node.
-// There is no public Canteen mainnet RPC — do not use NEXT_PUBLIC_CANTEEN_MAINNET_RPC for mainnet deploys.
 const ARC_RPC_URL =
   process.env.ARC_RPC_URL ||
-  process.env.NEXT_PUBLIC_ARC_RPC_URL ||
   process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC ||
+  process.env.NEXT_PUBLIC_ARC_RPC_URL ||
   process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC ||
-  "https://rpc.testnet.arc.io";
+  "https://rpc.testnet.arc.network";
 
 const ARC_MAINNET_RPC_URL =
   process.env.ARC_MAINNET_RPC_URL ||

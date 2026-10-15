@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useEURCBalance, invalidateEURCBalance } from "@/hooks/useEURCBalance";
 import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useSwitchChain, useAccount } from "wagmi";
 import { createPublicClient, http, fallback, getAddress, parseAbi, formatUnits } from "viem";
@@ -56,6 +57,7 @@ const TESTNET_SOURCE_CHAINS = [
     id: "BASE_SEPOLIA", 
     name: "Base Sepolia", 
     tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e", 
+    eurcAddress: "0x808456652fdb597867f38412077A9182bf77359F",
     rpcUrl: "https://base-sepolia.drpc.org",
     rpcUrls: [
       "https://base-sepolia.drpc.org",
@@ -73,6 +75,7 @@ const TESTNET_SOURCE_CHAINS = [
     id: "ETH_SEPOLIA", 
     name: "Ethereum Sepolia", 
     tokenAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", 
+    eurcAddress: "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4",
     rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
     rpcUrls: [
       "https://ethereum-sepolia-rpc.publicnode.com",
@@ -90,6 +93,7 @@ const TESTNET_SOURCE_CHAINS = [
     id: "AVAX_FUJI", 
     name: "Avalanche Fuji", 
     tokenAddress: "0x5425890298aed601595a70AB815c96711a31Bc65", 
+    eurcAddress: "0x5E44db7996c682E92a960b65AC713a54AD815c6B",
     rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc",
     rpcUrls: [
       "https://api.avax-test.network/ext/bc/C/rpc",
@@ -106,6 +110,7 @@ const TESTNET_SOURCE_CHAINS = [
     id: "SOL_DEVNET", 
     name: "Solana Devnet", 
     tokenAddress: "4zMMC9SRGx2txA24js12jccVwMAwFFdp47rFZ5y76hA3", 
+    eurcAddress: "HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr",
     rpcUrl: "https://api.devnet.solana.com",
     rpcUrls: ["https://api.devnet.solana.com"],
     icon: "SOL",
@@ -122,6 +127,7 @@ const MAINNET_SOURCE_CHAINS = [
     id: "BASE_MAINNET", 
     name: "Base", 
     tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", 
+    eurcAddress: "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
     rpcUrl: "https://mainnet.base.org",
     rpcUrls: [
       "https://mainnet.base.org",
@@ -140,6 +146,7 @@ const MAINNET_SOURCE_CHAINS = [
     id: "ETH_MAINNET", 
     name: "Ethereum", 
     tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 
+    eurcAddress: "0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c",
     rpcUrl: "https://ethereum-rpc.publicnode.com",
     rpcUrls: [
       "https://ethereum-rpc.publicnode.com",
@@ -157,6 +164,7 @@ const MAINNET_SOURCE_CHAINS = [
     id: "AVAX_MAINNET", 
     name: "Avalanche", 
     tokenAddress: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E", 
+    eurcAddress: "0xC891EB4cbdEFf6e073e859e987815Ed1505c2ACD",
     rpcUrl: "https://api.avax.network/ext/bc/C/rpc",
     rpcUrls: [
       "https://api.avax.network/ext/bc/C/rpc",
@@ -174,6 +182,7 @@ const MAINNET_SOURCE_CHAINS = [
     id: "SOL_MAINNET", 
     name: "Solana", 
     tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", 
+    eurcAddress: "HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr",
     rpcUrl: "https://api.mainnet-beta.solana.com",
     rpcUrls: ["https://api.mainnet-beta.solana.com"],
     icon: "SOL",
@@ -191,6 +200,8 @@ const ARC_CHAIN_MAINNET = {
   icon: "ARC",
   color: "bg-amber-500/10 border-amber-500/20 text-amber-500",
   chainId: 5042,
+  tokenAddress: "0x3600000000000000000000000000000000000000",
+  eurcAddress: "0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1",
   bgClass: "from-amber-500/20 to-transparent",
   borderClass: "border-amber-500/30",
   blockExplorerUrl: "https://explorer.arc.io"
@@ -202,6 +213,8 @@ const ARC_CHAIN_TESTNET = {
   icon: "ARC",
   color: "bg-amber-500/10 border-amber-500/20 text-amber-500",
   chainId: 5042002,
+  tokenAddress: "0x3600000000000000000000000000000000000000",
+  eurcAddress: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
   bgClass: "from-amber-500/20 to-transparent",
   borderClass: "border-amber-500/30",
   blockExplorerUrl: "https://testnet.arcscan.app"
@@ -217,6 +230,7 @@ interface BridgeTx {
   destChain?: string;
   destIcon?: string;
   amount: number;
+  tokenSymbol?: string;
   txHash: string;
   timestamp: string;
   status: "success" | "pending";
@@ -266,8 +280,15 @@ export default function BridgePage() {
   const switchChainResult = useSwitchChain();
   const switchChainAsync = switchChainResult?.switchChainAsync;
 
-  // Arc USDC balance
-  const { balance: arcUSDCBalance, refetch: refetchArcUSDC, isFetching: arcFetching } = useUSDCBalance(walletAddress);
+  // Arc USDC & EURC balances
+  const { balance: arcUSDCBalance, refetch: refetchArcUSDC, isFetching: arcUSDCFetching } = useUSDCBalance(walletAddress);
+  const { balance: arcEURCBalance, refetch: refetchArcEURC, isFetching: arcEURCFetching } = useEURCBalance(walletAddress);
+
+  // Asset selection: USDC vs EURC
+  const [selectedToken, setSelectedToken] = useState<"USDC" | "EURC">("USDC");
+  const arcTokenBalance = selectedToken === "EURC" ? arcEURCBalance : arcUSDCBalance;
+  const arcFetching = selectedToken === "EURC" ? arcEURCFetching : arcUSDCFetching;
+  const refetchArcToken = selectedToken === "EURC" ? refetchArcEURC : refetchArcUSDC;
 
   // Real CCTP bridge hook — handles approve → burn → attest → mint via App Kit / Bridge Kit
   const { state: bridgeState, bridgeUSDC, resetState: resetBridgeState } = useCCTPBridge();
@@ -399,7 +420,9 @@ export default function BridgePage() {
         setActiveTxHash(bridgeState.txHash);
       }
       invalidateUSDCBalance();
+      invalidateEURCBalance();
       refetchArcUSDC();
+      refetchArcEURC();
     } else if (s === "error") {
       setProgressState("error");
       setErrorMessage(bridgeState.errorMessage || "Bridge transaction failed.");
@@ -430,6 +453,7 @@ export default function BridgePage() {
           destChain: direction === "in" ? activeArcChain.name : selectedChain.name,
           destIcon: direction === "in" ? "ARC" : selectedChain.icon,
           amount: isNaN(amountFinal) ? 0 : amountFinal,
+          tokenSymbol: selectedToken,
           txHash: primaryTxHash,
           timestamp: new Date().toISOString(),
           status: newStatus,
@@ -442,7 +466,7 @@ export default function BridgePage() {
         return updated;
       });
     }
-  }, [bridgeState.status, bridgeState.txHash, bridgeState.burnTxHash, bridgeState.errorMessage, refetchArcUSDC, amount, selectedChain, walletAddress, direction, activeArcChain, bridgeNetwork]);
+  }, [bridgeState.status, bridgeState.txHash, bridgeState.burnTxHash, bridgeState.errorMessage, refetchArcUSDC, amount, selectedChain, walletAddress, direction, activeArcChain, bridgeNetwork, selectedToken]);
 
   // Load history from localStorage — keyed by network and wallet address.
   // Auto-seeds verified on-chain transfers so users never lose history on reload or new browser.
@@ -609,7 +633,7 @@ export default function BridgePage() {
 
     // Strategy 1: Server-side API proxy (bypasses browser CORS & adblockers)
     try {
-      const res = await fetch(`/api/bridge/balance?address=${targetAddress}&chainId=${selectedChain.chainId}`);
+      const res = await fetch(`/api/bridge/balance?address=${targetAddress}&chainId=${selectedChain.chainId}&token=${selectedToken}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.balance !== undefined) {
@@ -633,11 +657,12 @@ export default function BridgePage() {
         ),
       });
 
+      const rawTokenAddr = selectedToken === "EURC" ? (selectedChain as any).eurcAddress : selectedChain.tokenAddress;
       let tokenAddr: `0x${string}`;
       try {
-        tokenAddr = getAddress(selectedChain.tokenAddress.toLowerCase());
+        tokenAddr = getAddress((rawTokenAddr || selectedChain.tokenAddress).toLowerCase());
       } catch {
-        tokenAddr = selectedChain.tokenAddress as `0x${string}`;
+        tokenAddr = (rawTokenAddr || selectedChain.tokenAddress) as `0x${string}`;
       }
 
       const rawBalance = await client.readContract({
@@ -656,12 +681,12 @@ export default function BridgePage() {
     } finally {
       setBalanceLoading(false);
     }
-  }, [walletAddress, selectedChain, activeWallet?.address]);
+  }, [walletAddress, selectedChain, activeWallet?.address, selectedToken]);
 
   // Initial and reactive fetch on chain/wallet changes
   useEffect(() => {
     fetchSourceBalance();
-  }, [selectedChain, walletAddress, activeWallet?.address, bridgeNetwork, fetchSourceBalance]);
+  }, [selectedChain, walletAddress, activeWallet?.address, bridgeNetwork, selectedToken, fetchSourceBalance]);
 
   // Window focus listener to refresh source balance
   useEffect(() => {
@@ -674,11 +699,15 @@ export default function BridgePage() {
 
   // Listen to cross-app balance change events
   useEffect(() => {
-    const onUsdcChange = () => {
+    const onBalanceChange = () => {
       fetchSourceBalance();
     };
-    window.addEventListener("synarc_usdc_changed", onUsdcChange);
-    return () => window.removeEventListener("synarc_usdc_changed", onUsdcChange);
+    window.addEventListener("synarc_usdc_changed", onBalanceChange);
+    window.addEventListener("synarc_eurc_changed", onBalanceChange);
+    return () => {
+      window.removeEventListener("synarc_usdc_changed", onBalanceChange);
+      window.removeEventListener("synarc_eurc_changed", onBalanceChange);
+    };
   }, [fetchSourceBalance]);
 
   // Polling every 12 seconds
@@ -693,8 +722,8 @@ export default function BridgePage() {
   const fromChain = direction === "in" ? selectedChain : activeArcChain;
   const toChain = direction === "in" ? activeArcChain : selectedChain;
 
-  const fromBalance = direction === "in" ? sourceBalance : (arcUSDCBalance || "0.00");
-  const toBalance = direction === "in" ? (arcUSDCBalance || "0.00") : sourceBalance;
+  const fromBalance = direction === "in" ? sourceBalance : (arcTokenBalance || "0.00");
+  const toBalance = direction === "in" ? (arcTokenBalance || "0.00") : sourceBalance;
 
   const fromBalanceLoading = direction === "in" ? balanceLoading : arcFetching;
   const toBalanceLoading = direction === "in" ? arcFetching : balanceLoading;
@@ -750,7 +779,7 @@ export default function BridgePage() {
     }
 
     // Execute CCTP bridge
-    await bridgeUSDC(selectedChain.id as any, amount, direction);
+    await bridgeUSDC(selectedChain.id as any, amount, direction, selectedToken);
   };
 
   const handleResetForm = () => {
@@ -783,10 +812,10 @@ export default function BridgePage() {
               <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
                 <ArrowLeftRight className="w-5 h-5 text-primary" />
               </div>
-              USDC Bridge
+              CCTP Cross-Chain Bridge
             </h1>
             <p className="text-muted mt-1 text-sm">
-              Move your project funds securely between networks. Zero intermediary risk, fast settlement, and fully transparent.
+              Transfer native USDC & EURC 1:1 across Arc, Ethereum, Base, and Avalanche via Circle Cross-Chain Transfer Protocol.
             </p>
           </div>
 
@@ -827,7 +856,7 @@ export default function BridgePage() {
               </div>
               <div className="text-sm font-bold font-mono text-foreground mt-0.5">
                 {isAuthenticated
-                  ? `$${totalVolumeToDisplay.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC`
+                  ? `$${totalVolumeToDisplay.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
                   : <span className="text-muted text-xs font-normal">Connect wallet to view</span>
                 }
               </div>
@@ -872,6 +901,44 @@ export default function BridgePage() {
                         <div className="break-words w-full font-medium">{errorMessage}</div>
                       </div>
                     )}
+
+                    {/* Asset Selector */}
+                    <div className="bg-surface/30 border border-border-thin p-1 rounded-2xl flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedToken("USDC")}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          selectedToken === "USDC"
+                            ? "bg-primary text-white shadow-md shadow-primary/25 border border-primary/50"
+                            : "text-muted hover:text-white hover:bg-surface-elevated/40"
+                        }`}
+                      >
+                        <TokenIcon symbol="USDC" size={16} />
+                        <span>USDC</span>
+                        <span className={`text-[9px] uppercase px-1.5 py-0.5 font-extrabold rounded ${
+                          selectedToken === "USDC" ? "bg-white/20 text-white" : "bg-surface-elevated text-muted"
+                        }`}>
+                          Native Gas
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedToken("EURC")}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          selectedToken === "EURC"
+                            ? "bg-primary text-white shadow-md shadow-primary/25 border border-primary/50"
+                            : "text-muted hover:text-white hover:bg-surface-elevated/40"
+                        }`}
+                      >
+                        <TokenIcon symbol="EURC" size={16} />
+                        <span>EURC</span>
+                        <span className={`text-[9px] uppercase px-1.5 py-0.5 font-extrabold rounded ${
+                          selectedToken === "EURC" ? "bg-white/20 text-white" : "bg-primary/20 text-primary"
+                        }`}>
+                          CCTP
+                        </span>
+                      </button>
+                    </div>
 
                     {/* From Section */}
                     <div className="bg-surface/40 border border-border-thin p-4 rounded-2xl space-y-3 relative hover:border-border/60 transition-colors">
@@ -938,15 +1005,15 @@ export default function BridgePage() {
                           className="text-2xl sm:text-3xl font-semibold font-mono text-text-primary placeholder-text-muted bg-transparent border-none focus:outline-none w-full p-0 py-1"
                         />
                         <div className="flex items-center gap-1.5 bg-[#1e133d]/70 px-3 py-1.5 rounded-xl border border-border-thin shrink-0 select-none">
-                          <TokenIcon symbol="USDC" size={20} />
-                          <span className="text-xs font-extrabold text-white">USDC</span>
+                          <TokenIcon symbol={selectedToken} size={20} />
+                          <span className="text-xs font-extrabold text-white">{selectedToken}</span>
                         </div>
                       </div>
 
                       {/* Balance & Preview */}
                       <div className="flex justify-between items-center text-[11px] text-text-tertiary">
                         <span className="font-mono">
-                          {amount ? `~$${parseFloat(amount).toFixed(2)}` : "$0.00"}
+                          {amount ? `~${parseFloat(amount).toFixed(2)} ${selectedToken}` : `0.00 ${selectedToken}`}
                         </span>
                         <div className="flex items-center gap-1.5">
                           <span>Balance:</span>
@@ -957,7 +1024,7 @@ export default function BridgePage() {
                               {parseFloat(fromBalance || "0").toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: parseFloat(fromBalance || "0") > 0 && parseFloat(fromBalance || "0") < 0.01 ? 4 : 2,
-                              })} USDC
+                              })} {selectedToken}
                             </span>
                           )}
                           <button
@@ -1038,15 +1105,15 @@ export default function BridgePage() {
                           {amount || "0.00"}
                         </div>
                         <div className="flex items-center gap-1.5 bg-[#1e133d]/70 px-3 py-1.5 rounded-xl border border-border-thin shrink-0 select-none">
-                          <TokenIcon symbol="USDC" size={20} />
-                          <span className="text-xs font-extrabold text-white">USDC</span>
+                          <TokenIcon symbol={selectedToken} size={20} />
+                          <span className="text-xs font-extrabold text-white">{selectedToken}</span>
                         </div>
                       </div>
 
                       {/* Balance & Preview */}
                       <div className="flex justify-between items-center text-[11px] text-text-tertiary">
                         <span className="font-mono">
-                          {amount ? `You will receive: ~${parseFloat(amount).toFixed(2)} USDC` : "You will receive: 0.00 USDC"}
+                          {amount ? `You will receive: ~${parseFloat(amount).toFixed(2)} ${selectedToken}` : `You will receive: 0.00 ${selectedToken}`}
                         </span>
                         <div className="flex items-center gap-1.5">
                           <span>Balance:</span>
@@ -1057,7 +1124,7 @@ export default function BridgePage() {
                               {parseFloat(toBalance || "0").toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: parseFloat(toBalance || "0") > 0 && parseFloat(toBalance || "0") < 0.01 ? 4 : 2,
-                              })} USDC
+                              })} {selectedToken}
                             </span>
                           )}
                         </div>
@@ -1076,7 +1143,7 @@ export default function BridgePage() {
                           <span>Bridge Details</span>
                         </div>
                         <div className="flex items-center gap-1 font-mono text-[11px]">
-                          <span>1 USDC = 1.00 USDC</span>
+                          <span>1 {selectedToken} = 1.00 {selectedToken}</span>
                           {detailsExpanded ? <ChevronUp className="w-4.5 h-4.5 text-muted" /> : <ChevronDown className="w-4.5 h-4.5 text-muted" />}
                         </div>
                       </button>
@@ -1095,7 +1162,7 @@ export default function BridgePage() {
                           </div>
                           <div className="flex justify-between">
                             <span>Bridge Protocol Fee</span>
-                            <span className="text-success font-bold">0.00 USDC (Free)</span>
+                            <span className="text-success font-bold">0.00 {selectedToken} (Free)</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Estimated Gas Fee</span>
@@ -1112,7 +1179,17 @@ export default function BridgePage() {
                     </div>
 
                     {/* Arc Gas Informational Notice Banner */}
-                    {hasInsufficientArcGas && (
+                    {selectedToken === "EURC" ? (
+                      <div className="p-3.5 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-300 text-xs flex items-start gap-2.5">
+                        <Info className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+                        <div className="space-y-1">
+                          <p className="font-semibold text-sky-200">Native Gas on Arc: USDC</p>
+                          <p className="text-[11px] text-sky-300/80 leading-relaxed">
+                            Arc uses native USDC for all network gas fees. Bridging EURC transfers canonical EURC to your Arc account; ensure you hold a small amount of native USDC (~0.01 USDC) on Arc to execute subsequent transactions.
+                          </p>
+                        </div>
+                      </div>
+                    ) : hasInsufficientArcGas ? (
                       <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs flex items-start gap-2.5">
                         <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                         <div className="space-y-1">
@@ -1122,7 +1199,7 @@ export default function BridgePage() {
                           </p>
                         </div>
                       </div>
-                    )}
+                    ) : null}
 
                     {/* Action Button */}
                     {!isAuthenticated ? (
@@ -1168,7 +1245,7 @@ export default function BridgePage() {
                       >
                         {parseFloat(amount) > parseFloat(fromBalance) 
                           ? "Insufficient Balance" 
-                          : `Bridge USDC to ${toChain.name}`
+                          : `Bridge ${selectedToken} to ${toChain.name}`
                         }
                       </button>
                     )}
@@ -1190,14 +1267,14 @@ export default function BridgePage() {
                         <div>
                           <h3 className="text-lg font-bold text-white">Bridge Completed!</h3>
                           <p className="text-xs text-text-tertiary mt-1.5 max-w-xs mx-auto leading-relaxed">
-                            Your native USDC has been bridged successfully using Circle CCTP consensus validation.
+                            Your native {selectedToken} has been bridged successfully using Circle CCTP consensus validation.
                           </p>
                         </div>
 
                         <div className="p-4 bg-surface/50 rounded-2xl border border-border-thin max-w-sm mx-auto space-y-2.5 text-left text-xs">
                           <div className="flex justify-between items-center">
                             <span className="text-muted">Bridged Amount</span>
-                            <span className="font-bold text-white font-mono">{amount} USDC</span>
+                            <span className="font-bold text-white font-mono">{amount} {selectedToken}</span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-muted">Origin Chain</span>
@@ -1268,6 +1345,7 @@ export default function BridgePage() {
                             sourceChain: fromChain.name,
                             destChain: toChain.name,
                             amount,
+                            tokenSymbol: selectedToken,
                             currentStep: bridgeState.status === "approving" ? "idle"
                                        : bridgeState.status === "burning" ? "burn"
                                        : bridgeState.status === "waiting-attestation" ? "attestation"
@@ -1290,7 +1368,7 @@ export default function BridgePage() {
             <div className="text-center">
               <span className="text-[10px] text-text-tertiary tracking-wider font-semibold select-none flex items-center justify-center gap-1 uppercase">
                 <ShieldCheck className="w-3.5 h-3.5 text-success" />
-                Fast and secure USDC bridging
+                Fast and secure USDC & EURC bridging
               </span>
             </div>
           </div>
@@ -1368,7 +1446,7 @@ export default function BridgePage() {
                           </div>
                         </td>
                         <td className="py-3.5 font-mono font-bold text-white">
-                          {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })} USDC
+                          {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })} {tx.tokenSymbol || "USDC"}
                         </td>
                         <td className="py-3.5 text-text-tertiary">
                           {new Date(tx.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -1517,7 +1595,7 @@ export default function BridgePage() {
                     {recoveringTx.amount > 0 && (
                       <div className="flex justify-between items-center">
                         <span className="text-muted">Amount</span>
-                        <span className="font-bold text-white font-mono">{recoveringTx.amount} USDC</span>
+                        <span className="font-bold text-white font-mono">{recoveringTx.amount} {recoveringTx.tokenSymbol || "USDC"}</span>
                       </div>
                     )}
                     <div className="flex justify-between items-center border-t border-border-thin/40 pt-2">
@@ -1556,7 +1634,7 @@ export default function BridgePage() {
                   <div className="p-3.5 bg-success/15 border border-success/30 rounded-2xl text-xs text-success flex items-start gap-2.5">
                     <Check className="w-4 h-4 shrink-0 mt-0.5" />
                     <div className="font-semibold">
-                      Claim executed successfully! Your native USDC has been minted on Ethereum.
+                      Claim executed successfully! Your native {recoveringTx?.tokenSymbol || "tokens"} have been minted on {recoveringTx?.destChain || "Ethereum"}.
                     </div>
                   </div>
                 )}
@@ -1574,9 +1652,9 @@ export default function BridgePage() {
 
                     {/* Notice on gas requirements */}
                     <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-amber-300 text-xs space-y-1">
-                      <p className="font-bold text-amber-200">Ethereum Gas Requirement Notice</p>
+                      <p className="font-bold text-amber-200">Destination Gas Requirement Notice</p>
                       <p className="text-[11px] text-amber-300/80 leading-relaxed">
-                        To claim native USDC on Ethereum Mainnet, your wallet must submit the mint transaction and pay Ethereum network gas in ETH. If your wallet has 0 ETH, ensure you deposit a small amount of ETH for gas first.
+                        To claim tokens on {recoveringTx?.destChain || "Ethereum"}, your wallet must submit the mint transaction and pay destination network gas fees. Ensure your wallet has sufficient native gas on the destination network.
                       </p>
                     </div>
 
@@ -1589,7 +1667,7 @@ export default function BridgePage() {
                       {claiming ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin text-black" />
-                          <span>Minting USDC on Ethereum...</span>
+                          <span>Minting {recoveringTx?.tokenSymbol || "tokens"} on {recoveringTx?.destChain || "Ethereum"}...</span>
                         </>
                       ) : claimSuccess ? (
                         <>
@@ -1597,7 +1675,7 @@ export default function BridgePage() {
                           <span>Mint Completed</span>
                         </>
                       ) : (
-                        <span>Mint & Claim USDC on Ethereum</span>
+                        <span>Mint & Claim {recoveringTx?.tokenSymbol || "tokens"} on {recoveringTx?.destChain || "Ethereum"}</span>
                       )}
                     </button>
                   </div>

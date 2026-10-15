@@ -20,6 +20,7 @@ export interface CctpTxState {
   sourceChain: string;
   destChain: string;
   amount?: string | number;
+  tokenSymbol?: string;
   currentStep: "idle" | "burn" | "attestation" | "received" | "mint" | "success" | "error";
   burnTxHash?: string;
   mintTxHash?: string;
@@ -33,6 +34,7 @@ export function CctpStepVisualizer({ txState }: { txState: CctpTxState }) {
     sourceChain,
     destChain,
     amount,
+    tokenSymbol = "USDC",
     currentStep,
     burnTxHash,
     mintTxHash,
@@ -112,7 +114,7 @@ export function CctpStepVisualizer({ txState }: { txState: CctpTxState }) {
 
   const steps = [
     {
-      title: "Burn USDC on Source",
+      title: `Burn ${tokenSymbol} on Source`,
       description: `Initiate burn on ${sourceChain}`,
       icon: Flame,
       color: "text-red-400",
@@ -136,7 +138,7 @@ export function CctpStepVisualizer({ txState }: { txState: CctpTxState }) {
       activeColor: "bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
     },
     {
-      title: "Mint USDC on Destination",
+      title: `Mint ${tokenSymbol} on Destination`,
       description: `Complete mint on ${destChain}`,
       icon: CheckCircle,
       color: "text-blue-400",
@@ -163,7 +165,7 @@ export function CctpStepVisualizer({ txState }: { txState: CctpTxState }) {
         <TrendingUp className="w-5 h-5 text-primary animate-pulse" />
         <h2 className="text-sm font-bold text-text-primary">
           CCTP Transfer Progress
-          {amount && <span className="font-mono text-primary ml-1.5">({amount} USDC)</span>}
+          {amount && <span className="font-mono text-primary ml-1.5">({amount} {tokenSymbol})</span>}
         </h2>
         <span className="ml-auto text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30 uppercase tracking-widest animate-pulse">
           Live Polling

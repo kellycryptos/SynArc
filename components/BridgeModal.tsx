@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
+import { useEURCBalance, invalidateEURCBalance } from "@/hooks/useEURCBalance";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { useSwitchChain } from "wagmi";
 import { createPublicClient, http, fallback, getAddress, parseAbi, formatUnits } from "viem";
@@ -42,6 +43,7 @@ export const TESTNET_SOURCE_CHAINS = [
     chainId: 84532,
     name: "Base Sepolia",
     tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    eurcAddress: "0x808456652fdb597867f38412077A9182bf77359F",
     rpcUrl: "https://base-sepolia.drpc.org",
     rpcUrls: [
       "https://base-sepolia.drpc.org",
@@ -56,6 +58,7 @@ export const TESTNET_SOURCE_CHAINS = [
     chainId: 11155111,
     name: "Ethereum Sepolia",
     tokenAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+    eurcAddress: "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4",
     rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
     rpcUrls: [
       "https://ethereum-sepolia-rpc.publicnode.com",
@@ -70,6 +73,7 @@ export const TESTNET_SOURCE_CHAINS = [
     chainId: 43113,
     name: "Avalanche Fuji",
     tokenAddress: "0x5425890298aed601595a70AB815c96711a31Bc65",
+    eurcAddress: "0x5E44db7996c682E92a960b65AC713a54AD815c6B",
     rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc",
     rpcUrls: [
       "https://api.avax-test.network/ext/bc/C/rpc",
@@ -83,6 +87,7 @@ export const TESTNET_SOURCE_CHAINS = [
     chainId: 103,
     name: "Solana Devnet",
     tokenAddress: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+    eurcAddress: "HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr",
     rpcUrl: "https://api.devnet.solana.com",
     rpcUrls: ["https://api.devnet.solana.com"],
     icon: "SOL",
@@ -97,6 +102,7 @@ export const MAINNET_SOURCE_CHAINS = [
     chainId: 8453,
     name: "Base",
     tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    eurcAddress: "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
     rpcUrl: "https://mainnet.base.org",
     rpcUrls: [
       "https://mainnet.base.org",
@@ -112,6 +118,7 @@ export const MAINNET_SOURCE_CHAINS = [
     chainId: 1,
     name: "Ethereum",
     tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    eurcAddress: "0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c",
     rpcUrl: "https://ethereum-rpc.publicnode.com",
     rpcUrls: [
       "https://ethereum-rpc.publicnode.com",
@@ -126,6 +133,7 @@ export const MAINNET_SOURCE_CHAINS = [
     chainId: 43114,
     name: "Avalanche",
     tokenAddress: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+    eurcAddress: "0xC891EB4cbdEFf6e073e859e987815Ed1505c2ACD",
     rpcUrl: "https://api.avax.network/ext/bc/C/rpc",
     rpcUrls: [
       "https://api.avax.network/ext/bc/C/rpc",
@@ -178,12 +186,14 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
   }, [isMainnet]);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedToken, setSelectedToken] = useState<"USDC" | "EURC">("USDC");
   const [amount, setAmount] = useState("");
   const [sourceBalance, setSourceBalance] = useState<string>("0.00");
   const [balanceLoading, setBalanceLoading] = useState(false);
 
   const { state: bridgeState, bridgeUSDC, resetState } = useCCTPBridge();
   const { balance: arcUSDCBalance } = useUSDCBalance(walletAddress);
+  const { balance: arcEURCBalance } = useEURCBalance(walletAddress);
   const hasInsufficientArcGas = isAuthenticated && parseFloat(arcUSDCBalance || "0") < 0.01;
 
   const [switchingNetwork, setSwitchingNetwork] = useState(false);
@@ -245,7 +255,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     }
   };
 
-  // Load USDC balance on source chain
+  // Load token balance on source chain
   const fetchSourceBalance = async () => {
     const rawTarget = walletAddress || activeWallet?.address;
     if (!rawTarget) {
@@ -267,7 +277,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
 
     // 1. Try server-side bridge balance API route (resilient against browser CORS/adblockers)
     try {
-      const res = await fetch(`/api/bridge/balance?address=${targetAddress}&chainId=${selectedChain.chainId}`);
+      const res = await fetch(`/api/bridge/balance?address=${targetAddress}&chainId=${selectedChain.chainId}&token=${selectedToken}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.balance !== undefined) {
@@ -291,11 +301,12 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
         ),
       });
 
+      const rawTokenAddr = selectedToken === "EURC" ? (selectedChain as any).eurcAddress : selectedChain.tokenAddress;
       let tokenAddr: `0x${string}`;
       try {
-        tokenAddr = getAddress(selectedChain.tokenAddress.toLowerCase());
+        tokenAddr = getAddress((rawTokenAddr || selectedChain.tokenAddress).toLowerCase());
       } catch {
-        tokenAddr = selectedChain.tokenAddress as `0x${string}`;
+        tokenAddr = (rawTokenAddr || selectedChain.tokenAddress) as `0x${string}`;
       }
 
       const rawBalance = await client.readContract({
@@ -320,12 +331,13 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     if (isOpen && target) {
       fetchSourceBalance();
     }
-  }, [isOpen, selectedChain, walletAddress, activeWallet?.address]);
+  }, [isOpen, selectedChain, walletAddress, activeWallet?.address, selectedToken]);
 
   useEffect(() => {
     if (bridgeState.status === "success") {
       fetchSourceBalance();
       invalidateUSDCBalance();
+      invalidateEURCBalance();
       if (onSuccess) onSuccess();
     }
   }, [bridgeState.status]);
@@ -336,7 +348,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) return;
     if (amountNum > parseFloat(sourceBalance)) return;
-    await bridgeUSDC(selectedChain.id as any, amount);
+    await bridgeUSDC(selectedChain.id as any, amount, "in", selectedToken);
   };
 
   const handleModalClose = () => {
@@ -465,6 +477,48 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                 })()
               )}
 
+              {/* Asset Selector */}
+              <div>
+                <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-2">Select Asset</label>
+                <div className="bg-surface/50 border border-border-thin p-1 rounded-xl flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedToken("USDC");
+                      setAmount("");
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      selectedToken === "USDC"
+                        ? "bg-primary text-white shadow-md shadow-primary/20 border border-primary/40"
+                        : "text-muted hover:text-text-primary hover:bg-surface-elevated"
+                    }`}
+                  >
+                    <TokenIcon symbol="USDC" size={16} />
+                    <span>USDC</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedToken("EURC");
+                      setAmount("");
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      selectedToken === "EURC"
+                        ? "bg-primary text-white shadow-md shadow-primary/20 border border-primary/40"
+                        : "text-muted hover:text-text-primary hover:bg-surface-elevated"
+                    }`}
+                  >
+                    <TokenIcon symbol="EURC" size={16} />
+                    <span>EURC</span>
+                    <span className={`text-[9px] uppercase px-1.5 py-0.5 font-extrabold rounded ${
+                      selectedToken === "EURC" ? "bg-white/20 text-white" : "bg-primary/20 text-primary"
+                    }`}>
+                      CCTP
+                    </span>
+                  </button>
+                </div>
+              </div>
+
               {/* Source Chain Selector */}
               <div className="relative">
                 <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-2">Source Chain</label>
@@ -528,7 +582,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                       <Loader2 className="w-3 h-3 animate-spin text-primary" />
                     ) : (
                       <span className="font-bold font-mono text-text-primary select-all">
-                        {parseFloat(sourceBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                        {parseFloat(sourceBalance || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedToken}
                       </span>
                     )}
                   </div>
@@ -536,8 +590,8 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
 
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-muted font-bold text-sm">
-                    <TokenIcon symbol="USDC" size={18} />
-                    <span>USDC</span>
+                    <TokenIcon symbol={selectedToken} size={18} />
+                    <span>{selectedToken}</span>
                   </div>
                   <input
                     type="number"
@@ -577,7 +631,17 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
               </div>
 
               {/* Arc Gas Informational Notice Banner */}
-              {hasInsufficientArcGas && (
+              {selectedToken === "EURC" ? (
+                <div className="p-3 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-300 text-xs flex items-start gap-2.5">
+                  <Info className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-semibold text-sky-200">Native Gas on Arc: USDC</p>
+                    <p className="text-[11px] text-sky-300/80 leading-relaxed">
+                      Arc uses native USDC for network gas. Once your transfer completes, canonical EURC will arrive in your wallet; hold a small amount of native USDC (~0.01 USDC) on Arc to execute subsequent transactions.
+                    </p>
+                  </div>
+                </div>
+              ) : hasInsufficientArcGas ? (
                 <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs flex items-start gap-2.5">
                   <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   <div className="space-y-1">
@@ -587,7 +651,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     </p>
                   </div>
                 </div>
-              )}
+              ) : null}
 
               {/* Actions */}
               <div className="flex gap-4 pt-2">
@@ -607,7 +671,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     className="flex-1 py-3 bg-accent-purple text-white-keep font-bold text-sm rounded-xl hover:bg-accent-purple/95 transition-all shadow-[0_0_15px_rgba(124,58,237,0.15)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="text-white-keep">
-                      {parseFloat(amount) > parseFloat(sourceBalance) ? "Insufficient Balance" : "Bridge USDC"}
+                      {parseFloat(amount) > parseFloat(sourceBalance) ? "Insufficient Balance" : `Bridge ${selectedToken}`}
                     </span>
                   </button>
                 ) : (
@@ -638,14 +702,14 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                   <div>
                     <h3 className="text-xl font-bold text-text-primary">Bridge complete</h3>
                     <p className="text-xs text-text-tertiary mt-1.5 max-w-sm mx-auto leading-relaxed">
-                      Your USDC has successfully arrived on {arcNetworkLabel} and is ready to use.
+                      Your {selectedToken} has successfully arrived on {arcNetworkLabel} and is ready to use.
                     </p>
                   </div>
 
                   <div className="p-4 bg-surface rounded-xl border border-border-thin max-w-xs mx-auto space-y-2.5">
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-muted">Bridged Amount</span>
-                      <span className="font-bold text-text-primary font-mono">{amount} USDC</span>
+                      <span className="font-bold text-text-primary font-mono">{amount} {selectedToken}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-muted">Destination</span>
@@ -700,14 +764,14 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     <div className="absolute inset-0 rounded-full border-4 border-primary/10 border-t-primary animate-spin" />
                     <div className="absolute inset-1 rounded-full border-2 border-purple-500/5 border-b-purple-500/30 animate-spin" style={{ animationDuration: "2s", animationDirection: "reverse" }} />
                     <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center">
-                      <TokenIcon symbol="USDC" size={24} className="animate-pulse" />
+                      <TokenIcon symbol={selectedToken} size={24} className="animate-pulse" />
                     </div>
                   </div>
 
                   {/* Status Text */}
                   <div className="space-y-1.5">
                     <h3 className="text-base font-bold text-text-primary uppercase tracking-widest text-xs">
-                      {bridgeState.status === "approving"           && "Approving USDC…"}
+                      {bridgeState.status === "approving"           && `Approving ${selectedToken}…`}
                       {bridgeState.status === "burning"             && `Burning on ${selectedChain.name}…`}
                       {bridgeState.status === "waiting-attestation" && "Waiting for Attestation…"}
                       {bridgeState.status === "minting"             && `Minting on ${arcNetworkLabel}…`}
@@ -715,8 +779,8 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                     <p className="text-xs text-text-tertiary max-w-xs mx-auto min-h-[1.25rem]">
                       {bridgeState.stepDetail || (
                         <>
-                          {bridgeState.status === "approving"           && `Approving CCTP to spend ${amount} USDC`}
-                          {bridgeState.status === "burning"             && `Burning ${amount} USDC — triggers Circle attestation`}
+                          {bridgeState.status === "approving"           && `Approving CCTP to spend ${amount} ${selectedToken}`}
+                          {bridgeState.status === "burning"             && `Burning ${amount} ${selectedToken} — triggers Circle attestation`}
                           {bridgeState.status === "waiting-attestation" && `Polling Circle Iris… (${bridgeState.elapsedSeconds}s elapsed)`}
                           {bridgeState.status === "minting"             && "Relaying attestation to Arc MessageTransmitter"}
                         </>
@@ -770,7 +834,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
                                 isActive ? "text-text-primary font-bold" : isDone ? "text-muted" : "text-text-tertiary"
                               }`}
                             >
-                              {idx + 1}. {step.label}
+                              {idx + 1}. {step.key === "approving" ? `Approve ${selectedToken}` : step.label}
                             </span>
                             {isActive && step.key === "waiting-attestation" && (
                               <span className="text-[10px] text-primary/70 font-mono">

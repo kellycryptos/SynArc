@@ -59,8 +59,19 @@ function useActiveWallets() {
             console.warn('[useWallets] Failed to get connector provider:', e);
           }
         }
-        if (typeof window !== 'undefined' && (window as any).ethereum) {
-          return (window as any).ethereum;
+        if (typeof window !== 'undefined') {
+          if (connector?.name?.toLowerCase().includes('okx') && (window as any).okxwallet) {
+            return (window as any).okxwallet;
+          }
+          if ((window as any).okxwallet && !(window as any).ethereum) {
+            return (window as any).okxwallet;
+          }
+          if ((window as any).ethereum) {
+            return (window as any).ethereum;
+          }
+          if ((window as any).okxwallet) {
+            return (window as any).okxwallet;
+          }
         }
         return null;
       };
