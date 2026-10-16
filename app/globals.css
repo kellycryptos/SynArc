@@ -203,7 +203,7 @@
 html {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -213,7 +213,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100vw;
 }
 
@@ -1094,7 +1094,9 @@ h1, .hero-title { font-size: clamp(1.75rem, 5vw, 4rem); line-height: 1.1; }
     top: 0;
     width: 240px;
     height: 100vh;
+    height: 100dvh;
     flex-shrink: 0;
+    align-self: flex-start;
     overflow-x: hidden;
   }
   .sidebar-overlay { display: none; }

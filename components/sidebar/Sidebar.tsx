@@ -130,7 +130,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
   };
 
   return (
-    <aside className={cn("sidebar bg-background border-r border-border flex flex-col h-full", className)}>
+    <aside className={cn("sidebar bg-background border-r border-border flex flex-col h-screen max-h-screen", className)}>
       {/* Logo & Close Drawer button */}
       <div className="h-16 flex items-center justify-between px-5 border-b border-border shrink-0">
         <Link

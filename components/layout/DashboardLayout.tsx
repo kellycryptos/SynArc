@@ -60,7 +60,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       {/* Persistent Sidebar on Desktop (>= 1024px) / Slide-in Drawer on Mobile (< 1024px) */}
       <Sidebar
-        className={cn("sidebar", mobileMenuOpen && "open")}
+        className={cn("sidebar self-start", mobileMenuOpen && "open")}
         onClick={() => setMobileMenuOpen(false)}
       />
 
