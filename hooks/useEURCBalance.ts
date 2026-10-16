@@ -210,6 +210,23 @@ export const useEURCBalance = (walletAddress?: string | undefined) => {
         rawBalance = 0n;
       }
 
+      // Cross-contract fallback: If primary read is 0 and primary isn't mainnet, check mainnet address
+      if (rawBalance === 0n && primaryEurcAddress.toLowerCase() !== MAINNET_EURC_ADDRESS.toLowerCase()) {
+        try {
+          const mainnetBal = await client.readContract({
+            address: MAINNET_EURC_ADDRESS as `0x${string}`,
+            abi: ERC20_ABI,
+            functionName: 'balanceOf',
+            args: [safeAddress],
+          });
+          if (mainnetBal > 0n) {
+            rawBalance = mainnetBal;
+          }
+        } catch {
+          // Ignore
+        }
+      }
+
       const formatted = formatEurcBalance(rawBalance);
       if (formatted !== '0.00') {
         cachedBalance[key] = { balance: formatted, timestamp: Date.now() };

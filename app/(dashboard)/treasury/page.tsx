@@ -217,11 +217,60 @@ function TreasuryPageContent() {
 
   const [recentActivity, setRecentActivity] = useState<Transaction[]>([]);
 
+  // Load persisted deposit activities on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && contracts?.treasury) {
+      try {
+        const key = `synarc_simulated_activities_${contracts.treasury.toLowerCase()}`;
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          const list: TreasuryActivity[] = JSON.parse(stored);
+          if (Array.isArray(list) && list.length > 0) {
+            setRecentActivity(list.map(a => ({
+              id: a.id,
+              description: a.description,
+              amount: a.amount,
+              token: a.token as 'USDC' | 'EURC' | 'cirBTC',
+              date: new Date(a.timestamp).toLocaleDateString('en-GB'),
+              txHash: a.txHash || '',
+              status: 'confirmed' as const,
+            })));
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load persisted deposit activity:', err);
+      }
+    }
+  }, [contracts?.treasury]);
+
   const addTransaction = (tx: Omit<Transaction, 'id'>) => {
-    setRecentActivity(prev => [{
+    const newTx: Transaction = {
       ...tx,
       id: crypto.randomUUID(),
-    }, ...prev]);
+    };
+    setRecentActivity(prev => [newTx, ...prev]);
+
+    if (typeof window !== 'undefined' && contracts?.treasury) {
+      try {
+        const key = `synarc_simulated_activities_${contracts.treasury.toLowerCase()}`;
+        const existingRaw = localStorage.getItem(key);
+        const existing: TreasuryActivity[] = existingRaw ? JSON.parse(existingRaw) : [];
+        const activityItem: TreasuryActivity = {
+          id: `deposit-${tx.token.toLowerCase()}-${tx.txHash || Date.now()}`,
+          type: 'Inflow',
+          amount: tx.amount,
+          token: tx.token,
+          timestamp: new Date().toISOString(),
+          description: tx.description,
+          party: walletAddress || '',
+          txHash: tx.txHash,
+        };
+        const updated = [activityItem, ...existing.filter(e => e.txHash !== tx.txHash && e.id !== activityItem.id)];
+        localStorage.setItem(key, JSON.stringify(updated));
+      } catch (err) {
+        console.warn('Failed to save deposit activity to localStorage:', err);
+      }
+    }
   };
 
   const activeWallet = selectActiveWallet(wallets, walletAddress);
@@ -304,15 +353,19 @@ function TreasuryPageContent() {
       token: act.token,
       timestamp: new Date().toISOString(),
       description: act.description,
-      txHash: act.txHash
+      txHash: act.txHash,
+      party: walletAddress || ''
     }));
     
-    // De-duplicate: if any local tx has the same txHash as an activity from the contract, filter it from the local list
+    // De-duplicate: if any local tx has the same txHash or id as an activity from the contract, filter it from the local list
     const contractHashes = new Set(activities.map(a => a.txHash).filter(Boolean));
-    const filteredLocal = localActs.filter(a => !contractHashes.has(a.txHash));
+    const contractIds = new Set(activities.map(a => a.id).filter(Boolean));
+    const filteredLocal = localActs.filter(a => !contractHashes.has(a.txHash) && !contractIds.has(a.id));
 
-    return [...filteredLocal, ...activities].slice(0, 15);
-  }, [recentActivity, activities]);
+    return [...filteredLocal, ...activities].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    ).slice(0, 20);
+  }, [recentActivity, activities, walletAddress]);
 
   // Asset Composition details
   const usdcValueInUSD = usdcBalance;
@@ -986,7 +1039,9 @@ function TreasuryPageContent() {
                       <td className="py-4 text-text-secondary">{tx.description}</td>
                       <td className="py-4 font-mono font-bold text-text-primary">
                         {tx.type === 'Outflow' ? '-' : '+'}
-                        {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {tx.token}
+                        {tx.token === 'cirBTC' || tx.token === 'BTC'
+                          ? tx.amount.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 7 })
+                          : tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {tx.token}
                       </td>
                       <td className="py-4">
                         {tx.deliverableURI ? (
