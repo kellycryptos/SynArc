@@ -84,6 +84,8 @@ interface GovernanceState {
     treasury: string;
     token: string;
     usdc?: string;
+    eurc?: string;
+    cirBTC?: string;
   };
   
   // Actions
@@ -135,12 +137,12 @@ export const TESTNET_BASELINE_PROPOSALS: Proposal[] = [
 
 const isMainnetInitial = getActiveNetwork() === 'mainnet';
 const INITIAL_METRICS: GovernanceMetrics = {
-  treasuryValue: isMainnetInitial ? "$0.07" : "$30,688.99",
+  treasuryValue: isMainnetInitial ? `$${MAINNET_TREASURY_BASELINE.combinedBalance.toFixed(2)}` : "$30,688.99",
   activeProposals: 0,
   totalProposals: 0,
   governanceParticipation: "0.0%",
   daoMembers: 1,
-  treasuryTransactions: isMainnetInitial ? 3 : 2,
+  treasuryTransactions: isMainnetInitial ? 8 : 2,
   proposalExecutionRate: "0.0%",
 };
 
@@ -185,12 +187,16 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       governor: customDao.governorAddress,
       treasury: customDao.treasuryAddress,
       token: customDao.tokenAddress,
-      usdc: isMainnet ? CONTRACTS_MAINNET.usdc : CONTRACTS_TESTNET.usdc
+      usdc: isMainnet ? CONTRACTS_MAINNET.usdc : CONTRACTS_TESTNET.usdc,
+      eurc: isMainnet ? CONTRACTS_MAINNET.eurc : CONTRACTS_TESTNET.eurc,
+      cirBTC: isMainnet ? CONTRACTS_MAINNET.cirBTC : CONTRACTS_TESTNET.cirBTC,
     } : {
       governor: isMainnet ? CONTRACTS_MAINNET.governor : CONTRACTS_TESTNET.governor,
       treasury: isMainnet ? CONTRACTS_MAINNET.treasuryGovernance : CONTRACTS_TESTNET.treasuryGovernance,
       token: isMainnet ? CONTRACTS_MAINNET.token : CONTRACTS_TESTNET.token,
-      usdc: isMainnet ? CONTRACTS_MAINNET.usdc : CONTRACTS_TESTNET.usdc
+      usdc: isMainnet ? CONTRACTS_MAINNET.usdc : CONTRACTS_TESTNET.usdc,
+      eurc: isMainnet ? CONTRACTS_MAINNET.eurc : CONTRACTS_TESTNET.eurc,
+      cirBTC: isMainnet ? CONTRACTS_MAINNET.cirBTC : CONTRACTS_TESTNET.cirBTC,
     };
 
     set({ 
@@ -238,14 +244,14 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       treasuryActivities: isMainnet ? MAINNET_TREASURY_BASELINE.activities : TESTNET_TREASURY_BASELINE.activities,
       initialized: true,
       metrics: {
-        treasuryValue: isMainnet ? "$0.07" : "$30,688.99",
+        treasuryValue: isMainnet ? `$${MAINNET_TREASURY_BASELINE.combinedBalance.toFixed(2)}` : "$30,688.99",
         activeProposals: eagerProposals.filter(p => p.status === "Active").length,
         totalProposals: eagerProposals.length,
         governanceParticipation: eagerProposals.length > 0
           ? (eagerProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / eagerProposals.length).toFixed(1) + "%"
           : "0.0%",
         daoMembers: 1,
-        treasuryTransactions: isMainnet ? 3 : 2,
+        treasuryTransactions: isMainnet ? 8 : 2,
         proposalExecutionRate: eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
           ? ((eagerProposals.filter(p => p.status === "Executed").length / eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
           : "0.0%"
@@ -465,15 +471,28 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           }
         };
 
-        const [rawActivities, internalBal, erc20Bal] = await withTimeout(Promise.all([
+        const isMainnetTreasury = treasuryAddress.toLowerCase() === CONTRACTS_MAINNET.treasuryGovernance.toLowerCase();
+        const isTestnetTreasury = treasuryAddress.toLowerCase() === CONTRACTS_TESTNET.treasuryGovernance.toLowerCase();
+
+        const eurcTokenAddress = isMainnet
+          ? '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1'
+          : (contracts.eurc || '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a');
+        const cirBtcTokenAddress = isMainnet
+          ? '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0'
+          : (contracts.cirBTC || '0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF');
+
+        const eurcTokenContract = new Contract(eurcTokenAddress, ERC20ABI, provider);
+        const cirBtcTokenContract = new Contract(cirBtcTokenAddress, ERC20ABI, provider);
+
+        const [rawActivities, internalBal, erc20Bal, eurcBal, cirBtcBal] = await withTimeout(Promise.all([
           fetchTransactions(),
           treasuryContract.usdcBalance().catch(() => treasuryContract.balance().catch(() => 0n)),
-          usdcTokenContract.balanceOf(treasuryAddress).catch(() => 0n)
+          usdcTokenContract.balanceOf(treasuryAddress).catch(() => 0n),
+          eurcTokenContract.balanceOf(treasuryAddress).catch(() => 0n),
+          cirBtcTokenContract.balanceOf(treasuryAddress).catch(() => 0n),
         ]), 6000);
 
         if (Array.isArray(rawActivities) && rawActivities.length > 0) {
-          const isMainnetTreasury = treasuryAddress.toLowerCase() === CONTRACTS_MAINNET.treasuryGovernance.toLowerCase();
-          const isTestnetTreasury = treasuryAddress.toLowerCase() === CONTRACTS_TESTNET.treasuryGovernance.toLowerCase();
           loadedActivities = rawActivities.map((act: any, idx: number) => {
             const knownMainnetHash = (isMainnetTreasury && KNOWN_MAINNET_TX_HASHES[idx]) ? KNOWN_MAINNET_TX_HASHES[idx] : "";
             const knownTestnetHash = (isTestnetTreasury && (idx === 417 || (act.txType === 'Outflow' && Number(act.amount) === 10000)))
@@ -496,6 +515,14 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
             };
           });
           loadedActivities.reverse();
+          if (isMainnetTreasury) {
+            const map = new Map<string, TreasuryActivity>();
+            MAINNET_TREASURY_BASELINE.activities.forEach(a => map.set(a.id, a));
+            loadedActivities.forEach(a => map.set(a.id, a));
+            loadedActivities = Array.from(map.values()).sort(
+              (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            );
+          }
         } else if (isMainnet && treasuryAddress.toLowerCase() === CONTRACTS_MAINNET.treasuryGovernance.toLowerCase()) {
           loadedActivities = MAINNET_TREASURY_BASELINE.activities;
         } else if (!isMainnet && treasuryAddress.toLowerCase() === CONTRACTS_TESTNET.treasuryGovernance.toLowerCase()) {
@@ -504,8 +531,16 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
         const internalNum = Number(formatUnits(internalBal || 0n, 6));
         const erc20Num = Number(formatUnits(erc20Bal || 0n, 6));
-        const fetchedVal = internalNum > 0 ? internalNum : erc20Num;
-        treasuryVal = fetchedVal > 0 ? fetchedVal : (isMainnet ? MAINNET_TREASURY_BASELINE.combinedBalance : TESTNET_TREASURY_BASELINE.combinedBalance);
+        const eurcNum = Number(formatUnits(eurcBal || 0n, 6));
+        const cirBtcNum = Number(formatUnits(cirBtcBal || 0n, 8));
+
+        const usdcNum = erc20Num > 0 ? erc20Num : (internalNum > 0 ? internalNum : (isMainnetTreasury ? MAINNET_TREASURY_BASELINE.usdcBalance : 0));
+        const finalEurc = eurcNum > 0 ? eurcNum : (isMainnetTreasury ? MAINNET_TREASURY_BASELINE.eurcBalance : 0);
+        const finalCirBtc = cirBtcNum > 0 ? cirBtcNum : (isMainnetTreasury ? MAINNET_TREASURY_BASELINE.cirBtcBalance : 0);
+
+        const multiAssetVal = usdcNum + (finalEurc * 1.08) + (finalCirBtc * 95000);
+        const baselineVal = isMainnet ? MAINNET_TREASURY_BASELINE.combinedBalance : TESTNET_TREASURY_BASELINE.combinedBalance;
+        treasuryVal = multiAssetVal > 0 ? multiAssetVal : baselineVal;
       } catch (err) {
         console.warn("Failed to load Treasury activities via RPC:", err);
       }
@@ -543,7 +578,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           totalProposals: combinedProposals.length,
           governanceParticipation: avgPart,
           daoMembers: memberCount,
-          treasuryTransactions: loadedActivities.length || (isMainnet ? 3 : 2),
+          treasuryTransactions: loadedActivities.length || (isMainnet ? 8 : 2),
           proposalExecutionRate: executionRate,
         }
       });
@@ -570,14 +605,14 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
-          treasuryValue: isMainnet ? "$0.07" : "$30,688.99",
+          treasuryValue: isMainnet ? `$${MAINNET_TREASURY_BASELINE.combinedBalance.toFixed(2)}` : "$30,688.99",
           activeProposals: fallbackProposals.filter(p => p.status === "Active").length,
           totalProposals: fallbackProposals.length,
           governanceParticipation: fallbackProposals.length > 0
             ? (fallbackProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / fallbackProposals.length).toFixed(1) + "%"
             : "0.0%",
           daoMembers: 1,
-          treasuryTransactions: isMainnet ? 3 : 2,
+          treasuryTransactions: isMainnet ? 8 : 2,
           proposalExecutionRate: fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
             ? ((fallbackProposals.filter(p => p.status === "Executed").length / fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
             : "0.0%"

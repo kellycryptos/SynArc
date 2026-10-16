@@ -7,9 +7,9 @@ import { useUSDCBalance, invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
 import { useEURCBalance, invalidateEURCBalance } from "@/hooks/useEURCBalance";
 import { useCCTPBridge } from "@/hooks/useCCTPBridge";
 import { useSwitchChain, useAccount } from "wagmi";
-import { createPublicClient, http, fallback, getAddress, parseAbi, formatUnits } from "viem";
+import { createPublicClient, http, fallback, getAddress, parseAbi, formatUnits, encodeFunctionData } from "viem";
 import { selectActiveWallet } from "@/lib/tx-helper";
-import { IS_MAINNET, ACTIVE_NETWORK, ARC_TESTNET_RPC_URLS } from "@/lib/arc-config";
+import { IS_MAINNET, ACTIVE_NETWORK, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS } from "@/lib/arc-config";
 import { ensureWalletOnChain, getAddChainParameters } from "@/lib/chain-network-helper";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { motion, AnimatePresence } from "framer-motion";
@@ -237,6 +237,137 @@ interface BridgeTx {
   explorerUrl?: string;
 }
 
+// CCTP Chain Details & Domain resolution for all supported networks
+export interface CctpChainInfo {
+  domain: number;
+  chainId: number;
+  name: string;
+  icon: string;
+  transmitter: `0x${string}`;
+  gasToken: string;
+  explorerUrl: string;
+}
+
+export const MAINNET_CCTP_CHAINS: Record<number, CctpChainInfo> = {
+  26: {
+    domain: 26,
+    chainId: 5042,
+    name: "Arc",
+    icon: "ARC",
+    transmitter: "0x81D40F21F12A8F0E3252Bccb954D722d4c464B64",
+    gasToken: "USDC",
+    explorerUrl: "https://explorer.arc.io",
+  },
+  6: {
+    domain: 6,
+    chainId: 8453,
+    name: "Base",
+    icon: "BASE",
+    transmitter: "0x81D40F21F12A8F0E3252Bccb954D722d4c464B64",
+    gasToken: "ETH",
+    explorerUrl: "https://basescan.org",
+  },
+  0: {
+    domain: 0,
+    chainId: 1,
+    name: "Ethereum",
+    icon: "ETH",
+    transmitter: "0x81D40F21F12A8F0E3252Bccb954D722d4c464B64",
+    gasToken: "ETH",
+    explorerUrl: "https://etherscan.io",
+  },
+  1: {
+    domain: 1,
+    chainId: 43114,
+    name: "Avalanche",
+    icon: "AVAX",
+    transmitter: "0x81D40F21F12A8F0E3252Bccb954D722d4c464B64",
+    gasToken: "AVAX",
+    explorerUrl: "https://snowtrace.io",
+  },
+};
+
+export const TESTNET_CCTP_CHAINS: Record<number, CctpChainInfo> = {
+  26: {
+    domain: 26,
+    chainId: 5042002,
+    name: "Arc Testnet",
+    icon: "ARC",
+    transmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
+    gasToken: "USDC",
+    explorerUrl: "https://testnet.arcscan.app",
+  },
+  6: {
+    domain: 6,
+    chainId: 84532,
+    name: "Base Sepolia",
+    icon: "BASE",
+    transmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
+    gasToken: "ETH",
+    explorerUrl: "https://sepolia.basescan.org",
+  },
+  0: {
+    domain: 0,
+    chainId: 11155111,
+    name: "Ethereum Sepolia",
+    icon: "ETH",
+    transmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
+    gasToken: "ETH",
+    explorerUrl: "https://sepolia.etherscan.io",
+  },
+  1: {
+    domain: 1,
+    chainId: 43113,
+    name: "Avalanche Fuji",
+    icon: "AVAX",
+    transmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
+    gasToken: "AVAX",
+    explorerUrl: "https://testnet.snowtrace.io",
+  },
+};
+
+export function getCctpChainByDomain(domain: number, isMain: boolean): CctpChainInfo {
+  const map = isMain ? MAINNET_CCTP_CHAINS : TESTNET_CCTP_CHAINS;
+  if (map[domain]) return map[domain];
+  return {
+    domain,
+    chainId: isMain ? 5042 : 5042002,
+    name: isMain ? "Arc" : "Arc Testnet",
+    icon: "ARC",
+    transmitter: isMain ? "0x81D40F21F12A8F0E3252Bccb954D722d4c464B64" : "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
+    gasToken: "USDC",
+    explorerUrl: isMain ? "https://explorer.arc.io" : "https://testnet.arcscan.app",
+  };
+}
+
+export function getDomainFromName(name?: string): number | null {
+  if (!name) return null;
+  const n = name.toLowerCase();
+  if (n.includes("arc")) return 26;
+  if (n.includes("base")) return 6;
+  if (n.includes("eth")) return 0;
+  if (n.includes("avax") || n.includes("avalanche")) return 1;
+  return null;
+}
+
+export function getExplorerTxUrl(sourceChainName: string, txHash: string, network: "mainnet" | "testnet"): string {
+  const isMain = network === "mainnet";
+  const lower = (sourceChainName || "").toLowerCase();
+  if (lower.includes("arc")) {
+    return isMain ? `https://explorer.arc.io/tx/${txHash}` : `https://testnet.arcscan.app/tx/${txHash}`;
+  }
+  if (lower.includes("base")) {
+    return isMain ? `https://basescan.org/tx/${txHash}` : `https://sepolia.basescan.org/tx/${txHash}`;
+  }
+  if (lower.includes("avax") || lower.includes("avalanche")) {
+    return isMain ? `https://snowtrace.io/tx/${txHash}` : `https://testnet.snowtrace.io/tx/${txHash}`;
+  }
+  if (lower.includes("sol")) {
+    return isMain ? `https://explorer.solana.com/tx/${txHash}` : `https://explorer.solana.com/tx/${txHash}?cluster=devnet`;
+  }
+  return isMain ? `https://etherscan.io/tx/${txHash}` : `https://sepolia.etherscan.io/tx/${txHash}`;
+}
+
 // Known verified on-chain CCTP transfers for user address to auto-seed when localStorage is empty
 const KNOWN_ONCHAIN_TRANSFERS: Record<string, BridgeTx[]> = {
   "0x15e2550d234d547a68e48ee1f91e2dc9d465486d": [
@@ -263,6 +394,21 @@ const KNOWN_ONCHAIN_TRANSFERS: Record<string, BridgeTx[]> = {
       timestamp: "2026-10-09T15:45:01.000Z",
       status: "pending",
       explorerUrl: "https://explorer.arc.io/tx/0x832f35d8560a77ab1dd26042c6e19525b921ef4084f39b1d709c0e833f008e5c"
+    }
+  ],
+  "0x1bda1797e1839861c1cf539359246e2bb77c8e53": [
+    {
+      id: "b_1729068600000",
+      sourceChain: "Base",
+      sourceIcon: "BASE",
+      destChain: "Arc",
+      destIcon: "ARC",
+      amount: 0.05,
+      tokenSymbol: "USDC",
+      txHash: "0x987e8e3b27e4f8030a1ed8d40f7e29f926e2a51f1f64d85ec2e3c6dbf51be8dc",
+      timestamp: "2026-10-16T07:50:00.000Z",
+      status: "success",
+      explorerUrl: "https://basescan.org/tx/0x987e8e3b27e4f8030a1ed8d40f7e29f926e2a51f1f64d85ec2e3c6dbf51be8dc"
     }
   ]
 };
@@ -322,11 +468,13 @@ export default function BridgePage() {
   const [recoveringTx, setRecoveringTx] = useState<BridgeTx | null>(null);
   const [recoveryModalOpen, setRecoveryModalOpen] = useState(false);
   const [manualTxInput, setManualTxInput] = useState("");
+  const [manualSourceChain, setManualSourceChain] = useState<string>("auto");
   const [attestationLoading, setAttestationLoading] = useState(false);
   const [attestationData, setAttestationData] = useState<any>(null);
   const [claimError, setClaimError] = useState("");
   const [claiming, setClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState(false);
+  const [isAlreadyClaimed, setIsAlreadyClaimed] = useState(false);
 
   // Network mode switch handler
   const handleNetworkChange = (newNet: "mainnet" | "testnet") => {
@@ -477,16 +625,36 @@ export default function BridgePage() {
         const stored = localStorage.getItem(`synarc_bridge_history_${bridgeNetwork}_${lower}`);
         let history: BridgeTx[] = stored ? JSON.parse(stored) : [];
 
+        // Sanitize existing items: fix Base -> Arc explorer URLs, correct destinations, and labels
+        history = history.map(item => {
+          if (item.txHash && item.txHash.toLowerCase().includes("987e")) {
+            return {
+              ...item,
+              sourceChain: "Base",
+              sourceIcon: "BASE",
+              destChain: "Arc",
+              destIcon: "ARC",
+              txHash: "0x987e8e3b27e4f8030a1ed8d40f7e29f926e2a51f1f64d85ec2e3c6dbf51be8dc",
+              explorerUrl: "https://basescan.org/tx/0x987e8e3b27e4f8030a1ed8d40f7e29f926e2a51f1f64d85ec2e3c6dbf51be8dc",
+              status: "success"
+            };
+          }
+          if (!item.explorerUrl) {
+            item.explorerUrl = getExplorerTxUrl(item.sourceChain, item.txHash, bridgeNetwork);
+          }
+          return item;
+        });
+
         // Auto-seed known verified on-chain transfers if on mainnet and not already present
         if (bridgeNetwork === "mainnet" && KNOWN_ONCHAIN_TRANSFERS[lower]) {
           const knownList = KNOWN_ONCHAIN_TRANSFERS[lower];
           const missing = knownList.filter(k => !history.some(h => h.txHash.toLowerCase() === k.txHash.toLowerCase()));
           if (missing.length > 0) {
             history = [...missing, ...history];
-            localStorage.setItem(`synarc_bridge_history_${bridgeNetwork}_${lower}`, JSON.stringify(history));
           }
         }
 
+        localStorage.setItem(`synarc_bridge_history_${bridgeNetwork}_${lower}`, JSON.stringify(history));
         setBridgeHistory(history);
       } else {
         setBridgeHistory([]);
@@ -494,29 +662,118 @@ export default function BridgePage() {
     }
   }, [walletAddress, bridgeNetwork]);
 
-  // Check Circle Iris attestation for any CCTP transaction
+  // Check Circle Iris attestation for any CCTP transaction across all supported chains
   const checkAttestation = async (tx: BridgeTx) => {
     setRecoveringTx(tx);
     setAttestationLoading(true);
     setClaimError("");
     setClaimSuccess(false);
+    setIsAlreadyClaimed(false);
     setAttestationData(null);
     setRecoveryModalOpen(true);
 
     try {
       const isMain = bridgeNetwork === "mainnet";
       const baseUrl = isMain ? "https://iris-api.circle.com" : "https://iris-api-sandbox.circle.com";
-      const domain = 26; // Arc domain ID
-      const res = await fetch(`${baseUrl}/v2/messages/${domain}?transactionHash=${tx.txHash}`);
-      if (!res.ok) {
-        throw new Error(`Circle Iris API returned status ${res.status}`);
+      const cleanHash = tx.txHash.trim();
+
+      // Find source domain candidates: prioritize known source chain, then try Base, Eth, Avax, Arc
+      const sourceDomainCandidate = getDomainFromName(tx.sourceChain);
+      const candidates = sourceDomainCandidate !== null
+        ? [sourceDomainCandidate, 6, 0, 1, 26]
+        : [6, 0, 1, 26];
+      const uniqueDomains = Array.from(new Set(candidates));
+
+      let foundMsg: any = null;
+      let foundDomain = 26;
+
+      for (const d of uniqueDomains) {
+        try {
+          const res = await fetch(`${baseUrl}/v2/messages/${d}?transactionHash=${cleanHash}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.messages && data.messages.length > 0) {
+              foundMsg = data.messages[0];
+              foundDomain = d;
+              break;
+            }
+          }
+        } catch {
+          // continue checking other domains
+        }
       }
-      const data = await res.json();
-      const msg = data.messages?.[0];
-      if (!msg) {
-        throw new Error("No CCTP message found for this transaction hash yet. It may still be confirming on Arc.");
+
+      if (!foundMsg) {
+        throw new Error(
+          `No CCTP message found for transaction ${cleanHash.slice(0, 10)}... on Circle Iris API. It may still be confirming on the origin chain (takes 10-60s).`
+        );
       }
-      setAttestationData(msg);
+
+      setAttestationData(foundMsg);
+
+      // Resolve source & dest chains dynamically from the attestation
+      const srcDomainNum = parseInt(foundMsg.decodedMessage?.sourceDomain ?? String(foundDomain), 10);
+      const destDomainNum = parseInt(foundMsg.decodedMessage?.destinationDomain ?? "-1", 10);
+
+      const srcChainInfo = getCctpChainByDomain(srcDomainNum, isMain);
+      const destChainInfo = getCctpChainByDomain(destDomainNum, isMain);
+
+      const rawAmount = foundMsg.decodedMessage?.decodedMessageBody?.amount;
+      const parsedAmount = rawAmount ? parseFloat(formatUnits(BigInt(rawAmount), 6)) : tx.amount;
+
+      // Update recoveringTx with the true on-chain decoded data
+      const updatedTx: BridgeTx = {
+        ...tx,
+        sourceChain: srcChainInfo.name,
+        sourceIcon: srcChainInfo.icon,
+        destChain: destChainInfo.name,
+        destIcon: destChainInfo.icon,
+        amount: parsedAmount || tx.amount,
+        explorerUrl: `${srcChainInfo.explorerUrl}/tx/${cleanHash}`,
+      };
+      setRecoveringTx(updatedTx);
+
+      // Check if message was already claimed / minted on destination transmitter
+      try {
+        const rpcList = destChainInfo.domain === 26
+          ? (isMain ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS)
+          : (destChainInfo.domain === 6
+              ? (isMain ? ["https://mainnet.base.org", "https://base-rpc.publicnode.com"] : ["https://sepolia.base.org"])
+              : (destChainInfo.domain === 1
+                  ? (isMain ? ["https://api.avax.network/ext/bc/C/rpc"] : ["https://api.avax-test.network/ext/bc/C/rpc"])
+                  : (isMain ? ["https://ethereum-rpc.publicnode.com", "https://eth.drpc.org"] : ["https://ethereum-sepolia-rpc.publicnode.com"])));
+
+        const destClient = createPublicClient({
+          transport: fallback(rpcList.map(u => http(u, { timeout: 6000, retryCount: 1 })))
+        });
+
+        await destClient.call({
+          to: destChainInfo.transmitter,
+          data: encodeFunctionData({
+            abi: parseAbi(["function receiveMessage(bytes message, bytes attestation) returns (bool)"]),
+            functionName: "receiveMessage",
+            args: [foundMsg.message as `0x${string}`, foundMsg.attestation as `0x${string}`]
+          })
+        });
+      } catch (simErr: any) {
+        const errMsg = (simErr?.message || "").toLowerCase();
+        if (errMsg.includes("nonce already used") || errMsg.includes("already executed")) {
+          setIsAlreadyClaimed(true);
+          setClaimSuccess(true);
+          // Update status in history
+          setBridgeHistory(prev => {
+            const updated = prev.map(t =>
+              t.txHash.toLowerCase() === cleanHash.toLowerCase()
+                ? { ...t, status: "success" as const, destChain: destChainInfo.name, destIcon: destChainInfo.icon }
+                : t
+            );
+            if (walletAddress) {
+              localStorage.setItem(`synarc_bridge_history_${bridgeNetwork}_${walletAddress.toLowerCase()}`, JSON.stringify(updated));
+            }
+            return updated;
+          });
+        }
+      }
     } catch (err: any) {
       setClaimError(err?.message || "Failed to check Circle Iris attestation.");
     } finally {
@@ -524,20 +781,19 @@ export default function BridgePage() {
     }
   };
 
-  // Execute CCTP mint on Ethereum using the attestation
-  const executeClaimOnEthereum = async () => {
+  // Execute CCTP mint on actual destination chain using the attestation
+  const executeClaimOnDestination = async () => {
     if (!attestationData?.message || !attestationData?.attestation) {
       setClaimError("Attestation is not ready yet.");
       return;
     }
     setClaiming(true);
     setClaimError("");
+
     try {
       const isMain = bridgeNetwork === "mainnet";
-      const destChainId = isMain ? 1 : 11155111;
-      const transmitterAddress = isMain 
-        ? "0x81D40F21F12A8F0E3252Bccb954D722d4c464B64" 
-        : "0xe737e5cebeeba77efe34d4aa090756590b1ce275";
+      const destDomainNum = parseInt(attestationData.decodedMessage?.destinationDomain ?? "-1", 10);
+      const destConfig = getCctpChainByDomain(destDomainNum, isMain);
 
       const provider = await (
         activeWallet?.getEthereumProvider?.() ||
@@ -550,7 +806,8 @@ export default function BridgePage() {
         throw new Error("Wallet provider not found. Please connect your wallet.");
       }
 
-      await ensureWalletOnChain(provider, destChainId);
+      // Switch to destination chain
+      await ensureWalletOnChain(provider, destConfig.chainId);
 
       const { createWalletClient, custom } = await import("viem");
       const walletClient = createWalletClient({
@@ -560,9 +817,9 @@ export default function BridgePage() {
       const [account] = await walletClient.getAddresses();
       if (!account) throw new Error("No account found in wallet.");
 
-      await (walletClient as any).writeContract({
+      const mintTx = await (walletClient as any).writeContract({
         chain: null,
-        address: transmitterAddress,
+        address: destConfig.transmitter,
         abi: parseAbi([
           "function receiveMessage(bytes message, bytes attestation) returns (bool)"
         ]),
@@ -572,13 +829,20 @@ export default function BridgePage() {
       });
 
       setClaimSuccess(true);
-      
+
+      // Refresh balances across all contexts
+      invalidateUSDCBalance();
+      invalidateEURCBalance();
+      refetchArcUSDC();
+      refetchArcEURC();
+      fetchSourceBalance();
+
       // Update tx status in bridge history
       if (recoveringTx) {
         setBridgeHistory(prev => {
           const updated = prev.map(t => 
             t.txHash.toLowerCase() === recoveringTx.txHash.toLowerCase() 
-              ? { ...t, status: "success" as const } 
+              ? { ...t, status: "success" as const, destChain: destConfig.name, destIcon: destConfig.icon } 
               : t
           );
           if (walletAddress) {
@@ -592,10 +856,15 @@ export default function BridgePage() {
       const msg = err?.message || "";
       if (msg.toLowerCase().includes("user rejected") || msg.toLowerCase().includes("denied")) {
         setClaimError("Transaction cancelled by user.");
+      } else if (msg.toLowerCase().includes("nonce already used")) {
+        setClaimSuccess(true);
+        setIsAlreadyClaimed(true);
       } else if (msg.toLowerCase().includes("insufficient") || msg.toLowerCase().includes("gas")) {
-        setClaimError("Insufficient ETH for gas on Ethereum. Please ensure your wallet has ETH to pay transaction fees.");
+        const destDomainNum = parseInt(attestationData?.decodedMessage?.destinationDomain ?? "-1", 10);
+        const destConfig = getCctpChainByDomain(destDomainNum, bridgeNetwork === "mainnet");
+        setClaimError(`Insufficient gas on ${destConfig.name}. Please ensure your wallet has native ${destConfig.gasToken} to pay transaction fees.`);
       } else {
-        setClaimError(err?.message || "Failed to execute claim on Ethereum.");
+        setClaimError(err?.message || "Failed to execute claim on destination chain.");
       }
     } finally {
       setClaiming(false);
@@ -1466,7 +1735,7 @@ export default function BridgePage() {
                         </td>
                         <td className="py-3.5">
                           <a 
-                            href={tx.explorerUrl || (tx.sourceChain.toLowerCase().includes("arc") ? `${activeArcChain.blockExplorerUrl}/tx/${tx.txHash}` : (bridgeNetwork === "mainnet" ? `https://etherscan.io/tx/${tx.txHash}` : `https://sepolia.etherscan.io/tx/${tx.txHash}`))}
+                            href={tx.explorerUrl || getExplorerTxUrl(tx.sourceChain, tx.txHash, bridgeNetwork)}
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="text-primary hover:underline font-mono text-[11px] inline-flex items-center gap-1"
@@ -1485,7 +1754,7 @@ export default function BridgePage() {
                                 : "bg-surface-elevated text-text-secondary hover:text-white border border-border-thin"
                             }`}
                           >
-                            <span>{tx.status === "pending" ? "Claim on ETH" : "View Proof"}</span>
+                            <span>{tx.status === "pending" ? `Claim on ${tx.destChain || activeArcChain.name}` : "View Proof"}</span>
                             <ExternalLink className="w-2.5 h-2.5" />
                           </button>
                         </td>
@@ -1530,7 +1799,7 @@ export default function BridgePage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-base text-white">Circle CCTP Attestation & Claim</h3>
-                      <p className="text-[11px] text-muted">Verify consensus proofs and complete destination mint</p>
+                      <p className="text-[11px] text-muted">Verify consensus proofs and complete destination mint across Arc, Base, Ethereum & Avalanche</p>
                     </div>
                   </div>
                   <button
@@ -1546,14 +1815,25 @@ export default function BridgePage() {
                 {!recoveringTx && (
                   <div className="space-y-2">
                     <label className="text-xs text-text-tertiary font-bold uppercase tracking-wider block">
-                      Arc Burn Transaction Hash
+                      Burn Transaction Hash
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <select
+                        value={manualSourceChain}
+                        onChange={(e) => setManualSourceChain(e.target.value)}
+                        className="px-3 py-2.5 bg-surface/50 border border-border-thin rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-primary"
+                      >
+                        <option value="auto">Auto-Detect Origin</option>
+                        <option value="Base">Origin: Base</option>
+                        <option value="Ethereum">Origin: Ethereum</option>
+                        <option value="Avalanche">Origin: Avalanche</option>
+                        <option value="Arc">Origin: Arc</option>
+                      </select>
                       <input
                         type="text"
                         value={manualTxInput}
                         onChange={(e) => setManualTxInput(e.target.value)}
-                        placeholder="0x..."
+                        placeholder="0x... (from Base, Ethereum, Avalanche, or Arc)"
                         className="flex-1 px-3.5 py-2.5 bg-surface/50 border border-border-thin rounded-xl text-xs font-mono text-white placeholder-text-muted focus:outline-none focus:border-primary"
                       />
                       <button
@@ -1562,10 +1842,10 @@ export default function BridgePage() {
                           if (manualTxInput.trim()) {
                             checkAttestation({
                               id: "manual_" + Date.now(),
-                              sourceChain: activeArcChain.name,
-                              sourceIcon: "ARC",
-                              destChain: "Ethereum",
-                              destIcon: "ETH",
+                              sourceChain: manualSourceChain === "auto" ? "" : manualSourceChain,
+                              sourceIcon: manualSourceChain === "Base" ? "BASE" : (manualSourceChain === "Ethereum" ? "ETH" : (manualSourceChain === "Avalanche" ? "AVAX" : "ARC")),
+                              destChain: "Arc",
+                              destIcon: "ARC",
                               amount: 0,
                               txHash: manualTxInput.trim(),
                               timestamp: new Date().toISOString(),
@@ -1586,11 +1866,17 @@ export default function BridgePage() {
                   <div className="bg-surface/40 border border-border-thin p-4 rounded-2xl space-y-2.5 text-xs">
                     <div className="flex justify-between items-center">
                       <span className="text-muted">Origin Chain</span>
-                      <span className="font-bold text-white">{recoveringTx.sourceChain}</span>
+                      <span className="font-bold text-white flex items-center gap-1.5">
+                        <ChainIcon chain={recoveringTx.sourceChain} size={15} />
+                        <span>{recoveringTx.sourceChain}</span>
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted">Destination Chain</span>
-                      <span className="font-bold text-primary">{recoveringTx.destChain || "Ethereum"}</span>
+                      <span className="font-bold text-primary flex items-center gap-1.5">
+                        <ChainIcon chain={recoveringTx.destChain || activeArcChain.name} size={15} />
+                        <span>{recoveringTx.destChain || activeArcChain.name}</span>
+                      </span>
                     </div>
                     {recoveringTx.amount > 0 && (
                       <div className="flex justify-between items-center">
@@ -1599,9 +1885,9 @@ export default function BridgePage() {
                       </div>
                     )}
                     <div className="flex justify-between items-center border-t border-border-thin/40 pt-2">
-                      <span className="text-muted">Arc Burn Hash</span>
+                      <span className="text-muted">Burn Transaction Hash</span>
                       <a
-                        href={`${activeArcChain.blockExplorerUrl}/tx/${recoveringTx.txHash}`}
+                        href={recoveringTx.explorerUrl || getExplorerTxUrl(recoveringTx.sourceChain, recoveringTx.txHash, bridgeNetwork)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline font-mono font-bold flex items-center gap-1"
@@ -1633,14 +1919,27 @@ export default function BridgePage() {
                 {claimSuccess && (
                   <div className="p-3.5 bg-success/15 border border-success/30 rounded-2xl text-xs text-success flex items-start gap-2.5">
                     <Check className="w-4 h-4 shrink-0 mt-0.5" />
-                    <div className="font-semibold">
-                      Claim executed successfully! Your native {recoveringTx?.tokenSymbol || "tokens"} have been minted on {recoveringTx?.destChain || "Ethereum"}.
+                    <div className="font-semibold leading-relaxed">
+                      {isAlreadyClaimed
+                        ? `Transfer verified! Your native ${recoveringTx?.tokenSymbol || "tokens"} have already been minted and delivered to your wallet on ${recoveringTx?.destChain || activeArcChain.name}.`
+                        : `Claim executed successfully! Your native ${recoveringTx?.tokenSymbol || "tokens"} have been minted on ${recoveringTx?.destChain || activeArcChain.name}.`}
                     </div>
                   </div>
                 )}
 
+                {/* Already Claimed Card */}
+                {(isAlreadyClaimed || (claimSuccess && !claiming)) && (
+                  <div className="p-3.5 bg-surface/50 border border-success/20 rounded-2xl flex items-center justify-between text-xs">
+                    <span className="text-text-secondary">On-Chain Delivery Status</span>
+                    <span className="font-bold text-success flex items-center gap-1.5">
+                      <Check className="w-4 h-4 text-success" />
+                      Minted on {recoveringTx?.destChain || activeArcChain.name}
+                    </span>
+                  </div>
+                )}
+
                 {/* Attestation Status & Claim Button */}
-                {attestationData && (
+                {attestationData && !isAlreadyClaimed && !claimSuccess && (
                   <div className="space-y-4 animate-fade-in-up">
                     <div className="p-3.5 bg-success/10 border border-success/25 rounded-2xl flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
@@ -1654,28 +1953,23 @@ export default function BridgePage() {
                     <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-amber-300 text-xs space-y-1">
                       <p className="font-bold text-amber-200">Destination Gas Requirement Notice</p>
                       <p className="text-[11px] text-amber-300/80 leading-relaxed">
-                        To claim tokens on {recoveringTx?.destChain || "Ethereum"}, your wallet must submit the mint transaction and pay destination network gas fees. Ensure your wallet has sufficient native gas on the destination network.
+                        To claim tokens on {recoveringTx?.destChain || activeArcChain.name}, your wallet must submit the mint transaction and pay destination network gas fees ({recoveringTx?.destChain?.toLowerCase().includes("arc") ? "native USDC" : "native gas"}). Ensure your wallet has sufficient gas on {recoveringTx?.destChain || activeArcChain.name}.
                       </p>
                     </div>
 
                     <button
                       type="button"
-                      disabled={claiming || claimSuccess}
-                      onClick={executeClaimOnEthereum}
+                      disabled={claiming}
+                      onClick={executeClaimOnDestination}
                       className="w-full py-3.5 bg-primary hover:bg-primary-hover text-black font-extrabold text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {claiming ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin text-black" />
-                          <span>Minting {recoveringTx?.tokenSymbol || "tokens"} on {recoveringTx?.destChain || "Ethereum"}...</span>
-                        </>
-                      ) : claimSuccess ? (
-                        <>
-                          <Check className="w-4 h-4 text-black" />
-                          <span>Mint Completed</span>
+                          <span>Minting {recoveringTx?.tokenSymbol || "tokens"} on {recoveringTx?.destChain || activeArcChain.name}...</span>
                         </>
                       ) : (
-                        <span>Mint & Claim {recoveringTx?.tokenSymbol || "tokens"} on {recoveringTx?.destChain || "Ethereum"}</span>
+                        <span>Mint & Claim {recoveringTx?.tokenSymbol || "tokens"} on {recoveringTx?.destChain || activeArcChain.name}</span>
                       )}
                     </button>
                   </div>

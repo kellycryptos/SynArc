@@ -7,6 +7,7 @@ interface UseTreasuryReturn {
   balance: number; // Combined total in USD
   usdcBalance: number;
   eurcBalance: number;
+  cirBtcBalance: number;
   activities: TreasuryActivity[];
   loading: boolean;
   error: Error | null;
@@ -14,12 +15,13 @@ interface UseTreasuryReturn {
 }
 
 export function useTreasury(customTreasuryAddress?: string): UseTreasuryReturn {
-  const { balance, usdcBalance, eurcBalance, activities, loading, error, refetch } = useTreasuryBalances(customTreasuryAddress);
+  const { balance, usdcBalance, eurcBalance, cirBtcBalance, activities, loading, error, refetch } = useTreasuryBalances(customTreasuryAddress);
   
   return {
     balance,
     usdcBalance,
     eurcBalance,
+    cirBtcBalance,
     activities,
     loading,
     error: error ? new Error(error) : null,

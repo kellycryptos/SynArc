@@ -532,6 +532,7 @@ function useActiveCCTPBridge() {
     direction: "in" | "out",
     tokenSymbol: "USDC" | "EURC" = "USDC"
   ) => {
+    const isTestnetRoute = Boolean((chainConfig as any).isTestnet || (arcConfig as any).isTestnet);
     // Dynamic import to avoid SSR issues and gracefully handle missing package
     let BridgeKit: any, createViemAdapterFromProvider: any;
     try {
@@ -605,13 +606,15 @@ function useActiveCCTPBridge() {
     const sourceChainName = direction === "in" ? chainConfig.name : arcConfig.name;
     const destChainName   = direction === "in" ? arcConfig.name : chainConfig.name;
 
+    let capturedBurnTxHash = "";
     kit.on("burn", (event: any) => {
       console.log("[Kit] burn event:", event);
+      capturedBurnTxHash = event.values?.txHash || capturedBurnTxHash;
       setState(prev => ({
         ...prev,
         status: "burning",
         progress: 40,
-        burnTxHash: event.values?.txHash || prev.burnTxHash,
+        burnTxHash: capturedBurnTxHash || prev.burnTxHash,
         stepDetail: `Burn confirmed on ${sourceChainName}`
       }));
     });
@@ -675,15 +678,112 @@ function useActiveCCTPBridge() {
 
     const mintStep = result?.steps?.find((s: any) => s.name === "mint");
     const burnStep = result?.steps?.find((s: any) => s.name === "burn" || s.name === "depositForBurn");
+    let finalMintTxHash = mintStep?.txHash;
+    const finalBurnTxHash = burnStep?.txHash || capturedBurnTxHash;
 
-    setState(prev => ({
-      ...prev,
-      status: "success",
-      progress: 100,
-      txHash: mintStep?.txHash || prev.txHash,
-      burnTxHash: burnStep?.txHash || prev.burnTxHash,
-      stepDetail: `Bridge complete! ${tokenSymbol} arrived on ${destChainName}.`
-    }));
+    // If BridgeKit did not execute destination mint, complete it or mark as pending claim
+    if (!finalMintTxHash && finalBurnTxHash) {
+      console.log(`[Kit] Burn confirmed (${finalBurnTxHash}), checking destination mint on ${destChainName}...`);
+      setState(prev => ({
+        ...prev,
+        status: "waiting-attestation",
+        burnTxHash: finalBurnTxHash,
+        progress: 60,
+        stepDetail: `Fetching Circle attestation for ${destChainName} mint…`
+      }));
+
+      try {
+        const sourceDomain = direction === "in" ? chainConfig.domain : arcConfig.domain;
+        const irisBase = isTestnetRoute ? IRIS_API_SANDBOX_URL : IRIS_API_MAINNET_URL;
+
+        let attestationMsg: any = null;
+        for (let i = 0; i < 30; i++) {
+          await new Promise(r => setTimeout(r, 4000));
+          try {
+            const res = await fetch(`${irisBase}/v2/messages/${sourceDomain}?transactionHash=${finalBurnTxHash}`);
+            if (res.ok) {
+              const data = await res.json();
+              const m = data.messages?.[0];
+              if (m && m.status === "complete" && m.attestation && m.message) {
+                attestationMsg = m;
+                break;
+              }
+            }
+          } catch (pollErr) {
+            console.warn("[Kit Mint] Polling attestation error:", pollErr);
+          }
+        }
+
+        if (attestationMsg) {
+          setState(prev => ({
+            ...prev,
+            status: "minting",
+            progress: 80,
+            stepDetail: `Switching to ${destChainName} to claim ${tokenSymbol}…`
+          }));
+
+          const destChain = direction === "in" ? arcConfig : chainConfig;
+          await switchToChain(activeWallet, destChain, switchChainAsync);
+
+          setState(prev => ({
+            ...prev,
+            status: "minting",
+            progress: 90,
+            stepDetail: `Please confirm mint transaction on ${destChainName}…`
+          }));
+
+          const destViemChain = EVM_BRIDGE_CHAINS[destChain.id];
+          const userAddress = (activeWallet.address || (await provider.request({ method: 'eth_accounts' }))?.[0]) as `0x${string}`;
+          const destWalletClient = createWalletClient({
+            account: userAddress,
+            chain: destViemChain,
+            transport: custom(provider)
+          });
+
+          const destTransmitter = (destChain.messageTransmitter || (destChain as any).transmitter || CCTP_MSG_TRANSMITTER_V2) as `0x${string}`;
+
+          const mintTx = await destWalletClient.writeContract({
+            address: destTransmitter,
+            abi: CCTP_MESSAGE_TRANSMITTER_ABI,
+            functionName: "receiveMessage",
+            args: [attestationMsg.message as `0x${string}`, attestationMsg.attestation as `0x${string}`],
+            chain: destViemChain
+          });
+
+          const destRpcUrls = (destChain as any).rpcUrls || [(destChain as any).rpcUrl];
+          const destPublicClient = createPublicClient({
+            transport: fallback(destRpcUrls.map((u: string) => http(u, { timeout: 10_000, retryCount: 2 })))
+          });
+
+          await destPublicClient.waitForTransactionReceipt({ hash: mintTx });
+          finalMintTxHash = mintTx;
+        }
+      } catch (autoMintErr: any) {
+        console.warn("[Kit Mint] Auto-mint deferred or rejected:", autoMintErr);
+      }
+    }
+
+    if (finalMintTxHash) {
+      setState(prev => ({
+        ...prev,
+        status: "success",
+        progress: 100,
+        txHash: finalMintTxHash,
+        burnTxHash: finalBurnTxHash,
+        stepDetail: `Bridge complete! ${tokenSymbol} arrived on ${destChainName}.`
+      }));
+    } else {
+      // If mint was not confirmed yet, do NOT falsely report success.
+      // Leave in pending claim state so the user can claim with 1 click via the Claim button!
+      setState(prev => ({
+        ...prev,
+        status: "idle",
+        progress: 50,
+        txHash: "",
+        burnTxHash: finalBurnTxHash,
+        stepDetail: `Burn confirmed on ${sourceChainName}! Ready to claim on ${destChainName}.`
+      }));
+    }
 
     console.log("[Kit] Bridge complete:", result);
   };
