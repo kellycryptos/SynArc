@@ -1,12 +1,19 @@
-import { ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACTIVE_NETWORK, arcTestnet, arcMainnet } from '@/lib/arc-config';
-
-// Active-network RPC list — official Arc RPC is slot 0 (primary)
-const RPC_URLS = ACTIVE_NETWORK === 'mainnet' ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS;
-// Primary official Arc node
-const PRIMARY_RPC = RPC_URLS[0] || 'https://rpc.testnet.arc.network';
+import { 
+  ARC_TESTNET_RPC_URLS, 
+  ARC_MAINNET_RPC_URLS, 
+  getActiveNetwork, 
+  getMainnetRpcUrls, 
+  getTestnetRpcUrls, 
+  arcTestnet, 
+  arcMainnet 
+} from '@/lib/arc-config';
 
 export const getWorkingRPC = async (): Promise<string> => {
-  for (const url of RPC_URLS) {
+  const currentNet = getActiveNetwork();
+  const urls = currentNet === 'mainnet' ? getMainnetRpcUrls() : getTestnetRpcUrls();
+  const primaryFallback = urls[0] || (currentNet === 'mainnet' ? 'https://rpc.mainnet.arc.io' : 'https://rpc.testnet.arc.io');
+
+  for (const url of urls) {
     try {
       const res = await fetch(url, {
         method: 'POST',
@@ -17,16 +24,16 @@ export const getWorkingRPC = async (): Promise<string> => {
           params: [],
           id: 1
         }),
-        signal: AbortSignal.timeout(3000) // 3 second timeout
-      })
-      const data = await res.json()
-      if (data.result) return url // This RPC is working
+        signal: AbortSignal.timeout(2500)
+      });
+      const data = await res.json();
+      if (data.result) return url;
     } catch {
-      continue // Try next
+      continue;
     }
   }
-  return PRIMARY_RPC // Primary fallback
-}
+  return primaryFallback;
+};
 
 export const arcTestnetChain = arcTestnet;
 export const arcMainnetChain = arcMainnet;

@@ -87,8 +87,8 @@ async function run() {
         );
         if (!btn) return null;
         const text = btn.textContent.trim();
-        const nav = Array.from(document.querySelectorAll('button')).map(b => b.textContent.trim());
-        const hasFaucet = nav.includes('Faucet');
+        const nav = Array.from(document.querySelectorAll('a, button')).map(b => b.textContent.trim());
+        const hasFaucet = nav.some(t => t.includes('Faucet'));
         return { text, hasFaucet };
       })()`,
       returnByValue: true
@@ -121,11 +121,13 @@ async function run() {
   const clickSwitchRes = await send(pageWs, 'Runtime.evaluate', {
     expression: `(() => {
       const btn = Array.from(document.querySelectorAll('button')).find(b => 
-        b.textContent && b.textContent.includes('Switch to Testnet')
+        b.getAttribute('aria-haspopup') !== 'true' &&
+        b.textContent && 
+        (b.textContent.includes('Arc Testnet') || b.textContent.includes('5042002'))
       );
-      if (!btn) return { found: false };
+      if (!btn) return { found: false, allButtons: Array.from(document.querySelectorAll('button')).map(b => b.textContent?.trim().slice(0, 30)) };
       btn.click();
-      return { found: true };
+      return { found: true, text: btn.textContent?.trim() };
     })()`,
     returnByValue: true
   });
@@ -139,10 +141,10 @@ async function run() {
       const btn = Array.from(document.querySelectorAll('button')).find(b => 
         b.getAttribute('aria-haspopup') === 'true' && b.getBoundingClientRect().width > 0
       );
-      const nav = Array.from(document.querySelectorAll('button')).map(b => b.textContent.trim());
-      const hasFaucet = nav.includes('Faucet');
-      const hasSettings = nav.includes('Settings');
-      const hasDocs = nav.includes('Docs');
+      const nav = Array.from(document.querySelectorAll('a, button')).map(b => b.textContent.trim());
+      const hasFaucet = nav.some(t => t.includes('Faucet'));
+      const hasSettings = nav.some(t => t.includes('Settings'));
+      const hasDocs = nav.some(t => t.includes('Docs'));
       const mode = localStorage.getItem('synarc_active_network_mode');
       return { badge: btn?.textContent?.trim(), hasFaucet, hasSettings, hasDocs, mode };
     })()`,
@@ -172,11 +174,13 @@ async function run() {
   const clickBackRes = await send(pageWs, 'Runtime.evaluate', {
     expression: `(() => {
       const btn = Array.from(document.querySelectorAll('button')).find(b => 
-        b.textContent && b.textContent.includes('Switch to Mainnet')
+        b.getAttribute('aria-haspopup') !== 'true' &&
+        b.textContent && 
+        (b.textContent.includes('Arc Mainnet') || b.textContent.includes('5042'))
       );
-      if (!btn) return { found: false };
+      if (!btn) return { found: false, allButtons: Array.from(document.querySelectorAll('button')).map(b => b.textContent?.trim().slice(0, 30)) };
       btn.click();
-      return { found: true };
+      return { found: true, text: btn.textContent?.trim() };
     })()`,
     returnByValue: true
   });
@@ -190,8 +194,8 @@ async function run() {
       const btn = Array.from(document.querySelectorAll('button')).find(b => 
         b.getAttribute('aria-haspopup') === 'true' && b.getBoundingClientRect().width > 0
       );
-      const nav = Array.from(document.querySelectorAll('button')).map(b => b.textContent.trim());
-      const hasFaucet = nav.includes('Faucet');
+      const nav = Array.from(document.querySelectorAll('a, button')).map(b => b.textContent.trim());
+      const hasFaucet = nav.some(t => t.includes('Faucet'));
       const mode = localStorage.getItem('synarc_active_network_mode');
       return { badge: btn?.textContent?.trim(), hasFaucet, mode };
     })()`,

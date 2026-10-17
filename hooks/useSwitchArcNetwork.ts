@@ -55,9 +55,14 @@ function useActiveSwitchArcNetwork() {
         const provider = await activeWallet.getEthereumProvider();
         await ensureArcNetwork(provider, targetChainId);
       }
-      setTimeout(() => {
-        refetchBalance();
-      }, 1000);
+
+      const isTestnet = targetChainId === ARC_TESTNET_CHAIN_ID;
+      const netKey = isTestnet ? 'testnet' : 'mainnet';
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('synarc_active_network_mode', netKey);
+        window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork: netKey } }));
+      }
+      refetchBalance();
     } catch (err) {
       console.error("Error during chain switch operation:", err);
       throw err;
@@ -67,8 +72,9 @@ function useActiveSwitchArcNetwork() {
   }, [activeWallet, refetchBalance, switchChain, switchChainAsync]);
 
   const switchToArc = useCallback(async () => {
-    return switchToNetwork(ARC_MAINNET_CHAIN_ID);
-  }, [switchToNetwork]);
+    const target = isArcTestnet ? ARC_TESTNET_CHAIN_ID : ARC_MAINNET_CHAIN_ID;
+    return switchToNetwork(target);
+  }, [isArcTestnet, switchToNetwork]);
 
   const switchToMainnet = useCallback(async () => {
     return switchToNetwork(ARC_MAINNET_CHAIN_ID);

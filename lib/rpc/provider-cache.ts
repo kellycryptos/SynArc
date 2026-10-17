@@ -63,3 +63,14 @@ export async function getCachedProvider(): Promise<JsonRpcProvider> {
   return pendingPromises[net]!;
 }
 
+export function clearProviderCache() {
+  for (const k in cachedProviders) delete cachedProviders[k];
+  for (const k in pendingPromises) delete pendingPromises[k];
+  for (const k in cachedClients) delete cachedClients[k];
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("synarc_network_changed", clearProviderCache);
+}
+
+

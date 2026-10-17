@@ -2,7 +2,7 @@ import { defineChain } from 'viem'
 import { sepolia, baseSepolia, avalancheFuji, mainnet, base, avalanche } from 'viem/chains'
 
 // Documented public fallback constant for Arc Testnet
-export const ARC_TESTNET_FALLBACK_RPC = 'https://rpc.testnet.arc.network';
+export const ARC_TESTNET_FALLBACK_RPC = 'https://rpc.testnet.arc.io';
 
 /**
  * Resolves the proxy URL safely across both browser and server (SSR/Node) contexts.
@@ -65,13 +65,25 @@ function createRpcUrlsProxy(getUrls: () => string[]): string[] {
   });
 }
 
-// Arc Testnet list (chain 5042002) - Canteen primary, followed by official and proxy fallbacks
+// Arc Testnet list (chain 5042002)
+// In the browser, the same-origin proxy (/api/rpc/testnet) MUST be the primary endpoint,
+// avoiding adblocker filter lists and cross-origin Cloudflare throttling.
 export function getTestnetRpcUrls(): string[] {
+  if (typeof window !== 'undefined') {
+    return Array.from(new Set([
+      getTestnetProxyUrl(),
+      process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC,
+      process.env.NEXT_PUBLIC_ARC_RPC_URL,
+      'https://rpc.testnet.arc.io',
+      process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC,
+    ].filter(Boolean) as string[]));
+  }
   return Array.from(new Set([
-    CANTEEN_TESTNET_RPC,
-    'https://rpc.testnet.arc.network',
     'https://rpc.testnet.arc.io',
+    process.env.ARC_TESTNET_RPC_URL,
+    process.env.NEXT_PUBLIC_ARC_RPC_URL,
     getTestnetProxyUrl(),
+    process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC,
   ].filter(Boolean) as string[]));
 }
 

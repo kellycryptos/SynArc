@@ -12,7 +12,7 @@ import { arcTestnet, arcMainnet, ARC_TESTNET_RPC_URLS, ARC_MAINNET_RPC_URLS, ACT
 import { sepolia, baseSepolia, avalancheFuji, mainnet, base as baseChain, avalanche } from 'viem/chains'
 
 // Documented public fallback constant for Arc Testnet
-export const ARC_TESTNET_FALLBACK_RPC = 'https://rpc.testnet.arc.network';
+export const ARC_TESTNET_FALLBACK_RPC = 'https://rpc.testnet.arc.io';
 
 // Default network on any fresh page load with no wallet connected is always mainnet first
 const defaultChains = [arcMainnet, arcTestnet, mainnet, baseChain, avalanche, sepolia, baseSepolia, avalancheFuji] as const;
@@ -37,23 +37,13 @@ export const wagmiConfig = getDefaultConfig({
     },
   ],
   transports: {
-    // Arc Testnet: Canteen RPC primary → official non-blocked RPC → same-origin proxy → secondary
+    // Arc Testnet: same-origin proxy first (fast & immune to adblockers/CORS) → direct official Arc Testnet RPC
     [arcTestnet.id]: fallback(
       [
-        http(CANTEEN_TESTNET_RPC, {
-          timeout: 8000,
-          retryCount: 2,
-          retryDelay: 500,
-        }),
-        http('https://rpc.testnet.arc.network', {
-          timeout: 8000,
-          retryCount: 2,
-          retryDelay: 500,
-        }),
         http(getTestnetProxyUrl(), {
-          timeout: 8000,
+          timeout: 6000,
           retryCount: 2,
-          retryDelay: 500,
+          retryDelay: 300,
           fetchOptions: {
             headers: {
               'x-synarc-source': 'app-client',
@@ -61,14 +51,14 @@ export const wagmiConfig = getDefaultConfig({
           },
         }),
         http('https://rpc.testnet.arc.io', {
-          timeout: 8000,
+          timeout: 6000,
           retryCount: 1,
-          retryDelay: 500,
+          retryDelay: 300,
         }),
       ],
       {
         retryCount: 2,
-        retryDelay: 500,
+        retryDelay: 300,
         rank: false,
       }
     ),

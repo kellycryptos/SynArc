@@ -19,7 +19,7 @@ export const MAINNET_RPC_URLS = ARC_MAINNET_RPC_URLS;
 
 // Centralized resilient fallbacks dynamically proxying active network (Mainnet or Testnet)
 export const RPC_URLS = ARC_RPC_URLS;
-export const CANTEEN_RPC = TESTNET_RPC_URLS[0] || 'https://rpc.testnet.arc.network';
+export const CANTEEN_RPC = TESTNET_RPC_URLS[0] || 'https://rpc.testnet.arc.io';
 export const ARC_TESTNET_RPC = CANTEEN_RPC;
 
 /**

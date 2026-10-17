@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Documented public fallback constant for Arc Testnet RPC
-const PUBLIC_BACKUP_RPC = "https://rpc.testnet.arc.network";
+const PUBLIC_BACKUP_RPC = "https://rpc.testnet.arc.io";
 
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW_SECONDS = 60; // 1 minute
 const RATE_LIMIT_WINDOW_MS = RATE_LIMIT_WINDOW_SECONDS * 1000;
-const MAX_REQUESTS_PER_WINDOW = 300; // 300 requests / min per IP to prevent false rate limits
+const MAX_REQUESTS_PER_WINDOW = 800; // Generous capacity for high-throughput multicalls & rapid page switching
 
-// Canonical Arc Testnet RPC endpoints (Canteen Swarm primary → Arc official fallbacks)
-const CANTEEN_TESTNET_RPC = 
-  process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC?.trim() || 
+// Canonical Arc Testnet RPC endpoints
+const PRIMARY_TESTNET_RPC = 
   process.env.ARC_TESTNET_RPC_URL?.trim() || 
-  "https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_0009d65decffd41513652bd6eea966abc868aaacbbe84897e13c724d8fbf1be2";
-const PRIMARY_TESTNET_RPC = "https://rpc.testnet.arc.network";
-const SECONDARY_TESTNET_RPC = "https://rpc.testnet.arc.io";
+  process.env.NEXT_PUBLIC_ARC_RPC_URL?.trim() || 
+  "https://rpc.testnet.arc.io";
+const CANTEEN_TESTNET_RPC = process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC?.trim() || null;
 
 // In-memory fallback storage (IP -> timestamps[])
 const rateLimitMap = new Map<string, number[]>();
@@ -30,7 +29,23 @@ function getClientIp(req: NextRequest): string {
   return "127.0.0.1";
 }
 
+function isLocalOrInternal(ip: string): boolean {
+  return (
+    ip === "127.0.0.1" ||
+    ip === "::1" ||
+    ip === "localhost" ||
+    ip.includes("127.0.0.1") ||
+    ip.startsWith("::ffff:") ||
+    process.env.NODE_ENV !== "production"
+  );
+}
+
 function checkInMemoryRateLimit(ip: string): boolean {
+  // Allow unrestricted local testing and SSR calls
+  if (isLocalOrInternal(ip)) {
+    return true;
+  }
+
   const now = Date.now();
   const timestamps = rateLimitMap.get(ip) || [];
 
@@ -215,36 +230,49 @@ export async function POST(req: NextRequest) {
   try {
     const bodyText = await req.text();
     const candidateUrls = Array.from(new Set([
-      process.env.ARC_TESTNET_RPC_URL?.trim(),
-      CANTEEN_TESTNET_RPC,
       PRIMARY_TESTNET_RPC,
-      SECONDARY_TESTNET_RPC,
+      "https://rpc.testnet.arc.io",
+      PUBLIC_BACKUP_RPC,
+      CANTEEN_TESTNET_RPC,
     ])).filter(Boolean) as string[];
 
     let response: Response | null = null;
     let lastError: any = null;
 
     for (const endpoint of candidateUrls) {
-      try {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: bodyText,
-          signal: AbortSignal.timeout(6000),
-        });
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: bodyText,
+            signal: AbortSignal.timeout(4000),
+          });
 
-        if (res.ok) {
-          response = res;
+          if (res.ok) {
+            response = res;
+            break;
+          }
+
+          if (res.status === 429 && attempt === 0) {
+            // Short 120ms backoff before retrying on rate limit spike
+            await new Promise((r) => setTimeout(r, 120));
+            continue;
+          }
+
+          // If upstream returned 401/429/5xx, capture error and fallback to next endpoint
+          lastError = new Error(`Endpoint ${endpoint} failed with HTTP ${res.status}`);
+          break;
+        } catch (networkError) {
+          lastError = networkError;
           break;
         }
-
-        // If upstream returned 401/429/5xx, capture error and fallback to next endpoint
-        lastError = new Error(`Endpoint ${endpoint} failed with HTTP ${res.status}`);
-      } catch (networkError) {
-        lastError = networkError;
+      }
+      if (response && response.ok) {
+        break;
       }
     }
 

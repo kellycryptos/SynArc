@@ -7,7 +7,15 @@ import { getAggressiveGasParams, getAuthenticatedClient } from "@/lib/tx-helper"
 import { ARC_CHAIN, ARC_RPC_URLS, getActiveNetwork, CONTRACTS_MAINNET, CONTRACTS_TESTNET } from "@/lib/arc-config";
 import { createPublicClient, fallback, http } from "viem";
 import { getCachedProvider } from "@/lib/rpc/provider-cache";
-import historicalProposals from "@/data/historical-proposals.json";
+import historicalProposalsRaw from "@/data/historical-proposals.json";
+
+// Normalize historical proposals so dates (votingStarts, votingEnds) are consistently populated
+const historicalProposals: Proposal[] = (historicalProposalsRaw as any[]).map((hp) => ({
+  ...hp,
+  votingStarts: hp.votingStarts || hp.createdAt || (hp.timeline && hp.timeline[0]?.timestamp) || new Date().toISOString(),
+  votingEnds: hp.votingEnds || hp.endsAt || (hp.timeline && hp.timeline[hp.timeline.length - 1]?.timestamp) || new Date().toISOString(),
+}));
+
 import { 
   MAINNET_TREASURY_BASELINE, 
   TESTNET_TREASURY_BASELINE, 

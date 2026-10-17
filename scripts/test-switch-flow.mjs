@@ -167,7 +167,7 @@ async function run() {
         return rect.width > 0 && rect.height > 0;
       });
       if (!btn) return { success: false, reason: "Visible badge button not found" };
-      btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+      btn.click();
       return { success: true, text: btn.textContent?.trim() };
     })()`,
     returnByValue: true
@@ -179,7 +179,11 @@ async function run() {
   for (let i = 0; i < 20; i++) {
     const check = await send(pageWs, 'Runtime.evaluate', {
       expression: `(() => {
-        const btn = Array.from(document.querySelectorAll('button')).find(b => b.textContent && b.textContent.includes('Switch to Testnet'));
+        const btn = Array.from(document.querySelectorAll('button')).find(b => 
+          b.getAttribute('aria-haspopup') !== 'true' && 
+          b.textContent && 
+          (b.textContent.includes('Arc Testnet') || b.textContent.includes('5042002'))
+        );
         if (!btn) return null;
         btn.click();
         return { success: true, text: btn.textContent?.trim() };
@@ -222,7 +226,7 @@ async function run() {
         const rect = b.getBoundingClientRect();
         return rect.width > 0 && rect.height > 0;
       });
-      if (btn) btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+      if (btn) btn.click();
     })()`,
   });
 
@@ -231,7 +235,11 @@ async function run() {
   for (let i = 0; i < 20; i++) {
     const check = await send(pageWs, 'Runtime.evaluate', {
       expression: `(() => {
-        const btn = Array.from(document.querySelectorAll('button')).find(b => b.textContent && b.textContent.includes('Switch to Mainnet'));
+        const btn = Array.from(document.querySelectorAll('button')).find(b => 
+          b.getAttribute('aria-haspopup') !== 'true' && 
+          b.textContent && 
+          (b.textContent.includes('Arc Mainnet') || b.textContent.includes('5042'))
+        );
         if (!btn) return null;
         btn.click();
         return { success: true, text: btn.textContent?.trim() };

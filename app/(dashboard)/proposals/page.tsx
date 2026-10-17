@@ -314,7 +314,14 @@ export default function ProposalsPage() {
                             <span>Proposed by <span className="font-mono text-text-secondary">{proposal.proposer.slice(0,6)}...{proposal.proposer.slice(-4)}</span></span>
                           </div>
                           <span className="hidden xs:inline">•</span>
-                          <span className="shrink-0">Ends {new Date(proposal.votingEnds).toLocaleDateString()}</span>
+                          <span className="shrink-0">
+                            Ends {(() => {
+                              const raw = proposal.votingEnds || (proposal as any).endsAt || (proposal as any).endTime;
+                              if (!raw) return "TBD";
+                              const d = new Date(raw);
+                              return isNaN(d.getTime()) ? "TBD" : d.toLocaleDateString();
+                            })()}
+                          </span>
                         </div>
                       </div>
 

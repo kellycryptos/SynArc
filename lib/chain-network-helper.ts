@@ -45,7 +45,7 @@ export const CHAIN_METADATA: Record<number, AddEthereumChainParameter> = {
       symbol: 'USDC',
       decimals: 18,
     },
-    rpcUrls: ['https://rpc.testnet.arc.network', 'https://rpc.testnet.arc.io'],
+    rpcUrls: ['https://rpc.testnet.arc.io'],
     blockExplorerUrls: ['https://explorer.testnet.arc.io'],
   },
   // Ethereum Mainnet

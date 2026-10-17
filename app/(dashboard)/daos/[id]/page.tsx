@@ -646,7 +646,14 @@ export default function DAODetailsPage() {
                             <div className="flex items-center gap-4 text-[10px] text-muted font-semibold">
                               <span>Proposer: <span className="font-mono text-white">{proposal.proposer.slice(0, 6)}...{proposal.proposer.slice(-4)}</span></span>
                               <span>•</span>
-                              <span>Ends {new Date(proposal.votingEnds).toLocaleDateString()}</span>
+                              <span>
+                                Ends {(() => {
+                                  const raw = proposal.votingEnds || (proposal as any).endsAt || (proposal as any).endTime;
+                                  if (!raw) return "TBD";
+                                  const d = new Date(raw);
+                                  return isNaN(d.getTime()) ? "TBD" : d.toLocaleDateString();
+                                })()}
+                              </span>
                             </div>
                           </div>
 

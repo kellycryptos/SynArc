@@ -8,6 +8,7 @@ import {
   arcMainnet,
   ARC_CHAIN,
   ACTIVE_NETWORK,
+  getActiveNetwork,
   getMainnetProxyUrl,
   getTestnetProxyUrl,
 } from "@/lib/arc-config";
@@ -42,10 +43,11 @@ export const arcPublicClient = createPublicClient({
   transport: arcTransport,
 });
 
-// Ethers.js provider helper — uses Canteen as primary (ACTIVE_RPC_URLS[0])
+// Ethers.js provider helper — dynamically targets active network (mainnet or testnet)
 export function getArcEthersProvider(): JsonRpcProvider {
-  const primaryUrl = ACTIVE_RPC_URLS[0] || ARC_RPC_URL;
-  const isMainnet = ACTIVE_NETWORK === 'mainnet';
+  const isMainnet = getActiveNetwork() === 'mainnet';
+  const urls = isMainnet ? ARC_MAINNET_RPC_URLS : ARC_TESTNET_RPC_URLS;
+  const primaryUrl = urls[0] || (isMainnet ? getMainnetProxyUrl() : getTestnetProxyUrl());
   const network = isMainnet ? ARC_MAINNET_NETWORK : ARC_TESTNET_NETWORK;
   return new JsonRpcProvider(primaryUrl, network, { staticNetwork: true, batchMaxCount: 1 });
 }
@@ -61,11 +63,11 @@ export async function ensureArcNetwork(ethereumProvider: any, targetChainId: num
         process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL,
       ]
     : [
-        'https://rpc.testnet.arc.network',
         'https://rpc.testnet.arc.io',
+        process.env.NEXT_PUBLIC_ARC_RPC_URL,
       ];
   const rpcUrls = Array.from(new Set(rawRpcUrls.filter(Boolean))) as string[];
-  const explorerUrl = isMainnet ? "https://explorer.arc.io" : "https://testnet.arcscan.app";
+  const explorerUrl = isMainnet ? "https://explorer.arc.io" : "https://explorer.testnet.arc.io";
 
   try {
     await ethereumProvider.request({
@@ -91,7 +93,7 @@ export async function ensureArcNetwork(ethereumProvider: any, targetChainId: num
             nativeCurrency: {
               name: "USDC",
               symbol: "USDC",
-              decimals: isMainnet ? 18 : 6,
+              decimals: 18,
             },
             blockExplorerUrls: [explorerUrl],
           },

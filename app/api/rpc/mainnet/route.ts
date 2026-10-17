@@ -6,7 +6,7 @@ const PUBLIC_BACKUP_RPC = "https://rpc.mainnet.arc.io";
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW_SECONDS = 60; // 1 minute
 const RATE_LIMIT_WINDOW_MS = RATE_LIMIT_WINDOW_SECONDS * 1000;
-const MAX_REQUESTS_PER_WINDOW = 300; // 300 requests / min per IP to prevent false rate limits
+const MAX_REQUESTS_PER_WINDOW = 800; // Generous capacity for high-throughput multicalls & rapid page switching
 
 // In-memory fallback storage (IP -> timestamps[])
 const rateLimitMap = new Map<string, number[]>();
@@ -22,7 +22,23 @@ function getClientIp(req: NextRequest): string {
   return "127.0.0.1";
 }
 
+function isLocalOrInternal(ip: string): boolean {
+  return (
+    ip === "127.0.0.1" ||
+    ip === "::1" ||
+    ip === "localhost" ||
+    ip.includes("127.0.0.1") ||
+    ip.startsWith("::ffff:") ||
+    process.env.NODE_ENV !== "production"
+  );
+}
+
 function checkInMemoryRateLimit(ip: string): boolean {
+  // Allow unrestricted local testing and SSR calls
+  if (isLocalOrInternal(ip)) {
+    return true;
+  }
+
   const now = Date.now();
   const timestamps = rateLimitMap.get(ip) || [];
 
@@ -204,46 +220,56 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const upstreamUrl =
-      process.env.ARC_MAINNET_RPC_URL?.trim() ||
-      process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL?.trim() ||
-      PUBLIC_BACKUP_RPC;
     const bodyText = await req.text();
+    const candidateUrls = Array.from(new Set([
+      process.env.ARC_MAINNET_RPC_URL?.trim(),
+      process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL?.trim(),
+      PUBLIC_BACKUP_RPC,
+      process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_RPC?.trim(),
+      process.env.NEXT_PUBLIC_CANTEEN_MAINNET_RPC?.trim(),
+    ])).filter(Boolean) as string[];
 
-    let response: Response;
-    try {
-      response = await fetch(upstreamUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: bodyText,
-      });
+    let response: Response | null = null;
+    let lastError: any = null;
 
-      if (!response.ok && upstreamUrl !== PUBLIC_BACKUP_RPC) {
-        response = await fetch(PUBLIC_BACKUP_RPC, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: bodyText,
-        });
+    for (const endpoint of candidateUrls) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: bodyText,
+            signal: AbortSignal.timeout(4000),
+          });
+
+          if (res.ok) {
+            response = res;
+            break;
+          }
+
+          if (res.status === 429 && attempt === 0) {
+            // Short 120ms backoff before retrying on rate limit spike
+            await new Promise((r) => setTimeout(r, 120));
+            continue;
+          }
+
+          lastError = new Error(`Endpoint ${endpoint} failed with HTTP ${res.status}`);
+          break;
+        } catch (networkError) {
+          lastError = networkError;
+          break;
+        }
       }
-    } catch (networkError) {
-      if (upstreamUrl !== PUBLIC_BACKUP_RPC) {
-        response = await fetch(PUBLIC_BACKUP_RPC, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: bodyText,
-        });
-      } else {
-        throw networkError;
+      if (response && response.ok) {
+        break;
       }
+    }
+
+    if (!response) {
+      throw lastError || new Error("All mainnet RPC upstream endpoints failed");
     }
 
     const responseBody = await response.text();

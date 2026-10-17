@@ -176,57 +176,72 @@ function useActiveArcNetwork(): ArcNetworkState {
   const switchToMainnet = useCallback(async () => {
     try {
       if (isWalletConnected) {
-        if (typeof window !== 'undefined' && (window as any).ethereum) {
-          try {
-            await ensureWalletOnChain((window as any).ethereum, ARC_MAINNET_CHAIN_ID, false);
-          } catch {}
-        }
         if (switchChainAsync) {
-          await switchChainAsync({ chainId: ARC_MAINNET_CHAIN_ID });
+          try {
+            await switchChainAsync({ chainId: ARC_MAINNET_CHAIN_ID });
+          } catch (switchErr: any) {
+            if (typeof window !== 'undefined' && (window as any).ethereum) {
+              await ensureWalletOnChain((window as any).ethereum, ARC_MAINNET_CHAIN_ID, false);
+            } else {
+              throw switchErr;
+            }
+          }
         } else if (switchChain) {
           switchChain({ chainId: ARC_MAINNET_CHAIN_ID });
+        } else if (typeof window !== 'undefined' && (window as any).ethereum) {
+          await ensureWalletOnChain((window as any).ethereum, ARC_MAINNET_CHAIN_ID, false);
         }
-      } else {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('synarc_active_network_mode', 'mainnet');
-        }
-        setActiveNetwork('mainnet');
+      }
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('synarc_active_network_mode', 'mainnet');
+      }
+      setActiveNetwork('mainnet');
+      if (lastDispatchedNetwork !== 'mainnet') {
+        lastDispatchedNetwork = 'mainnet';
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork: 'mainnet' } }));
         }
       }
     } catch (error) {
       console.error('Failed to switch to Arc Mainnet:', error);
+      throw error;
     }
   }, [isWalletConnected, switchChain, switchChainAsync]);
 
   const switchToTestnet = useCallback(async () => {
     try {
       if (isWalletConnected) {
-        // Sync official RPC with Rabby/MetaMask to eliminate stale 401 nodes
-        if (typeof window !== 'undefined' && (window as any).ethereum) {
-          try {
-            await ensureWalletOnChain((window as any).ethereum, ARC_TESTNET_CHAIN_ID, true);
-          } catch (e) {
-            console.warn('[useArcNetwork] Auto-add testnet chain failed:', e);
-          }
-        }
         if (switchChainAsync) {
-          await switchChainAsync({ chainId: ARC_TESTNET_CHAIN_ID });
+          try {
+            await switchChainAsync({ chainId: ARC_TESTNET_CHAIN_ID });
+          } catch (switchErr: any) {
+            if (typeof window !== 'undefined' && (window as any).ethereum) {
+              await ensureWalletOnChain((window as any).ethereum, ARC_TESTNET_CHAIN_ID, false);
+            } else {
+              throw switchErr;
+            }
+          }
         } else if (switchChain) {
           switchChain({ chainId: ARC_TESTNET_CHAIN_ID });
+        } else if (typeof window !== 'undefined' && (window as any).ethereum) {
+          await ensureWalletOnChain((window as any).ethereum, ARC_TESTNET_CHAIN_ID, false);
         }
-      } else {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('synarc_active_network_mode', 'testnet');
-        }
-        setActiveNetwork('testnet');
+      }
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('synarc_active_network_mode', 'testnet');
+      }
+      setActiveNetwork('testnet');
+      if (lastDispatchedNetwork !== 'testnet') {
+        lastDispatchedNetwork = 'testnet';
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('synarc_network_changed', { detail: { activeNetwork: 'testnet' } }));
         }
       }
     } catch (error) {
       console.error('Failed to switch to Arc Testnet:', error);
+      throw error;
     }
   }, [isWalletConnected, switchChain, switchChainAsync]);
 
