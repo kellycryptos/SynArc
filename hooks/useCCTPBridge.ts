@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useContext } from "react";
 import { useWallets } from "@/hooks/useWallets";
-import { useSwitchChain, useAccount } from "wagmi";
+import { useSwitchChain, useAccount, WagmiContext } from "wagmi";
 import {
   createPublicClient,
   createWalletClient,
@@ -350,8 +350,9 @@ export async function checkArcGasBalance(
 // ============================================================
 export function useCCTPBridge() {
   const deferred = useDeferredWeb3();
+  const wagmiContext = useContext(WagmiContext);
 
-  if (deferred && !deferred.isMounted) {
+  if (!deferred?.isMounted || !wagmiContext) {
     return {
       state: INITIAL_STATE,
       bridgeUSDC: async () => {},

@@ -68,6 +68,30 @@ const VERIFIED_PAYOUT_PROOFS = [
   }
 ];
 
+function safeFormatDate(ts: string | number | undefined): string {
+  if (!ts) return "";
+  try {
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
+
+function safeFormatDateTime(ts: string | number | undefined): string {
+  if (!ts) return "";
+  try {
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? "" : d.toLocaleString();
+  } catch {
+    return "";
+  }
+}
+
 export function LandingActivitySection() {
   const { proposals, treasuryActivities, initialized, initializeStore } = useGovernanceStore();
   const { isArcMainnet } = useArcNetwork();
@@ -78,7 +102,9 @@ export function LandingActivitySection() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const visibleProposals = proposals.slice(0, 5);
+  const safeProposals = Array.isArray(proposals) ? proposals : [];
+  const safeActivities = Array.isArray(treasuryActivities) ? treasuryActivities : [];
+  const visibleProposals = safeProposals.slice(0, 5);
 
   return (
     <section
@@ -122,7 +148,7 @@ export function LandingActivitySection() {
                   : "text-muted hover:text-foreground"
               }`}
             >
-              <span className="truncate">Proposals ({proposals.length > 0 ? proposals.length : "..."})</span>
+              <span className="truncate">Proposals ({safeProposals.length > 0 ? safeProposals.length : "..."})</span>
             </button>
           </div>
         </div>
@@ -183,7 +209,7 @@ export function LandingActivitySection() {
             ))}
 
             {/* Dynamic additional outflows from treasury contract if any */}
-            {treasuryActivities.filter(a => a.type === "Outflow" && !VERIFIED_PAYOUT_PROOFS.some(p => p.deliverableURI === a.txHash)).map((act, i) => (
+            {safeActivities.filter(a => a && a.type === "Outflow" && !VERIFIED_PAYOUT_PROOFS.some(p => p.deliverableURI && p.deliverableURI === a.txHash)).map((act, i) => (
               <GlassCard
                 key={act.id || i}
                 delay={0.1 + i * 0.05}
@@ -196,7 +222,7 @@ export function LandingActivitySection() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-foreground truncate">{act.description}</p>
-                      <p className="text-xs text-muted font-mono mt-0.5">{new Date(act.timestamp).toLocaleString()}</p>
+                      <p className="text-xs text-muted font-mono mt-0.5">{safeFormatDateTime(act.timestamp)}</p>
                     </div>
                   </div>
                   <div className="font-mono text-sm font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
@@ -253,16 +279,12 @@ export function LandingActivitySection() {
                               {p.createdAt && (
                                 <span className="flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
-                                  {new Date(p.createdAt).toLocaleDateString(undefined, {
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric",
-                                  })}
+                                  {safeFormatDate(p.createdAt)}
                                 </span>
                               )}
                               {p.forVotes !== undefined && p.forVotes > 0 && (
                                 <span className="text-primary font-semibold">
-                                  {p.forVotes.toLocaleString()} sARC Votes (100% For)
+                                  {Number(p.forVotes).toLocaleString()} sARC Votes (100% For)
                                 </span>
                               )}
                             </div>
@@ -290,7 +312,7 @@ export function LandingActivitySection() {
                     href="/proposals"
                     className="inline-flex items-center gap-1.5 text-sm font-mono text-primary hover:underline transition-colors"
                   >
-                    View all {proposals.length} proposals & cast vote
+                    View all {safeProposals.length} proposals & cast vote
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>

@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useEffect, useContext } from 'react';
+import { useAccount, useDisconnect, WagmiContext } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useCircleWallet } from '@/hooks/useCircleWallet';
 import { useDeferredWeb3 } from '@/providers/DeferredWeb3Provider';
 
 export function useAuth() {
   const deferred = useDeferredWeb3();
+  const wagmiContext = useContext(WagmiContext);
 
   // If Web3Provider has not been mounted yet (guest mode before idle/interaction),
   // return safe stub methods so calling useAuth() in guest UI components
   // never throws a React context error or triggers early Web3 SDK execution.
-  if (!deferred || !deferred.isMounted) {
+  if (!deferred || !deferred.isMounted || !wagmiContext) {
     return {
       ready: true,
       isAuthenticated: false,

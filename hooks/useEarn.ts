@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useContext } from "react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useWallets as usePrivyWallets } from "@/hooks/useWallets";
 import { selectActiveWallet } from "@/lib/tx-helper";
 import { wrapEip1193ProviderWithAutoAdd, ensureWalletOnChain } from "@/lib/chain-network-helper";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
-import { useConnectorClient } from "wagmi";
+import { useConnectorClient, WagmiContext } from "wagmi";
 import { toast } from "react-hot-toast";
 import { invalidateUSDCBalance } from "@/hooks/useUSDCBalance";
 import type { ArcEarnChain, EarnVault, DepositQuote, WithdrawalQuote, EarnPosition } from "@/types/earn";
@@ -82,10 +82,11 @@ const buildAdapter = async (provider: any) => {
 
 export function useEarn() {
   const deferred = useDeferredWeb3();
+  const wagmiContext = useContext(WagmiContext);
 
   // If Web3Provider has not been mounted yet (SSR or unauthenticated visitor),
   // use the guest version of useEarn so no Wagmi hooks are executed outside WagmiProvider.
-  if (deferred && !deferred.isMounted) {
+  if (!deferred?.isMounted || !wagmiContext) {
     return useGuestEarn();
   }
 

@@ -10,7 +10,7 @@ interface DeferredWeb3ContextType {
 }
 
 export const DeferredWeb3Context = createContext<DeferredWeb3ContextType>({
-  isMounted: true,
+  isMounted: false,
   mountWeb3: () => {},
   mountWeb3AndLogin: () => {},
 });

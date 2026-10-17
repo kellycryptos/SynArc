@@ -12,13 +12,15 @@ import { useState, useCallback } from "react";
 import { ensureArcNetwork } from "@/lib/arc/config";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { selectActiveWallet } from "@/lib/tx-helper";
+import { useContext } from "react";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
-import { useSwitchChain } from "wagmi";
+import { useSwitchChain, WagmiContext } from "wagmi";
 
 export function useSwitchArcNetwork() {
   const deferred = useDeferredWeb3();
+  const wagmiContext = useContext(WagmiContext);
 
-  if (deferred && !deferred.isMounted) {
+  if (!deferred?.isMounted || !wagmiContext) {
     return {
       switchToArc: async () => {},
       switchToNetwork: async () => {},

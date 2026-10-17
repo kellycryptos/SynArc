@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from 'react';
-import { useAccount, useSwitchChain } from 'wagmi';
+import { useMemo, useContext } from 'react';
+import { useAccount, useSwitchChain, WagmiContext } from 'wagmi';
 import { useCircleWallet } from '@/hooks/useCircleWallet';
 import { ARC_CHAIN } from '@/lib/arc-config';
 import { useDeferredWeb3 } from '@/providers/DeferredWeb3Provider';
@@ -18,7 +18,8 @@ export interface SynArcConnectedWallet {
 
 export function useWallets() {
   const deferred = useDeferredWeb3();
-  if (!deferred?.isMounted) {
+  const wagmiContext = useContext(WagmiContext);
+  if (!deferred?.isMounted || !wagmiContext) {
     return {
       wallets: [],
       ready: true,

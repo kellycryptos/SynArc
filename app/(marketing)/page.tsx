@@ -13,6 +13,7 @@ import {
 import { GlassCard } from "@/components/ui/GlassCard";
 import { FloatingAIChatLazy } from "@/components/marketing/FloatingAIChatLazy";
 import { LandingActivitySectionLazy } from "@/components/marketing/LandingActivitySectionLazy";
+import { SectionErrorBoundary } from "@/components/ErrorBoundary";
 
 /* ─────────────────────────────────────────────────────────────
    Sub-components — pure presentational, no hooks
@@ -252,7 +253,9 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           §4  REAL ACTIVITY — client island (honest empty state)
           ════════════════════════════════════════════════════════ */}
-      <LandingActivitySectionLazy />
+      <SectionErrorBoundary sectionName="Proposals and Activity">
+        <LandingActivitySectionLazy />
+      </SectionErrorBoundary>
 
       {/* ════════════════════════════════════════════════════════
           §5  FINAL CTA
@@ -293,7 +296,9 @@ export default function LandingPage() {
       </section>
 
       {/* Floating AI assistant — client island */}
-      <FloatingAIChatLazy />
+      <SectionErrorBoundary sectionName="AI Companion">
+        <FloatingAIChatLazy />
+      </SectionErrorBoundary>
     </div>
   );
 }

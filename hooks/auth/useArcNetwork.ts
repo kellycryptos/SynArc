@@ -1,6 +1,6 @@
 "use client";
 
-import { useChainId, useSwitchChain, useAccount } from 'wagmi';
+import { useChainId, useSwitchChain, useAccount, WagmiContext } from 'wagmi';
 import { 
   arcTestnet, 
   arcMainnet, 
@@ -10,7 +10,7 @@ import {
   setActiveNetwork 
 } from '@/lib/arc-config';
 import { ensureWalletOnChain, updateWalletChainRpc } from '@/lib/chain-network-helper';
-import { useEffect, useCallback, useSyncExternalStore } from 'react';
+import { useEffect, useCallback, useSyncExternalStore, useContext } from 'react';
 import { useDeferredWeb3 } from '@/providers/DeferredWeb3Provider';
 
 export const ARC_TESTNET_CHAIN_ID = 5042002;
@@ -107,7 +107,8 @@ function useFallbackArcNetwork(): ArcNetworkState {
 
 export function useArcNetwork(): ArcNetworkState {
   const deferred = useDeferredWeb3();
-  if (!deferred?.isMounted) {
+  const wagmiContext = useContext(WagmiContext);
+  if (!deferred?.isMounted || !wagmiContext) {
     return useFallbackArcNetwork();
   }
   return useActiveArcNetwork();

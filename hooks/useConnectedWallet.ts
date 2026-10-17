@@ -8,14 +8,16 @@
 
 "use client";
 
-import { useAccount } from "wagmi";
+import { useContext } from "react";
+import { useAccount, WagmiContext } from "wagmi";
 import { useWallets } from "./useWallets";
 import { useCircleWallet } from "./useCircleWallet";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 
 export function useConnectedWallet() {
   const deferred = useDeferredWeb3();
-  if (!deferred?.isMounted) {
+  const wagmiContext = useContext(WagmiContext);
+  if (!deferred?.isMounted || !wagmiContext) {
     return {
       isConnected: false,
       isWagmi: false,
