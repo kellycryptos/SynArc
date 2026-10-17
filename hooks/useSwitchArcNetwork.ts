@@ -17,24 +17,6 @@ import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 import { useSwitchChain, WagmiContext } from "wagmi";
 
 export function useSwitchArcNetwork() {
-  const deferred = useDeferredWeb3();
-  const wagmiContext = useContext(WagmiContext);
-
-  if (!deferred?.isMounted || !wagmiContext) {
-    return {
-      switchToArc: async () => {},
-      switchToNetwork: async () => {},
-      switchToMainnet: async () => {},
-      switchToTestnet: async () => {},
-      isSwitching: false,
-      shouldShowButton: false,
-    };
-  }
-
-  return useActiveSwitchArcNetwork();
-}
-
-function useActiveSwitchArcNetwork() {
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   const { isUnsupported, isArcTestnet } = useArcNetwork();

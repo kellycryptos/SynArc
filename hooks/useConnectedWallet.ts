@@ -15,26 +15,6 @@ import { useCircleWallet } from "./useCircleWallet";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
 
 export function useConnectedWallet() {
-  const deferred = useDeferredWeb3();
-  const wagmiContext = useContext(WagmiContext);
-  if (!deferred?.isMounted || !wagmiContext) {
-    return {
-      isConnected: false,
-      isWagmi: false,
-      isPrivy: false,
-      isCircle: false,
-      walletAddress: "",
-      email: "",
-      authMethod: "unknown" as "circle" | "wallet" | "unknown",
-      privyUser: null,
-      wallets: [],
-      privyReady: true,
-    };
-  }
-  return useActiveConnectedWallet();
-}
-
-function useActiveConnectedWallet() {
   const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
   const { wallets } = useWallets();
 

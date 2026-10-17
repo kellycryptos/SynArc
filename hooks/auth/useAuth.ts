@@ -7,35 +7,6 @@ import { useCircleWallet } from '@/hooks/useCircleWallet';
 import { useDeferredWeb3 } from '@/providers/DeferredWeb3Provider';
 
 export function useAuth() {
-  const deferred = useDeferredWeb3();
-  const wagmiContext = useContext(WagmiContext);
-
-  // If Web3Provider has not been mounted yet (guest mode before idle/interaction),
-  // return safe stub methods so calling useAuth() in guest UI components
-  // never throws a React context error or triggers early Web3 SDK execution.
-  if (!deferred || !deferred.isMounted || !wagmiContext) {
-    return {
-      ready: true,
-      isAuthenticated: false,
-      user: null as any,
-      login: deferred?.mountWeb3AndLogin || (() => {}),
-      logout: () => {},
-      email: "",
-      walletAddress: "",
-      authMethod: "unknown" as "email" | "google" | "twitter" | "discord" | "wallet" | "circle" | "unknown",
-      linkWallet: () => {},
-      unlinkWallet: () => {},
-      isCircle: false,
-    };
-  }
-
-  return useActiveAuth();
-}
-
-/**
- * Inner hook called only when Web3Provider is mounted in the React tree.
- */
-function useActiveAuth() {
   const { openConnectModal } = useConnectModal();
   const { disconnect } = useDisconnect();
   const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
@@ -92,7 +63,7 @@ function useActiveAuth() {
     logout,
     email,
     walletAddress,
-    authMethod,
+    authMethod: authMethod as AuthMethod,
     linkWallet: () => {},
     unlinkWallet: () => {},
     isCircle: circleConnected,

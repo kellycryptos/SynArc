@@ -17,18 +17,6 @@ export interface SynArcConnectedWallet {
 }
 
 export function useWallets() {
-  const deferred = useDeferredWeb3();
-  const wagmiContext = useContext(WagmiContext);
-  if (!deferred?.isMounted || !wagmiContext) {
-    return {
-      wallets: [],
-      ready: true,
-    };
-  }
-  return useActiveWallets();
-}
-
-function useActiveWallets() {
   const { address, isConnected, connector, chainId } = useAccount();
   const { switchChainAsync } = useSwitchChain();
   const { circleConnected, circleAddress } = useCircleWallet();

@@ -106,15 +106,6 @@ function useFallbackArcNetwork(): ArcNetworkState {
 }
 
 export function useArcNetwork(): ArcNetworkState {
-  const deferred = useDeferredWeb3();
-  const wagmiContext = useContext(WagmiContext);
-  if (!deferred?.isMounted || !wagmiContext) {
-    return useFallbackArcNetwork();
-  }
-  return useActiveArcNetwork();
-}
-
-function useActiveArcNetwork(): ArcNetworkState {
   const chainId = useChainId();
   const { isConnected } = useAccount();
   const { switchChain, switchChainAsync, isPending: isSwitching } = useSwitchChain();

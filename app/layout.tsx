@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Sora, Space_Grotesk, IBM_Plex_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { DeferredWeb3Provider } from "@/providers/DeferredWeb3Provider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
@@ -87,25 +88,27 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <ErrorBoundary sectionName="Root Application">
-            {/* Ambient page background */}
-            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-              <div className="absolute inset-0 bg-background" />
-              <div className="absolute inset-0 grid-overlay opacity-30" />
-              {/* Subtle top glow */}
-              <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[400px] opacity-15"
-                style={{
-                  background:
-                    "radial-gradient(ellipse at top, rgba(47,111,255,0.2) 0%, rgba(34,211,238,0.1) 45%, transparent 70%)",
-                }}
-              />
-            </div>
+          <DeferredWeb3Provider>
+            <ErrorBoundary sectionName="Root Application">
+              {/* Ambient page background */}
+              <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+                <div className="absolute inset-0 bg-background" />
+                <div className="absolute inset-0 grid-overlay opacity-30" />
+                {/* Subtle top glow */}
+                <div
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[400px] opacity-15"
+                  style={{
+                    background:
+                      "radial-gradient(ellipse at top, rgba(47,111,255,0.2) 0%, rgba(34,211,238,0.1) 45%, transparent 70%)",
+                  }}
+                />
+              </div>
 
-            <div className="relative z-10 flex flex-col min-h-screen w-full overflow-x-clip">
-              {children}
-            </div>
-          </ErrorBoundary>
+              <div className="relative z-10 flex flex-col min-h-screen w-full overflow-x-clip">
+                {children}
+              </div>
+            </ErrorBoundary>
+          </DeferredWeb3Provider>
         </ThemeProvider>
         <Analytics />
         <SpeedInsights />
