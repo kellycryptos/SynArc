@@ -11,6 +11,7 @@ import {
   getActiveNetwork,
   getMainnetProxyUrl,
   getTestnetProxyUrl,
+  CANTEEN_TESTNET_RPC,
 } from "@/lib/arc-config";
 import { ARC_MAINNET_NETWORK, ARC_TESTNET_NETWORK } from "@/lib/rpc/config";
 
@@ -63,6 +64,9 @@ export async function ensureArcNetwork(ethereumProvider: any, targetChainId: num
         process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL,
       ]
     : [
+        CANTEEN_TESTNET_RPC,
+        process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC,
+        'https://rpc.testnet.arc.network',
         'https://rpc.testnet.arc.io',
         process.env.NEXT_PUBLIC_ARC_RPC_URL,
       ];

@@ -2,6 +2,7 @@ import {
   ARC_MAINNET_RPC_URLS, 
   ARC_TESTNET_RPC_URLS, 
   ARC_TESTNET_FALLBACK_RPC,
+  CANTEEN_TESTNET_RPC,
   getMainnetProxyUrl,
   getTestnetProxyUrl
 } from './arc-config';
@@ -45,7 +46,11 @@ export const CHAIN_METADATA: Record<number, AddEthereumChainParameter> = {
       symbol: 'USDC',
       decimals: 18,
     },
-    rpcUrls: ['https://rpc.testnet.arc.io'],
+    rpcUrls: [
+      CANTEEN_TESTNET_RPC,
+      'https://rpc.testnet.arc.network',
+      'https://rpc.testnet.arc.io',
+    ],
     blockExplorerUrls: ['https://explorer.testnet.arc.io'],
   },
   // Ethereum Mainnet

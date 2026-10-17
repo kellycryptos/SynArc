@@ -72,17 +72,22 @@ export function getTestnetRpcUrls(): string[] {
   if (typeof window !== 'undefined') {
     return Array.from(new Set([
       getTestnetProxyUrl(),
-      process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC,
-      process.env.NEXT_PUBLIC_ARC_RPC_URL,
-      'https://rpc.testnet.arc.io',
+      CANTEEN_TESTNET_RPC,
       process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC,
+      process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC,
+      'https://rpc.testnet.arc.network',
+      'https://rpc.testnet.arc.io',
+      process.env.NEXT_PUBLIC_ARC_RPC_URL,
     ].filter(Boolean) as string[]));
   }
   return Array.from(new Set([
-    'https://rpc.testnet.arc.io',
+    CANTEEN_TESTNET_RPC,
     process.env.ARC_TESTNET_RPC_URL,
-    process.env.NEXT_PUBLIC_ARC_RPC_URL,
+    process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC,
+    'https://rpc.testnet.arc.network',
+    'https://rpc.testnet.arc.io',
     getTestnetProxyUrl(),
+    process.env.NEXT_PUBLIC_ARC_RPC_URL,
     process.env.NEXT_PUBLIC_ALCHEMY_TESTNET_RPC,
   ].filter(Boolean) as string[]));
 }

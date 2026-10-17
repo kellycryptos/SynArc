@@ -8,12 +8,12 @@ const RATE_LIMIT_WINDOW_SECONDS = 60; // 1 minute
 const RATE_LIMIT_WINDOW_MS = RATE_LIMIT_WINDOW_SECONDS * 1000;
 const MAX_REQUESTS_PER_WINDOW = 800; // Generous capacity for high-throughput multicalls & rapid page switching
 
-// Canonical Arc Testnet RPC endpoints
-const PRIMARY_TESTNET_RPC = 
+// Canonical Arc Testnet RPC endpoints — Canteen Swarm as primary testnet node
+const CANTEEN_TESTNET_RPC = 
+  process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC?.trim() || 
   process.env.ARC_TESTNET_RPC_URL?.trim() || 
-  process.env.NEXT_PUBLIC_ARC_RPC_URL?.trim() || 
-  "https://rpc.testnet.arc.io";
-const CANTEEN_TESTNET_RPC = process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC?.trim() || null;
+  "https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_0009d65decffd41513652bd6eea966abc868aaacbbe84897e13c724d8fbf1be2";
+const PRIMARY_TESTNET_RPC = CANTEEN_TESTNET_RPC;
 
 // In-memory fallback storage (IP -> timestamps[])
 const rateLimitMap = new Map<string, number[]>();
@@ -230,10 +230,13 @@ export async function POST(req: NextRequest) {
   try {
     const bodyText = await req.text();
     const candidateUrls = Array.from(new Set([
+      CANTEEN_TESTNET_RPC,
       PRIMARY_TESTNET_RPC,
+      process.env.ARC_TESTNET_RPC_URL?.trim(),
+      process.env.NEXT_PUBLIC_ARC_RPC_URL?.trim(),
+      "https://rpc.testnet.arc.network",
       "https://rpc.testnet.arc.io",
       PUBLIC_BACKUP_RPC,
-      CANTEEN_TESTNET_RPC,
     ])).filter(Boolean) as string[];
 
     let response: Response | null = null;

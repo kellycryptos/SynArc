@@ -4,7 +4,13 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { ARC_GAS } from '@/lib/arc-config'
 
 // ─── Network Definitions ───────────────────────────────────────────────────
+const CANTEEN_TESTNET_RPC = 
+  process.env.NEXT_PUBLIC_CANTEEN_TESTNET_RPC?.trim() ||
+  process.env.ARC_TESTNET_RPC_URL?.trim() || 
+  'https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_0009d65decffd41513652bd6eea966abc868aaacbbe84897e13c724d8fbf1be2';
+
 const TESTNET_RPC_URLS = [
+  CANTEEN_TESTNET_RPC,
   process.env.ARC_TESTNET_RPC_URL?.trim() || '',
   'https://rpc.testnet.arc.network',
   'https://rpc.testnet.arc.io',
@@ -21,8 +27,8 @@ const arcTestnetChain = defineChain({
   name: 'Arc Testnet',
   nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://rpc.testnet.arc.network', 'https://rpc.testnet.arc.io'] },
-    public:  { http: ['https://rpc.testnet.arc.network', 'https://rpc.testnet.arc.io'] },
+    default: { http: [CANTEEN_TESTNET_RPC, 'https://rpc.testnet.arc.network', 'https://rpc.testnet.arc.io'] },
+    public:  { http: [CANTEEN_TESTNET_RPC, 'https://rpc.testnet.arc.network', 'https://rpc.testnet.arc.io'] },
   },
   blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
 })
