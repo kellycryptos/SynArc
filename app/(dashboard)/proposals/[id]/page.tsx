@@ -17,11 +17,10 @@ import { formatUnits, createWalletClient, createPublicClient, fallback, custom, 
 import { GovernorABI, ERC20ABI } from "@/lib/governance/contracts";
 import { ARC_GAS_CONFIG } from "@/lib/constants";
 import { writeWithRetry, getSigner, enforceChain, getAuthenticatedClient, waitForTransaction, getAggressiveGasParams, selectActiveWallet } from "@/lib/tx-helper";
-import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS } from "@/lib/arc-config";
+import { ARC_GAS, ARC_CHAIN, ARC_RPC_URLS, CONTRACTS, CONTRACTS_MAINNET, CONTRACTS_TESTNET } from "@/lib/arc-config";
 import { resolveAttestationLink } from "@/lib/attestation";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" as `0x${string}`;
-const SARC_ADDRESS = CONTRACTS.token as `0x${string}`;
 const GOVERNOR_ABI = GovernorABI;
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -67,13 +66,28 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
   const unwrappedParams = use(params);
   const router = useRouter();
   const { isAuthenticated, walletAddress, login, isCircle } = useAuth();
-  const { isArcMainnet, explorerUrl } = useArcNetwork();
+  const { isArcMainnet, isArcTestnet, explorerUrl, contracts, currentChainId, arcChain } = useArcNetwork();
   // Safe: Circle wallet does not register with Privy wallets list
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
   const { currentBlock } = useArcRpcHealth();
 
-  const { proposals, initialized, initializeStore, userVotes, castVote, executeProposal } = useGovernanceStore();
+  const { proposals, initialized, initializeStore, userVotes, castVote, executeProposal, currentDao } = useGovernanceStore();
+
+  // Dynamically resolve target contract addresses matching connected network and custom DAO context
+  const effectiveTokenAddress = (
+    currentDao?.tokenAddress ||
+    contracts?.token ||
+    (isArcMainnet ? CONTRACTS_MAINNET.token : CONTRACTS_TESTNET.token)
+  ) as `0x${string}`;
+
+  const effectiveGovernorAddress = (
+    currentDao?.governorAddress ||
+    contracts?.governor ||
+    (isArcMainnet ? CONTRACTS_MAINNET.governor : CONTRACTS_TESTNET.governor)
+  ) as `0x${string}`;
+
+  const effectiveChainId = currentChainId || (isArcMainnet ? 5042 : 5042002);
   const rawParamId = unwrappedParams.id;
   const normalizedParamId = rawParamId ? rawParamId.replace(/^SIP-/i, "") : "";
   const proposal = proposals.find(p => 
@@ -242,7 +256,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       try {
         const provider = await getResilientProvider();
         const governorContract = new Contract(
-          CONTRACTS.governor,
+          effectiveGovernorAddress,
           GovernorABI,
           provider
         );
@@ -271,7 +285,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       }
     }
     fetchVoters();
-  }, [proposal, voting, initialized]);
+  }, [proposal, voting, initialized, effectiveGovernorAddress]);
 
   useEffect(() => {
     async function checkVoted() {
@@ -295,7 +309,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
       try {
         const provider = await getResilientProvider();
-        const governorAddress = CONTRACTS.governor;
+        const governorAddress = effectiveGovernorAddress;
         const GOVERNOR_ABI = [
           "function hasVoted(uint256 proposalId, address account) external view returns (bool)"
         ];
@@ -312,13 +326,13 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       }
     }
     checkVoted();
-  }, [walletAddress, proposal, voting, initialized, isCircle]);
+  }, [walletAddress, proposal, voting, initialized, isCircle, effectiveGovernorAddress]);
 
   const handleDelegate = async () => {
     if (!userAddress) return;
     setDelegating(true);
     try {
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, effectiveChainId, walletAddress);
       const SARC_DELEGATE_ABI = [{
         name: "delegate",
         type: "function",
@@ -329,7 +343,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
       const gasParams = await getAggressiveGasParams(publicClient);
       const hash = await walletClient.writeContract({
-        address: SARC_ADDRESS,
+        address: effectiveTokenAddress,
         abi: SARC_DELEGATE_ABI,
         functionName: "delegate",
         args: [address],
@@ -454,7 +468,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       setStatus('Confirming vote on Arc blockchain...');
 
       // Get provider and client — Privy wallet, Circle wallet OR external wallet
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, effectiveChainId, walletAddress);
 
       // Dynamically estimate fees using low-latency and aggressive parameters
       const gasParams = await getAggressiveGasParams(publicClient);
@@ -481,14 +495,14 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       }] as const;
 
       const currentDelegate = await publicClient.readContract({
-        address: SARC_ADDRESS,
+        address: effectiveTokenAddress,
         abi: SARC_DELEGATE_ABI,
         functionName: "delegates",
         args: [address]
       });
 
       const balance = await publicClient.readContract({
-        address: SARC_ADDRESS,
+        address: effectiveTokenAddress,
         abi: SARC_DELEGATE_ABI,
         functionName: "balanceOf",
         args: [address]
@@ -499,7 +513,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
         toast.loading('Activating voting power (one-time delegation)...');
         
         const delegateTx = await walletClient.writeContract({
-          address: SARC_ADDRESS,
+          address: effectiveTokenAddress,
           abi: SARC_DELEGATE_ABI,
           functionName: "delegate",
           args: [address],
@@ -519,7 +533,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       let estimatedVoteGas = 350000n; // Slightly higher gas limit floor
       try {
         const est = await publicClient.estimateContractGas({
-          address: CONTRACTS.governor,
+          address: effectiveGovernorAddress,
           abi: GOVERNOR_ABI,
           functionName: 'castVote',
           args: [rawId, supportValue],
@@ -534,7 +548,7 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
       setVoteStage("wallet_prompt");
       setStatus('Please sign the vote transaction in your wallet...');
       const voteTx = await walletClient.writeContract({
-        address: CONTRACTS.governor,
+        address: effectiveGovernorAddress,
         abi: GOVERNOR_ABI,
         functionName: 'castVote',
         args: [rawId, supportValue],
@@ -648,10 +662,10 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
       toast.loading("Please approve execution in your wallet...", { id: "exec-prop" });
       // Enforce active Arc chain before transaction with robust switching
-      const ethereumProvider = await enforceChain(activeWallet, ARC_CHAIN.id);
+      const ethereumProvider = await enforceChain(activeWallet, effectiveChainId);
       const browserProvider = new BrowserProvider(ethereumProvider, {
-        chainId: ARC_CHAIN.id,
-        name: ARC_CHAIN.name
+        chainId: effectiveChainId,
+        name: isArcMainnet ? 'Arc' : 'Arc Testnet'
       });
       const signer = await browserProvider.getSigner(activeWallet.address);
 
@@ -1023,14 +1037,20 @@ export default function ProposalDetailsPage({ params }: { params: Promise<{ id: 
 
                 <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl text-xs text-center space-y-1">
                   <span className="text-text-tertiary">Real on-chain voting requires gas.</span>
-                  <a 
-                    href="https://faucet.circle.com" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-primary hover:underline font-bold block"
-                  >
-                    Claim USDC Gas Faucet
-                  </a>
+                  {isArcTestnet ? (
+                    <a 
+                      href="https://faucet.circle.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-primary hover:underline font-bold block"
+                    >
+                      Claim USDC Gas Faucet
+                    </a>
+                  ) : (
+                    <span className="text-text-tertiary block text-[11px]">
+                      Arc native gas fee: ~0.0001 USDC
+                    </span>
+                  )}
                 </div>
               </div>
             </GlassCard>

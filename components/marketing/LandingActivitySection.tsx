@@ -11,6 +11,7 @@
 
 import { useState, useEffect } from "react";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
+import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Clock, ArrowRight, Inbox, ExternalLink, CheckCircle2, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
@@ -69,6 +70,7 @@ const VERIFIED_PAYOUT_PROOFS = [
 
 export function LandingActivitySection() {
   const { proposals, treasuryActivities, initialized, initializeStore } = useGovernanceStore();
+  const { isArcMainnet } = useArcNetwork();
   const [activeTab, setActiveTab] = useState<"proposals" | "payouts">("payouts");
 
   useEffect(() => {
@@ -301,7 +303,7 @@ export function LandingActivitySection() {
                   </div>
                 </div>
                 <h3 className="font-mono text-base font-semibold text-foreground mb-2">
-                  No proposals yet on Arc Mainnet
+                  No proposals yet on {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}
                 </h3>
                 <p className="text-sm text-muted max-w-sm mx-auto mb-8 leading-relaxed">
                   The governor contract is live. Be among the first to submit a funded proposal.

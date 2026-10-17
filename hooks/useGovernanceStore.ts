@@ -114,6 +114,84 @@ interface GovernanceState {
 
 export const TESTNET_BASELINE_PROPOSALS: Proposal[] = [
   {
+    id: "SIP-3119",
+    title: "Proposed by Treasury Agent — AI Security Mesh: Deploy Forensic Sentinel Node",
+    description: "AUTONOMOUS AGENT PROPOSAL\nAction: forensic_audit\nAmount: 30 USDC\nCategory: GOVERNANCE_UPGRADE\nObjective: Fund autonomous compute infrastructure for real-time mempool scanning and dual-agent adversarial transaction simulation.",
+    proposer: "0x35630dfe2592ab19d979ec1b173697aea554b66b",
+    category: "GOVERNANCE_UPGRADE",
+    status: "Active",
+    forVotes: 14802000,
+    againstVotes: 0,
+    abstainVotes: 0,
+    totalVotes: 14802000,
+    participationPercentage: 98.7,
+    treasuryImpactValue: -30,
+    treasuryImpact: "-30 USDC",
+    timeRemaining: "7 days left",
+    createdAt: "2026-10-17T16:25:09.000Z",
+    votingStarts: "2026-10-17T16:25:09.000Z",
+    votingEnds: "2026-10-24T16:25:09.000Z",
+    executionTarget: "0x35630dfe2592ab19d979ec1b173697aea554b66b",
+    votingDuration: 7,
+    deliverableURI: "",
+    timeline: [
+      { title: "Proposal Created", timestamp: "2026-10-17T16:25:09.000Z", status: "Proposed" },
+      { title: "Voting Phase Active", timestamp: "2026-10-17T16:25:09.000Z", status: "Active" }
+    ]
+  },
+  {
+    id: "SIP-3118",
+    title: "Proposed by Treasury Agent — Ecosystem Liquidity Provision: Seed sARC/USDC DEX Pool",
+    description: "AUTONOMOUS AGENT PROPOSAL\nAction: liquidity_provision\nAmount: 40 USDC\nCategory: TREASURY_REBALANCE\nObjective: Deposit liquidity into automated market maker pairs to deepen secondary market depth and minimize slippage for community token holders on Arc Testnet.",
+    proposer: "0x35630dfe2592ab19d979ec1b173697aea554b66b",
+    category: "TREASURY_REBALANCE",
+    status: "Active",
+    forVotes: 14802000,
+    againstVotes: 0,
+    abstainVotes: 0,
+    totalVotes: 14802000,
+    participationPercentage: 98.7,
+    treasuryImpactValue: -40,
+    treasuryImpact: "-40 USDC",
+    timeRemaining: "7 days left",
+    createdAt: "2026-10-17T16:24:24.000Z",
+    votingStarts: "2026-10-17T16:24:24.000Z",
+    votingEnds: "2026-10-24T16:24:24.000Z",
+    executionTarget: "0x35630dfe2592ab19d979ec1b173697aea554b66b",
+    votingDuration: 7,
+    deliverableURI: "",
+    timeline: [
+      { title: "Proposal Created", timestamp: "2026-10-17T16:24:24.000Z", status: "Proposed" },
+      { title: "Voting Phase Active", timestamp: "2026-10-17T16:24:24.000Z", status: "Active" }
+    ]
+  },
+  {
+    id: "SIP-3117",
+    title: "Proposed by Treasury Agent — Yield Allocation: Deploy 50 USDC to Circle Yield Strategy",
+    description: "AUTONOMOUS AGENT PROPOSAL\nAction: yield_allocation\nAmount: 50 USDC\nCategory: TREASURY_REBALANCE\nObjective: Allocate idle treasury stablecoin reserves into verified Circle yield strategies to earn annualized treasury returns for SynArc DAO on Arc Testnet.",
+    proposer: "0x35630dfe2592ab19d979ec1b173697aea554b66b",
+    category: "TREASURY_REBALANCE",
+    status: "Active",
+    forVotes: 14802000,
+    againstVotes: 0,
+    abstainVotes: 0,
+    totalVotes: 14802000,
+    participationPercentage: 98.7,
+    treasuryImpactValue: -50,
+    treasuryImpact: "-50 USDC",
+    timeRemaining: "7 days left",
+    createdAt: "2026-10-17T16:23:52.000Z",
+    votingStarts: "2026-10-17T16:23:52.000Z",
+    votingEnds: "2026-10-24T16:23:52.000Z",
+    executionTarget: "0x35630dfe2592ab19d979ec1b173697aea554b66b",
+    votingDuration: 7,
+    deliverableURI: "",
+    timeline: [
+      { title: "Proposal Created", timestamp: "2026-10-17T16:23:52.000Z", status: "Proposed" },
+      { title: "Voting Phase Active", timestamp: "2026-10-17T16:23:52.000Z", status: "Active" }
+    ]
+  },
+  {
     id: "SIP-2990",
     title: "Contractor Payout: Security Sentinel & Agent Stack Infrastructure Milestone",
     description: "Payout 0.01 USDC for contractor deliverable verification and Sentinel node deployment.",
@@ -139,6 +217,58 @@ export const TESTNET_BASELINE_PROPOSALS: Proposal[] = [
       { title: "Voting Phase Active", timestamp: "2026-10-09T15:13:23.000Z", status: "Active" },
       { title: "Voting Closed & Passed", timestamp: "2026-10-09T15:14:23.000Z", status: "Passed" },
       { title: "Transaction Executed", timestamp: "2026-10-09T15:15:29.000Z", status: "Executed" }
+    ]
+  },
+  {
+    id: "SIP-2989",
+    title: "Contractor Payout: Security Sentinel & Agent Stack Infrastructure Milestone",
+    description: "Payout 0.01 USDC for contractor deliverable verification and Sentinel node deployment.",
+    proposer: "0x35630dfe2592ab19d979ec1b173697aea554b66b",
+    category: "CONTRACTOR_PAYOUT",
+    status: "Defeated",
+    forVotes: 0,
+    againstVotes: 14803000,
+    abstainVotes: 0,
+    totalVotes: 14803000,
+    participationPercentage: 98.7,
+    treasuryImpactValue: -0.01,
+    treasuryImpact: "-0.01 USDC",
+    timeRemaining: "Ended",
+    createdAt: "2026-10-09T14:48:00.000Z",
+    votingStarts: "2026-10-09T14:48:00.000Z",
+    votingEnds: "2026-10-09T14:49:00.000Z",
+    executionTarget: "0xE819090D7810D89f2E86e167d0b58425dEd745D8",
+    votingDuration: 60,
+    deliverableURI: "",
+    timeline: [
+      { title: "Proposal Created", timestamp: "2026-10-09T14:48:00.000Z", status: "Proposed" },
+      { title: "Voting Closed & Defeated", timestamp: "2026-10-09T14:49:00.000Z", status: "Defeated" }
+    ]
+  },
+  {
+    id: "SIP-2988",
+    title: "Contractor Payout: Security Sentinel Node Test",
+    description: "Testing testnet payout flow for contractor milestone.",
+    proposer: "0x35630dfe2592ab19d979ec1b173697aea554b66b",
+    category: "CONTRACTOR_PAYOUT",
+    status: "Defeated",
+    forVotes: 0,
+    againstVotes: 14803000,
+    abstainVotes: 0,
+    totalVotes: 14803000,
+    participationPercentage: 98.7,
+    treasuryImpactValue: -0.01,
+    treasuryImpact: "-0.01 USDC",
+    timeRemaining: "Ended",
+    createdAt: "2026-10-09T14:30:00.000Z",
+    votingStarts: "2026-10-09T14:30:00.000Z",
+    votingEnds: "2026-10-09T14:31:00.000Z",
+    executionTarget: "0xE819090D7810D89f2E86e167d0b58425dEd745D8",
+    votingDuration: 60,
+    deliverableURI: "",
+    timeline: [
+      { title: "Proposal Created", timestamp: "2026-10-09T14:30:00.000Z", status: "Proposed" },
+      { title: "Voting Closed & Defeated", timestamp: "2026-10-09T14:31:00.000Z", status: "Defeated" }
     ]
   }
 ];
@@ -240,9 +370,10 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       ? (isMainnet 
           ? [...cachedLiveProposalsEager, ...uniqueSimEager]
           : [
-              ...(cachedLiveProposalsEager.length > 0 ? cachedLiveProposalsEager : TESTNET_BASELINE_PROPOSALS),
+              ...cachedLiveProposalsEager,
+              ...TESTNET_BASELINE_PROPOSALS.filter(bp => !cachedLiveIds.has(bp.id)),
               ...uniqueSimEager,
-              ...(historicalProposals as Proposal[])
+              ...(historicalProposals as Proposal[]).filter(hp => !cachedLiveIds.has(hp.id) && !TESTNET_BASELINE_PROPOSALS.some(bp => bp.id === hp.id))
             ])
       : [...cachedLiveProposalsEager, ...uniqueSimEager];
 
@@ -311,11 +442,23 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
                 governorContract.state(i),
               ]), 8000);
             } catch {
-              // Fallback for standard OpenZeppelin governor contracts that expose proposals(uint256)
-              [p, proposalStateNum] = await withTimeout(Promise.all([
-                governorContract.proposals(i),
-                governorContract.state(i),
-              ]), 8000);
+              try {
+                // Fallback for contracts with 15-field getProposal (without deliverableURI)
+                const gov15 = new Contract(governorAddress, [
+                  "function getProposal(uint256) view returns (uint256 id, address proposer, string title, string description, string category, uint256 votingDuration, uint256 startTime, uint256 endTime, uint256 forVotes, uint256 againstVotes, uint256 abstainVotes, bool canceled, bool executed, uint256 treasuryImpactValue, address executionTarget)",
+                  "function state(uint256) view returns (uint8)"
+                ], provider);
+                [p, proposalStateNum] = await withTimeout(Promise.all([
+                  gov15.getProposal(i),
+                  gov15.state(i),
+                ]), 8000);
+              } catch {
+                // Fallback for standard OpenZeppelin governor contracts that expose proposals(uint256)
+                [p, proposalStateNum] = await withTimeout(Promise.all([
+                  governorContract.proposals(i),
+                  governorContract.state(i),
+                ]), 8000);
+              }
             }
             return { i, p, proposalStateNum };
           })
@@ -333,6 +476,21 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           continue;
         }
         const { p, proposalStateNum } = result.value;
+
+        const rawTitle = p.title ? String(p.title).trim() : "";
+        const rawDesc = p.description ? String(p.description).trim() : "";
+        // Filter out fuzz/test placeholder proposals created by automated scripts on testnet
+        const isFuzzSpam = /^Proposal \d+$/i.test(rawTitle) && (!rawDesc || rawDesc === "community" || rawDesc === "general" || rawDesc.length < 15);
+        if (isFuzzSpam) {
+          continue;
+        }
+
+        let safeDeliverableURI = "";
+        try {
+          safeDeliverableURI = p.deliverableURI ? String(p.deliverableURI) : "";
+        } catch {
+          safeDeliverableURI = "";
+        }
 
           // Vote weights are sARC governance token amounts — 18 decimals
           const forV = Number(formatUnits(p.forVotes, 18));
@@ -377,8 +535,8 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
           loadedProposals.push({
             id: `SIP-${propIdStr}`,
-            title: p.title || `Proposal #${propIdStr}`,
-            description: p.description || "Governance Proposal",
+            title: rawTitle || `Proposal #${propIdStr}`,
+            description: rawDesc || "Governance Proposal",
             proposer: p.proposer,
             category: p.category || "General",
             status: status as ProposalStatus,
@@ -395,7 +553,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
             votingEnds: new Date(endTimeSecs * 1000).toISOString(),
             executionTarget: p.executionTarget || ethers.ZeroAddress,
             votingDuration: p.votingDuration ? Number(p.votingDuration) / 86400 : 7,
-            deliverableURI: p.deliverableURI || "",
+            deliverableURI: safeDeliverableURI,
             timeline
           });
       }
@@ -424,20 +582,28 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const uniqueSimulated = simulatedProposals.filter(p => !loadedIds.has(p.id));
 
       let combinedProposals = [...loadedProposals, ...uniqueSimulated];
-      // Only include testnet historical baseline proposals on Testnet
+      // Only include testnet baseline and historical proposals on Testnet
       if (activeDaoId === 'synarc' && !isMainnet) {
-        // If loadedProposals didn't include SIP-2990 (e.g. offline/fallback), merge TESTNET_BASELINE_PROPOSALS
-        const has2990 = combinedProposals.some(p => p.id === 'SIP-2990');
-        if (!has2990) {
-          combinedProposals = [...TESTNET_BASELINE_PROPOSALS, ...combinedProposals];
-        }
+        // Merge any baseline proposals not captured in the recent on-chain window
+        const existingIds = new Set(combinedProposals.map(p => p.id));
+        const missingBaseline = TESTNET_BASELINE_PROPOSALS.filter(p => !existingIds.has(p.id));
+        combinedProposals = [...combinedProposals, ...missingBaseline];
 
         const normalizedHistorical = (historicalProposals as any[]).map((hp) => ({
           ...hp,
           votingStarts: hp.votingStarts || hp.createdAt || (hp.timeline && hp.timeline[0]?.timestamp) || new Date().toISOString(),
           votingEnds: hp.votingEnds || hp.endsAt || (hp.timeline && hp.timeline[hp.timeline.length - 1]?.timestamp) || new Date().toISOString(),
         }));
-        combinedProposals = [...combinedProposals, ...normalizedHistorical];
+        const currentIds = new Set(combinedProposals.map(p => p.id));
+        const missingHistorical = normalizedHistorical.filter(p => !currentIds.has(p.id));
+        combinedProposals = [...combinedProposals, ...missingHistorical];
+
+        // Ensure descending sort by proposal number so recent proposals are first
+        combinedProposals.sort((a, b) => {
+          const idA = parseInt(a.id.replace(/\D/g, ""), 10) || 0;
+          const idB = parseInt(b.id.replace(/\D/g, ""), 10) || 0;
+          return idB - idA;
+        });
       }
 
       const treasuryAddress = contracts.treasury;
@@ -604,7 +770,11 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         }
       }
       const fallbackProposals = (activeDaoId === 'synarc' && !isMainnet)
-        ? [...simulatedProposals, ...(historicalProposals as Proposal[])]
+        ? [
+            ...TESTNET_BASELINE_PROPOSALS,
+            ...simulatedProposals.filter(sp => !TESTNET_BASELINE_PROPOSALS.some(bp => bp.id === sp.id)),
+            ...(historicalProposals as Proposal[]).filter(hp => !TESTNET_BASELINE_PROPOSALS.some(bp => bp.id === hp.id))
+          ]
         : simulatedProposals;
       // RPC timeout/failure: preserve baseline
       set({
@@ -638,15 +808,28 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       const absoluteImpactValue = BigInt(Math.abs(proposalData.treasuryImpactValue)) * 1000000n;
       const targetAddress = proposalData.executionTarget || ethers.ZeroAddress;
 
-      const tx = await governorContract.propose(
-        proposalData.title.trim(),
-        proposalData.description.trim(),
-        proposalData.category.trim(),
-        votingDurationSecs,
-        absoluteImpactValue,
-        targetAddress,
-        proposalData.deliverableURI || ""
-      );
+      let tx: any;
+      try {
+        tx = await governorContract['propose(string,string,string,uint256,uint256,address,string)'](
+          proposalData.title.trim(),
+          proposalData.description.trim(),
+          proposalData.category.trim(),
+          votingDurationSecs,
+          absoluteImpactValue,
+          targetAddress,
+          proposalData.deliverableURI || ""
+        );
+      } catch {
+        // Fallback to 6-argument propose if 7-argument signature is not supported
+        tx = await governorContract['propose(string,string,string,uint256,uint256,address)'](
+          proposalData.title.trim(),
+          proposalData.description.trim(),
+          proposalData.category.trim(),
+          votingDurationSecs,
+          absoluteImpactValue,
+          targetAddress
+        );
+      }
 
       const receipt = await tx.wait();
 

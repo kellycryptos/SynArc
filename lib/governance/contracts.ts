@@ -42,6 +42,20 @@ export const GovernorABI = [
   },
   {
     type: 'function',
+    name: 'propose',
+    inputs: [
+      { name: 'title', type: 'string' },
+      { name: 'description', type: 'string' },
+      { name: 'category', type: 'string' },
+      { name: 'votingDuration', type: 'uint256' },
+      { name: 'treasuryImpactValue', type: 'uint256' },
+      { name: 'executionTarget', type: 'address' },
+    ],
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
     name: 'castVote',
     inputs: [
       { name: 'proposalId', type: 'uint256' },

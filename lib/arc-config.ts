@@ -129,6 +129,13 @@ let _activeNetworkState: 'mainnet' | 'testnet' = ACTIVE_NETWORK;
 export function getActiveNetwork(): 'mainnet' | 'testnet' {
   if (typeof window !== 'undefined') {
     try {
+      const ethChain = (window as any).ethereum?.chainId;
+      if (ethChain === '0x13b2' || ethChain === 5042 || ethChain === '5042') {
+        return 'mainnet';
+      }
+      if (ethChain === '0x4cef02' || ethChain === 5042002 || ethChain === '5042002') {
+        return 'testnet';
+      }
       const saved = localStorage.getItem('synarc_active_network_mode');
       if (saved === 'testnet' || saved === 'mainnet') {
         return saved;

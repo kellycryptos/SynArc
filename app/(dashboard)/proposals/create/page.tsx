@@ -16,7 +16,7 @@ import { parseArcError } from "@/lib/utils";
 import { RpcHealthBanner } from "@/components/ui/RpcHealthBanner";
 import { toast } from "react-hot-toast";
 import { writeWithRetry, enforceChain, getAuthenticatedClient, getAggressiveGasParams, waitForTransaction } from "@/lib/tx-helper";
-import { CONTRACTS, ARC_CHAIN } from "@/lib/arc-config";
+import { CONTRACTS, CONTRACTS_MAINNET, CONTRACTS_TESTNET, ARC_CHAIN } from "@/lib/arc-config";
 import { GovernorABI } from "@/lib/governance/contracts";
 import { createWalletClient, createPublicClient, custom, fallback, http } from "viem";
 import { validateAttestationURI } from "@/lib/attestation";
@@ -25,7 +25,12 @@ import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 export default function CreateProposalPage() {
   const router = useRouter();
   const { walletAddress, isAuthenticated, login, isCircle } = useAuth();
-  const { activeNetwork, isArcMainnet, explorerUrl } = useArcNetwork();
+  const { activeNetwork, isArcMainnet, explorerUrl, contracts, currentChainId } = useArcNetwork();
+
+  const effectiveTokenAddress = (contracts?.token || (isArcMainnet ? CONTRACTS_MAINNET.token : CONTRACTS_TESTNET.token)) as `0x${string}`;
+  const effectiveGovernorAddress = (contracts?.governor || (isArcMainnet ? CONTRACTS_MAINNET.governor : CONTRACTS_TESTNET.governor)) as `0x${string}`;
+  const effectiveChainId = currentChainId || (isArcMainnet ? 5042 : 5042002);
+
   // Safe: Circle wallet does not register with Privy wallets list
   const { wallets: privyWallets } = usePrivyWallets();
   const wallets = privyWallets ?? [];
@@ -81,7 +86,7 @@ export default function CreateProposalPage() {
     if (!walletAddress) return;
     setIsQuickDelegating(true);
     try {
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, effectiveChainId, walletAddress);
       const SARC_DELEGATE_ABI = [{
         name: "delegate",
         type: "function",
@@ -93,7 +98,7 @@ export default function CreateProposalPage() {
       const gasParams = await getAggressiveGasParams(publicClient);
       toast.loading("Activating voting power (self-delegating)...");
       const tx = await walletClient.writeContract({
-        address: CONTRACTS.token,
+        address: effectiveTokenAddress,
         abi: SARC_DELEGATE_ABI,
         functionName: "delegate",
         args: [address],
@@ -316,14 +321,14 @@ export default function CreateProposalPage() {
 
     try {
       // Get provider and client — Privy wallet, Circle wallet OR external wallet
-      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, ARC_CHAIN.id, walletAddress);
+      const { walletClient, publicClient, address } = await getAuthenticatedClient(wallets, effectiveChainId, walletAddress);
       const targetAddress = (formData.executionTarget && formData.executionTarget.startsWith('0x'))
         ? (formData.executionTarget as `0x${string}`)
         : '0x0000000000000000000000000000000000000000';
 
       const votingDurationSecs = BigInt(formData.votingDuration) * 86400n;
       const absoluteImpactValue = BigInt(Math.abs(formData.treasuryImpactValue)) * 1000000n;
-      const governorAddress = CONTRACTS.governor as `0x${string}`;
+      const governorAddress = effectiveGovernorAddress;
       const deliverableDoc = formData.deliverableURI.trim();
 
       // Dynamically estimate fees using low-latency and aggressive parameters
@@ -355,15 +360,36 @@ export default function CreateProposalPage() {
       }
 
       setSubmitStage("wallet_prompt");
-      const txHash = await walletClient.writeContract({
-        address: governorAddress,
-        abi: GovernorABI,
-        functionName: 'propose',
-        args: proposeArgs,
-        account: address,
-        gas: estimatedProposeGas,
-        ...gasParams,
-      });
+      let txHash: `0x${string}`;
+      try {
+        txHash = await walletClient.writeContract({
+          address: governorAddress,
+          abi: GovernorABI,
+          functionName: 'propose',
+          args: proposeArgs,
+          account: address,
+          gas: estimatedProposeGas,
+          ...gasParams,
+        });
+      } catch (submitErr) {
+        // Fallback to 6-arg propose if the contract does not support deliverableURI
+        txHash = await walletClient.writeContract({
+          address: governorAddress,
+          abi: GovernorABI,
+          functionName: 'propose',
+          args: [
+            formData.title,
+            formData.description,
+            formData.category,
+            votingDurationSecs,
+            absoluteImpactValue,
+            targetAddress,
+          ],
+          account: address,
+          gas: estimatedProposeGas,
+          ...gasParams,
+        });
+      }
 
       setBroadcastTxHash(txHash);
       setSubmitStage("confirming_chain");

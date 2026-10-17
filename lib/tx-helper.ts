@@ -194,7 +194,7 @@ export const enforceChain = async (activeWallet: any, targetChainId: number = AR
   const isArc = (id: number) => id === 5042002 || id === 5042 || id === 1303;
   const chainsCompatible = (id1: number, id2: number) => {
     if (id1 === id2) return true;
-    if (isArc(id1) && isArc(id2)) return true;
+    if ((id1 === 5042002 && id2 === 1303) || (id1 === 1303 && id2 === 5042002)) return true;
     return false;
   };
 
