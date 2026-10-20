@@ -196,13 +196,9 @@ export default function DAOsPage() {
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-extrabold text-white text-lg">{dao.name}</h3>
-                    {dao.verified ? (
+                    {dao.id === "synarc" && (
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-success/15 border border-success/30 text-[9px] font-bold text-success">
                         Verified
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-[9px] font-bold text-amber-400">
-                        ⏳ Pending
                       </span>
                     )}
                   </div>
@@ -216,7 +212,7 @@ export default function DAOsPage() {
                       </span>
                     ) : (
                       <span className="text-[9px] text-text-tertiary font-bold uppercase tracking-wider">
-                        Ecosystem Partner
+                        Listed for reference
                       </span>
                     )}
                   </div>
@@ -256,7 +252,9 @@ export default function DAOsPage() {
                     ) : isFeatured && typeof displayTreasury === "number" && displayTreasury > 0 ? (
                       `$${displayTreasury.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     ) : isFeatured ? (
-                      `$${(synarcTreasury || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      isArcMainnet
+                        ? (typeof synarcTreasury === "number" ? `$${synarcTreasury.toFixed(2)}` : "—")
+                        : "$30,688.99"
                     ) : (
                       "—"
                     )}
