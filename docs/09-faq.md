@@ -28,7 +28,7 @@ If you detect any issues, file a bug report directly inside our [GitHub reposito
 
 ### 5. Where can I get help?
 
-Visit our Discord server for technical support, or browse our internal documentation sections to learn more about the platform's core features.
+Visit our Discord server for technical support, subscribe to our [YouTube Channel (@syndaopro)](https://youtube.com/@syndaopro) for video walkthroughs and feature demos, or browse our internal documentation sections to learn more about the platform's core features.
 
 ---
 

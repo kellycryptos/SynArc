@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Twitter,
   Github,
+  Youtube,
   ArrowRight,
   ShieldCheck,
   Clock,
@@ -368,7 +369,20 @@ export default function ContactPage() {
               <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-foreground">
                 Community Channels
               </h3>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <a
+                  href="https://youtube.com/@syndaopro"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-xl border border-border bg-background hover:border-[#FF0000]/40 text-muted hover:text-foreground text-xs font-mono flex items-center justify-between transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Youtube className="w-4 h-4 text-red-500" />
+                    <span>YouTube</span>
+                  </span>
+                  <ExternalLink className="w-3 h-3 text-muted" />
+                </a>
+
                 <a
                   href="https://x.com/syndaopro"
                   target="_blank"

@@ -160,3 +160,13 @@ Syn DAO supports a highly polished presentation mode toggleable directly in the 
 * **Toggle available in Settings page**: Easily switch between light and dark themes via the Appearance setting.
 * **Dark mode is default**: Syn DAO defaults to dark mode on first load to optimize readability.
 * **Preference saved across sessions**: Your selected theme preference is persisted automatically in local storage.
+
+---
+
+## Official Channels & Community
+
+- 📺 **Official YouTube Channel**: [@syndaopro](https://youtube.com/@syndaopro) — Architecture deep dives, demos, and integration walkthroughs.
+- 🐦 **Twitter / X**: [@syndaopro](https://x.com/syndaopro) — Announcements, release alerts, and ecosystem news.
+- 🌐 **Web Portal**: [syndaopro.xyz](https://www.syndaopro.xyz/)
+- 💻 **GitHub**: [github.com/kellycryptos/SynArc](https://github.com/kellycryptos/SynArc)
+- ✉️ **Core Team Email**: [hello@syndaopro.xyz](mailto:hello@syndaopro.xyz)

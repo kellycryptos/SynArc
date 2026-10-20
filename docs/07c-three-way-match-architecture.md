@@ -255,6 +255,7 @@ Agent can release under an on-chain cap. Over the cap it stops for a human. Same
 | **On-Chain Agent Release Cap** | `50.00 USDC` (`50_000_000 micro-USDC`) | Enforced by `SynArcTreasury.agentReleaseCap()` |
 
 ### Rebrand & Official Channels
+- **Official YouTube**: [@syndaopro](https://youtube.com/@syndaopro)
 - **Official X (Twitter)**: [@syndaopro](https://x.com/syndaopro)
 - **Live Domain**: [syndaopro.xyz](https://www.syndaopro.xyz/)
 - **Arc Mainnet Explorer**: [explorer.arc.io](https://explorer.arc.io)

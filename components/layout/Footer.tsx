@@ -22,6 +22,7 @@ import {
   Mail,
   MessageSquare,
   AlertCircle,
+  Youtube,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { GlowOrb } from "@/components/ui/GlowOrb";
@@ -81,6 +82,11 @@ const SOCIAL_LINKS: NavItem[] = [
     label: "Contact & Feedback",
     href: "/contact",
     isNew: true,
+  },
+  {
+    label: "YouTube",
+    href: "https://youtube.com/@syndaopro",
+    external: true,
   },
   {
     label: "Twitter / X",
@@ -513,6 +519,16 @@ export function Footer() {
 
                 {/* Social Icon Row + Contact Trigger */}
                 <div className="socials pt-2 flex flex-wrap items-center gap-3">
+                  <a
+                    href="https://youtube.com/@syndaopro"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-lg border border-border bg-surface flex items-center justify-center text-muted hover:text-[#FF0000] hover:border-[#FF0000]/40 transition-colors shrink-0 shadow-xs"
+                    aria-label="Syn DAO on YouTube"
+                    title="Syn DAO on YouTube (@syndaopro)"
+                  >
+                    <Youtube className="w-4 h-4" />
+                  </a>
                   <a
                     href="https://x.com/syndaopro"
                     target="_blank"

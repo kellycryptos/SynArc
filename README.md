@@ -18,9 +18,10 @@ Product name updated for Arc naming compliance. Contracts and addresses are unch
 [![Wagmi](https://img.shields.io/badge/Wagmi-3.6-black?style=for-the-badge)](https://wagmi.sh)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-Governor-4E5EE4?style=for-the-badge)](https://openzeppelin.com)
 [![npm version](https://img.shields.io/npm/v/synarc-agent-sdk?color=emerald&style=for-the-badge)](https://www.npmjs.com/package/synarc-agent-sdk)
+[![YouTube](https://img.shields.io/badge/YouTube-@syndaopro-red?style=for-the-badge&logo=youtube)](https://youtube.com/@syndaopro)
 [![Twitter Follow](https://img.shields.io/badge/X-@syndaopro-black?style=for-the-badge&logo=x)](https://x.com/syndaopro)
 
-[**Launch App →**](https://www.syndaopro.xyz/) · [**Developer SDK Docs**](https://www.syndaopro.xyz/docs/sdk) · [**SDK GitHub**](https://github.com/kellycryptos/synarc-agent-sdk) · [**Follow @syndaopro**](https://x.com/syndaopro) · [**Arc Ecosystem**](https://arc.network)
+[**Launch App →**](https://www.syndaopro.xyz/) · [**Developer SDK Docs**](https://www.syndaopro.xyz/docs/sdk) · [**YouTube**](https://youtube.com/@syndaopro) · [**SDK GitHub**](https://github.com/kellycryptos/synarc-agent-sdk) · [**Follow @syndaopro**](https://x.com/syndaopro) · [**Arc Ecosystem**](https://arc.network)
 
 </div>
 
@@ -102,7 +103,7 @@ Agent can release under an on-chain cap (default: **50.00 USDC**). Over the cap 
 *   **Autonomous Agent Track ($\le 50.00\text{ USDC}$)**: Authorized agents trigger `releaseMilestone` autonomously with deliverable proof. Zero delay, instant settlement.
 *   **Human Review Gate ($> 50.00\text{ USDC}$)**: Amounts exceeding 50 USDC immediately halt with `HumanApprovalRequired(releaseKey, amount, threshold)`. Execution requires on-chain signoff via `approveReleaseHuman(releaseKey)` by the Governor, Owner, or an authorized Human Reviewer.
 *   **Autonomous Release Engine Rails**: Implemented in `lib/agent/release-engine.ts` and `/api/agent/release`. Scans active campaign escrows, evaluates deliverables using AI against criteria, and executes `releaseMilestone` directly on Arc Mainnet with a 950,000 gas limit and dynamic aggressive gas price (30 Gwei floor).
-*   **Official Social & Community**: Follow [@syndaopro](https://x.com/syndaopro) on X. Email: [hello@syndaopro.xyz](mailto:hello@syndaopro.xyz). Web portal: [syndaopro.xyz](https://www.syndaopro.xyz/).
+*   **Official Social & Community**: YouTube channel: [@syndaopro](https://youtube.com/@syndaopro). Follow [@syndaopro](https://x.com/syndaopro) on X. Email: [hello@syndaopro.xyz](mailto:hello@syndaopro.xyz). Web portal: [syndaopro.xyz](https://www.syndaopro.xyz/).
 
 ---
 
@@ -539,7 +540,7 @@ This repository is licensed under the **MIT License**. Check [LICENSE](./LICENSE
 
 **Built for the Arc agentic economy.**
 
-[Website](https://www.syndaopro.xyz/) · [Twitter](https://x.com/syndaopro) · [Email](mailto:hello@syndaopro.xyz) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
+[Website](https://www.syndaopro.xyz/) · [YouTube](https://youtube.com/@syndaopro) · [Twitter](https://x.com/syndaopro) · [Email](mailto:hello@syndaopro.xyz) · [GitHub](https://github.com/kellycryptos/SynArc) · [Arc Network](https://arc.network)
 
 <sub>© 2026 Syn DAO. All rights reserved.</sub>
 

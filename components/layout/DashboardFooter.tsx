@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ExternalLink, Github, Twitter, Mail } from "lucide-react";
+import { ExternalLink, Github, Twitter, Mail, Youtube } from "lucide-react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 
 export function DashboardFooter() {
@@ -73,6 +73,16 @@ export function DashboardFooter() {
             aria-label="Email support"
           >
             <Mail className="w-3.5 h-3.5" />
+          </a>
+          <a
+            href="https://youtube.com/@syndaopro"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted hover:text-[#FF0000] transition-colors p-1"
+            aria-label="Syn DAO on YouTube"
+            title="Syn DAO on YouTube (@syndaopro)"
+          >
+            <Youtube className="w-3.5 h-3.5" />
           </a>
           <a
             href="https://x.com/syndaopro"

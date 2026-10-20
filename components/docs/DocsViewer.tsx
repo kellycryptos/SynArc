@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { BookOpen, ChevronRight, ChevronLeft } from 'lucide-react';
+import { BookOpen, ChevronRight, ChevronLeft, Youtube, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { parseMarkdown } from '@/lib/markdown';
 
@@ -114,6 +114,25 @@ export function DocsViewer({ initialSlug, allDocs, docsNav: navItems, slugMap: m
               );
             })}
           </nav>
+
+          {/* Official Media & Video Resources */}
+          <div className="pt-4 border-t border-border-thin/60 space-y-2">
+            <span className="text-[10px] font-mono font-semibold tracking-wider uppercase text-muted block px-1">
+              Video & Resources
+            </span>
+            <a
+              href="https://youtube.com/@syndaopro"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between text-xs font-semibold px-3 py-2 rounded-xl text-muted hover:text-foreground hover:bg-white/[0.04] transition-colors group"
+            >
+              <span className="flex items-center gap-2">
+                <Youtube className="w-3.5 h-3.5 text-red-500" />
+                <span>YouTube Guides</span>
+              </span>
+              <ExternalLink className="w-3 h-3 text-muted/60 group-hover:text-foreground transition-colors" />
+            </a>
+          </div>
         </aside>
 
         {/* Main Content Area */}

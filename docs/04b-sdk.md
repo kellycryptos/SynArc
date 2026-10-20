@@ -393,6 +393,8 @@ Syn DAO natively routes USDC between Arc (Mainnet/Testnet) and external chains (
 
 ## Official Developer Resources
 
+- **YouTube Channel**: [@syndaopro](https://youtube.com/@syndaopro)
+- **Official X (Twitter)**: [@syndaopro](https://x.com/syndaopro)
 - **npm Package**: [npmjs.com/package/synarc-agent-sdk](https://www.npmjs.com/package/synarc-agent-sdk)
 - **GitHub Repository**: [kellycryptos/synarc-agent-sdk](https://github.com/kellycryptos/synarc-agent-sdk)
 - **Live Portal**: [syndaopro.xyz](https://www.syndaopro.xyz)

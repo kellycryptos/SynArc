@@ -1,5 +1,69 @@
 [
   {
+    "timestamp": "2026-10-20T13:28:58.083Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-20T13:23:58.079Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-20T13:18:58.079Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-20T13:13:58.060Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-20T13:08:58.057Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-20T13:03:58.046Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-20T12:58:58.042Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-20T12:53:58.035Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
     "timestamp": "2026-10-20T12:48:58.024Z",
     "action": "emergency_funding",
     "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
@@ -327,70 +391,6 @@
     "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Failed to create proposal on-chain: The total cost (gas * gas fee + value) of executing this transaction exceeds the balance of the account. (insufficient funds for gas * price + value: have 5641442492110579 want 16301712815764838)",
     "status": "failed",
     "usdcAmount": 50,
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T17:12:45.013Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Failed to create proposal on-chain: The total cost (gas * gas fee + value) of executing this transaction exceeds the balance of the account. (insufficient funds for gas * price + value: have 5641442492110579 want 16301712000000000)",
-    "status": "failed",
-    "usdcAmount": 50,
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T17:13:03.639Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #43 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x0da8d26460006587a02eda3bbcf1d6fb314d0bf3af3ec6f05c88c7b0c198f9ff",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T17:07:45.009Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Failed to create proposal on-chain: The total cost (gas * gas fee + value) of executing this transaction exceeds the balance of the account. (insufficient funds for gas * price + value: have 7503622492110579 want 16301712000000000)",
-    "status": "failed",
-    "usdcAmount": 50,
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T17:02:45.000Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Failed to create proposal on-chain: The total cost (gas * gas fee + value) of executing this transaction exceeds the balance of the account. (insufficient funds for gas * price + value: have 7503622492110579 want 16301712817123314)",
-    "status": "failed",
-    "usdcAmount": 50,
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T17:03:05.715Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #42 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0x92f372521ea70fbac609c7200ae80db0b293bd1b95d0f789d1ff2f1d5ab10ae8",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:57:44.993Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Failed to create proposal on-chain: The total cost (gas * gas fee + value) of executing this transaction exceeds the balance of the account. (insufficient funds for gas * price + value: have 9365802585498906 want 16301712815764838)",
-    "status": "failed",
-    "usdcAmount": 50,
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:52:44.980Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Failed to create proposal on-chain: The total cost (gas * gas fee + value) of executing this transaction exceeds the balance of the account. (insufficient funds for gas * price + value: have 9365802585498906 want 16301712815764838)",
-    "status": "failed",
-    "usdcAmount": 50,
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:53:05.720Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #41 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xf417d7baf6645cb6daa8129fd07fb7e7b62ea70bc3ad7013996d6c37171fe1fe",
-    "status": "executed",
     "network": "mainnet"
   }
 ]
