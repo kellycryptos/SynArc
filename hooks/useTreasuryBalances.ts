@@ -321,11 +321,11 @@ const getCache = (treasuryAddress: string): CachedData => {
 
   const defaultFallback: CachedData = isMainnetTreasury
     ? {
-        activities: MAINNET_TREASURY_BASELINE.activities,
-        usdcBalance: MAINNET_TREASURY_BASELINE.usdcBalance,
-        eurcBalance: MAINNET_TREASURY_BASELINE.eurcBalance,
-        cirBtcBalance: MAINNET_TREASURY_BASELINE.cirBtcBalance,
-        combinedBalance: MAINNET_TREASURY_BASELINE.combinedBalance,
+        activities: [],
+        usdcBalance: 0,
+        eurcBalance: 0,
+        cirBtcBalance: 0,
+        combinedBalance: 0,
         queuedWithdrawals: [],
         lastFetchedBlock: '0',
       }
@@ -352,18 +352,18 @@ const getCache = (treasuryAddress: string): CachedData => {
         if (isMainnetTreasury) {
           const cachedActs: TreasuryActivity[] = Array.isArray(parsed.activities) ? parsed.activities : [];
           const mergedActs = mergeAndSortActivities(
-            MAINNET_TREASURY_BASELINE.activities,
+            [],
             [],
             [],
             cachedActs
           );
           return {
             ...parsed,
-            usdcBalance: typeof parsed.usdcBalance === 'number' && parsed.usdcBalance > 0 ? parsed.usdcBalance : MAINNET_TREASURY_BASELINE.usdcBalance,
-            eurcBalance: typeof parsed.eurcBalance === 'number' && parsed.eurcBalance > 0 ? parsed.eurcBalance : MAINNET_TREASURY_BASELINE.eurcBalance,
-            cirBtcBalance: typeof parsed.cirBtcBalance === 'number' && parsed.cirBtcBalance > 0 ? parsed.cirBtcBalance : MAINNET_TREASURY_BASELINE.cirBtcBalance,
-            combinedBalance: typeof parsed.combinedBalance === 'number' && parsed.combinedBalance > 0 ? parsed.combinedBalance : MAINNET_TREASURY_BASELINE.combinedBalance,
-            activities: mergedActs.length > 0 ? mergedActs : MAINNET_TREASURY_BASELINE.activities,
+            usdcBalance: typeof parsed.usdcBalance === 'number' ? parsed.usdcBalance : 0,
+            eurcBalance: typeof parsed.eurcBalance === 'number' ? parsed.eurcBalance : 0,
+            cirBtcBalance: typeof parsed.cirBtcBalance === 'number' ? parsed.cirBtcBalance : 0,
+            combinedBalance: typeof parsed.combinedBalance === 'number' ? parsed.combinedBalance : 0,
+            activities: mergedActs,
           };
         }
         if (isTestnetTreasury) {
@@ -630,9 +630,9 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
         }
       });
 
-      const finalUSDC = usdcVal > 0 ? usdcVal : (isMainnetTreasury ? MAINNET_TREASURY_BASELINE.usdcBalance : simulatedUSDC);
-      const finalEURC = eurcVal > 0 ? eurcVal : (isMainnetTreasury ? MAINNET_TREASURY_BASELINE.eurcBalance : simulatedEURC);
-      const finalCirBTC = cirBtcVal > 0 ? cirBtcVal : (isMainnetTreasury ? MAINNET_TREASURY_BASELINE.cirBtcBalance : simulatedCirBTC);
+      const finalUSDC = usdcVal > 0 ? usdcVal : (isMainnetTreasury ? 0 : simulatedUSDC);
+      const finalEURC = eurcVal > 0 ? eurcVal : (isMainnetTreasury ? 0 : simulatedEURC);
+      const finalCirBTC = cirBtcVal > 0 ? cirBtcVal : (isMainnetTreasury ? 0 : simulatedCirBTC);
       const combinedVal = finalUSDC + (finalEURC * 1.08) + (finalCirBTC * 95000);
 
       setUsdcBalance(finalUSDC);
@@ -692,7 +692,7 @@ export const useTreasuryBalances = (customTreasuryAddress?: string) => {
 
           const cached = getCache(treasuryAddress);
           const baselineToMerge = isMainnetTreasury 
-            ? MAINNET_TREASURY_BASELINE.activities 
+            ? [] 
             : (isTestnetTreasury ? TESTNET_TREASURY_BASELINE.activities : []);
           const allActivities = mergeAndSortActivities(
             baselineToMerge,

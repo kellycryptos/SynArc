@@ -66,17 +66,17 @@ export function OverviewCards() {
 
   const liveTreasuryValue = (typeof treasuryBalance === 'number' && treasuryBalance > 0)
     ? `$${treasuryBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    : (metrics?.treasuryValue && metrics.treasuryValue !== "$0.07"
+    : (metrics?.treasuryValue && metrics.treasuryValue !== "—" && metrics.treasuryValue !== "$0.07"
         ? metrics.treasuryValue
-        : (isMainnet ? "$0.46" : "$30,688.99"));
+        : (isMainnet ? (typeof treasuryBalance === 'number' ? `$${treasuryBalance.toFixed(2)}` : "—") : "$30,688.99"));
 
   const cards = [
-    { title: "Treasury Value", value: liveTreasuryValue, icon: DollarSign, trend: "Live" },
-    { title: "Total Proposals", value: metrics?.totalProposals !== undefined ? metrics.totalProposals : 0, icon: FileText, trend: "Live" },
-    { title: "Active Proposals", value: metrics?.activeProposals !== undefined ? metrics.activeProposals : 0, icon: Activity, trend: "Active" },
-    { title: "Governance Participation", value: metrics?.governanceParticipation || "0%", icon: ArrowRightLeft, trend: "Live" },
-    { title: "DAO Members", value: metrics?.daoMembers !== undefined ? metrics.daoMembers : 0, icon: Users, trend: "Active" },
-    { title: "Proposal Execution Rate", value: metrics?.proposalExecutionRate || "0%", icon: CheckCircle2, trend: "Live" },
+    { title: "Treasury Value", value: liveTreasuryValue, icon: DollarSign, trend: !isMainnet && liveTreasuryValue === "$30,688.99" ? "Testnet demo data" : (isMainnet && liveTreasuryValue === "—" ? "—" : "Live") },
+    { title: "Total Proposals", value: metrics?.totalProposals !== undefined ? metrics.totalProposals : (isMainnet ? "—" : 0), icon: FileText, trend: isMainnet ? (metrics?.totalProposals !== undefined ? "Live" : "—") : "Live" },
+    { title: "Active Proposals", value: metrics?.activeProposals !== undefined ? metrics.activeProposals : (isMainnet ? "—" : 0), icon: Activity, trend: isMainnet ? (metrics?.activeProposals !== undefined ? "Live" : "—") : "Active" },
+    { title: "Governance Participation", value: metrics?.governanceParticipation ? metrics.governanceParticipation : (isMainnet ? "—" : "0.0%"), icon: ArrowRightLeft, trend: isMainnet ? (metrics?.governanceParticipation && metrics.governanceParticipation !== "—" ? "Live" : "—") : "Live" },
+    { title: "DAO Members", value: metrics?.daoMembers !== undefined ? metrics.daoMembers : (isMainnet ? "—" : 1), icon: Users, trend: isMainnet ? (metrics?.daoMembers !== undefined ? "Live" : "—") : "Active" },
+    { title: "Proposal Execution Rate", value: metrics?.proposalExecutionRate ? metrics.proposalExecutionRate : (isMainnet ? "—" : "0.0%"), icon: CheckCircle2, trend: isMainnet ? (metrics?.proposalExecutionRate && metrics.proposalExecutionRate !== "—" ? "Live" : "—") : "Live" },
   ];
 
   const containerVariants = {
@@ -112,7 +112,9 @@ export function OverviewCards() {
               <Icon className="w-4.5 h-4.5 text-[#6B7385]" />
               <span className={cn(
                 "font-mono text-xs px-2 py-0.5 rounded-[5px] border",
-                isPositive 
+                card.trend.includes("demo")
+                  ? "text-amber-400 bg-amber-500/10 border-amber-500/20 text-[10px]"
+                  : isPositive 
                   ? "text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/20"
                   : isNegative
                   ? "text-[#EF4444] bg-[#EF4444]/10 border-[#EF4444]/20"

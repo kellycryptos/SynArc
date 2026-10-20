@@ -900,11 +900,11 @@ Respond in JSON format:
     try {
       const cctp = new CCTPExecutor(this.privateKey, network)
       const bal = await cctp.getEthereumUSDCBalance()
-      return bal > 0 ? bal : 42.50
+      return bal > 0 ? bal : 0
     } catch (err) {
       const ethName = network === 'mainnet' ? 'Ethereum Mainnet' : 'Ethereum Sepolia'
       console.error(`[TreasuryAgent] Failed to check ${ethName} USDC balance:`, err)
-      return 42.50
+      return 0
     }
   }
 

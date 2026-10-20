@@ -10,12 +10,19 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { AnimatePresence } from "framer-motion";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useTreasuryBalances } from "@/hooks/useTreasuryBalances";
+import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 
 export default function DAOsPage() {
   const { isArcMainnet } = useArcNetwork();
   const { isAuthenticated, login } = useAuth();
   const { balance: synarcTreasury, loading: metricsLoading } = useTreasuryBalances();
-  const synarcMembers = 1;
+  const { metrics, initialized, initializeStore } = useGovernanceStore();
+
+  useEffect(() => {
+    if (!initialized) initializeStore();
+  }, [initialized, initializeStore]);
+
+  const synarcMembers = metrics?.daoMembers;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     daoName: "",
@@ -231,10 +238,10 @@ export default function DAOsPage() {
                   <span className="text-white font-mono font-extrabold text-base">
                     {metricsLoading && isFeatured ? (
                       <span className="block w-12 h-5 bg-white/5 animate-pulse rounded" />
-                    ) : typeof displayMembers === "number" ? (
+                    ) : isFeatured && typeof displayMembers === "number" ? (
                       displayMembers.toLocaleString()
                     ) : (
-                      "Ecosystem"
+                      "—"
                     )}
                   </span>
                 </div>
@@ -246,7 +253,7 @@ export default function DAOsPage() {
                   <span className="text-white font-mono font-extrabold text-base">
                     {metricsLoading && isFeatured ? (
                       <span className="block w-16 h-5 bg-white/5 animate-pulse rounded" />
-                    ) : typeof displayTreasury === "number" && displayTreasury > 0 ? (
+                    ) : isFeatured && typeof displayTreasury === "number" && displayTreasury > 0 ? (
                       `$${displayTreasury.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     ) : isFeatured ? (
                       `$${(synarcTreasury || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -288,7 +295,7 @@ export default function DAOsPage() {
 
       {/* Disclaimer */}
       <div className="text-center text-xs text-text-tertiary font-semibold pt-4">
-        *Partner data is indicative
+        *External ecosystem partner protocols are governed natively on their respective platforms
       </div>
 
       {/* Application Form Modal */}

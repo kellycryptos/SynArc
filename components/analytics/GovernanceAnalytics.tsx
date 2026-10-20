@@ -47,7 +47,7 @@ export function GovernanceAnalytics() {
     return range.map(r => ({
       name: r.name,
       proposals: r.proposals,
-      participation: r.count > 0 ? parseFloat((r.totalPart / r.count).toFixed(1)) : (isMainnet ? 0.0 : 16.7)
+      participation: r.count > 0 ? parseFloat((r.totalPart / r.count).toFixed(1)) : 0.0
     }));
   }, [proposals]);
 

@@ -36,8 +36,6 @@ export const DAO_REGISTRY: DAOInfo[] = [
     verified: true,
     featured: true,
     category: 'Governance',
-    members: 1,
-    treasury: 0,
     website: 'https://syndaopro.xyz',
   },
   {

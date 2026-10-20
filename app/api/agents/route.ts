@@ -30,64 +30,9 @@ export interface RegisteredAgent {
   }[];
 }
 
-const INITIAL_AGENTS: RegisteredAgent[] = [
-  {
-    id: "agent_gov",
-    name: "SynDAO Governance Agent",
-    avatar: "",
-    get address() { return (CONTRACTS.governor || "0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025") as string; },
-    model: "Groq AI Engine",
-    capabilities: "On-chain risk scans, automated treasury sanity audits, voting recommendations",
-    metadataURI: "ipfs://QmGovernanceAgentERC8004Metadata",
-    status: "Active",
-    proposalsAnalyzed: 0,
-    votesRecommended: 0,
-    accuracyRate: "100%",
-    usdcBalance: "0.00",
-    sarcBalance: "0.00",
-    reputation: 95,
-    owner: "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53",
-    history: []
-  },
-  {
-    id: "agent_allocation",
-    name: "Ecosystem Allocation Agent",
-    avatar: "",
-    get address() { return (CONTRACTS.treasury || "0x8205e9782Fe54fD2aaD895b436B695db169F3d7B") as string; },
-    model: "Groq AI Engine",
-    capabilities: "Milestone escrow disburse auditing, gas optimization recommendations",
-    metadataURI: "ipfs://QmAllocationAgentERC8004Metadata",
-    status: "Paused",
-    proposalsAnalyzed: 0,
-    votesRecommended: 0,
-    accuracyRate: "100%",
-    usdcBalance: "0.00",
-    sarcBalance: "0.00",
-    reputation: 90,
-    owner: "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53",
-    history: []
-  },
-  {
-    id: "agent_guardian",
-    name: "Emergency Guardian Agent",
-    avatar: "",
-    get address() { return (CONTRACTS.token || "0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4") as string; },
-    model: "Groq AI",
-    capabilities: "Spam proposal identification, autonomous veto scoring",
-    metadataURI: "ipfs://QmGuardianAgentERC8004Metadata",
-    status: "Active",
-    proposalsAnalyzed: 0,
-    votesRecommended: 0,
-    accuracyRate: "100%",
-    usdcBalance: "0.00",
-    sarcBalance: "0.00",
-    reputation: 98,
-    owner: "0x1BDA3b78D0B3D55A1A86d4eC36d93339185c8E53",
-    history: []
-  }
-];
+const DEFAULT_EMPTY_AGENTS: RegisteredAgent[] = [];
 
-let inMemoryDb: RegisteredAgent[] = [...INITIAL_AGENTS];
+let inMemoryDb: RegisteredAgent[] = [...DEFAULT_EMPTY_AGENTS];
 
 function readDb(): RegisteredAgent[] {
   try {
@@ -99,8 +44,8 @@ function readDb(): RegisteredAgent[] {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      fs.writeFileSync(DB_PATH, JSON.stringify(INITIAL_AGENTS, null, 2), "utf8");
-      return INITIAL_AGENTS;
+      fs.writeFileSync(DB_PATH, JSON.stringify(DEFAULT_EMPTY_AGENTS, null, 2), "utf8");
+      return DEFAULT_EMPTY_AGENTS;
     }
   } catch (err) {
     console.warn("Failed to read agents DB from disk, using in-memory:", err);

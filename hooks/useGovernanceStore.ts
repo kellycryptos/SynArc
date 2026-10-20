@@ -274,21 +274,21 @@ export const TESTNET_BASELINE_PROPOSALS: Proposal[] = [
 ];
 
 const isMainnetInitial = getActiveNetwork() === 'mainnet';
-const INITIAL_METRICS: GovernanceMetrics = {
-  treasuryValue: isMainnetInitial ? `$${MAINNET_TREASURY_BASELINE.combinedBalance.toFixed(2)}` : "$30,688.99",
+const DEFAULT_METRICS: GovernanceMetrics = {
+  treasuryValue: isMainnetInitial ? "—" : "$30,688.99",
   activeProposals: 0,
   totalProposals: 0,
-  governanceParticipation: "0.0%",
-  daoMembers: 1,
-  treasuryTransactions: isMainnetInitial ? 8 : 2,
-  proposalExecutionRate: "0.0%",
+  governanceParticipation: isMainnetInitial ? "—" : "0.0%",
+  daoMembers: isMainnetInitial ? 0 : 1,
+  treasuryTransactions: 0,
+  proposalExecutionRate: isMainnetInitial ? "—" : "0.0%",
 };
 
 export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   proposals: [],
   // Reliable baseline metrics — on Mainnet, clean zeroes/active live defaults; on Testnet, verified historical baseline.
-  metrics: INITIAL_METRICS,
-  treasuryActivities: isMainnetInitial ? MAINNET_TREASURY_BASELINE.activities : TESTNET_TREASURY_BASELINE.activities,
+  metrics: DEFAULT_METRICS,
+  treasuryActivities: isMainnetInitial ? [] : TESTNET_TREASURY_BASELINE.activities,
   userVotes: {},
   initialized: false,
   lastFetched: null,
@@ -339,7 +339,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
     set({ 
       proposals: [], 
-      treasuryActivities: isMainnet ? MAINNET_TREASURY_BASELINE.activities : TESTNET_TREASURY_BASELINE.activities,
+      treasuryActivities: isMainnet ? [] : TESTNET_TREASURY_BASELINE.activities,
       initialized: false, 
       currentDaoId: activeDaoId,
       currentNetwork: currentNet,
@@ -380,17 +380,17 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
     // Show baseline metrics immediately.
     set({
       proposals: eagerProposals,
-      treasuryActivities: isMainnet ? MAINNET_TREASURY_BASELINE.activities : TESTNET_TREASURY_BASELINE.activities,
+      treasuryActivities: isMainnet ? [] : TESTNET_TREASURY_BASELINE.activities,
       initialized: true,
       metrics: {
-        treasuryValue: isMainnet ? `$${MAINNET_TREASURY_BASELINE.combinedBalance.toFixed(2)}` : "$30,688.99",
+        treasuryValue: isMainnet ? "—" : "$30,688.99",
         activeProposals: eagerProposals.filter(p => p.status === "Active").length,
         totalProposals: eagerProposals.length,
         governanceParticipation: eagerProposals.length > 0
           ? (eagerProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / eagerProposals.length).toFixed(1) + "%"
           : "0.0%",
-        daoMembers: 1,
-        treasuryTransactions: isMainnet ? 8 : 2,
+        daoMembers: isMainnetInitial ? 0 : 1,
+        treasuryTransactions: isMainnet ? 0 : 2,
         proposalExecutionRate: eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
           ? ((eagerProposals.filter(p => p.status === "Executed").length / eagerProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
           : "0.0%"
@@ -691,14 +691,14 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           loadedActivities.reverse();
           if (isMainnetTreasury) {
             const map = new Map<string, TreasuryActivity>();
-            MAINNET_TREASURY_BASELINE.activities.forEach(a => map.set(a.id, a));
+            // Mainnet uses live transactions only, zero baseline injection
             loadedActivities.forEach(a => map.set(a.id, a));
             loadedActivities = Array.from(map.values()).sort(
               (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
             );
           }
         } else if (isMainnet && treasuryAddress.toLowerCase() === CONTRACTS_MAINNET.treasuryGovernance.toLowerCase()) {
-          loadedActivities = MAINNET_TREASURY_BASELINE.activities;
+          loadedActivities = [];
         } else if (!isMainnet && treasuryAddress.toLowerCase() === CONTRACTS_TESTNET.treasuryGovernance.toLowerCase()) {
           loadedActivities = TESTNET_TREASURY_BASELINE.activities;
         }
@@ -708,23 +708,23 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
         const eurcNum = Number(formatUnits(eurcBal || 0n, 6));
         const cirBtcNum = Number(formatUnits(cirBtcBal || 0n, 8));
 
-        const usdcNum = erc20Num > 0 ? erc20Num : (internalNum > 0 ? internalNum : (isMainnetTreasury ? MAINNET_TREASURY_BASELINE.usdcBalance : 0));
-        const finalEurc = eurcNum > 0 ? eurcNum : (isMainnetTreasury ? MAINNET_TREASURY_BASELINE.eurcBalance : 0);
-        const finalCirBtc = cirBtcNum > 0 ? cirBtcNum : (isMainnetTreasury ? MAINNET_TREASURY_BASELINE.cirBtcBalance : 0);
+        const usdcNum = erc20Num > 0 ? erc20Num : (internalNum > 0 ? internalNum : 0);
+        const finalEurc = eurcNum > 0 ? eurcNum : 0;
+        const finalCirBtc = cirBtcNum > 0 ? cirBtcNum : 0;
 
         const multiAssetVal = usdcNum + (finalEurc * 1.08) + (finalCirBtc * 95000);
-        const baselineVal = isMainnet ? MAINNET_TREASURY_BASELINE.combinedBalance : TESTNET_TREASURY_BASELINE.combinedBalance;
-        treasuryVal = multiAssetVal > 0 ? multiAssetVal : baselineVal;
+        const baselineVal = isMainnet ? 0 : TESTNET_TREASURY_BASELINE.combinedBalance;
+        treasuryVal = isMainnet ? multiAssetVal : (multiAssetVal > 0 ? multiAssetVal : baselineVal);
       } catch (err) {
         console.warn("Failed to load Treasury activities via RPC:", err);
       }
 
-      let memberCount = 1;
+      let memberCount = isMainnet ? 0 : 1;
       try {
         memberCount = await getTokenHolderCount(provider, contracts.token);
-        if (!memberCount || memberCount < 1) memberCount = 1;
+        if (!memberCount && !isMainnet) memberCount = 1;
       } catch {
-        memberCount = 1;
+        memberCount = isMainnet ? 0 : 1;
       }
 
       const avgPart = combinedProposals.length > 0
@@ -743,7 +743,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
       set({
         proposals: combinedProposals,
-        treasuryActivities: loadedActivities.length > 0 ? loadedActivities : (isMainnet ? MAINNET_TREASURY_BASELINE.activities : TESTNET_TREASURY_BASELINE.activities),
+        treasuryActivities: loadedActivities.length > 0 ? loadedActivities : (isMainnet ? [] : TESTNET_TREASURY_BASELINE.activities),
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
@@ -752,7 +752,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           totalProposals: combinedProposals.length,
           governanceParticipation: avgPart,
           daoMembers: memberCount,
-          treasuryTransactions: loadedActivities.length || (isMainnet ? 8 : 2),
+          treasuryTransactions: loadedActivities.length,
           proposalExecutionRate: executionRate,
         }
       });
@@ -779,21 +779,21 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       // RPC timeout/failure: preserve baseline
       set({
         proposals: fallbackProposals,
-        treasuryActivities: isMainnet ? MAINNET_TREASURY_BASELINE.activities : TESTNET_TREASURY_BASELINE.activities,
+        treasuryActivities: isMainnet ? [] : TESTNET_TREASURY_BASELINE.activities,
         initialized: true,
         lastFetched: Date.now(),
         metrics: {
-          treasuryValue: isMainnet ? `$${MAINNET_TREASURY_BASELINE.combinedBalance.toFixed(2)}` : "$30,688.99",
+          treasuryValue: isMainnet ? "—" : "$30,688.99",
           activeProposals: fallbackProposals.filter(p => p.status === "Active").length,
           totalProposals: fallbackProposals.length,
           governanceParticipation: fallbackProposals.length > 0
             ? (fallbackProposals.reduce((sum, p) => sum + (p.participationPercentage || 0), 0) / fallbackProposals.length).toFixed(1) + "%"
-            : "0.0%",
-          daoMembers: 1,
-          treasuryTransactions: isMainnet ? 8 : 2,
+            : (isMainnet ? "—" : "0.0%"),
+          daoMembers: isMainnet ? 0 : 1,
+          treasuryTransactions: isMainnet ? 0 : 2,
           proposalExecutionRate: fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length > 0
             ? ((fallbackProposals.filter(p => p.status === "Executed").length / fallbackProposals.filter(p => p.status === "Executed" || p.status === "Defeated").length) * 100).toFixed(1) + "%"
-            : "0.0%"
+            : (isMainnet ? "—" : "0.0%")
         }
       });
     }

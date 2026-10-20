@@ -471,10 +471,10 @@ export default function AgentPage() {
   }, [queuedWithdrawals]);
 
   // Interactive Demo States
-  const [demoStep, setDemoStep] = useState<"idle" | "analyzing" | "proposed" | "voting" | "executing" | "success">("idle");
-  const [demoVotes, setDemoVotes] = useState(0);
-  const [cctpProgress, setCctpProgress] = useState<"idle" | "burn" | "attestation" | "mint" | "done">("idle");
-  const [demoUSDCBalance, setDemoUSDCBalance] = useState<number | null>(null);
+
+
+
+
 
   const fetchAgentState = useCallback(async () => {
     try {
@@ -491,84 +491,6 @@ export default function AgentPage() {
       setLoading(false);
     }
   }, []);
-
-  const startDemo = () => {
-    setDemoStep("analyzing");
-    setDemoVotes(0);
-    setCctpProgress("idle");
-    setDemoUSDCBalance(142.50);
-    
-    // Simulate AI thinking and deciding
-    setTimeout(() => {
-      setDemoStep("proposed");
-    }, 2000);
-  };
-
-  const simulateVotes = () => {
-    setDemoStep("voting");
-    let currentVotes = 0;
-    const targetVotes = 5840000;
-    const increment = Math.floor(targetVotes / 15);
-    const interval = setInterval(() => {
-      currentVotes += increment;
-      if (currentVotes >= targetVotes) {
-        currentVotes = targetVotes;
-        clearInterval(interval);
-      }
-      setDemoVotes(currentVotes);
-    }, 100);
-  };
-
-  const executeSimulatedCctp = () => {
-    setDemoStep("executing");
-    setCctpProgress("burn");
-    
-    // Stage 1: Burn
-    setTimeout(() => {
-      setCctpProgress("attestation");
-      
-      // Stage 2: Attestation
-      setTimeout(() => {
-        setCctpProgress("mint");
-        
-        // Stage 3: Mint
-        setTimeout(() => {
-          setCctpProgress("done");
-          setDemoUSDCBalance(100.00); // deduct bridged amount
-          setDemoStep("success");
-          
-          // Inject action into the history console
-          if (agentState) {
-            const newAction = {
-              timestamp: new Date().toISOString(),
-              action: "bridge_to_ethereum",
-              reasoning: `AUTONOMOUS REBALANCE SUCCESSFUL: Bridged 42.50 USDC from ${isArcMainnet ? "Arc Mainnet" : "Arc Testnet"} to ${isArcMainnet ? "Ethereum Mainnet" : "Ethereum Sepolia"} via CCTP.`,
-              txHash: "0xbc84294c718a29b01284d72856fe8d3615418b7625ea4b971aefd82b130c25d8",
-              status: "executed" as const,
-              usdcAmount: 42.50
-            };
-            setAgentState({
-              ...agentState,
-              treasury: {
-                ...agentState.treasury,
-                usdc: 100.00
-              },
-              recentActions: [newAction, ...agentState.recentActions]
-            });
-          }
-          toast.success("CCTP Rebalance Completed Autonomously!");
-        }, 2000);
-      }, 2500);
-    }, 2000);
-  };
-
-  const resetDemo = () => {
-    setDemoStep("idle");
-    setDemoVotes(0);
-    setCctpProgress("idle");
-    setDemoUSDCBalance(null);
-    fetchAgentState();
-  };
 
   const triggerManualRun = async (actionType?: string, proposedAmount?: number) => {
     if (!privyAddress) {
@@ -727,7 +649,7 @@ export default function AgentPage() {
 
   // ── Risk Score computation ────────────────────────────────────────────────
   const riskSignals = useMemo(() => {
-    const usdc = demoUSDCBalance !== null ? demoUSDCBalance : (treasury?.usdc || 0);
+    const usdc = treasury?.usdc || 0;
     const signals: { label: string; severity: "low" | "medium" | "high"; active: boolean; icon: any }[] = [
       {
         label: `Low Liquidity (USDC < ${alertThreshold})`,
@@ -757,7 +679,7 @@ export default function AgentPage() {
       },
     ];
     return signals;
-  }, [treasury, demoUSDCBalance, onChainPaused, actions, alertThreshold]);
+  }, [treasury, onChainPaused, actions, alertThreshold]);
 
   const riskScore = useMemo(() => {
     const weights = { high: 40, medium: 20, low: 10 };
@@ -880,7 +802,7 @@ export default function AgentPage() {
       <SectionErrorBoundary sectionName="Agent Treasury Stats">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
-          { label: "Agent Treasury (USDC)", value: demoUSDCBalance !== null ? `${demoUSDCBalance.toFixed(2)}` : `${(treasury?.usdc || 0).toFixed(2)}`, isLoading: loading, unit: "USDC", tokenSymbol: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", isBalance: true },
+          { label: "Agent Treasury (USDC)", value: `${(treasury?.usdc || 0).toFixed(2)}`, isLoading: loading, unit: "USDC", tokenSymbol: "USDC", icon: Coins, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", isBalance: true },
           { label: "Agent Treasury (EURC)", value: `${(treasury?.eurc || 0).toFixed(2)}`, isLoading: loading, unit: "EURC", tokenSymbol: "EURC", icon: Coins, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", isBalance: true },
           { label: "Governance Treasury (USDC)", value: `${(govUsdcBalance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, isLoading: govLoading, unit: "USDC", tokenSymbol: "USDC", icon: Landmark, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", isBalance: true },
           { label: "Actions Today", value: actions.length.toString(), isLoading: loading, unit: "actions", icon: Zap, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", isBalance: false },
@@ -1525,12 +1447,12 @@ export default function AgentPage() {
               <div>
                 <p className="text-xs font-bold text-text-primary">Idle Capital</p>
                 <p className="text-xs text-muted mt-0.5">
-                  {((demoUSDCBalance ?? treasury?.usdc ?? 0)).toFixed(2)} USDC sitting idle — potential annual yield at 3–4% APY
+                  {((treasury?.usdc ?? 0)).toFixed(2)} USDC sitting idle — potential annual yield at 3–4% APY
                 </p>
               </div>
               <div className="ml-auto text-right shrink-0">
                 <p className="text-sm font-bold text-violet-400">
-                  ~{((demoUSDCBalance ?? treasury?.usdc ?? 0) * 0.035).toFixed(2)}
+                  ~{((treasury?.usdc ?? 0) * 0.035).toFixed(2)}
                 </p>
                 <p className="text-[10px] text-muted">est. / year</p>
               </div>
@@ -2165,3 +2087,4 @@ export default function AgentPage() {
     </div>
   );
 }
+
