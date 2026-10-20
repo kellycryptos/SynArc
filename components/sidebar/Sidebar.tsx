@@ -48,13 +48,16 @@ interface ActiveLink {
 
 const activeLinks: ActiveLink[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/creator-daos", label: "Creator DAO", icon: Rocket },
+
   { href: "/proposals", label: "Proposals", icon: FileText },
   { href: "/treasury", label: "Treasury", icon: Shield },
+  { href: "/agent", label: "Treasury Agent", icon: Bot },
   { href: "/earn", label: "Earn", icon: TrendingUp, isNew: true },
   { href: "/bridge", label: "Bridge", icon: ArrowRightLeft },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/faucet", label: "Faucet", icon: Droplets },
+  { href: "/creator-daos", label: "Creator DAO", icon: Rocket },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/settings", label: "Settings", icon: Settings },
   { href: "/docs", label: "Docs", icon: BookOpen },
 ];
@@ -87,7 +90,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
       return link;
     })
     .filter((link) => {
-      if (link.href === "/settings" || link.href === "/docs") {
+      if (link.href === "/creator-daos" || link.href === "/leaderboard" || link.href === "/settings" || link.href === "/docs") {
         return effectiveIsTestnet;
       }
       return true;
@@ -170,34 +173,7 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
       </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3.5 space-y-1">
-        {/* AGENT — Primary Feature Card */}
-        {(() => {
-          const href = "/agent";
-          const active = pathname === href || pathname.startsWith(href + "/");
-          return (
-            <Link
-              href={href}
-              prefetch={true}
-              onClick={handleLinkClick}
-              className={cn(
-                "w-full flex items-center justify-between border border-border bg-surface rounded-lg px-3 py-2.5 text-xs font-medium transition-all group cursor-pointer text-left mb-4 hover:border-primary/40",
-                active && "border-primary/40 bg-surface-elevated"
-              )}
-            >
-              <span className="text-[13px] font-medium text-foreground flex items-center gap-2.5 font-space min-w-0 truncate">
-                <div className="w-6 h-6 flex items-center justify-center shrink-0">
-                  <BotAvatar type="ghost" size={24} state="working" />
-                </div>
-                <span className="truncate">Treasury Agent</span>
-              </span>
-              <div className="shrink-0 flex items-center ml-2">
-                <MetalBadge>LIVE</MetalBadge>
-              </div>
-            </Link>
-          );
-        })()}
-
-        {/* Section label */}
+                {/* Section label */}
         <p className="px-1.5 pb-2 text-[11px] uppercase tracking-[0.1em] font-mono text-muted">
           Governance
         </p>
@@ -364,3 +340,4 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
     </aside>
   );
 }
+

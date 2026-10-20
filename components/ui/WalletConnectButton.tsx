@@ -7,6 +7,7 @@ import { Wallet, LogOut, Copy, ExternalLink, ChevronUp, ChevronDown, Check } fro
 import { useState, useRef, useEffect } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
+import { cn } from "@/lib/utils";
 
 export function WalletConnectButton() {
   const deferred = useDeferredWeb3();
@@ -16,6 +17,32 @@ export function WalletConnectButton() {
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const [connectingInFlight, setConnectingInFlight] = useState(false);
+  const connectTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleInitiateConnect = (openModal?: () => void) => {
+    setConnectingInFlight(true);
+    if (connectTimerRef.current) clearTimeout(connectTimerRef.current);
+    // 5-second cap: automatically revert to "Not connected" if still in flight
+    connectTimerRef.current = setTimeout(() => {
+      setConnectingInFlight(false);
+    }, 5000);
+    if (openModal) openModal();
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && walletAddress) {
+      setConnectingInFlight(false);
+      if (connectTimerRef.current) clearTimeout(connectTimerRef.current);
+    }
+  }, [isAuthenticated, walletAddress]);
+
+  useEffect(() => {
+    return () => {
+      if (connectTimerRef.current) clearTimeout(connectTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -46,34 +73,55 @@ export function WalletConnectButton() {
     }
   };
 
-  // Prevent hydration mismatches by rendering a placeholder before the client mounts
+  // Prevent hydration mismatches by rendering a clean placeholder before client mounts
   if (!mounted || !ready) {
     return (
-      <button 
-        disabled
-        className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-lg bg-[#0B111C] border border-[#1B2536] text-[#6B7385] text-xs font-medium cursor-not-allowed"
-      >
-        <Wallet className="w-4 h-4 animate-pulse text-[#6B7385]" />
-        <span className="truncate font-space">Connecting...</span>
-      </button>
+      <div className="space-y-2.5 w-full flex flex-col items-center">
+        <div className="flex items-center justify-between w-full text-[11px] font-mono text-[#8B93A5] px-1">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#6B7385]" />
+            Not connected
+          </span>
+        </div>
+        <button 
+          disabled
+          className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-lg bg-[#0B111C] border border-[#1B2536] text-[#6B7385] text-xs font-medium cursor-not-allowed"
+        >
+          <Wallet className="w-4 h-4 text-[#6B7385]" />
+          <span className="truncate font-space">Connect Wallet</span>
+        </button>
+      </div>
     );
   }
 
   // If disconnected, render blended custom button with RainbowKit modal trigger
   if (!isAuthenticated || !walletAddress) {
+    const isConnecting = connectingInFlight;
     return (
       <div className="space-y-2.5 w-full flex flex-col items-center">
+        <div className="flex items-center justify-between w-full text-[11px] font-mono text-[#8B93A5] px-1">
+          <span className="flex items-center gap-1.5">
+            <span className={cn(
+              "w-1.5 h-1.5 rounded-full",
+              isConnecting ? "bg-amber-400 animate-ping" : "bg-[#6B7385]"
+            )} />
+            {isConnecting ? "Connecting..." : "Not connected"}
+          </span>
+        </div>
         <ConnectButton.Custom>
-          {({ openConnectModal, connectModalOpen, mounted: rkMounted }) => (
-            <button
-              onClick={openConnectModal}
-              disabled={!mounted || !rkMounted}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-md shadow-[#2F6FFF]/20 hover:opacity-95 hover:shadow-lg hover:shadow-[#2F6FFF]/30 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-80"
-            >
-              <Wallet className="w-4 h-4 shrink-0" />
-              <span>{connectModalOpen ? "Connecting..." : "Connect Wallet"}</span>
-            </button>
-          )}
+          {({ openConnectModal, connectModalOpen, mounted: rkMounted }) => {
+            const inFlight = isConnecting || connectModalOpen;
+            return (
+              <button
+                onClick={() => handleInitiateConnect(openConnectModal)}
+                disabled={!mounted || !rkMounted}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white font-space font-semibold text-xs tracking-wide shadow-md shadow-[#2F6FFF]/20 hover:opacity-95 hover:shadow-lg hover:shadow-[#2F6FFF]/30 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-80"
+              >
+                <Wallet className="w-4 h-4 shrink-0" />
+                <span>{inFlight ? "Connecting..." : "Connect Wallet"}</span>
+              </button>
+            );
+          }}
         </ConnectButton.Custom>
         <p className="text-[10px] text-center text-[#6B7385] px-1 leading-relaxed font-mono">
           <a href="/terms" className="text-[#4F8BFF] hover:underline transition-all">Terms</a>
