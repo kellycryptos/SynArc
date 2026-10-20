@@ -66,7 +66,6 @@ const DEVELOPER_LINKS: NavItem[] = [
     external: true,
   },
   { label: "Claim sARC Faucet", href: "/faucet" },
-  { label: "Security & Audits", href: "#", badge: "Coming Soon" },
 ];
 
 const GOVERNANCE_LINKS: NavItem[] = [
@@ -74,7 +73,6 @@ const GOVERNANCE_LINKS: NavItem[] = [
   { label: "How It Works", href: "/#how-it-works" },
   { label: "DAO Leaderboard", href: "/leaderboard" },
   { label: "Protocol Analytics", href: "/analytics" },
-  { label: "Constitution & Charter", href: "#", badge: "Coming Soon" },
   { label: "Account Settings", href: "/settings" },
 ];
 
@@ -99,28 +97,12 @@ const SOCIAL_LINKS: NavItem[] = [
     href: "mailto:hello@syndaopro.xyz",
     external: true,
   },
-  {
-    label: "Discord Community",
-    href: "#",
-    badge: "Coming Soon",
-  },
-  {
-    label: "Telegram Portal",
-    href: "#",
-    badge: "Coming Soon",
-  },
-  {
-    label: "Governance Forum",
-    href: "#",
-    badge: "Coming Soon",
-  },
 ];
 
 const LEGAL_LINKS: NavItem[] = [
   { label: "Terms of Service", href: "/terms" },
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Protocol Disclaimer", href: "/terms#disclaimer" },
-  { label: "Brand Assets", href: "#", badge: "Coming Soon" },
 ];
 
 function FooterNavLink({ item }: { item: NavItem }) {

@@ -1430,78 +1430,9 @@ export default function AgentPage() {
             </div>
           </GlassCard>
 
-          {/* ════ AUTO YIELD FARMING ══════════════════════════════════════════ */}
-          <GlassCard className="p-5 space-y-5 col-span-1 lg:col-span-1 order-9 lg:order-none" hover={false}>
-            <div className="flex items-center gap-2">
-              <Percent className="w-5 h-5 text-violet-400" />
-              <h2 className="text-sm font-bold text-text-primary">Auto Yield Farming</h2>
-              <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold border ${isArcMainnet ? 'bg-emerald-500/15 border-emerald-500/25 text-emerald-400' : 'bg-violet-500/15 border-violet-500/25 text-violet-400'}`}>
-                {isArcMainnet ? 'MAINNET' : 'TESTNET'}
-              </span>
-            </div>
-
-            <div className="p-3 bg-surface-elevated/40 border border-border-thin rounded-xl flex items-start gap-3">
-              <div className="p-2 bg-violet-500/15 rounded-lg border border-violet-500/20 shrink-0">
-                <Layers className="w-4 h-4 text-violet-400" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-text-primary">Idle Capital</p>
-                <p className="text-xs text-muted mt-0.5">
-                  {((treasury?.usdc ?? 0)).toFixed(2)} USDC sitting idle — potential annual yield at 3–4% APY
-                </p>
-              </div>
-              <div className="ml-auto text-right shrink-0">
-                <p className="text-sm font-bold text-violet-400">
-                  ~{((treasury?.usdc ?? 0) * 0.035).toFixed(2)}
-                </p>
-                <p className="text-[10px] text-muted">est. / year</p>
-              </div>
-            </div>
-
-            {/* Strategy cards */}
-            <div className="space-y-3">
-              {[
-                { name: "Aave USDC",    apy: 3.2, color: "text-blue-400",   bg: "bg-blue-500/10",   border: "border-blue-500/20",   logo: "A" },
-                { name: "Compound",     apy: 2.9, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", logo: "C" },
-                { name: "Morpho Blue",  apy: 4.1, color: "text-violet-400",  bg: "bg-violet-500/10",  border: "border-violet-500/20",  logo: "M" },
-              ].map(s => (
-                <div key={s.name} className={`p-3.5 rounded-xl border ${s.border} ${s.bg} flex items-center justify-between gap-4`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg ${s.bg} border ${s.border} flex items-center justify-center text-xs font-black shrink-0 ${s.color}`}>{s.logo}</div>
-                    <div>
-                      <p className="text-xs font-bold text-text-primary">{s.name}</p>
-                      <p className="text-[10px] text-muted">APY (current estimate)</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 text-right">
-                    <div>
-                      <p className={`text-sm font-black ${s.color}`}>{s.apy}%</p>
-                      <span className="text-[9px] font-semibold text-muted bg-surface-elevated px-1.5 py-0.5 rounded border border-border-thin">
-                        PLANNED
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-[10px] text-muted leading-relaxed">
-              Agent will create a governance proposal to allocate idle USDC to the highest-yield strategy. Community votes before any funds move.
-            </p>
-
-            <motion.button
-              onClick={proposeYieldAllocation}
-              disabled={isYieldProposing || onChainPaused}
-              whileHover={{ scale: (isYieldProposing || onChainPaused) ? 1 : 1.02 }}
-              whileTap={{ scale: (isYieldProposing || onChainPaused) ? 1 : 0.98 }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600/20 border border-violet-500/30 text-violet-400 text-xs font-bold hover:bg-violet-600/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isYieldProposing ? (
-                <><span className="w-3.5 h-3.5 rounded-full border-2 border-violet-400/30 border-t-violet-400 animate-spin" />Proposing Yield Allocation...</>
-              ) : (
-                <><TrendingUp className="w-3.5 h-3.5" />Propose Yield Allocation</>
-              )}
-            </motion.button>
+          {/* ════ ROADMAP NOTICE ══════════════════════════════════════════════ */}
+          <GlassCard className="p-5 flex items-center justify-between col-span-1 lg:col-span-1 order-9 lg:order-none" hover={false}>
+            <p className="text-xs text-muted font-mono">Roadmap: yield and additional chains.</p>
           </GlassCard>
 
           {/* ════ RISK MONITORING ═════════════════════════════════════════════ */}
@@ -1657,13 +1588,9 @@ export default function AgentPage() {
               {(isArcMainnet ? [
                 { name: "Arc Mainnet",        status: "live" },
                 { name: "Ethereum Mainnet",  status: "live" },
-                { name: "Base",              status: "planned" },
-                { name: "Arbitrum",          status: "planned" },
               ] : [
                 { name: "Arc Testnet",       status: "live" },
                 { name: "Ethereum Sepolia",  status: "live" },
-                { name: "Ethereum Mainnet",  status: "planned" },
-                { name: "Base",              status: "planned" },
               ]).map(c => (
                 <div key={c.name} className="flex items-center justify-between text-xs py-1.5 border-b border-border-thin/50 last:border-0">
                   <span className="text-text-secondary font-medium flex items-center gap-2">
