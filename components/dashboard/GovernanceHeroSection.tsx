@@ -119,6 +119,10 @@ export function GovernanceHeroSection() {
     return num ? `#${num}` : "#1";
   }, [featuredProposal.id]);
 
+  if (isArcMainnet && proposals.length === 0) {
+    return null;
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* CARD 1: PROPOSAL OF THE DAY */}
