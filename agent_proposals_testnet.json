@@ -1,0 +1,26 @@
+[
+  {
+    "id": "SIP-3117",
+    "rawId": 3117,
+    "title": "Proposed by Treasury Agent — Yield Allocation: Deploy 50 USDC to Circle Yield Strategy",
+    "description": "AUTONOMOUS AGENT PROPOSAL\nAction: yield_allocation\nAmount: 50 USDC\nCategory: TREASURY_REBALANCE\nObjective: Allocate idle treasury stablecoin reserves into verified Circle yield strategies to earn annualized treasury returns for SynArc DAO on Arc Testnet.",
+    "category": "TREASURY_REBALANCE",
+    "txHash": "0xde07d958aa89983a5c32060d2ade9f9daf878f71f822101fb1de3b751f247d9a"
+  },
+  {
+    "id": "SIP-3118",
+    "rawId": 3118,
+    "title": "Proposed by Treasury Agent — Ecosystem Liquidity Provision: Seed sARC/USDC DEX Pool",
+    "description": "AUTONOMOUS AGENT PROPOSAL\nAction: liquidity_provision\nAmount: 40 USDC\nCategory: TREASURY_REBALANCE\nObjective: Deposit liquidity into automated market maker pairs to deepen secondary market depth and minimize slippage for community token holders on Arc Testnet.",
+    "category": "TREASURY_REBALANCE",
+    "txHash": "0x5c8ac84169bd17a6e55733376dfc46835ac47699d7f19cb86a372dcd23578d4d"
+  },
+  {
+    "id": "SIP-3119",
+    "rawId": 3119,
+    "title": "Proposed by Treasury Agent — AI Security Mesh: Deploy Forensic Sentinel Node",
+    "description": "AUTONOMOUS AGENT PROPOSAL\nAction: forensic_audit\nAmount: 30 USDC\nCategory: GOVERNANCE_UPGRADE\nObjective: Fund autonomous compute infrastructure for real-time mempool scanning and dual-agent adversarial transaction simulation.",
+    "category": "TREASURY_REBALANCE",
+    "txHash": "0x37eeb880fa5451d08dc186d2a763357626b4bf3b6924687d4f72c65c93d47a5a"
+  }
+]

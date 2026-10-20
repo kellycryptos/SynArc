@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createWalletClient, createPublicClient, http, fallback, defineChain } from 'viem'
+import { createWalletClient, createPublicClient, http, fallback } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { ARC_GAS } from '@/lib/arc-config'
+import { ARC_GAS, arcTestnet, arcMainnet } from '@/lib/arc-config'
 
 // ─── Network Definitions ───────────────────────────────────────────────────
 const CANTEEN_TESTNET_RPC = 
@@ -22,27 +22,7 @@ const MAINNET_RPC_URLS = [
   process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL?.trim() || '',
 ].filter(Boolean)
 
-const arcTestnetChain = defineChain({
-  id: 5042002,
-  name: 'Arc Testnet',
-  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
-  rpcUrls: {
-    default: { http: [CANTEEN_TESTNET_RPC, 'https://rpc.testnet.arc.network', 'https://rpc.testnet.arc.io'] },
-    public:  { http: [CANTEEN_TESTNET_RPC, 'https://rpc.testnet.arc.network', 'https://rpc.testnet.arc.io'] },
-  },
-  blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
-})
 
-const arcMainnetChain = defineChain({
-  id: 5042,
-  name: 'Arc',
-  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
-  rpcUrls: {
-    default: { http: ['https://rpc.mainnet.arc.io'] },
-    public:  { http: ['https://rpc.mainnet.arc.io'] },
-  },
-  blockExplorers: { default: { name: 'Arc Explorer', url: 'https://explorer.arc.io' } },
-})
 
 const TESTNET_TOKEN_ADDRESS = (
   process.env.NEXT_PUBLIC_TOKEN_ADDRESS || '0xBd0C6b83DaBF2c04Ab762C262ea0B036d2D1368e'
@@ -246,7 +226,7 @@ export async function POST(req: NextRequest) {
 
     const account = privateKeyToAccount(privateKey)
     const isMainnet = network === 'mainnet'
-    const targetChain = isMainnet ? arcMainnetChain : arcTestnetChain
+    const targetChain = isMainnet ? arcMainnet : arcTestnet
     const tokenAddress = isMainnet ? MAINNET_TOKEN_ADDRESS : TESTNET_TOKEN_ADDRESS
     const rpcUrls = isMainnet ? MAINNET_RPC_URLS : TESTNET_RPC_URLS
     const tokenAmount = isMainnet ? 10n * 10n ** 18n : 1000n * 10n ** 18n
@@ -332,17 +312,19 @@ export async function POST(req: NextRequest) {
     let usdcTxHash: string | undefined
     if (!isMainnet) {
       try {
-        usdcTxHash = await walletClient.sendTransaction({
-          to: walletAddress as `0x${string}`,
-          value: 2n * 10n ** 18n,   // 2 native USDC in wei
-          gas: 21000n,
-          ...gasParams,
-        })
-
-        await publicClient.waitForTransactionReceipt({
-          hash: usdcTxHash as `0x${string}`,
-          timeout: 60_000
-        })
+        const faucetNativeBal = await publicClient.getBalance({ address: account.address }).catch(() => 0n)
+        if (faucetNativeBal > 2n * 10n ** 18n) {
+          usdcTxHash = await walletClient.sendTransaction({
+            to: walletAddress as `0x${string}`,
+            value: 2n * 10n ** 18n,   // 2 native USDC in wei
+            gas: 21000n,
+            ...gasParams,
+          })
+          await publicClient.waitForTransactionReceipt({
+            hash: usdcTxHash as `0x${string}`,
+            timeout: 60_000
+          })
+        }
 
         // Also transfer ERC20 USDC for testnet deposits — best effort
         try {
@@ -370,7 +352,7 @@ export async function POST(req: NextRequest) {
 
     const explorerUrl = isMainnet
       ? `https://explorer.arc.io/tx/${txHash}`
-      : `https://testnet.arcscan.app/tx/${txHash}`
+      : `https://explorer.testnet.arc.io/tx/${txHash}`
 
     return NextResponse.json({
       success: true,

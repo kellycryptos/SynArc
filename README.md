@@ -365,7 +365,7 @@ synarc-dao/
 │   ├── useUSDCBalance.ts     # Live balance fetcher utilizing ERC-20 contract interfaces
 │   └── useSwitchArcNetwork.ts# Automated RPC configuration and chain-switching utility
 ├── lib/                      # Base configurations, utilities, and helper functions
-├── providers/                # Top-level React wrappers (Web3, Privy, Theme)
+├── providers/                # Top-level React wrappers (Web3, Theme)
 └── styles/                   # Core Tailwind configurations and global styles
 ```
 

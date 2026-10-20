@@ -1,5 +1,37 @@
 [
   {
+    "timestamp": "2026-10-20T12:43:58.014Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-20T12:33:31.449Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-20T12:28:31.416Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
+    "timestamp": "2026-10-20T12:23:31.404Z",
+    "action": "emergency_funding",
+    "reasoning": "Treasury holds 0.21 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
+    "status": "failed",
+    "usdcAmount": 50,
+    "network": "mainnet"
+  },
+  {
     "timestamp": "2026-10-14T16:28:07.666Z",
     "action": "emergency_funding",
     "reasoning": "Treasury holds 0.16 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Execution deferred: Agent wallet 0xE819090D7810D89f2E86e167d0b58425dEd745D8 requires native gas on Arc Mainnet to broadcast on-chain transaction.]",
@@ -358,39 +390,6 @@
     "action": "emergency_funding",
     "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Failed to create proposal on-chain: The total cost (gas * gas fee + value) of executing this transaction exceeds the balance of the account. (insufficient funds for gas * price + value: have 11227982678701015 want 16301712815764838)",
     "status": "failed",
-    "usdcAmount": 50,
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:42:44.969Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request. [Failed to create proposal on-chain: The total cost (gas * gas fee + value) of executing this transaction exceeds the balance of the account. (insufficient funds for gas * price + value: have 11227982678701015 want 16301712815764838)",
-    "status": "failed",
-    "usdcAmount": 50,
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:43:10.443Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #40 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xf3c508f82e6652bd23b369ada1892c1e483cc835055bd22e5f40f5f21000b34a",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:43:08.243Z",
-    "action": "vote_for_proposal",
-    "reasoning": "AUTONOMOUS VOTE: Casted FOR vote on active governance proposal #39 (\"Proposed by Treasury Agent — Rebalancing: emergency_funding\").",
-    "txHash": "0xdbae1d97d86b02c4ad54864ef9ebced880b218bfbae0b5548a9b26d6db52462b",
-    "status": "executed",
-    "network": "mainnet"
-  },
-  {
-    "timestamp": "2026-10-09T16:37:44.968Z",
-    "action": "emergency_funding",
-    "reasoning": "Treasury holds 0.06 USDC — below the 10 USDC operational threshold. Proposing emergency funding request.",
-    "txHash": "0x667b91e26ecfd04b5274df7e435cde5ea9e96506e7c1b31d31d1d0433df869f9",
-    "status": "executed",
     "usdcAmount": 50,
     "network": "mainnet"
   }

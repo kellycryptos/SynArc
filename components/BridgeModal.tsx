@@ -82,17 +82,6 @@ export const TESTNET_SOURCE_CHAINS = [
     icon: "AVAX",
     color: "text-red-500",
   },
-  {
-    id: "SOL_DEVNET",
-    chainId: 103,
-    name: "Solana Devnet",
-    tokenAddress: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
-    eurcAddress: "HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr",
-    rpcUrl: "https://api.devnet.solana.com",
-    rpcUrls: ["https://api.devnet.solana.com"],
-    icon: "SOL",
-    color: "text-purple-400",
-  },
 ];
 
 // Mainnet source networks config
@@ -262,7 +251,7 @@ function ActiveBridgeModal({ isOpen, onClose, onSuccess }: BridgeModalProps) {
       setSourceBalance("0.00");
       return;
     }
-    if (selectedChain.id === "SOL_DEVNET" || (selectedChain as any).id === "SOL_MAINNET") {
+    if ((selectedChain as any).id === "SOL_MAINNET") {
       setSourceBalance("0.00");
       return;
     }

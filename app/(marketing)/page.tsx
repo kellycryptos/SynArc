@@ -153,8 +153,9 @@ export default function LandingPage() {
           ════════════════════════════════════════════════════════ */}
       <section
         id="how-it-works"
-        className="py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
+        className="relative py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
       >
+        <div id="governance" className="absolute -top-16 left-0" />
         <div className="max-w-5xl mx-auto w-full">
           <div className="mb-12 text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-surface text-xs font-mono font-medium text-muted uppercase tracking-wider mb-4">
@@ -206,8 +207,9 @@ export default function LandingPage() {
           ════════════════════════════════════════════════════════ */}
       <section
         id="why"
-        className="py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
+        className="relative py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
       >
+        <div id="features" className="absolute -top-16 left-0" />
         <div className="max-w-5xl mx-auto w-full">
           <div className="mb-12 text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-surface text-xs font-mono font-medium text-muted uppercase tracking-wider mb-4">
@@ -253,9 +255,11 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           §4  REAL ACTIVITY — client island (honest empty state)
           ════════════════════════════════════════════════════════ */}
-      <SectionErrorBoundary sectionName="Proposals and Activity">
-        <LandingActivitySectionLazy />
-      </SectionErrorBoundary>
+      <div id="treasury" className="relative">
+        <SectionErrorBoundary sectionName="Proposals and Activity">
+          <LandingActivitySectionLazy />
+        </SectionErrorBoundary>
+      </div>
 
       {/* ════════════════════════════════════════════════════════
           §5  FINAL CTA

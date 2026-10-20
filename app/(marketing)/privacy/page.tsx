@@ -18,9 +18,9 @@ export default function PrivacyPage() {
       content: "All interactions with Syn DAO require connecting a compatible Web3 wallet. Syn DAO never holds, reads, or gains access to your wallet's private keys or seed phrases. Any data associated with your wallet is publicly queryable from the distributed blockchain ledger."
     },
     {
-      title: "3. Privy Authentication",
+      title: "3. Non-Custodial Wallet Authentication",
       icon: Eye,
-      content: "Syn DAO uses Privy for wallet authentication and social login integration. Any credentials, social accounts, or embedded wallets created through Privy are managed and secured by Privy in accordance with their official Privacy Policy. Syn DAO does not store these credentials."
+      content: "Syn DAO uses standard decentralized Web3 protocols (WalletConnect, RainbowKit, and injected EIP-1193 providers) for wallet authentication. Any credentials, signatures, or keys are managed solely within your chosen non-custodial wallet (MetaMask, Rabby, OKX, Rainbow, etc.). Syn DAO does not store or access your private keys."
     },
     {
       title: "4. Cookies Policy",
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
     {
       title: "5. Third Party Services",
       icon: Server,
-      content: "To maintain frontend hosting, wallet connection triggers, and node interaction channels, Syn DAO communicates with external infrastructure services including Vercel (hosting), Privy (connection), and Arc Testnet RPC nodes (blockchain state). Each service maintains its own privacy regulations."
+      content: "To maintain frontend hosting, wallet connection triggers, and node interaction channels, Syn DAO communicates with external infrastructure services including Vercel (hosting), WalletConnect (connection), and Arc Testnet RPC nodes (blockchain state). Each service maintains its own privacy regulations."
     },
     {
       title: "6. Data Retention",

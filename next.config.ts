@@ -30,7 +30,6 @@ const nextConfig: NextConfig = {
       "@rainbow-me/rainbowkit",
       "viem",
       "ethers",
-      "@privy-io/react-auth",
     ],
   },
   poweredByHeader: false,

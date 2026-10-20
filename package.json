@@ -22,7 +22,6 @@
     "border-beam": "^1.4.1",
     "bot-avatars": "^0.1.2",
     "clsx": "^2.1.1",
-    "connectkit": "^1.9.2",
     "ethers": "^6.16.0",
     "framer-motion": "^11.18.0",
     "groq-sdk": "^1.2.1",

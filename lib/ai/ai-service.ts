@@ -430,8 +430,8 @@ Key SDK Methods:
 
 Syn DAO supports both web3 native wallets and seamless mainstream onboarding:
 
-1. **Privy Embedded Wallets**: Sign in instantly using your Google account, email, or Twitter/X — no seed phrases needed. A non-custodial wallet is generated instantly in the background.
-2. **Injected & Web3 Wallets**: Full support for MetaMask, Rainbow, Coinbase Wallet, and WalletConnect.
+1. **Injected & Web3 Wallets**: Full native support for Rabby, MetaMask, OKX, Rainbow, and Base Wallet.
+2. **WalletConnect (Reown)**: Connect any mobile or desktop wallet via QR code or universal deep links.
 3. **Circle User-Controlled Wallets**: Gas-abstracted smart accounts built for sub-penny payments and enterprise safety.`;
   }
 

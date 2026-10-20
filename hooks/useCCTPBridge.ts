@@ -223,19 +223,6 @@ export const SOURCE_CHAINS = {
     ],
     icon: "AVAX",
     isTestnet: true
-  },
-  SOL_DEVNET: {
-    id: 103,
-    name: "Solana Devnet",
-    bridgeKitId: "Solana_Devnet" as const,
-    domain: 5,
-    usdcAddress: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
-    eurcAddress: "HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr",
-    tokenMessenger: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
-    messageTransmitter: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
-    rpcUrls: ["https://api.devnet.solana.com"],
-    icon: "SOL",
-    isTestnet: true
   }
 } as const;
 
@@ -406,7 +393,7 @@ function useActiveCCTPBridge() {
     const irisFeeUrl = isTestnetRoute ? IRIS_FEE_SANDBOX_URL : IRIS_FEE_MAINNET_URL;
 
     // Solana CCTP bridging notice
-    if (chainConfig.id === 103 || (chainConfig as any).id === 101) {
+    if ((chainConfig as any).id === 103 || (chainConfig as any).id === 101) {
       setState(prev => ({
         ...prev,
         status: "error",

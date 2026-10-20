@@ -13,13 +13,11 @@ export function DashboardTopCards() {
   const { metrics, proposals } = useGovernanceStore();
 
   // 1. Treasury balance (live)
-  const formattedTreasury = typeof treasuryBalance === "number" && treasuryBalance > 0
+  const formattedTreasury = typeof treasuryBalance === "number"
     ? `$${treasuryBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    : metrics?.treasuryValue && metrics.treasuryValue !== "—" && metrics.treasuryValue !== "$0.07"
+    : metrics?.treasuryValue && metrics.treasuryValue !== "—"
       ? metrics.treasuryValue
-      : isArcMainnet
-        ? (typeof treasuryBalance === "number" ? `$${treasuryBalance.toFixed(2)}` : "—")
-        : "$30,688.99";
+      : "—";
 
   // 2. Open proposals (live)
   const activeProposalsCount = metrics?.activeProposals !== undefined

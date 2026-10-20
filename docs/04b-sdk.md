@@ -129,7 +129,7 @@ const synarc = new SynArc({
 
 ### 3. Frontend dApp (Injected EIP-1193 Provider)
 
-Initialize with MetaMask, Privy, Rainbow, or Circle embedded wallets:
+Initialize with MetaMask, Rabby, Rainbow, or Circle embedded wallets:
 
 ```typescript
 import { SynArc, SYNARC_MAINNET } from 'synarc-agent-sdk';

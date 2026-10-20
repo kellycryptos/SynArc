@@ -20,7 +20,7 @@ export default function TermsPage() {
     {
       title: "3. Wallet Connection",
       icon: Shield,
-      content: "Accessing governance activities requires connecting a non-custodial Web3 wallet (e.g. via Privy). Syn DAO is a purely decentralized interface. Syn DAO never holds, accesses, or controls your private keys, seed phrases, or digital assets. You are solely responsible for securing your wallet and authorizing all transactions."
+      content: "Accessing governance activities requires connecting a non-custodial Web3 wallet (e.g. via WalletConnect, MetaMask, Rabby). Syn DAO is a purely decentralized interface. Syn DAO never holds, accesses, or controls your private keys, seed phrases, or digital assets. You are solely responsible for securing your wallet and authorizing all transactions."
     },
     {
       title: "4. Governance Participation",

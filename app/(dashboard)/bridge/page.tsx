@@ -106,20 +106,6 @@ const TESTNET_SOURCE_CHAINS = [
     borderClass: "border-red-500/30",
     blockExplorerUrl: "https://testnet.snowtrace.io"
   },
-  { 
-    id: "SOL_DEVNET", 
-    name: "Solana Devnet", 
-    tokenAddress: "4zMMC9SRGx2txA24js12jccVwMAwFFdp47rFZ5y76hA3", 
-    eurcAddress: "HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr",
-    rpcUrl: "https://api.devnet.solana.com",
-    rpcUrls: ["https://api.devnet.solana.com"],
-    icon: "SOL",
-    color: "bg-purple-500/10 border-purple-500/20 text-purple-400",
-    chainId: 103,
-    bgClass: "from-purple-500/20 to-transparent",
-    borderClass: "border-purple-500/30",
-    blockExplorerUrl: "https://explorer.solana.com/?cluster=devnet"
-  },
 ];
 
 const MAINNET_SOURCE_CHAINS = [
@@ -885,7 +871,7 @@ export default function BridgePage() {
       return;
     }
 
-    if (selectedChain.id === "SOL_DEVNET" || selectedChain.id === "SOL_MAINNET") {
+    if (selectedChain.id === "SOL_MAINNET") {
       setSourceBalance("0.00");
       return;
     }
@@ -1003,7 +989,7 @@ export default function BridgePage() {
     const expectedChainId = direction === "in" ? selectedChain.chainId : activeArcChain.chainId;
     
     // Solana chains don't require EVM wallet switch checks
-    if (direction === "in" && (selectedChain.id === "SOL_DEVNET" || selectedChain.id === "SOL_MAINNET")) return false;
+    if (direction === "in" && (selectedChain.id === "SOL_MAINNET")) return false;
 
     return walletChainId !== expectedChainId;
   }, [isConnected, walletChainId, direction, selectedChain, activeArcChain.chainId]);
@@ -1245,9 +1231,7 @@ export default function BridgePage() {
                                   >
                                     <ChainIcon chain={chain.id} size={18} />
                                     <span>{chain.name}</span>
-                                    {(chain.id === "SOL_DEVNET" || chain.id === "SOL_MAINNET") && (
-                                      <span className="ml-auto text-[9px] font-extrabold text-muted-foreground bg-surface-elevated px-1.5 py-0.5 rounded border border-border-thin select-none">SOON</span>
-                                    )}
+                                    
                                   </button>
                                 ))}
                               </div>
@@ -1478,14 +1462,6 @@ export default function BridgePage() {
                         className="w-full py-4 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary-hover transition-all shadow-[0_0_24px_rgba(124,58,237,0.25)] flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
                       >
                         Connect Wallet to Bridge
-                      </button>
-                    ) : selectedChain.id === "SOL_DEVNET" ? (
-                      <button
-                        type="button"
-                        disabled={true}
-                        className="w-full py-4 bg-surface-elevated/40 border border-border-thin text-text-tertiary font-bold text-sm rounded-xl flex items-center justify-center gap-2 cursor-not-allowed opacity-55"
-                      >
-                        Solana Bridge — Coming Soon
                       </button>
                     ) : requiresNetworkSwitch ? (
                       <button
