@@ -27,6 +27,10 @@ Product name updated for Arc naming compliance. Contracts and addresses are unch
 
 ---
 
+Syn DAO is a member of the Circle Alliance Program. Directory: https://partners.circle.com/partner/syn-dao. We use USDC (and EURC) on Arc Mainnet, with settlement in USDC.
+
+---
+
 ## 1. Introduction
 
 DAOs and agent-run businesses can easily receive USDC, but **fund release is the fatal failure point**. A passed governance vote does not prove that off-chain work was delivered, autonomous agents can be tricked via prompt injection into paying substituted addresses, and payout transactions can be replayed.
@@ -204,6 +208,7 @@ console.log(`Deployed escrow! Tx: ${txHash}`);
 
 Syn DAO integrates with the Circle ecosystem and autonomous systems to power its rebalancing, governance, and onboarding systems:
 
+*   **Circle Alliance Program** — Syn DAO is a member of the Circle Alliance Program. Directory: https://partners.circle.com/partner/syn-dao. We use USDC (and EURC) on Arc Mainnet, with settlement in USDC.
 *   **Circle CCTP (Cross-Chain Transfer Protocol)** — *Fully Deployed & Functional*: Handles native burn-and-mint USDC routing between Arc Testnet and Ethereum Sepolia. In `lib/agent/cctp-executor.ts`, the system executes burns, polls Circle's Iris attestation API for validation consensus, and triggers mint receipts on the destination Messenger contract.
 *   **Circle Gateway (x402 Nanopayments)** — *Simulated/Planned*: Tracks AI model execution fees for each inference call in `lib/agent/gateway-payments.ts`. The codebase contains hooks to deduct USDC internally for every Groq API request, awaiting live production endpoints to route actual on-chain fee payments.
 *   **Web3 & Modular Wallets (WalletConnect & Circle W3S)** — *Fully Deployed & Functional*: Seamless wallet connectivity powered by WalletConnect / Reown Cloud, ConnectKit, and RainbowKit supporting 300+ mobile and browser wallets, alongside Circle's Web3 Services (W3S) user-controlled smart accounts. In `lib/tx-helper.ts`, transactions submitted by Circle embedded wallets are routed via custom EIP-1193 providers and sponsored gaslessly via paymasters.
