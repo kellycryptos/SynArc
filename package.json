@@ -3,6 +3,9 @@
   "version": "2.0.0",
   "description": "Syn DAO — on-chain funding, treasury, and governance. Built on Arc.",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
