@@ -41,20 +41,7 @@ Syn DAO provides the critical payment-safety layer for organizations and agent-r
 | **Canonical cirBTC** | `0x171A4217b86A807A64eB94757Db6849fb4bDbAA0` | Native Circle cirBTC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0x171A4217b86A807A64eB94757Db6849fb4bDbAA0) |
 | **Agent Release Cap** | `50.00 USDC` (`50_000_000 micro-USDC`) | Enforced on-chain: releases $\le 50$ autonomous; $> 50$ require human review | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
 
-#### Verified Arc Mainnet Traction & Metrics
-
-| Metric | On-Chain State | Proof / Link |
-|:---|:---|:---|
-| **Deployer On-Chain Transactions** | `183` Transactions | [0xE819...45D8 on Arc Explorer](https://explorer.arc.io/address/0xE819090D7810D89f2E86e167d0b58425dEd745D8) |
-| **Governor Proposals Created** | `135` Proposals (41 Succeeded, $6,400+ USDC Requested) | [0x4f76...0025 on Arc Explorer](https://explorer.arc.io/address/0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025) |
-| **Three-Way Match Ledger Entries** | `7` On-Chain Settlement Records | [0x8205...3d7B on Arc Explorer](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
-| **Verified Creator DAO Escrows** | `10` Independent Escrows | [100% Sourcify Exact Match](https://sourcify.dev/#/lookup/5042/0x99955b487aE5519a2b1Ff677f9bed3A6145b750d) |
-| **Multi-Asset Treasury Balances** | USDC, EURC, cirBTC | Verified on Arc Mainnet & [DefiLlama](https://defillama.com/protocol/syn-dao) |
-| **DeFiLlama Tracking** | Live Protocol Profile | [defillama.com/protocol/syn-dao](https://defillama.com/protocol/syn-dao) |
-| **Circle Alliance Directory** | Accepted Partner Profile | [partners.circle.com/partner/syn-dao](https://partners.circle.com/partner/syn-dao) |
-| **Governance Token Supply** | `15,000,000` sARC | [0x8f4b...0ad4 on Arc Explorer](https://explorer.arc.io/address/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) |
-
-> ℹ️ All 10 Creator DAO Crowdfund contracts deployed on Arc Mainnet are verified with exact match on Sourcify. See [`docs/07-smart-contracts.md`](/docs/smart-contracts) for the complete list of creator escrow addresses. Run `npm run traction` via CLI for the live report.
+> ℹ️ All 10 Creator DAO Crowdfund contracts deployed on Arc Mainnet are verified with exact match on Sourcify. See [`docs/07-smart-contracts.md`](/docs/smart-contracts) for the complete list of creator escrow addresses.
 
 ### Arc Testnet
 
@@ -81,7 +68,6 @@ Syn DAO provides the critical payment-safety layer for organizations and agent-r
 Syn DAO integrates with the Circle ecosystem and autonomous systems to power its rebalancing, governance, and onboarding systems:
 
 *   **Circle Alliance Program** — Syn DAO is a member of the Circle Alliance Program. Directory: https://partners.circle.com/partner/syn-dao. We use USDC (and EURC) on Arc Mainnet, with settlement in USDC.
-*   **DeFiLlama Listed Protocol** — Syn DAO is indexed on DeFiLlama (`https://defillama.com/protocol/syn-dao`). The official multi-token treasury adapter (`projects/treasury/syndao.js`) tracks USDC, EURC, cirBTC, and native ARC assets locked in the central treasury and milestone escrows on Arc Mainnet.
 *   **Circle CCTP (Cross-Chain Transfer Protocol)** — *Fully Deployed & Functional*: Handles native burn-and-mint USDC routing between Arc (Mainnet/Testnet) and external EVM chains via Circle Bridge Kit. In `lib/agent/cctp-executor.ts`, the system executes burns, polls Circle's Iris attestation API for validation consensus, and triggers mint receipts on the destination Messenger contract.
 *   **Circle Gateway (x402 Nanopayments)** — *Simulated/Planned*: Tracks AI model execution fees for each inference call in `lib/agent/gateway-payments.ts`. The codebase contains hooks to deduct USDC internally for every Groq API request, awaiting live production endpoints to route actual on-chain fee payments.
 *   **Web3 & Modular Wallets (WalletConnect & Circle W3S)** — *Fully Deployed & Functional*: Flexible wallet connectivity powered by WalletConnect / Reown Cloud and RainbowKit for 300+ mobile and browser wallets, alongside Circle's Web3 Services (W3S) user-controlled smart accounts. In `lib/tx-helper.ts`, transactions submitted by Circle embedded wallets are routed via custom EIP-1193 providers and sponsored gaslessly via paymasters.
