@@ -18,16 +18,19 @@ Product name updated for Arc naming compliance. Contracts and addresses are unch
 [![Wagmi](https://img.shields.io/badge/Wagmi-3.6-black?style=for-the-badge)](https://wagmi.sh)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-Governor-4E5EE4?style=for-the-badge)](https://openzeppelin.com)
 [![npm version](https://img.shields.io/npm/v/synarc-agent-sdk?color=emerald&style=for-the-badge)](https://www.npmjs.com/package/synarc-agent-sdk)
+[![DefiLlama](https://img.shields.io/badge/DefiLlama-Listed-orange?style=for-the-badge)](https://defillama.com/protocol/syn-dao)
+[![Circle Alliance](https://img.shields.io/badge/Circle_Alliance-Member-0052FF?style=for-the-badge)](https://partners.circle.com/partner/syn-dao)
 [![YouTube](https://img.shields.io/badge/YouTube-@syndaopro-red?style=for-the-badge&logo=youtube)](https://youtube.com/@syndaopro)
 [![Twitter Follow](https://img.shields.io/badge/X-@syndaopro-black?style=for-the-badge&logo=x)](https://x.com/syndaopro)
 
-[**Launch App →**](https://www.syndaopro.xyz/) · [**Developer SDK Docs**](https://www.syndaopro.xyz/docs/sdk) · [**YouTube**](https://youtube.com/@syndaopro) · [**SDK GitHub**](https://github.com/kellycryptos/synarc-agent-sdk) · [**Follow @syndaopro**](https://x.com/syndaopro) · [**Arc Ecosystem**](https://arc.network)
+[**Launch App →**](https://www.syndaopro.xyz/) · [**DefiLlama Profile**](https://defillama.com/protocol/syn-dao) · [**Circle Alliance Profile**](https://partners.circle.com/partner/syn-dao) · [**Developer SDK Docs**](https://www.syndaopro.xyz/docs/sdk) · [**YouTube**](https://youtube.com/@syndaopro) · [**SDK GitHub**](https://github.com/kellycryptos/synarc-agent-sdk) · [**Follow @syndaopro**](https://x.com/syndaopro) · [**Arc Ecosystem**](https://arc.network)
 
 </div>
 
 ---
 
 Syn DAO is a member of the Circle Alliance Program. Directory: https://partners.circle.com/partner/syn-dao. We use USDC (and EURC) on Arc Mainnet, with settlement in USDC.
+Syn DAO treasury and milestone escrow assets on Arc Mainnet are tracked live on [DefiLlama](https://defillama.com/protocol/syn-dao).
 
 ---
 
@@ -435,6 +438,21 @@ https://www.syndaopro.xyz/
 | **Canonical EURC** | `0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1` | Native Circle EURC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1) |
 | **Canonical cirBTC** | `0x171A4217b86A807A64eB94757Db6849fb4bDbAA0` | Native Circle cirBTC on Arc Mainnet | [Inspect](https://explorer.arc.io/address/0x171A4217b86A807A64eB94757Db6849fb4bDbAA0) |
 | **Agent Release Cap** | `50.00 USDC` (`50_000_000 micro-USDC`) | Enforced on-chain: releases $\le 50$ autonomous; $> 50$ require human review | [Inspect](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
+
+#### Arc Mainnet — Verified On-Chain Traction & Metrics
+
+| Metric | On-Chain State | Verification / Proof Link |
+|:---|:---|:---|
+| **Deployer On-Chain Transactions** | `183` Transactions | [0xE819...45D8 on Arc Explorer](https://explorer.arc.io/address/0xE819090D7810D89f2E86e167d0b58425dEd745D8) |
+| **Governor Proposals Created** | `135` Proposals (41 Succeeded, $6,400+ USDC Requested) | [0x4f76...0025 on Arc Explorer](https://explorer.arc.io/address/0x4f76Fc6a76b16F58826739aC8EeCf7067FDE0025) |
+| **Three-Way Match Ledger Entries** | `7` On-Chain Settlement Records | [0x8205...3d7B on Arc Explorer](https://explorer.arc.io/address/0x8205e9782Fe54fD2aaD895b436B695db169F3d7B) |
+| **Verified Creator DAO Escrows** | `10` Independent Escrows | [100% Sourcify Exact Match](https://sourcify.dev/#/lookup/5042/0x99955b487aE5519a2b1Ff677f9bed3A6145b750d) |
+| **Multi-Asset Treasury Balances** | USDC, EURC, cirBTC | Verified on Arc Mainnet & [DefiLlama](https://defillama.com/protocol/syn-dao) |
+| **DeFiLlama Tracking** | Live Protocol Profile | [defillama.com/protocol/syn-dao](https://defillama.com/protocol/syn-dao) |
+| **Circle Alliance Directory** | Accepted Partner Profile | [partners.circle.com/partner/syn-dao](https://partners.circle.com/partner/syn-dao) |
+| **Governance Token Supply** | `15,000,000` sARC | [0x8f4b...0ad4 on Arc Explorer](https://explorer.arc.io/address/0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4) |
+
+> 💡 **CLI Traction Command**: Query live Arc Mainnet metrics directly from the terminal with `npm run traction`.
 
 #### Arc Mainnet — Verified Creator DAO Escrow Contracts (`SynArcCrowdfund.sol`)
 

@@ -10,7 +10,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "traction": "node scripts/check-mainnet-full.cjs"
   },
   "dependencies": {
     "@circle-fin/adapter-viem-v2": "^1.19.0",
