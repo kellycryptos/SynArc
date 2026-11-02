@@ -11,7 +11,11 @@ export const ARC_TESTNET_FALLBACK_RPC = 'https://rpc.testnet.arc.io';
  */
 export function getTestnetProxyUrl(): string {
   if (typeof window !== 'undefined') {
-    return `${window.location.origin}/api/rpc/testnet`;
+    const origin = window.location.origin;
+    if (origin.includes('syndaopro.xyz') && !origin.includes('www.syndaopro.xyz')) {
+      return 'https://www.syndaopro.xyz/api/rpc/testnet';
+    }
+    return `${origin}/api/rpc/testnet`;
   }
   let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
@@ -27,7 +31,11 @@ export function getTestnetProxyUrl(): string {
  */
 export function getMainnetProxyUrl(): string {
   if (typeof window !== 'undefined') {
-    return `${window.location.origin}/api/rpc/mainnet`;
+    const origin = window.location.origin;
+    if (origin.includes('syndaopro.xyz') && !origin.includes('www.syndaopro.xyz')) {
+      return 'https://www.syndaopro.xyz/api/rpc/mainnet';
+    }
+    return `${origin}/api/rpc/mainnet`;
   }
   let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
@@ -168,6 +176,12 @@ export const arcTestnet = defineChain({
     public: { http: ARC_TESTNET_RPC_URLS }
   },
   blockExplorers: { default: { name: 'Arc Explorer', url: 'https://explorer.testnet.arc.io' } },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 0,
+    },
+  },
 })
 
 // Arc Mainnet (Chain ID 5042)
@@ -180,6 +194,12 @@ export const arcMainnet = defineChain({
     public: { http: ARC_MAINNET_RPC_URLS }
   },
   blockExplorers: { default: { name: 'Arc Explorer', url: 'https://explorer.arc.io' } },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 0,
+    },
+  },
 })
 
 export const ARC_CHAIN = new Proxy({} as typeof arcMainnet, {

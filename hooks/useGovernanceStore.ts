@@ -426,98 +426,114 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       ]);
     };
 
+    // Fast-path: Server-side proposal API (instant multi-call, adblock-immune, zero wallet needed)
+    let loadedFromApi = false;
+    let apiProposals: Proposal[] = [];
+    if (activeDaoId === 'synarc' && typeof window !== "undefined") {
+      try {
+        const forceQuery = force ? '&force=true' : '';
+        const res = await fetch(`/api/governance/proposals?network=${netKey}&limit=500${forceQuery}`, {
+          signal: AbortSignal.timeout(5000)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.proposals) && data.proposals.length > 0) {
+            apiProposals = data.proposals;
+            loadedFromApi = true;
+          }
+        }
+      } catch (err) {
+        console.warn("Direct server proposal API unavailable, falling back to direct RPC fetch:", err);
+      }
+    }
+
     try {
       const provider = await withTimeout(getCachedProvider(), 8000);
+      let loadedProposals: Proposal[] = [];
 
-      const governorAddress = contracts.governor;
-      const governorContract = new Contract(governorAddress, GovernorABI, provider);
+      if (loadedFromApi && apiProposals.length > 0) {
+        loadedProposals = apiProposals;
+      } else {
+        const governorAddress = contracts.governor;
+        const governorContract = new Contract(governorAddress, GovernorABI, provider);
 
-      // Fetch proposal count directly from the contract with timeout
-      const count = await withTimeout(governorContract.proposalCount(), 8000);
-      const totalCount = Number(count);
+        // Fetch proposal count directly from the contract with timeout
+        const count = await withTimeout(governorContract.proposalCount(), 8000);
+        const totalCount = Number(count);
 
-      // Fetch on-chain proposals:
-      // On Mainnet, indexing begins at proposal 1 up to totalCount (e.g. 21 proposals).
-      // On Testnet, proposals 1-941 are in historical JSON. We fetch the latest window (up to 20 recent proposals)
-      // in descending order, ensuring fast, non-blocking loads without RPC rate limiting.
-      const MAX_RECENT_FETCH = isMainnet ? totalCount : 20;
-      const fetchCount = Math.min(totalCount, MAX_RECENT_FETCH);
-      const proposalIndices = Array.from(
-        { length: fetchCount },
-        (_, i) => isMainnet ? (i + 1) : (totalCount - i)
-      );
+        // Fetch on-chain proposals in descending order (newest proposals first)
+        const MAX_RECENT_FETCH = isMainnet ? totalCount : 30;
+        const fetchCount = Math.min(totalCount, MAX_RECENT_FETCH);
+        const proposalIndices = Array.from(
+          { length: fetchCount },
+          (_, i) => (totalCount - i)
+        );
 
-      // Fetch in small parallel chunks (concurrency 3) with an 8000ms timeout per call to avoid RPC throttling
-      const CHUNK_SIZE = 3;
-      const settled: PromiseSettledResult<{ i: number; p: any; proposalStateNum: any }>[] = [];
-      for (let c = 0; c < proposalIndices.length; c += CHUNK_SIZE) {
-        const chunk = proposalIndices.slice(c, c + CHUNK_SIZE);
-        const chunkResults = await Promise.allSettled(
-          chunk.map(async (i) => {
-            let p: any;
-            let proposalStateNum: any;
-            try {
-              [p, proposalStateNum] = await withTimeout(Promise.all([
-                governorContract.getProposal(i),
-                governorContract.state(i),
-              ]), 8000);
-            } catch {
+        // Fetch in parallel chunks of 15 to minimize sequential latency
+        const CHUNK_SIZE = 15;
+        const settled: PromiseSettledResult<{ i: number; p: any; proposalStateNum: any }>[] = [];
+        for (let c = 0; c < proposalIndices.length; c += CHUNK_SIZE) {
+          const chunk = proposalIndices.slice(c, c + CHUNK_SIZE);
+          const chunkResults = await Promise.allSettled(
+            chunk.map(async (i) => {
+              let p: any;
+              let proposalStateNum: any;
               try {
-                // Fallback for contracts with 15-field getProposal (without deliverableURI)
-                const gov15 = new Contract(governorAddress, [
-                  "function getProposal(uint256) view returns (uint256 id, address proposer, string title, string description, string category, uint256 votingDuration, uint256 startTime, uint256 endTime, uint256 forVotes, uint256 againstVotes, uint256 abstainVotes, bool canceled, bool executed, uint256 treasuryImpactValue, address executionTarget)",
-                  "function state(uint256) view returns (uint8)"
-                ], provider);
                 [p, proposalStateNum] = await withTimeout(Promise.all([
-                  gov15.getProposal(i),
-                  gov15.state(i),
-                ]), 8000);
-              } catch {
-                // Fallback for standard OpenZeppelin governor contracts that expose proposals(uint256)
-                [p, proposalStateNum] = await withTimeout(Promise.all([
-                  governorContract.proposals(i),
+                  governorContract.getProposal(i),
                   governorContract.state(i),
                 ]), 8000);
+              } catch {
+                try {
+                  const gov15 = new Contract(governorAddress, [
+                    "function getProposal(uint256) view returns (uint256 id, address proposer, string title, string description, string category, uint256 votingDuration, uint256 startTime, uint256 endTime, uint256 forVotes, uint256 againstVotes, uint256 abstainVotes, bool canceled, bool executed, uint256 treasuryImpactValue, address executionTarget)",
+                    "function state(uint256) view returns (uint8)"
+                  ], provider);
+                  [p, proposalStateNum] = await withTimeout(Promise.all([
+                    gov15.getProposal(i),
+                    gov15.state(i),
+                  ]), 8000);
+                } catch {
+                  [p, proposalStateNum] = await withTimeout(Promise.all([
+                    governorContract.proposals(i),
+                    governorContract.state(i),
+                  ]), 8000);
+                }
               }
-            }
-            return { i, p, proposalStateNum };
-          })
-        );
-        settled.push(...chunkResults);
-        if (c + CHUNK_SIZE < proposalIndices.length) {
-          await new Promise((r) => setTimeout(r, 50));
-        }
-      }
-
-      const loadedProposals: Proposal[] = [];
-      for (const result of settled) {
-        if (result.status === 'rejected') {
-          console.warn(`Failed to load a proposal:`, result.reason);
-          continue;
-        }
-        const { p, proposalStateNum } = result.value;
-
-        const rawTitle = p.title ? String(p.title).trim() : "";
-        const rawDesc = p.description ? String(p.description).trim() : "";
-        // Filter out fuzz/test placeholder proposals created by automated scripts on testnet
-        const isFuzzSpam = /^Proposal \d+$/i.test(rawTitle) && (!rawDesc || rawDesc === "community" || rawDesc === "general" || rawDesc.length < 15);
-        if (isFuzzSpam) {
-          continue;
+              return { i, p, proposalStateNum };
+            })
+          );
+          settled.push(...chunkResults);
+          if (c + CHUNK_SIZE < proposalIndices.length) {
+            await new Promise((r) => setTimeout(r, 20));
+          }
         }
 
-        let safeDeliverableURI = "";
-        try {
-          safeDeliverableURI = p.deliverableURI ? String(p.deliverableURI) : "";
-        } catch {
-          safeDeliverableURI = "";
-        }
+        for (const result of settled) {
+          if (result.status === 'rejected') {
+            console.warn(`Failed to load a proposal:`, result.reason);
+            continue;
+          }
+          const { p, proposalStateNum } = result.value;
 
-          // Vote weights are sARC governance token amounts — 18 decimals
+          const rawTitle = p.title ? String(p.title).trim() : "";
+          const rawDesc = p.description ? String(p.description).trim() : "";
+          const isFuzzSpam = /^Proposal \d+$/i.test(rawTitle) && (!rawDesc || rawDesc === "community" || rawDesc === "general" || rawDesc.length < 15);
+          if (isFuzzSpam && !isMainnet) {
+            continue;
+          }
+
+          let safeDeliverableURI = "";
+          try {
+            safeDeliverableURI = p.deliverableURI ? String(p.deliverableURI) : "";
+          } catch {
+            safeDeliverableURI = "";
+          }
+
           const forV = Number(formatUnits(p.forVotes, 18));
           const againstV = Number(formatUnits(p.againstVotes, 18));
           const abstainV = Number(formatUnits(p.abstainVotes, 18));
           const total = forV + againstV + abstainV;
-          // Total sARC supply is 15,000,000 tokens (already in human units after formatUnits)
           const participation = total > 0 ? (total / 15_000_000) * 100 : 0;
 
           const statusMap: Record<number, string> = {
@@ -576,6 +592,7 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
             deliverableURI: safeDeliverableURI,
             timeline
           });
+        }
       }
 
       // Sort loaded proposals by ID descending so newest is always first
@@ -778,6 +795,20 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
       });
     } catch (e) {
       console.warn("RPC connection unavailable or timed out, preserving reliable baseline metrics:", e);
+      let recoveredProposals = (loadedFromApi && apiProposals.length > 0) ? apiProposals : [];
+
+      if (recoveredProposals.length === 0 && activeDaoId === 'synarc' && typeof window !== "undefined") {
+        try {
+          const res = await fetch(`/api/governance/proposals?network=${netKey}&limit=500`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.proposals) && data.proposals.length > 0) {
+              recoveredProposals = data.proposals;
+            }
+          }
+        } catch { /* ignore */ }
+      }
+
       let simulatedProposals: Proposal[] = [];
       if (typeof window !== "undefined") {
         try {
@@ -789,13 +820,34 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
           console.error("Failed to parse simulated proposals from localStorage", err);
         }
       }
+
+      let cachedLive: Proposal[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          const storedLive = localStorage.getItem(`synarc_cached_live_proposals_${netKey}`) || (!isMainnet ? localStorage.getItem("synarc_cached_live_proposals") : null);
+          if (storedLive) cachedLive = JSON.parse(storedLive);
+        } catch {}
+      }
+
+      const baseList = recoveredProposals.length > 0 ? recoveredProposals : cachedLive;
+      const baseIds = new Set(baseList.map(p => p.id));
+      const uniqueSim = simulatedProposals.filter(sp => !baseIds.has(sp.id));
+
       const fallbackProposals = (activeDaoId === 'synarc' && !isMainnet)
         ? [
-            ...TESTNET_BASELINE_PROPOSALS,
-            ...simulatedProposals.filter(sp => !TESTNET_BASELINE_PROPOSALS.some(bp => bp.id === sp.id)),
-            ...(historicalProposals as Proposal[]).filter(hp => !TESTNET_BASELINE_PROPOSALS.some(bp => bp.id === hp.id))
+            ...baseList,
+            ...TESTNET_BASELINE_PROPOSALS.filter(bp => !baseIds.has(bp.id)),
+            ...uniqueSim,
+            ...(historicalProposals as Proposal[]).filter(hp => !baseIds.has(hp.id) && !TESTNET_BASELINE_PROPOSALS.some(bp => bp.id === hp.id))
           ]
-        : simulatedProposals;
+        : [...baseList, ...uniqueSim];
+
+      if (typeof window !== "undefined" && fallbackProposals.length > 0) {
+        try {
+          localStorage.setItem(`synarc_cached_live_proposals_${netKey}`, JSON.stringify(fallbackProposals));
+        } catch { /* ignore quota errors */ }
+      }
+
       // RPC timeout/failure: preserve baseline
       set({
         proposals: fallbackProposals,

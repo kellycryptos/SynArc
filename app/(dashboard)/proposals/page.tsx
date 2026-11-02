@@ -87,7 +87,7 @@ export default function ProposalsPage() {
     setIsRefreshing(true);
     // Force re-fetch by clearing the cache timestamp via direct store access
     useGovernanceStore.setState({ initialized: false, lastFetched: null });
-    await initializeStore();
+    await initializeStore(undefined, true);
     setIsRefreshing(false);
   }, [initializeStore]);
 
