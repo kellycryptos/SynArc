@@ -107,6 +107,7 @@ In addition to traditional governance proposals, Syn DAO's production treasury (
 4. **Human Review Gate ($> 50$ USDC)**: Disbursements exceeding 50 USDC immediately halt on-chain with `HumanApprovalRequired` and require explicit signoff via `approveReleaseHuman`.
 5. **Payee Cooldown (48h)**: Beneficiary address changes enforce a mandatory 48-hour timelocked cooldown (`requestPayeeChange` -> `confirmPayeeChange`) to eliminate address hijacking attacks.
 6. **Idempotency Guard**: Deterministic bit-flips in `executedReleases[releaseKey]` guarantee zero double-spend or transaction replay attacks.
+7. **Dynamic Governance & Strict Guard Mode**: The `humanReviewThreshold` is dynamically tunable on-chain via `setHumanReviewThreshold(newThreshold)`. Setting it to `0` mandates manual human multisig signoff (`approveReleaseHuman`) on all releases, eliminating automated outflows without contract redeployment.
 
 ---
 

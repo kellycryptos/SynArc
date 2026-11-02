@@ -106,6 +106,8 @@ Agent can release under an on-chain cap (default: **50.00 USDC**). Over the cap 
 ### On-Chain Permissions & Approval Thresholds
 *   **Autonomous Agent Track ($\le 50.00\text{ USDC}$)**: Authorized agents trigger `releaseMilestone` autonomously with deliverable proof. Zero delay, instant settlement.
 *   **Human Review Gate ($> 50.00\text{ USDC}$)**: Amounts exceeding 50 USDC immediately halt with `HumanApprovalRequired(releaseKey, amount, threshold)`. Execution requires on-chain signoff via `approveReleaseHuman(releaseKey)` by the Governor, Owner, or an authorized Human Reviewer.
+*   **Dynamic Governance Tuning & Strict Guard Mode**: The `humanReviewThreshold` is a live on-chain parameter configurable via `setHumanReviewThreshold(newThreshold)`. The DAO governor or owner can adjust this cap or dial it to `0` at any time to enforce 100% manual human reviewer / multisig signoff on all milestone releases, eliminating automated releases without requiring contract migrations or changing deployed addresses.
+*   **Production V2 Hardening Roadmap**: Cryptographic EIP-712 structured agent signatures and explicit milestone-indexed idempotency tracking (`orderMilestoneExecuted[proposalId][milestoneId]`) are slated for the formal post-audit production deployment.
 *   **Autonomous Release Engine Rails**: Implemented in `lib/agent/release-engine.ts` and `/api/agent/release`. Scans active campaign escrows, evaluates deliverables using AI against criteria, and executes `releaseMilestone` directly on Arc Mainnet with a 950,000 gas limit and dynamic aggressive gas price (30 Gwei floor).
 *   **Official Social & Community**: YouTube channel: [@syndaopro](https://youtube.com/@syndaopro). Follow [@syndaopro](https://x.com/syndaopro) on X. Email: [hello@syndaopro.xyz](mailto:hello@syndaopro.xyz). Web portal: [syndaopro.xyz](https://www.syndaopro.xyz/).
 
@@ -516,9 +518,10 @@ Syn DAO is developed with a strict security-first mindset, preparing for institu
 | **RPC Resiliency** | 4-endpoint sequential fallback chain prevents single-point-of-failure | ✅ Live |
 | **Verification Docs** | Hardhat CLI + ArcScan UI verification guide published in `docs/07-smart-contracts.md` | ✅ Live |
 | **Pre-Audit Review** | Internal security review of Governor, Timelock, and Crowdfund contracts | 🔄 In Progress |
+| **External Security Audit** | Comprehensive third-party audit across Treasury, Governor, Agent, and Crowdfund | 🗓 Scheduled |
 | **ZK Voting** | Encrypted ballots via Zero-Knowledge proofs | 🗓 Planned |
 
-> ⚠️ **Warning**: Syn DAO's smart contracts are currently undergoing internal pre-audit reviews. Ensure proper testing on Arc Testnet before committing high-value operational reserves.
+> ⚠️ **Warning**: Syn DAO's smart contracts are currently operating in pilot / pre-audit phase with dynamic on-chain safety controls (`setHumanReviewThreshold`, `setAgentReleaseCap`, `pause`). For institutional environments, `humanReviewThreshold` can be set to 0 to mandate manual human signoff on all outflows. Ensure proper testing on Arc Testnet before committing high-value operational reserves.
 
 ---
 

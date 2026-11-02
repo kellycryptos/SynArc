@@ -243,6 +243,21 @@ Agent can release under an on-chain cap. Over the cap it stops for a human. Same
 | **Autonomous Agent** | $\le 50.00\text{ USDC}$ | `isAuthorizedAgent(caller) == true` | Reverts with `HumanApprovalRequired` if amount $> 50\text{ USDC}$ |
 | **Human Reviewer / Multisig** | Unlimited ($> 50.00\text{ USDC}$) | `isAuthorizedReviewer(caller) == true` or `humanApproved[releaseKey] == true` | Reverts with `HumanApprovalRequired` if unauthorized |
 
+### Dynamic Governance Tuning & Guarded Modes
+
+`SynArcTreasury.sol` incorporates built-in dynamic governance knobs allowing the DAO to tune risk parameters in real time without contract redeployment or address changes:
+
+1. **Adjustable Release Cap (`setHumanReviewThreshold` / `setAgentReleaseCap`)**:
+   - The default `50.00 USDC` threshold is intended for low-risk micro-payouts and autonomous agent evaluation pilots.
+   - **Strict Guard Mode (Threshold = 0)**: Setting `humanReviewThreshold` to `0` forces `ctx.humanRequired = true` on all disbursements regardless of amount. In this state, 100% of outflows mandate explicit on-chain signoff via `approveReleaseHuman(releaseKey)` by an authorized reviewer.
+2. **Reviewer Whitelist (`setAuthorizedHumanReviewer`)**:
+   - Governance can dynamically grant or revoke multisig reviewer addresses authorized to unlock disbursements exceeding policy caps.
+3. **Emergency Circuit Breaker (`pause()` / `unpause()`)**:
+   - The contract implements OpenZeppelin `Pausable` to instantly freeze all deposits, outflows, and milestone claims in the event of an active anomaly.
+4. **Production V2 Hardening Roadmap**:
+   - **EIP-712 Cryptographic Attestations**: Upgrading agent confidence scoring from calldata input to ECDSA signature recovery over a domain-separated attestation struct signed by the verified agent enclave.
+   - **Milestone-Indexed Idempotency**: Mapping one-time execution flags explicitly by `orderMilestoneExecuted[proposalId][milestoneId]` to isolate sub-milestones and operational orders permanently.
+
 ### Live Arc Mainnet Deployed Contracts
 
 | Contract / Role | Address | On-Chain Function / Link |
