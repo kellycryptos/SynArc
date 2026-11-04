@@ -39,14 +39,9 @@ export function DashboardHeader() {
     <div className="space-y-4">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary font-space">
-            Dashboard
-          </h1>
-          <p className="text-muted text-xs sm:text-sm mt-0.5">
-            Overview of ecosystem governance, treasury reserves, and proposals.
-          </p>
-        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary font-space">
+          Dashboard
+        </h1>
 
         <CreateProposalCTA />
       </div>

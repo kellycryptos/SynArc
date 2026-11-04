@@ -346,8 +346,7 @@ export default function AnalyticsPage() {
         {/* Header and Filter */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">DAO Analytics</h1>
-            <p className="text-muted text-xs sm:text-sm mt-1">Real-time charts and metrics retrieved directly from {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"} contracts.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary font-space">Analytics</h1>
           </div>
           
           <div className="flex items-center gap-2 bg-surface border border-border-thin rounded-2xl p-1.5 self-start">

@@ -734,14 +734,11 @@ export default function AgentPage() {
                 </span>
               )}
             </div>
-            <div>
-              <p className="text-sm text-muted">Helps monitor your treasury capital and automated transfer rules.</p>
-              {lastChecked && (
-                <p className="text-[10px] text-muted/60 mt-0.5">
-                  Last checked: {lastChecked.toLocaleTimeString()}
-                </p>
-              )}
-            </div>
+            {lastChecked && (
+              <p className="text-[10px] font-mono text-muted mt-0.5">
+                Last checked: {lastChecked.toLocaleTimeString()}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 w-full sm:w-auto">

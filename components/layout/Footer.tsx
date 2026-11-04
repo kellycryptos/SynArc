@@ -2,30 +2,22 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowUp,
   ExternalLink,
   Copy,
   Check,
-  Send,
-  Terminal,
   Activity,
   Layers,
-  Sparkles,
   Github,
   Twitter,
   ChevronRight,
-  Lock,
   Cpu,
   Globe,
   Mail,
-  MessageSquare,
-  AlertCircle,
   Youtube,
 } from "lucide-react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
-import { GlowOrb } from "@/components/ui/GlowOrb";
 import { CONTRACTS_MAINNET } from "@/lib/arc-config";
 import { ContactModal } from "@/components/contact/ContactModal";
 
@@ -170,12 +162,8 @@ function FooterNavLink({ item }: { item: NavItem }) {
    ───────────────────────────────────────────────────────────── */
 
 export function Footer() {
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [subscribeError, setSubscribeError] = useState<string | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   const treasuryAddress = CONTRACTS_MAINNET.treasuryGovernance;
@@ -197,39 +185,6 @@ export function Footer() {
     }
   };
 
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !email.includes("@")) return;
-
-    setIsSubmitting(true);
-    setSubscribeError(null);
-    try {
-      const res = await fetch("/api/notifications/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim(),
-          source: "Footer Pro Dispatches",
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to subscribe to updates.");
-      }
-
-      setSubscribed(true);
-      setEmail("");
-    } catch (err: any) {
-      console.error("Subscription error:", err);
-      setSubscribeError(
-        err.message || "Failed to subscribe. You can email hello@syndaopro.xyz directly."
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -239,330 +194,87 @@ export function Footer() {
 
   return (
     <>
-      <footer className="relative overflow-hidden border-t border-border bg-background text-muted transition-colors duration-200">
-        {/* ── Glowing Top Border Accent Beam ── */}
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#2F6FFF]/60 to-transparent" />
-        <div className="absolute top-0 inset-x-1/4 h-[2px] bg-gradient-to-r from-transparent via-[#4F8BFF]/40 to-transparent blur-sm" />
-
-        {/* ── Ambient Background Lighting & Grid ── */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-surface/80 to-background dark:from-[#05080F] dark:via-[#070D18] dark:to-[#04060B] pointer-events-none" />
-        <div className="absolute inset-0 grid-overlay opacity-15 dark:opacity-25 pointer-events-none" />
-
-        {/* Dynamic Glow Orbs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <GlowOrb
-            className="-top-32 left-1/4 opacity-15 dark:opacity-100"
-            color="purple"
-            size={360}
-            blur={120}
-            animate
-          />
-          <GlowOrb
-            className="bottom-10 right-10 opacity-15 dark:opacity-100"
-            color="cyan"
-            size={300}
-            blur={110}
-            animate
-          />
-        </div>
+      <footer 
+        data-component="footer"
+        aria-label="Footer"
+        className="relative overflow-hidden border-t border-border bg-background text-muted transition-colors duration-200"
+      >
+        {/* Subtle Top Border Highlight */}
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* ══════════════════════════════════════════════════════
-              §1 PRO DISPATCH / NEWSLETTER CARD
-              ══════════════════════════════════════════════════════ */}
-          <div className="pt-16 pb-12 border-b border-border">
-            <div className="relative rounded-2xl border border-border bg-surface/90 p-6 sm:p-8 lg:p-10 backdrop-blur-xl overflow-hidden shadow-lg shadow-slate-900/5 dark:shadow-2xl">
-              {/* Subtle inner card accent gradients */}
-              <div className="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
-              <div className="absolute -left-20 -bottom-20 w-64 h-64 rounded-full bg-primary/5 blur-[70px] pointer-events-none" />
-
-              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                {/* Left text */}
-                <div className="lg:col-span-6 space-y-3">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-mono text-primary">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Autonomous Governance Dispatches</span>
-                  </div>
-                  <h3 className="font-mono text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                    Stay ahead of on-chain intelligence.
-                  </h3>
-                  <p className="text-sm text-muted max-w-xl leading-relaxed">
-                    Weekly intelligence on AI verifier milestones, Circle CCTP rebalances, and verified deliverable payouts across the Arc ecosystem.
-                  </p>
-                </div>
-
-                {/* Right form & perks */}
-                <div className="lg:col-span-6 flex flex-col justify-center">
-                  {subscribed ? (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center gap-3 text-sm font-mono"
-                    >
-                      <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                      <div>
-                        <p className="font-semibold text-foreground">
-                          You are subscribed to Syn DAO Dispatches.
-                        </p>
-                        <p className="text-xs text-muted mt-0.5">
-                          Notification sent to <code className="font-semibold text-foreground">hello@syndaopro.xyz</code>. Check your inbox for briefings.
-                        </p>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <form onSubmit={handleSubscribe} className="space-y-3">
-                      {subscribeError && (
-                        <div className="p-3 rounded-xl border border-red-500/30 bg-red-500/10 text-red-500 dark:text-red-400 text-xs font-mono flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4 shrink-0" />
-                          <span>{subscribeError}</span>
-                        </div>
-                      )}
-
-                      <div className="flex flex-col sm:flex-row gap-2.5">
-                        <div className="relative flex-1">
-                          <input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your developer or DAO email..."
-                            className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm font-mono text-foreground placeholder:text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-inner"
-                          />
-                        </div>
-                        <button
-                          type="submit"
-                          disabled={isSubmitting}
-                          className="px-6 py-3 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50 text-white text-white-keep font-mono font-semibold text-xs tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(47,111,255,0.3)] hover:shadow-[0_0_28px_rgba(47,111,255,0.5)] flex items-center justify-center gap-2 shrink-0 cursor-pointer"
-                        >
-                          {isSubmitting ? (
-                            <span>Subscribing...</span>
-                          ) : (
-                            <>
-                              <span className="text-white-keep">Subscribe</span>
-                              <Send className="w-3.5 h-3.5 text-white-keep" />
-                            </>
-                          )}
-                        </button>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-muted">
-                        <span className="flex items-center gap-1.5">
-                          <Lock className="w-3 h-3 text-primary" />
-                          Zero spam • One-click unsubscribe
-                        </span>
-                        <span>•</span>
-                        <span>Verified Arc updates only</span>
-                      </div>
-                    </form>
-                  )}
-
-                  {/* Micro Protocol Metrics Bar */}
-                  <div className="mt-6 pt-5 border-t border-border/70 grid grid-cols-3 gap-2 text-center sm:text-left">
-                    <div>
-                      <span className="block font-mono text-base font-bold text-foreground">48h</span>
-                      <span className="text-[11px] font-mono text-muted">Cooldown Guard</span>
-                    </div>
-                    <div>
-                      <span className="block font-mono text-base font-bold text-primary">100%</span>
-                      <span className="text-[11px] font-mono text-muted">On-Chain Match</span>
-                    </div>
-                    <div>
-                      <span className="block font-mono text-base font-bold text-emerald-600 dark:text-emerald-400">USDC</span>
-                      <span className="text-[11px] font-mono text-muted">Native Settlement</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Direct Feedback & Inquiries Banner ── */}
-              <div className="mt-8 pt-6 border-t border-border/80 flex flex-col md:flex-row items-center justify-between gap-4 bg-background/50 rounded-xl p-4 sm:p-5 border border-border/70">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-                    <Mail className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-mono text-sm font-bold text-foreground">
-                        Have Feedback or Questions?
-                      </h4>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                        hello@syndaopro.xyz
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted mt-0.5">
-                      Send your ideas, feature requests, or queries directly to our core developer inbox.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
-                  <button
-                    type="button"
-                    onClick={handleCopyEmail}
-                    className="px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-surface-elevated text-xs font-mono text-muted hover:text-foreground flex items-center gap-1.5 transition-colors cursor-pointer"
-                    title="Copy email to clipboard"
-                  >
-                    {copiedEmail ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copy Email</span>
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsContactModalOpen(true)}
-                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white text-white-keep font-mono text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(47,111,255,0.3)] cursor-pointer"
-                  >
-                    <MessageSquare className="w-3.5 h-3.5 text-white-keep" />
-                    <span className="text-white-keep">Send Message</span>
-                  </button>
-
-                  <Link
-                    href="/contact"
-                    className="hidden sm:inline-flex px-3.5 py-2 rounded-xl border border-border bg-surface hover:border-primary/40 text-xs font-mono text-muted hover:text-foreground transition-colors"
-                  >
-                    Contact Page
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ══════════════════════════════════════════════════════
-              §2 TELEMETRY & LIVE NETWORK STATUS BAR
-              ══════════════════════════════════════════════════════ */}
-          <div className="py-6 border-b border-border flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
-            {/* Left: Network Status Pill */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                <span className="text-foreground font-medium">Arc Mainnet</span>
-                <span className="text-muted">ID: 5042</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">• Operational</span>
-              </div>
-
-              {/* Quick Copy Treasury Address */}
-              <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface">
-                <span className="text-muted">Treasury:</span>
-                <code className="wallet-address text-foreground">{shortTreasury}</code>
-                <button
-                  onClick={handleCopy}
-                  aria-label="Copy Treasury Contract Address"
-                  className="p-1 hover:text-primary text-muted transition-colors rounded cursor-pointer"
-                  title="Copy full Treasury address"
-                >
-                  {copied ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Right: Security & Explorer Badges */}
-            <div className="flex items-center gap-3">
-              <a
-                href={`https://explorer.arc.io/address/${treasuryAddress}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface hover:border-primary/40 text-muted hover:text-foreground transition-all shadow-xs"
-              >
-                <span>Arc Explorer</span>
-                <ExternalLink className="w-3 h-3 text-primary" />
-              </a>
-
-              <button
-                onClick={scrollToTop}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface hover:border-primary/40 text-muted hover:text-foreground transition-all cursor-pointer group shadow-xs"
-                title="Back to top of page"
-              >
-                <span>Back to Top</span>
-                <ArrowUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform text-primary" />
-              </button>
-            </div>
-          </div>
-
-          {/* ══════════════════════════════════════════════════════
-              §3 MAIN NAVIGATION & BRANDING COLUMNS
-              ══════════════════════════════════════════════════════ */}
-          <div className="pt-16 pb-16">
+          {/* Main Navigation & Brand Columns */}
+          <div className="pt-16 pb-12">
             <div className="footer-grid">
-              {/* ── Brand Section ── */}
-              <div className="footer-brand space-y-6">
+              {/* Brand Section */}
+              <div className="footer-brand space-y-4">
                 <Link href="/" className="inline-flex items-center gap-3 group">
-                  <div className="relative">
-                    <SynArcLogo size={42} animated />
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className="text-2xl font-bold font-space tracking-tight text-foreground group-hover:text-primary transition-colors">
-                      Syn <span className="text-primary">DAO</span>
-                    </span>
-                    <span className="text-[10px] font-mono tracking-widest text-muted uppercase">
-                      Institutional Governance Engine
-                    </span>
-                  </div>
+                  <SynArcLogo size={36} animated={false} />
+                  <span className="text-xl font-bold font-heading tracking-tight text-foreground group-hover:text-primary transition-colors">
+                    Syn <span className="text-primary">DAO</span>
+                  </span>
                 </Link>
 
                 <p className="text-sm text-muted leading-relaxed max-w-sm">
-                  The institutional coordination layer for humans and autonomous AI agents. Safe multi-sig treasuries, deliverable-hash verification, and automated settlement built natively on Arc.
+                  Autonomous governance and treasury execution on Arc.
                 </p>
 
                 {/* Social Icon Row + Contact Trigger */}
-                <div className="socials pt-2 flex flex-wrap items-center gap-3">
-                  <a
-                    href="https://youtube.com/@syndaopro"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-lg border border-border bg-surface flex items-center justify-center text-muted hover:text-[#FF0000] hover:border-[#FF0000]/40 transition-colors shrink-0 shadow-xs"
-                    aria-label="Syn DAO on YouTube"
-                    title="Syn DAO on YouTube (@syndaopro)"
-                  >
-                    <Youtube className="w-4 h-4" />
-                  </a>
+                <div className="socials pt-2 flex flex-wrap items-center gap-2.5">
                   <a
                     href="https://x.com/syndaopro"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-lg border border-border bg-surface flex items-center justify-center text-muted hover:text-foreground hover:border-primary/40 transition-colors shrink-0 shadow-xs"
+                    className="w-8 h-8 rounded-lg border border-border bg-surface flex items-center justify-center text-muted hover:text-foreground hover:border-primary/40 transition-colors shrink-0"
                     aria-label="Syn DAO on X"
                   >
-                    <Twitter className="w-4 h-4" />
+                    <Twitter className="w-3.5 h-3.5" />
                   </a>
                   <a
                     href="https://github.com/kellycryptos/SynArc"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-lg border border-border bg-surface flex items-center justify-center text-muted hover:text-foreground hover:border-primary/40 transition-colors shrink-0 shadow-xs"
+                    className="w-8 h-8 rounded-lg border border-border bg-surface flex items-center justify-center text-muted hover:text-foreground hover:border-primary/40 transition-colors shrink-0"
                     aria-label="Syn DAO on GitHub"
                   >
-                    <Github className="w-4 h-4" />
+                    <Github className="w-3.5 h-3.5" />
+                  </a>
+                  <a
+                    href="https://youtube.com/@syndaopro"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 rounded-lg border border-border bg-surface flex items-center justify-center text-muted hover:text-red-500 hover:border-red-500/40 transition-colors shrink-0"
+                    aria-label="Syn DAO on YouTube"
+                  >
+                    <Youtube className="w-3.5 h-3.5" />
                   </a>
                   <button
                     type="button"
                     onClick={() => setIsContactModalOpen(true)}
-                    className="h-9 inline-flex items-center gap-1.5 px-3 rounded-lg border border-border bg-surface hover:border-primary/40 text-xs font-mono text-muted hover:text-foreground transition-colors shrink-0 cursor-pointer shadow-xs"
-                    title="Send message to hello@syndaopro.xyz"
+                    className="h-8 inline-flex items-center gap-1.5 px-3 rounded-lg border border-border bg-surface hover:border-primary/40 text-xs font-mono text-muted hover:text-foreground transition-colors shrink-0 cursor-pointer"
+                    title="Send message to team"
                   >
-                    <Mail className="w-3.5 h-3.5 text-primary" />
+                    <Mail className="w-3 h-3 text-primary" />
                     <span>Contact</span>
                   </button>
-                  <Link
-                    href="/dashboard"
-                    className="h-9 inline-flex items-center gap-1.5 px-3.5 rounded-lg border border-primary/30 bg-primary/10 text-xs font-mono font-medium text-primary hover:bg-primary/20 transition-colors shrink-0"
+                  <button
+                    type="button"
+                    onClick={handleCopyEmail}
+                    className="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-lg border border-border bg-surface hover:bg-surface-elevated text-xs font-mono text-muted hover:text-foreground transition-colors cursor-pointer"
+                    title="Copy email to clipboard"
                   >
-                    <Terminal className="w-3.5 h-3.5" />
-                    <span>Launch App</span>
-                  </Link>
+                    {copiedEmail ? (
+                      <>
+                        <Check className="w-3 h-3 text-emerald-400" />
+                        <span className="text-emerald-400 font-semibold">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3" />
+                        <span>Copy Email</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -656,19 +368,48 @@ export function Footer() {
             </div>
           </div>
 
-          {/* ══════════════════════════════════════════════════════
-              §4 BOTTOM BAR & DISCLAIMER
-              ══════════════════════════════════════════════════════ */}
-          <div className="py-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-muted">
-            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
-              <span>&copy; {new Date().getFullYear()} Syn DAO. All rights reserved.</span>
-              <span className="hidden sm:inline text-border">|</span>
-              <span>Built on Arc</span>
+          {/* Bottom Bar: Operational Status, Explorer & Legal */}
+          <div className="py-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-muted">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md border border-border bg-surface text-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                <span className="text-foreground font-medium">Arc Mainnet</span>
+                <span className="text-emerald-500">• Operational</span>
+              </div>
+              <div className="hidden sm:inline-flex items-center gap-1.5 text-xs">
+                <span>Treasury:</span>
+                <code className="text-foreground">{shortTreasury}</code>
+                <button
+                  onClick={handleCopy}
+                  aria-label="Copy Treasury Contract Address"
+                  className="p-1 hover:text-primary transition-colors cursor-pointer"
+                  title="Copy full Treasury address"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
             </div>
 
-            <p className="text-[11px] text-muted text-center md:text-right max-w-xl">
-              Syn DAO is an autonomous, open-source governance protocol. Code is law; on-chain contracts enforce treasury safety rules and 48-hour timelocks.
-            </p>
+            <div className="flex items-center gap-4">
+              <a
+                href={`https://explorer.arc.io/address/${treasuryAddress}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                <span>Explorer</span>
+                <ExternalLink className="w-3 h-3 text-primary" />
+              </a>
+              <button
+                onClick={scrollToTop}
+                className="inline-flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer group"
+                title="Back to top"
+              >
+                <span>Top</span>
+                <ArrowUp className="w-3 h-3 group-hover:-translate-y-0.5 transition-transform text-primary" />
+              </button>
+              <span>&copy; {new Date().getFullYear()} Syn DAO</span>
+            </div>
           </div>
         </div>
       </footer>

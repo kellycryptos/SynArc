@@ -109,22 +109,17 @@ export function LandingActivitySection() {
   return (
     <section
       id="activity"
+      data-section="activity"
+      aria-label="Proposals and Verified Disbursements"
       className="py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
     >
       <div className="max-w-5xl mx-auto w-full">
         {/* Section header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-surface text-xs font-mono font-medium text-muted uppercase tracking-wider mb-4 shadow-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              Real on-chain execution
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-mono font-semibold text-foreground tracking-tight">
-              Proposals & Verified USDC Payouts
+            <h2 className="text-2xl sm:text-3xl font-heading font-semibold text-foreground tracking-tight">
+              Proposals & Payouts
             </h2>
-            <p className="mt-2 text-sm text-muted max-w-xl">
-              Real USDC flows, passing proposals, and completed contractor payouts on the Circle Agent Stack — verifiable on Arc explorer.
-            </p>
           </div>
 
           {/* Toggle Tabs */}

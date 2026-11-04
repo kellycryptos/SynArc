@@ -106,16 +106,12 @@ export default function DAOsPage() {
   return (
     <div className="space-y-10 relative">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary shadow-[0_0_15px_rgba(124,58,237,0.1)]">
-            <Award className="w-3.5 h-3.5" />
-            <span>Featured Ecosystem</span>
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">DAO Registry</h1>
-          <p className="text-muted leading-relaxed">
-            Syn DAO hosts governance infrastructure for approved DAOs on {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}. Each DAO manages its own proposals and treasury.
-          </p>
+      <div 
+        data-component="daos-header"
+        className="flex flex-col md:flex-row md:items-center justify-between gap-6"
+      >
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-space">DAO Registry</h1>
         </div>
 
         <button

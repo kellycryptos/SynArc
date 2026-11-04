@@ -222,21 +222,15 @@ export default function FaucetPage() {
   };
 
   return (
-    <div className="space-y-10 max-w-7xl mx-auto">
+    <div className="space-y-8 max-w-7xl mx-auto">
       {/* Page Header */}
-      <div className="space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
-          <Zap className="w-3.5 h-3.5" />
-          <span>{isArcMainnet ? "Arc Mainnet Community Faucet" : "Arc Testnet Faucet"}</span>
-        </div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-          {isArcMainnet ? "Claim 10 sARC for Mainnet Governance" : "Get Testnet Tokens"}
+      <div 
+        data-component="faucet-header"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
+        <h1 className="text-2xl sm:text-3xl font-bold font-space tracking-tight text-foreground">
+          {isArcMainnet ? "Claim sARC" : "Faucet"}
         </h1>
-        <p className="text-muted leading-relaxed max-w-2xl">
-          {isArcMainnet
-            ? "Claim 10 sARC tokens to create proposals and vote on Arc Mainnet. Hold and delegate sARC to unlock full DAO participation."
-            : "Fund your wallet with testnet tokens to participate in Syn DAO governance on Arc Testnet."}
-        </p>
       </div>
 
       {/* Mainnet Active Notice */}

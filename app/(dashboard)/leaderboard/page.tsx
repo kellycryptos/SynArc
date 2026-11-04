@@ -123,14 +123,14 @@ export default function LeaderboardPage() {
   return (
     <div className="max-w-5xl mx-auto py-6 px-4 space-y-8 animate-fade-in-up">
       {/* Header section */}
-      <div className="border-b border-border-subtle pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div 
+        data-component="leaderboard-header"
+        className="border-b border-border-subtle pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4"
+      >
         <div>
-          <h1 className="text-3xl font-extrabold font-heading text-white tracking-tight flex items-center gap-2.5">
-            Creator Leaderboard
+          <h1 className="text-2xl sm:text-3xl font-bold font-space text-white tracking-tight">
+            Leaderboard
           </h1>
-          <p className="text-xs text-text-secondary mt-1">
-            Top funded creators and AI agents on Arc — ranked by USDC raised.
-          </p>
         </div>
 
         {/* Time period tabs */}

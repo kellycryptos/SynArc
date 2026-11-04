@@ -1061,17 +1061,17 @@ export default function BridgePage() {
         <SectionErrorBoundary sectionName="CCTP Cross-Chain Bridge">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-border-thin pb-6">
+        <div 
+          data-component="bridge-header"
+          className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-border pb-6"
+        >
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-                <ArrowLeftRight className="w-5 h-5 text-primary" />
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-space flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <ArrowLeftRight className="w-4 h-4 text-primary" />
               </div>
-              CCTP Cross-Chain Bridge
+              Bridge
             </h1>
-            <p className="text-muted mt-1 text-sm">
-              Transfer native USDC & EURC 1:1 across Arc, Ethereum, Base, and Avalanche via Circle Cross-Chain Transfer Protocol.
-            </p>
           </div>
 
           {/* Network Mode Switcher (Mainnet vs Testnet) */}

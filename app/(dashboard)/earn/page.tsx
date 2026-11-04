@@ -92,11 +92,11 @@ export default function EarnPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold font-space text-foreground tracking-tight">
-              Earn & Vaults
+            <h1 className="text-2xl sm:text-3xl font-bold font-space text-foreground tracking-tight">
+              Earn
             </h1>
             <span
-              className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+              className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-medium border ${
                 isArcMainnet
                   ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                   : "bg-purple-500/10 text-purple-400 border-purple-500/20"
@@ -105,9 +105,6 @@ export default function EarnPage() {
               {isArcMainnet ? "Mainnet" : "Testnet"}
             </span>
           </div>
-          <p className="text-sm text-muted mt-1">
-            Non-custodial DeFi lending yield on Arc powered by Circle App Kit & Morpho protocols.
-          </p>
         </div>
 
         {/* Network & Refresh Actions */}

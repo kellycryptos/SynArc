@@ -16,14 +16,6 @@ import { useGovernanceStore } from "@/hooks/useGovernanceStore";
 import { SectionErrorBoundary } from "@/components/ErrorBoundary";
 
 // --- Lazy-loaded components ---
-const OverviewCards = dynamic(
-  () => import("@/components/dashboard/OverviewCards").then((m) => m.OverviewCards),
-  {
-    ssr: false,
-    loading: () => <div className="skeleton h-32 w-full rounded-xl" />,
-  }
-);
-
 const GovernanceHeroSection = dynamic(
   () => import("@/components/dashboard/GovernanceHeroSection").then((m) => m.GovernanceHeroSection),
   {
@@ -105,11 +97,6 @@ export default function DashboardOverview() {
           <GovernanceHeroSection />
         </SectionErrorBoundary>
       )}
-  
-      {/* Metrics */}
-      <SectionErrorBoundary sectionName="Overview Cards">
-        <OverviewCards />
-      </SectionErrorBoundary>
   
       {/* Wallet Balance & Arc Testnet Faucet */}
       <SectionErrorBoundary sectionName="Wallet & Faucet">

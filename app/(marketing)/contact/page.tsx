@@ -129,17 +129,13 @@ export default function ContactPage() {
 
       <div className="relative z-10 max-w-5xl mx-auto space-y-12">
         {/* Page Hero Header */}
-        <div className="text-center max-w-2xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-mono text-primary font-medium">
-            <Mail className="w-3.5 h-3.5" />
-            <span>Official Communications</span>
-          </div>
-          <h1 className="font-mono text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-            Contact & Feedback
+        <div 
+          data-component="contact-header"
+          className="text-center max-w-2xl mx-auto space-y-4"
+        >
+          <h1 className="font-space text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
+            Contact
           </h1>
-          <p className="text-sm sm:text-base text-muted leading-relaxed">
-            Have feedback on our governance platform, need developer support, or want to partner with Syn DAO? Drop us a line and our core team will reply directly.
-          </p>
         </div>
 
         {/* Main Content Grid: Left Form, Right Contact Cards */}

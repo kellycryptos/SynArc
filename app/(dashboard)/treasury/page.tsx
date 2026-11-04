@@ -722,14 +722,14 @@ function TreasuryPageContent() {
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div 
+          data-component="treasury-header"
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+        >
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-space">
-              DAO Treasury
+              Treasury
             </h1>
-            <p className="text-muted text-xs sm:text-sm mt-1">
-              Multi-asset capital reserves and smart treasury contracts on {isArcMainnet ? "Arc Mainnet" : "Arc Testnet"}.
-            </p>
           </div>
           
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0">
@@ -772,7 +772,10 @@ function TreasuryPageContent() {
 
         {/* Balance Overview Cards */}
         <SectionErrorBoundary sectionName="Treasury Balance Overview">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+          <div 
+            data-component="treasury-cards"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6"
+          >
             {/* Combined Total Reserves */}
             <GlassCard className="p-6 relative overflow-hidden group">
               <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-colors" />
@@ -780,9 +783,8 @@ function TreasuryPageContent() {
                 <div className="p-2.5 bg-primary/10 border border-primary/25 rounded-xl flex items-center justify-center text-primary">
                   <Wallet className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-primary font-mono">Total Reserves</span>
               </div>
-              <p className="text-xs font-semibold text-muted uppercase tracking-wider font-space">Combined Valuation</p>
+              <p className="text-xs font-mono font-medium text-muted">Total Reserves</p>
               <div className="mt-2 min-h-[36px] flex items-baseline">
                 {treasuryLoading ? (
                   <span className="inline-block w-28 h-7 bg-surface-elevated animate-pulse rounded" />
@@ -792,7 +794,6 @@ function TreasuryPageContent() {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-muted mt-1 font-mono">USD Net Asset Value</p>
             </GlassCard>
 
             {/* USDC Balance */}
@@ -802,9 +803,8 @@ function TreasuryPageContent() {
                 <div className="p-2 bg-[#2775CA]/10 border border-[#2775CA]/20 rounded-xl flex items-center justify-center">
                   <TokenIcon symbol="USDC" size={24} />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-[#2775CA] font-mono">Stable</span>
               </div>
-              <p className="text-xs font-semibold text-muted uppercase tracking-wider font-space">USDC Balance</p>
+              <p className="text-xs font-mono font-medium text-muted">USDC</p>
               <div className="mt-2 min-h-[36px] flex items-baseline gap-1.5 flex-wrap">
                 {treasuryLoading ? (
                   <span className="inline-block w-28 h-7 bg-surface-elevated animate-pulse rounded" />
@@ -819,7 +819,6 @@ function TreasuryPageContent() {
                   </>
                 )}
               </div>
-              <p className="text-xs text-muted mt-1 font-mono">${usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</p>
             </GlassCard>
 
             {/* EURC Balance */}
@@ -829,9 +828,8 @@ function TreasuryPageContent() {
                 <div className="p-2 bg-pink-500/10 border border-pink-500/20 rounded-xl flex items-center justify-center">
                   <TokenIcon symbol="EURC" size={24} />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-pink-400 font-mono">Stable</span>
               </div>
-              <p className="text-xs font-semibold text-muted uppercase tracking-wider font-space">EURC Balance</p>
+              <p className="text-xs font-mono font-medium text-muted">EURC</p>
               <div className="mt-2 min-h-[36px] flex items-baseline gap-1.5 flex-wrap">
                 {treasuryLoading ? (
                   <span className="inline-block w-28 h-7 bg-surface-elevated animate-pulse rounded" />
@@ -846,7 +844,6 @@ function TreasuryPageContent() {
                   </>
                 )}
               </div>
-              <p className="text-xs text-muted mt-1 font-mono">≈ ${(eurcBalance * 1.08).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</p>
             </GlassCard>
 
             {/* cirBTC Balance */}
@@ -856,9 +853,8 @@ function TreasuryPageContent() {
                 <div className="p-2 bg-[#F7931A]/10 border border-[#F7931A]/20 rounded-xl flex items-center justify-center">
                   <TokenIcon symbol="cirBTC" size={24} />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-surface border border-border-thin text-[#F7931A] font-mono">Wrapped BTC</span>
               </div>
-              <p className="text-xs font-semibold text-muted uppercase tracking-wider font-space">cirBTC Balance</p>
+              <p className="text-xs font-mono font-medium text-muted">cirBTC</p>
               <div className="mt-2 min-h-[36px] flex items-baseline gap-1.5 flex-wrap">
                 {treasuryLoading ? (
                   <span className="inline-block w-28 h-7 bg-surface-elevated animate-pulse rounded" />
@@ -873,7 +869,6 @@ function TreasuryPageContent() {
                   </>
                 )}
               </div>
-              <p className="text-xs text-muted mt-1 font-mono">≈ ${((cirBtcBalance || 0) * 95000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</p>
             </GlassCard>
           </div>
         </SectionErrorBoundary>

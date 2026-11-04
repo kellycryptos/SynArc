@@ -111,43 +111,47 @@ export default function ProposalsPage() {
         <RpcHealthBanner hasLoadedBalance={proposals.length > 0} />
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div 
+          data-component="proposals-header"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
           <div>
             <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">Governance Proposals</h1>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-primary/10 border border-primary/20 text-primary shrink-0 whitespace-nowrap">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary font-space">
+                Proposals
+              </h1>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-primary/10 border border-primary/20 text-primary shrink-0 whitespace-nowrap">
                 {proposals.length > 0 ? `${proposals.length} Total` : isLoading ? "..." : "0 Total"}
               </span>
             </div>
-            <div className="flex flex-wrap items-center gap-2 mt-1">
-              <p className="text-muted text-sm">
-                Review, discuss, and vote on active proposals for your community.
-              </p>
-              {/* Voting power pill */}
-              {isAuthenticated && totalDisplayPower > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/10 border border-purple-500/20 text-purple-300 shrink-0">
-                  <Zap className="w-3 h-3 shrink-0" />
-                  {usdcBalance > 0 && <>{usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC + </>}
-                  {sarcVotes > 0
-                    ? <>{sarcVotes.toLocaleString(undefined, { maximumFractionDigits: 0 })} sARC</>
-                    : <>0 sARC</>}
-                  {needsDelegation && (
-                    <Link href="/faucet" className="text-amber-400 underline ml-1 hover:text-amber-300">
-                      (activate votes!)
-                    </Link>
-                  )}
-                </span>
-              )}
-              {isAuthenticated && totalDisplayPower === 0 && (
-                <Link
-                  href="/faucet"
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-all shrink-0"
-                >
-                  <Zap className="w-3 h-3 shrink-0" />
-                  Claim 10 sARC to Vote & Propose →
-                </Link>
-              )}
-            </div>
+            {isAuthenticated && (
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                {/* Voting power pill */}
+                {totalDisplayPower > 0 && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono bg-purple-500/10 border border-purple-500/20 text-purple-300 shrink-0">
+                    <Zap className="w-3 h-3 shrink-0" />
+                    {usdcBalance > 0 && <>{usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC + </>}
+                    {sarcVotes > 0
+                      ? <>{sarcVotes.toLocaleString(undefined, { maximumFractionDigits: 0 })} sARC</>
+                      : <>0 sARC</>}
+                    {needsDelegation && (
+                      <Link href="/faucet" className="text-amber-400 underline ml-1 hover:text-amber-300">
+                        (activate votes)
+                      </Link>
+                    )}
+                  </span>
+                )}
+                {totalDisplayPower === 0 && (
+                  <Link
+                    href="/faucet"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-all shrink-0"
+                  >
+                    <Zap className="w-3 h-3 shrink-0" />
+                    Claim 10 sARC to vote
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
             {/* Refresh button */}

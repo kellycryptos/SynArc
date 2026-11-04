@@ -76,8 +76,8 @@ export function MarketingNavbar() {
         <nav className={`nav-links ${isOpen ? "open" : ""}`}>
           {/* Mobile drawer header */}
           <div className="md:hidden flex items-center justify-between pb-4 border-b border-border mb-2">
-            <span className="text-xs font-mono uppercase tracking-widest text-muted">
-              Navigation
+            <span className="text-sm font-bold font-heading text-foreground">
+              Syn DAO
             </span>
             <button
               type="button"

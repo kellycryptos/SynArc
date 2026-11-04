@@ -529,8 +529,7 @@ export default function CreateProposalPage() {
             Back to Proposals
           </Link>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Create New Proposal</h1>
-            <p className="text-muted mt-1">Submit a binding governance proposal to Syn DAO.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight font-space">Create Proposal</h1>
           </div>
         </div>
 

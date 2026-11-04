@@ -130,9 +130,8 @@ export default function SettingsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
         
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">Settings</h1>
-          <p className="text-muted mt-1">Manage connected wallet, network status, theme preferences, and configurations.</p>
+        <div data-component="settings-header">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary font-space">Settings</h1>
         </div>
 
         {/* Wallet & Connection Status */}

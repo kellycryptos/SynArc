@@ -111,21 +111,25 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           §1  HERO
           ════════════════════════════════════════════════════════ */}
-      <section className="hero relative pt-24 pb-16 sm:pt-28 sm:pb-20 md:pt-40 md:pb-28 overflow-hidden px-4 w-full">
-        {/* Background glow — Dual Cyan & Purple ambient halos */}
+      <section 
+        data-section="hero"
+        aria-label="Syn DAO Overview"
+        className="hero relative pt-24 pb-16 sm:pt-28 sm:pb-20 md:pt-40 md:pb-28 overflow-hidden px-4 w-full"
+      >
+        {/* Background glow — subtle ambient halo */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] h-[400px] opacity-[0.08] dark:opacity-[0.20] bg-gradient-to-r from-[#00F2FE] via-[#2F6FFF] to-[#7F00FF] blur-[140px] rounded-full" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] h-[400px] opacity-[0.08] dark:opacity-[0.16] bg-gradient-to-r from-[#00F2FE] via-[#2F6FFF] to-[#7F00FF] blur-[140px] rounded-full" />
         </div>
 
         <div className="w-full max-w-4xl mx-auto relative z-10 text-center">
 
-          {/* Network badge — no fake stats */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-8 rounded-full border border-cyan-500/30 bg-surface/80 text-xs font-mono text-cyan-400 shadow-[0_0_15px_rgba(0,242,254,0.12)]">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shrink-0 shadow-[0_0_8px_#00F2FE]" />
-            Live on Arc Mainnet
+          {/* Operational network status pill */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 mb-8 rounded-full border border-border bg-surface/80 text-xs font-mono text-muted">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+            Arc Mainnet Operational
           </div>
 
-          {/* Headline — responsive typography */}
+          {/* Headline — focused, confident */}
           <h1 className="hero-title font-heading font-bold tracking-tight text-foreground mb-6 break-words text-4xl sm:text-5xl md:text-6xl leading-[1.15]">
             Funding and governance{" "}
             <span
@@ -138,10 +142,9 @@ export default function LandingPage() {
             <span className="text-foreground">built on Arc.</span>
           </h1>
 
-          {/* Sub-headline — responsive typography */}
+          {/* Sub-headline */}
           <p className="hero-subtitle font-mono text-muted max-w-2xl mx-auto mb-10 leading-relaxed break-words text-base sm:text-lg">
-            Fund USDC into the DAO treasury → vote on a proposal → release to a
-            human or agent once the three-way match clears.
+            Fund USDC into the treasury, vote on proposals, and execute releases through contract-verified rules.
           </p>
 
           {/* CTAs */}
@@ -157,7 +160,7 @@ export default function LandingPage() {
               href="/docs"
               className="btn w-full sm:w-auto px-7 py-3.5 rounded-xl border border-border bg-surface/80 hover:border-cyan-500/40 text-foreground font-mono font-medium text-sm transition-all flex items-center justify-center gap-2 shadow-xs hover:text-white"
             >
-              Read the docs
+              Documentation
             </Link>
           </div>
         </div>
@@ -168,20 +171,16 @@ export default function LandingPage() {
           ════════════════════════════════════════════════════════ */}
       <section
         id="how-it-works"
+        data-section="how-it-works"
+        aria-labelledby="heading-how-it-works"
         className="relative py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
       >
         <div id="governance" className="absolute -top-16 left-0" />
         <div className="max-w-5xl mx-auto w-full">
           <div className="mb-12 text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/20 bg-cyan-950/20 text-xs font-mono font-medium text-cyan-400 uppercase tracking-wider mb-4">
-              Mechanism
-            </div>
-            <h2 className="font-heading text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
+            <h2 id="heading-how-it-works" className="font-heading text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
               How it works
             </h2>
-            <p className="mt-3 text-sm text-muted max-w-xl mx-auto">
-              Four concrete steps from USDC deposit to release — no intermediaries.
-            </p>
           </div>
 
           <div className="steps-grid">
@@ -218,24 +217,20 @@ export default function LandingPage() {
       </section>
 
       {/* ════════════════════════════════════════════════════════
-          §3  WHY SYN DAO — differentiators
+          §3  ARCHITECTURE
           ════════════════════════════════════════════════════════ */}
       <section
         id="why"
+        data-section="architecture"
+        aria-labelledby="heading-architecture"
         className="relative py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
       >
         <div id="features" className="absolute -top-16 left-0" />
         <div className="max-w-5xl mx-auto w-full">
           <div className="mb-12 text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/20 bg-purple-950/20 text-xs font-mono font-medium text-purple-400 uppercase tracking-wider mb-4">
-              Differentiators
-            </div>
-            <h2 className="font-heading text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
-              Why Syn DAO
+            <h2 id="heading-architecture" className="font-heading text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
+              Architecture
             </h2>
-            <p className="mt-3 text-sm text-muted max-w-xl mx-auto">
-              Each mechanism named the way you would explain it to an engineer.
-            </p>
           </div>
 
           <div className="features-grid">
@@ -279,15 +274,15 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           §5  FINAL CTA
           ════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden">
+      <section 
+        data-section="get-started"
+        aria-label="Get Started"
+        className="py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
+      >
         <div className="max-w-2xl mx-auto text-center w-full">
-          <h2 className="font-heading text-2xl sm:text-3xl font-semibold text-foreground mb-4 tracking-tight">
-            Ready to participate?
+          <h2 className="font-heading text-2xl sm:text-3xl font-semibold text-foreground mb-8 tracking-tight">
+            Start building with Syn DAO
           </h2>
-          <p className="text-sm text-muted mb-10 max-w-lg mx-auto leading-relaxed">
-            Connect your wallet, fund USDC into the treasury, and vote on the
-            first proposals — or submit one yourself.
-          </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/dashboard"
@@ -300,7 +295,7 @@ export default function LandingPage() {
               href="/docs"
               className="w-full sm:w-auto px-8 py-3.5 rounded-xl border border-border bg-surface hover:border-cyan-500/40 text-foreground font-mono font-medium text-sm transition-all shadow-xs hover:text-white"
             >
-              Docs
+              Documentation
             </Link>
             <a
               href="https://github.com/kellycryptos/SynArc"

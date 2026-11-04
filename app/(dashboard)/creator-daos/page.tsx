@@ -156,17 +156,14 @@ export default function CampaignsPage() {
       <AuthPromptBanner action="launch or contribute to Creator DAOs" />
 
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div 
+        data-component="creator-daos-header"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary flex items-center gap-2.5 font-space">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary font-space">
             Creator DAOs
-            <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary">
-              Workspaces
-            </span>
           </h1>
-          <p className="text-muted text-sm mt-1">
-            Milestone-backed funding and transparent governance for decentralized teams.
-          </p>
         </div>
 
         <button

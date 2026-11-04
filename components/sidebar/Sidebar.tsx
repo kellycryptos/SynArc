@@ -173,11 +173,6 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
       </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3.5 space-y-1">
-                {/* Section label */}
-        <p className="px-1.5 pb-2 text-[11px] uppercase tracking-[0.1em] font-mono text-muted">
-          Governance
-        </p>
-
         {/* Active navigation links */}
         {visibleLinks.map((link) => {
           const active =
