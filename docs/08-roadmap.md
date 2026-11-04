@@ -4,7 +4,7 @@ icon: road
 
 # Project Roadmap
 
-This section outlines Syn DAO's multi-phase roadmap towards providing secure funding, automated treasury protection, and seamless community coordination tools.
+This section outlines Syn DAO's multi-phase roadmap towards providing secure funding, automated treasury protection, customizable governance, and native privacy rails on the Arc Network.
 
 ***
 
@@ -38,9 +38,9 @@ This section outlines Syn DAO's multi-phase roadmap towards providing secure fun
 ### Phase 6: Automated Treasury Guard & Agent SDK
 
 * **Status:** _Completed / Live_
-* **Description:** Autonomous Treasury Agent rules (Auto Rebalancing, Auto Payments with timelocks, and Risk Monitoring) and public npm `synarc-agent-sdk` for programmatic integration.
+* **Description:** Autonomous Treasury Agent rules (Auto Rebalancing, Auto Payments with timelocks, and Risk Monitoring) and public npm `synarc-agent-sdk` for programmatic integration across organizations, businesses, communities, and AI agents.
 
-### Phase 7: Three-Way Match Release Valve & Arc Mainnet Deployment (Tameion)
+### Phase 7: Three-Way Match Release Valve & Arc Mainnet Deployment
 
 * **Status:** _Completed / Live on Arc Mainnet (Chain ID 5042)_
 * **Description:** Contract-enforced Three-Way Match release valve (`SynArcTreasury.sol`), 48h payee timelocked cooldown, idempotency bit-flip guard, Iris witness attestations, authentic IPFS pinning, and dual-agent adversarial mesh with forensic auditor. Releases $\le 50$ USDC are autonomous; $> 50$ USDC require mandatory human multisig signoff.
@@ -54,7 +54,15 @@ This section outlines Syn DAO's multi-phase roadmap towards providing secure fun
   - **High-Resilience CCTP Bridge Architecture**: Dedicated server-side balance proxy route (`/api/bridge/balance`) with 6-second in-memory caching, micro-balance UI precision, and multi-RPC fallback arrays (Base, Ethereum, Avalanche).
   - **RPC Resiliency & Store Batching**: Batched on-chain hydration (concurrency 3 with 50ms pauses) and increased timeouts (4.5s–8s) across `useCampaignStore`, `useCreatorStore`, and `useGovernanceStore` to eliminate RPC throttling.
 
-### Phase 8: DeFi Yield Automation & ZK Privacy
+### Phase 8: DeFi Yield Automation & Circle Alliance Rails
 
-* **Status:** _In Progress / Planned_
-* **Description:** Conservative stablecoin yield sweeps into Morpho/Aave vaults via agent rules, and ZK-snark private governance ballots.
+* **Status:** _Live / Operational_
+* **Description:** Automated treasury yield sweeping into curated Morpho vaults on Arc via `@circle-fin/earn-kit`, Circle Programmable Wallets (passkeys and gasless paymaster sponsorship), and canonical Arc USDC settlement.
+
+### Phase 9: ZK Privacy Layer (Coming Soon)
+
+* **Status:** _In Active Development_
+* **Description:**
+  - **ZK Confidential Ballots (Shielded Voting)**: Zero-knowledge proofs (ZK-SNARKs) allowing DAO and organization members to prove voting eligibility and token weight without revealing wallet identity or exact holdings, eliminating voter intimidation and bandwagon bias.
+  - **Shielded Treasury Disbursements**: Stealth address generation and private USDC milestone payouts for enterprise payroll, sensitive vendor contracts, and private grants.
+  - **Selective Compliance View Keys**: Enterprise-grade viewing keys that allow authorized compliance auditors and tax authorities to inspect transaction proofs without exposing balances publicly.

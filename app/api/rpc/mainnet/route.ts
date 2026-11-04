@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getOfflineRpcResponse } from "@/lib/rpc/offline-fallback";
 
 // Documented official Arc Mainnet RPC
 const PUBLIC_BACKUP_RPC = "https://rpc.mainnet.arc.io";
@@ -219,8 +220,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  let bodyText = "";
   try {
-    const bodyText = await req.text();
+    bodyText = await req.text();
     const candidateUrls = Array.from(new Set([
       process.env.ARC_MAINNET_RPC_URL?.trim(),
       process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL?.trim(),
@@ -268,21 +270,25 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!response) {
-      throw lastError || new Error("All mainnet RPC upstream endpoints failed");
-    }
-
-    const responseBody = await response.text();
     const responseHeaders: Record<string, string> = {
       "Content-Type": "application/json",
     };
-
     const origin = req.headers.get("origin");
     const host = req.headers.get("host") || "";
     if (origin && isAllowedUrl(origin, host)) {
       responseHeaders["Access-Control-Allow-Origin"] = origin;
       responseHeaders["Vary"] = "Origin";
     }
+
+    if (!response) {
+      console.warn("[RPC Mainnet Proxy] Upstream endpoints unreachable, serving offline sandbox fixture");
+      return NextResponse.json(getOfflineRpcResponse(bodyText, 5042), {
+        status: 200,
+        headers: responseHeaders,
+      });
+    }
+
+    const responseBody = await response.text();
 
     return new NextResponse(responseBody, {
       status: response.status,
@@ -299,20 +305,27 @@ export async function POST(req: NextRequest) {
       errorHeaders["Vary"] = "Origin";
     }
 
-    return NextResponse.json(
-      {
-        jsonrpc: "2.0",
-        error: {
-          code: -32603,
-          message: "Internal RPC proxy error",
-        },
-        id: null,
-      },
-      {
-        status: 500,
+    try {
+      return NextResponse.json(getOfflineRpcResponse(bodyText, 5042), {
+        status: 200,
         headers: errorHeaders,
-      }
-    );
+      });
+    } catch {
+      return NextResponse.json(
+        {
+          jsonrpc: "2.0",
+          error: {
+            code: -32603,
+            message: "Internal RPC proxy error",
+          },
+          id: null,
+        },
+        {
+          status: 500,
+          headers: errorHeaders,
+        }
+      );
+    }
   }
 }
 

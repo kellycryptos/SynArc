@@ -4,7 +4,7 @@ icon: scale-balanced
 
 # Governance
 
-Syn DAO makes it simple for creators and decentralized teams to coordinate decisions, vote on community initiatives, and execute treasury changes. This section details how proposals work, how to participate, and how voting weight is determined.
+Syn DAO makes it simple for organizations, businesses, communities, and autonomous AI agents to coordinate decisions, vote on community initiatives, and execute treasury changes. This section details how proposals work, how to participate, how voting weight is determined, and the upcoming confidential governance roadmap.
 
 ---
 
@@ -18,7 +18,7 @@ Submission → Pending → Active → Queued (Timelock) → Executed / Defeated
 
 1. **Submission & Pending State**: A proposal is submitted with executable transactions. It enters a **Pending** delay allowing delegates to adjust voting weight snapshots.
 2. **Active Voting Phase**: The proposal enters the **Active** voting window. Members cast votes (For, Against, Abstain) signed cryptographically via their wallets.
-3. **Resolution & Timelock Controller**: If voting requirements and the 4% Quorum are met, the proposal enters the **Timelock Controller** buffer to prevent immediate execution surprises.
+3. **Resolution & Timelock Controller**: If voting requirements and the 4% Quorum are met, the proposal enters the **Timelock Controller** buffer (48 hours on Mainnet) to prevent immediate execution surprises.
 4. **On-Chain Execution**: Once the timelock expires, anyone can execute the proposal transactions, triggering on-chain transfers or changing system properties.
 
 ---
@@ -60,17 +60,22 @@ Active proposals can be voted on by any member with a balance greater than 0 sAR
 
 ---
 
-## Voting Power: USDC + SynArcToken
+## How Voting Weight is Determined
 
-Voting weight in the Syn DAO ecosystem is governed by two complementary tokens:
+Voting weight in the Syn DAO ecosystem is designed for flexibility, security, and Sybil resistance:
 
-### 1. SynArcToken (sARC)
+### 1. Checkpointed SynArcToken (sARC)
+The core governance asset. 1 sARC corresponds to 1 raw vote. sARC tokens are fully delegatable and record check-pointed balance history on-chain (`ERC20Votes`) at the proposal snapshot block. This prevents flash loans or post-announcement balance changes from manipulating voting results.
 
-The core governance asset. 1 sARC corresponds to 1 raw vote. sARC tokens are fully delegatable and record check-pointed balance history on-chain to prevent double-voting.
+### 2. USDC & Multi-Asset Economic Weighting
+To align governance with actual skin in the game, community and business instances can incorporate stable asset balances (USDC, EURC, cirBTC) into voting calculations, preventing purely speculative token volatility from dominating decisions.
 
-### 2. USDC Balance Weight
-
-To ensure that active participants have a voice, Syn DAO uses stable asset balances to calculate voting multipliers, reinforcing stable and reliable decision-making.
+### 3. Pluggable Voting Strategies (via SDK)
+Using the `synarc-agent-sdk`, developers and organizations can deploy custom voting logic:
+* **Token-Weighted (Default)**: Direct checkpointed sARC balance.
+* **Quadratic Voting ($\sqrt{\text{Tokens}}$)**: Diminishing voting weight returns per token to amplify grassroots consensus over whale concentration.
+* **Staked Duration Multipliers**: Scaling voting power based on how long tokens have been locked in community vaults.
+* **Reputation & Soulbound Badges**: Factoring in on-chain contribution attestations (ERC-721 or ERC-8004 Agent Registry entries).
 
 ---
 
@@ -98,19 +103,32 @@ Syn DAO uses the `ERC20Votes` checkpoint standard. Your voting power is **inacti
 
 > 💡 Delegation does **not** transfer your tokens. You retain full ownership and can re-delegate at any time.
 
-### Via the SDK
+### Programmatic Delegation via SDK
 
 ```typescript
-// Self-delegate
-await synarc.token.delegate(wallet.address);
+import { SynArc, SYNARC_MAINNET } from 'synarc-agent-sdk';
 
-// Delegate to another address
-await synarc.token.delegate("0xDelegateeAddress...");
+const synarc = new SynArc({
+  ...SYNARC_MAINNET,
+  provider: window.ethereum,
+});
 
-// Check current delegate
-const currentDelegate = await synarc.token.getDelegate(wallet.address);
-console.log("Currently delegated to:", currentDelegate);
+// Self-delegate voting weight
+await synarc.delegate(walletAddress);
+
+// Delegate to a trusted community delegate
+await synarc.delegate("0xDelegateeAddress...");
 ```
+
+---
+
+## Privacy & Shielded Ballots (Coming Soon)
+
+Syn DAO is engineering Zero-Knowledge (ZK) privacy extensions for organizations and privacy-focused communities:
+
+* **Confidential Ballots (ZK-SNARK Voting)**: Cast votes without revealing your wallet address or token holdings. A zero-knowledge proof verifies on-chain that the voter holds sufficient voting weight at the snapshot block while preserving ballot secrecy.
+* **Shielded Treasury Disbursements**: Stealth payouts for sensitive corporate contracts, private payroll, and confidential grants.
+* **Auditor Viewing Keys**: Selective cryptographic decryption keys allow enterprise compliance teams and external auditors to verify financial accuracy without public surveillance.
 
 ---
 
@@ -121,4 +139,4 @@ console.log("Currently delegated to:", currentDelegate);
 | **Quorum** | 4% of total sARC supply |
 | **Proposal Threshold** | Minimum sARC balance to submit proposals |
 | **Voting Period** | Configurable per-proposal (default: 3 days) |
-| **Timelock Delay** | 1–2 days before execution |
+| **Timelock Delay** | 48 hours on Mainnet (24 hours on Testnet) |

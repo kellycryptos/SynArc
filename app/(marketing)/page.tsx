@@ -9,6 +9,15 @@ import {
   GitCompareArrows,
   Clock,
   Bot,
+  Building2,
+  Store,
+  Users,
+  Cpu,
+  ShieldCheck,
+  EyeOff,
+  KeyRound,
+  Lock,
+  Scale,
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { FloatingAIChatLazy } from "@/components/marketing/FloatingAIChatLazy";
@@ -58,7 +67,7 @@ function StepCard({
   );
 }
 
-/** A single "Why Syn DAO" differentiator card with Purple/Cyan accents */
+/** Architecture differentiator card with Purple/Cyan accents */
 function DiffCard({
   icon: Icon,
   title,
@@ -87,6 +96,76 @@ function DiffCard({
         </h3>
         <p className="text-sm text-muted leading-relaxed">{body}</p>
       </div>
+    </GlassCard>
+  );
+}
+
+/** Blueprint card for SDK use cases */
+function BlueprintCard({
+  icon: Icon,
+  role,
+  title,
+  features,
+  accent = "cyan",
+  delay,
+}: {
+  icon: React.ElementType;
+  role: string;
+  title: string;
+  features: string[];
+  accent?: "cyan" | "purple";
+  delay?: number;
+}) {
+  const isCyan = accent === "cyan";
+  return (
+    <GlassCard
+      delay={delay}
+      className={`p-6 border border-border flex flex-col justify-between transition-all duration-300 group rounded-2xl bg-surface/70 ${
+        isCyan
+          ? "hover:border-cyan-500/40 hover:shadow-[0_0_24px_rgba(0,242,254,0.06)]"
+          : "hover:border-purple-500/40 hover:shadow-[0_0_24px_rgba(127,0,255,0.08)]"
+      }`}
+    >
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div
+            className={`w-10 h-10 flex items-center justify-center shrink-0 transition-all duration-300 ${
+              isCyan
+                ? "bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 group-hover:bg-cyan-500/20"
+                : "bg-purple-500/10 border border-purple-500/30 text-purple-400 group-hover:bg-purple-500/20"
+            }`}
+            style={{ clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)" }}
+          >
+            <Icon className={`w-5 h-5 ${isCyan ? "text-cyan-300" : "text-purple-300"}`} />
+          </div>
+          <span className="font-mono text-xs font-medium text-muted uppercase tracking-wider">
+            {role}
+          </span>
+        </div>
+
+        <h3 className="font-heading font-semibold text-lg text-foreground mb-3 tracking-tight">
+          {title}
+        </h3>
+
+        <ul className="space-y-2 mb-6">
+          {features.map((feature, i) => (
+            <li key={i} className="text-xs sm:text-sm text-muted flex items-start gap-2 leading-relaxed">
+              <span className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${isCyan ? "bg-cyan-400" : "bg-purple-400"}`} />
+              <span>{feature}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <Link
+        href="/docs/sdk"
+        className={`inline-flex items-center gap-1.5 text-xs font-mono font-medium transition-colors ${
+          isCyan ? "text-cyan-400 hover:text-cyan-300" : "text-purple-400 hover:text-purple-300"
+        }`}
+      >
+        View SDK blueprint
+        <ArrowRight className="w-3.5 h-3.5" />
+      </Link>
     </GlassCard>
   );
 }
@@ -263,7 +342,280 @@ export default function LandingPage() {
       </section>
 
       {/* ════════════════════════════════════════════════════════
-          §4  REAL ACTIVITY — client island (honest empty state)
+          §4  USE CASES — One SDK, Four Architectures
+          ════════════════════════════════════════════════════════ */}
+      <section
+        id="solutions"
+        data-section="use-cases"
+        aria-labelledby="heading-use-cases"
+        className="relative py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
+      >
+        <div className="max-w-5xl mx-auto w-full">
+          <div className="mb-12 text-center">
+            <h2 id="heading-use-cases" className="font-heading text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
+              One SDK. Four Architectures.
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <BlueprintCard
+              icon={Building2}
+              role="Enterprise"
+              title="Organizations"
+              features={[
+                "Dual-treasury architecture: timelocked reserves & operating accounts",
+                "Contract-enforced Three-Way Match for programmatic vendor payouts",
+                "48-hour payee-change cooldown to prevent address substitution attacks",
+                "Automatic human multi-sig review gate on disbursements above 50 USDC",
+              ]}
+              accent="cyan"
+              delay={0}
+            />
+
+            <BlueprintCard
+              icon={Store}
+              role="Commercial"
+              title="Businesses"
+              features={[
+                "Milestone-gated customer escrows with verified deliverable checks",
+                "Instant cross-chain customer invoicing via native Circle CCTP",
+                "Automated working capital yield via curated Morpho vaults on Arc",
+                "Sub-cent native USDC gas settlement with zero synthetic asset risk",
+              ]}
+              accent="purple"
+              delay={0.07}
+            />
+
+            <BlueprintCard
+              icon={Users}
+              role="Governance"
+              title="Communities & DAOs"
+              features={[
+                "Checkpointed OpenZeppelin ERC20Votes with delegated balance snapshots",
+                "Custom voting strategies: Quadratic, Staked Duration, or Multi-Asset",
+                "Milestone crowdfunds and creator launchpads with transparent tracking",
+                "Public grant disbursements verified on-chain against IPFS deliverables",
+              ]}
+              accent="cyan"
+              delay={0.14}
+            />
+
+            <BlueprintCard
+              icon={Cpu}
+              role="Autonomous"
+              title="AI Agents"
+              features={[
+                "Autonomous sub-cap execution (under 50 USDC) with zero human latency",
+                "Canonical on-chain agent identity registered via ERC-8004",
+                "Treasury Guard: automated health monitoring and cross-chain rebalancing",
+                "Hardware-style bit-flip guards for deterministic idempotency protection",
+              ]}
+              accent="purple"
+              delay={0.21}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════
+          §5  GOVERNANCE CUSTOMIZATION & VOTING WEIGHT
+          ════════════════════════════════════════════════════════ */}
+      <section
+        id="governance-customization"
+        data-section="governance-customization"
+        aria-labelledby="heading-governance"
+        className="relative py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
+      >
+        <div className="max-w-5xl mx-auto w-full">
+          <div className="mb-12 text-center">
+            <h2 id="heading-governance" className="font-heading text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
+              Pluggable Governance & Voting Weight
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            {/* Left: How Voting Weight is Determined */}
+            <div className="lg:col-span-6 flex flex-col justify-between p-6 sm:p-8 rounded-2xl border border-border bg-surface/70">
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-9 h-9 bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400"
+                    style={{ clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)" }}
+                  >
+                    <Scale className="w-4 h-4 text-cyan-300" />
+                  </div>
+                  <h3 className="font-heading font-semibold text-lg text-foreground">
+                    Determining Voting Weight
+                  </h3>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl border border-border bg-surface-elevated/40">
+                    <div className="font-mono text-xs font-semibold text-cyan-400 mb-1">Checkpointed Tokens (sARC)</div>
+                    <p className="text-xs text-muted leading-relaxed">
+                      1 sARC = 1 vote. Balances are check-pointed by block height via ERC20Votes, eliminating flash-loan manipulation.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl border border-border bg-surface-elevated/40">
+                    <div className="font-mono text-xs font-semibold text-purple-400 mb-1">USDC & Multi-Asset Weighting</div>
+                    <p className="text-xs text-muted leading-relaxed">
+                      Stable asset holdings (USDC, EURC, cirBTC) provide economic multipliers to prevent purely speculative volatility.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl border border-border bg-surface-elevated/40">
+                    <div className="font-mono text-xs font-semibold text-cyan-400 mb-1">Quadratic Voting & Reputation</div>
+                    <p className="text-xs text-muted leading-relaxed">
+                      Pluggable algorithms dampen whale dominance (weight = square root of tokens) and integrate ERC-8004 agent credentials.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-border mt-6">
+                <Link
+                  href="/docs/governance"
+                  className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
+                >
+                  Explore governance parameters
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: Code Sample Terminal */}
+            <div className="lg:col-span-6 flex flex-col justify-between p-6 sm:p-8 rounded-2xl border border-border bg-[#080C14] font-mono text-xs">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-border/80">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+                  </div>
+                  <span className="text-[11px] text-muted">custom-voting-weight.ts</span>
+                </div>
+
+                <div className="space-y-1 text-slate-300 leading-relaxed overflow-x-auto py-2">
+                  <p><span className="text-purple-400">import</span> &#123; SynArc, SYNARC_MAINNET &#125; <span className="text-purple-400">from</span> <span className="text-emerald-400">&apos;synarc-agent-sdk&apos;</span>;</p>
+                  <p className="text-muted">{"// 1. Initialize client"}</p>
+                  <p><span className="text-blue-400">const</span> synarc = <span className="text-purple-400">new</span> <span className="text-cyan-400">SynArc</span>(SYNARC_MAINNET);</p>
+                  <p>&nbsp;</p>
+                  <p className="text-muted">{"// 2. Compute quadratic voting power"}</p>
+                  <p><span className="text-blue-400">function</span> <span className="text-amber-300">getQuadraticWeight</span>(rawTokens: <span className="text-cyan-300">bigint</span>) &#123;</p>
+                  <p className="pl-4"><span className="text-purple-400">return</span> BigInt(Math.floor(Math.sqrt(Number(rawTokens))));</p>
+                  <p>&#125;</p>
+                  <p>&nbsp;</p>
+                  <p className="text-muted">{"// 3. Verify on-chain snapshot balance"}</p>
+                  <p><span className="text-blue-400">const</span> votes = <span className="text-purple-400">await</span> synarc.<span className="text-amber-300">getPastVotes</span>(user, block);</p>
+                  <p><span className="text-blue-400">const</span> weight = <span className="text-amber-300">getQuadraticWeight</span>(votes);</p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-border/80 flex items-center justify-between text-[11px] text-muted">
+                <span>EVM & TypeScript 5+</span>
+                <span className="text-cyan-400">synarc-agent-sdk</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════
+          §6  PRIVACY — Zero-Knowledge Roadmap (Coming Soon)
+          ════════════════════════════════════════════════════════ */}
+      <section
+        id="privacy"
+        data-section="privacy"
+        aria-labelledby="heading-privacy"
+        className="relative py-16 sm:py-24 px-4 border-t border-border w-full overflow-hidden"
+      >
+        <div className="max-w-5xl mx-auto w-full">
+          <div className="mb-12 text-center flex flex-col items-center">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full border border-purple-500/30 bg-purple-950/30 text-xs font-mono text-purple-300">
+              <Lock className="w-3.5 h-3.5" />
+              <span>Coming Soon</span>
+            </div>
+            <h2 id="heading-privacy" className="font-heading text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
+              Zero-Knowledge Privacy
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <GlassCard
+              delay={0}
+              className="p-6 border border-border hover:border-purple-500/40 rounded-2xl bg-surface/70 flex flex-col justify-between"
+            >
+              <div>
+                <div
+                  className="w-10 h-10 bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 mb-4"
+                  style={{ clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)" }}
+                >
+                  <ShieldCheck className="w-5 h-5 text-purple-300" />
+                </div>
+                <h3 className="font-heading font-semibold text-base text-foreground mb-2">
+                  ZK Confidential Ballots
+                </h3>
+                <p className="text-sm text-muted leading-relaxed">
+                  Voters prove voting eligibility and voting power via client-side ZK-SNARK proofs without revealing their address or token balances.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-border text-xs font-mono text-muted">
+                Shielded Governance
+              </div>
+            </GlassCard>
+
+            <GlassCard
+              delay={0.07}
+              className="p-6 border border-border hover:border-cyan-500/40 rounded-2xl bg-surface/70 flex flex-col justify-between"
+            >
+              <div>
+                <div
+                  className="w-10 h-10 bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-4"
+                  style={{ clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)" }}
+                >
+                  <EyeOff className="w-5 h-5 text-cyan-300" />
+                </div>
+                <h3 className="font-heading font-semibold text-base text-foreground mb-2">
+                  Shielded Disbursements
+                </h3>
+                <p className="text-sm text-muted leading-relaxed">
+                  Stealth address generation and private USDC transfers allow enterprise payroll and contractor retainers to remain confidential.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-border text-xs font-mono text-muted">
+                Private Payroll
+              </div>
+            </GlassCard>
+
+            <GlassCard
+              delay={0.14}
+              className="p-6 border border-border hover:border-purple-500/40 rounded-2xl bg-surface/70 flex flex-col justify-between"
+            >
+              <div>
+                <div
+                  className="w-10 h-10 bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 mb-4"
+                  style={{ clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)" }}
+                >
+                  <KeyRound className="w-5 h-5 text-purple-300" />
+                </div>
+                <h3 className="font-heading font-semibold text-base text-foreground mb-2">
+                  Selective Viewing Keys
+                </h3>
+                <p className="text-sm text-muted leading-relaxed">
+                  Exportable cryptographic viewing keys allow authorized compliance auditors and tax authorities to inspect transaction records on demand.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-border text-xs font-mono text-muted">
+                Compliance Auditing
+              </div>
+            </GlassCard>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════
+          §7  REAL ACTIVITY — client island (honest empty state)
           ════════════════════════════════════════════════════════ */}
       <div id="treasury" className="relative">
         <SectionErrorBoundary sectionName="Proposals and Activity">
@@ -272,7 +624,7 @@ export default function LandingPage() {
       </div>
 
       {/* ════════════════════════════════════════════════════════
-          §5  FINAL CTA
+          §8  FINAL CTA
           ════════════════════════════════════════════════════════ */}
       <section 
         data-section="get-started"

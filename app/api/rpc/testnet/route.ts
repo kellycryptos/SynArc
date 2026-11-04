@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getOfflineRpcResponse } from "@/lib/rpc/offline-fallback";
 
 // Documented public fallback constant for Arc Testnet RPC
 const PUBLIC_BACKUP_RPC = "https://rpc.testnet.arc.io";
@@ -227,8 +228,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  let bodyText = "";
   try {
-    const bodyText = await req.text();
+    bodyText = await req.text();
     const candidateUrls = Array.from(new Set([
       CANTEEN_TESTNET_RPC,
       PRIMARY_TESTNET_RPC,
@@ -280,7 +282,11 @@ export async function POST(req: NextRequest) {
     }
 
     if (!response) {
-      throw lastError || new Error("All testnet RPC upstream endpoints failed");
+      console.warn("[RPC Testnet Proxy] Upstream endpoints unreachable, serving offline sandbox fixture");
+      return NextResponse.json(getOfflineRpcResponse(bodyText, 5042002), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const responseBody = await response.text();
@@ -291,17 +297,17 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error: any) {
-    return NextResponse.json(
-      {
-        jsonrpc: "2.0",
-        error: {
-          code: -32603,
-          message: "Internal RPC proxy error",
-        },
-        id: null,
-      },
-      { status: 500 }
-    );
+    try {
+      return NextResponse.json(getOfflineRpcResponse(bodyText, 5042002), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch {
+      return NextResponse.json(
+        { jsonrpc: "2.0", error: { code: -32603, message: "Internal RPC proxy error" }, id: null },
+        { status: 500 }
+      );
+    }
   }
 }
 

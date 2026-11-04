@@ -2,9 +2,178 @@
 icon: terminal
 ---
 
-# Agent SDK
+# Agent SDK & Integration Framework
 
-The Syn DAO Agent SDK (`synarc-agent-sdk`) allows developers to integrate autonomous AI agents and decentralized organizations directly with Syn DAO's on-chain governance, two-treasury management, Creator DAO launches, milestone-escrow crowdfunding, and Circle CCTP cross-chain bridge on the Arc Network.
+The Syn DAO Agent SDK (`synarc-agent-sdk`) is the unified programmatic interface for **Organizations**, **Businesses**, **Communities**, and **Autonomous AI Agents** to coordinate capital, deploy milestone escrows, determine custom governance voting weights, and interact with the Arc Network and Circle ecosystem.
+
+---
+
+## Architectural Blueprints: Who Uses the SDK?
+
+The SDK is designed to be modular and role-agnostic. Whether coordinating a corporate treasury, bootstrapping a creator collective, or deploying autonomous AI agent financial loops, the SDK provides purpose-built abstractions:
+
+### 1. Organizations & Enterprise
+* **Dual-Treasury Governance**: Maintain a community-visible, timelocked reserve treasury alongside a fast-access operating account.
+* **Document-Anchored Vendor Settlements**: Enforce the **Three-Way Match Release Valve** (`SynArcTreasury.sol`). Every capital outflow requires contract-level agreement between the on-chain governance order, an authentic IPFS deliverable CID, and the registered payee address.
+* **Anti-Tamper Payroll**: Enforce a mandatory 48-hour cooldown on payee address modifications to neutralize prompt-injection and unauthorized address substitution attacks.
+* **Separation of Duties**: Micro-payments ($\le 50$ USDC) can execute autonomously under policy; any disbursement exceeding 50 USDC automatically halts on-chain for mandatory human multi-sig review.
+
+### 2. Businesses & SMBs
+* **Milestone-Gated Client Escrows**: Deploy isolated milestone-escrow contracts (`createCreatorDAO` / `SynArcCrowdfund`) for client retainers, SaaS delivery contracts, and consulting milestones. Capital is released only when milestones are verified.
+* **Zero-Slippage Cross-Chain Payments**: Accept native USDC from clients on Ethereum, Base, or Avalanche and route funds 1:1 to Arc via native **Circle CCTP** burn-and-mint without wrapper tokens or liquidity pool fees.
+* **Non-Custodial Working Capital Yield**: Put idle corporate treasury reserves to work in curated Morpho vaults on Arc via `SynArcEarn` (`@circle-fin/earn-kit`).
+
+### 3. Communities & DAOs
+* **Delegated Checkpointed Governance**: Full OpenZeppelin `ERC20Votes` support with snapshot-based delegation, preventing flash-loan double-voting attacks.
+* **Creator DAO Launchpads**: Launch decentralized crowdfunds with customized durations, funding goals, and transparent milestone tracking.
+* **Verifiable Grant Distributions**: Disburse ecosystem grants with public deliverable verification, transparent on-chain voting, and real-time execution telemetry.
+
+### 4. Autonomous AI Agents
+* **Autonomous Operating Accounts**: Grant AI agents programmatic wallets capable of executing sub-cap disbursements ($\le 50$ USDC) and rebalancing routines with zero human latency.
+* **On-Chain Agent Identity (ERC-8004)**: Register agent metadata, capabilities, and owner addresses in the canonical on-chain Agent Registry (`0x8004A818BFB912233c491871b3d84c89A494BD9e`).
+* **Automated Treasury Guard**: Continuous health monitoring, automated sweep triggers, and cross-chain rebalancing between Arc and Ethereum Sepolia via `SynArcTreasuryAgent`.
+* **Idempotency Protection**: Hardware-style on-chain bit-flip guards eliminate replay attacks and accidental duplicate disbursements.
+
+---
+
+## Customizing Governance & Determining Voting Weight
+
+The Syn DAO governance protocol provides granular customizability over how voting weight is computed, how proposals pass, and how execution timelocks operate.
+
+### How Voting Weight is Determined On-Chain
+
+By default, Syn DAO combines check-pointed governance tokens with real economic participation:
+
+1. **Checkpointed sARC Tokens (`ERC20Votes`)**:
+   - 1 delegated `sARC` = 1 base vote.
+   - Balances are check-pointed by block height (`getPastVotes(account, blockNumber)`). Voting power is determined at the proposal snapshot block, making flash-loan manipulation impossible.
+   - Token holders must delegate voting weight (either to themselves or a representative) before the proposal creation block to participate.
+
+2. **USDC Economic Weighting Multiplier**:
+   - In community and creator escrows, voting weight can factor in stable asset holdings or contribution amounts, aligning decision-making power with direct economic commitment.
+
+### Pluggable Voting Weight Strategies
+
+Developers integrating the SDK can implement custom voting weight strategies on top of the Governor contracts:
+
+```typescript
+import { SynArc, SYNARC_MAINNET } from 'synarc-agent-sdk';
+
+const synarc = new SynArc({
+  ...SYNARC_MAINNET,
+});
+
+/**
+ * Strategy 1: Standard Token-Weighted (Default)
+ * Direct check-pointed snapshot balance at proposal creation block.
+ */
+async function getTokenWeight(address: string, snapshotBlock: bigint): Promise<bigint> {
+  return await synarc.getPastVotes(address, snapshotBlock);
+}
+
+/**
+ * Strategy 2: Quadratic Voting Calculation
+ * Voting Weight = sqrt(sARC Tokens)
+ * Amplifies grassroots participation and dampens plutocratic whale dominance.
+ */
+function calculateQuadraticWeight(tokenBalanceRaw: bigint): bigint {
+  if (tokenBalanceRaw < 0n) throw new Error("Negative balance");
+  if (tokenBalanceRaw < 2n) return tokenBalanceRaw;
+  let x0 = tokenBalanceRaw / 2n;
+  let x1 = (x0 + tokenBalanceRaw / x0) / 2n;
+  while (x1 < x0) {
+    x0 = x1;
+    x1 = (x0 + tokenBalanceRaw / x0) / 2n;
+  }
+  return x0;
+}
+
+/**
+ * Strategy 3: Multi-Asset Weighted Blended Index
+ * Combines sARC governance tokens, USDC gas reserves, EURC, and cirBTC:
+ * Score = (sARC * 1.0) + (USDC * 0.5) + (EURC * 0.5) + (cirBTC_USD * 1.2)
+ */
+interface AssetBalances {
+  sarc: number;
+  usdc: number;
+  eurc: number;
+  cirBtcUsd: number;
+}
+
+function calculateBlendedVotingPower(balances: AssetBalances): number {
+  return (
+    balances.sarc * 1.0 +
+    balances.usdc * 0.5 +
+    balances.eurc * 0.5 +
+    balances.cirBtcUsd * 1.2
+  );
+}
+
+/**
+ * Strategy 4: Reputation & Soulbound Agent Credentials
+ * Queries ERC-8004 Agent Registry or soulbound badges to multiply voting weight.
+ */
+async function getAgentReputationMultiplier(agentAddress: string): Promise<number> {
+  const isRegistered = await synarc.isRegisteredAgent(agentAddress);
+  // Verified registered autonomous agents receive a 1.25x validation multiplier
+  return isRegistered ? 1.25 : 1.0;
+}
+```
+
+### Customizing Governance Execution Parameters
+
+When deploying or configuring a DAO instance via the SDK, developers can configure:
+* **Proposal Threshold**: Minimum `sARC` required to submit a proposal (default: `1,000 sARC`).
+* **Voting Delay**: Number of blocks between proposal creation and voting start (default: `1 block`).
+* **Voting Period**: Duration of the active voting window (e.g., `3 days` or `7 days`).
+* **Quorum Fraction**: Percentage of total supply required for a valid vote (default: `4%`).
+* **Timelock Delay**: Grace buffer between vote success and on-chain execution (default: `48 hours` on Mainnet, `24 hours` on Testnet).
+
+---
+
+## Privacy Roadmap: Shielded Governance & Private Disbursements (Coming Soon)
+
+To support sensitive enterprise payroll, private corporate governance, and confidential contributor compensation, Syn DAO is developing native zero-knowledge privacy extensions for Arc:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      SYN DAO PRIVACY ROADMAP (V3)                       │
+├────────────────────────────────┬────────────────────────────────────────┤
+│ 1. ZK Confidential Ballots     │ • Vote casting via ZK-SNARK proofs    │
+│    (Private Governance)        │ • Verify weight without balance leak   │
+│                                │ • Homomorphic on-chain tallying        │
+├────────────────────────────────┼────────────────────────────────────────┤
+│ 2. Shielded Disbursements      │ • Stealth addresses for payouts        │
+│    (Confidential Payroll)      │ • Zero-knowledge vendor invoices       │
+│                                │ • Shielded USDC grants & milestones    │
+├────────────────────────────────┼────────────────────────────────────────┤
+│ 3. Selective Compliance Keys   │ • Exportable viewing keys for audits   │
+│    (Enterprise-Ready)          │ • Cryptographic proofs for tax/AML     │
+└────────────────────────────────┴────────────────────────────────────────┘
+```
+
+### 1. Zero-Knowledge Confidential Ballots (ZK-SNARK Voting)
+* **Problem**: Public voting exposes token holdings and opens delegates to targeted lobbying, front-running, and voter intimidation.
+* **Solution**: Voters generate a client-side ZK-SNARK proof demonstrating they hold voting weight exceeding a threshold at the snapshot block without revealing their wallet address or exact balance.
+* **Result**: Complete ballot confidentiality with mathematical auditability on-chain.
+
+### 2. Shielded Treasury Disbursements & Stealth Payroll
+* **Problem**: Public block explorers expose exact vendor payments, executive payroll, and strategic contractor retainers to competitors.
+* **Solution**: The Release Valve will support stealth address derivation and shielded USDC transfers on Arc, enabling private disbursements while maintaining on-chain proof of invoice fulfillment.
+
+### 3. Selective Compliance Viewing Keys
+* **Enterprise Compliance**: Privacy without illicit opacity. Organizations can generate selective cryptographic viewing keys, allowing authorized auditors or tax authorities to decrypt specific disbursement histories on demand.
+
+---
+
+## Circle Alliance Ecosystem & Core Rails
+
+Syn DAO is an official member of the **Circle Alliance** ([partners.circle.com/partner/syn-dao](https://partners.circle.com/partner/syn-dao)), delivering native stablecoin infrastructure directly on Arc:
+
+* **Canonical Arc USDC**: Native Circle USDC serves as the primary gas and settlement asset on Arc (`0x3600000000000000000000000000000000000000`). No wrapped synthetic equivalents.
+* **Circle CCTP (Cross-Chain Transfer Protocol)**: Native burn-and-mint bridge connecting Arc with Ethereum, Base, and Avalanche. Rebalances and transfers clear 1:1 with cryptographic attestation consensus from Circle's Iris oracle.
+* **Circle App Kit & Programmable Wallets**: Web3 Services (W3S) integration providing seamless passkey authentication, social onboarding, and gasless sponsored transactions via paymaster relayers.
+* **Circle Earn Kit & Morpho Vaults**: Direct integration with curated Morpho DeFi vaults on Arc for automated treasury yield generation via `SynArcEarn`.
 
 ---
 
@@ -27,7 +196,7 @@ pnpm add synarc-agent-sdk viem
 - Node.js 18+
 - TypeScript 5+ (recommended)
 - `viem` ^2.0 (peer dependency)
-- Arc Testnet RPC endpoint (`https://rpc.testnet.arc.network`)
+- Arc Mainnet RPC (`https://rpc.mainnet.arc.io`) or Arc Testnet RPC (`https://rpc.testnet.arc.network`)
 
 ---
 
@@ -69,28 +238,11 @@ pnpm add synarc-agent-sdk viem
 | **CCTP Message Transmitter** | `0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275` | Circle CCTP Message Transmitter address |
 | **ERC-8004 Agent Registry** | `0x8004A818BFB912233c491871b3d84c89A494BD9e` | Agent on-chain identity registry |
 
-### Two-Treasury Architecture
-
-Syn DAO uses two distinct treasury contracts by design:
-
-- **Governance Treasury** (`0x8205...` on Mainnet, `0xFE0F...` on Testnet) — The community-visible, timelocked treasury. All user-facing balance displays, governance proposals, and dashboard stats read from this contract. Withdrawals require a passing governance vote and a 24-48 hour timelock delay.
-- **Agent Operating Treasury** (`0x88Bd...` on Mainnet, `0xE6bA...` on Testnet) — Used exclusively by the autonomous treasury agent for instant CCTP rebalances and under-cap payouts ($\le 50$ USDC). Funded via governance-approved transfers from the main treasury.
-
-Import addresses and network constants directly from the SDK:
-```typescript
-import { 
-  SYNARC_MAINNET, 
-  SYNARC_TESTNET, 
-  MAINNET_TREASURY_ADDRESS, 
-  TREASURY_GOVERNANCE_ADDRESS 
-} from 'synarc-agent-sdk';
-```
-
 ---
 
 ## Client Initialization
 
-The SDK is EVM-agnostic and connects seamlessly with WalletConnect, Circle Programmable Wallets, MetaMask, Rabby, Coinbase Wallet, or raw private keys.
+The SDK is EVM-agnostic and connects with WalletConnect, Circle Programmable Wallets, MetaMask, Rabby, Coinbase Wallet, or raw private keys.
 
 ### 1. Read-Only Client (Arc Mainnet — Default)
 
@@ -101,19 +253,31 @@ import { SynArc, SYNARC_MAINNET } from 'synarc-agent-sdk';
 
 const synarc = new SynArc({
   network: 'mainnet',
-  governorAddress: SYNARC_MAINNET.governor,
-  treasuryAddress: SYNARC_MAINNET.treasuryGovernance,
-  tokenAddress: SYNARC_MAINNET.token,
-  usdcAddress: SYNARC_MAINNET.usdc,
+  ...SYNARC_MAINNET,
 });
 
-const balances = await synarc.getTreasuryBalance();
-console.log(`Mainnet Treasury: ${balances.usdc} USDC | ${balances.eurc} EURC`);
+// Read treasury balance
+const balance = await synarc.getTreasuryBalance();
+console.log(`Mainnet Reserves: ${balance.usdc} USDC / ${balance.eurc} EURC`);
 ```
 
-### 2. Autonomous Agent (Private Key)
+### 2. Browser Client (EIP-1193 Provider)
 
-Initialize with a hot-wallet private key for autonomous bots, scheduled agent routines, and under-cap releases:
+Connect with user-injected browser wallets (MetaMask, Rabby, RainbowKit):
+
+```typescript
+import { SynArc, SYNARC_MAINNET } from 'synarc-agent-sdk';
+
+const synarc = new SynArc({
+  network: 'mainnet',
+  ...SYNARC_MAINNET,
+  provider: window.ethereum,
+});
+```
+
+### 3. Headless Node.js / AI Agent Client (Private Key)
+
+For autonomous backends, trading bots, and Treasury Guard daemons:
 
 ```typescript
 import { SynArc, SYNARC_MAINNET } from 'synarc-agent-sdk';
@@ -125,122 +289,60 @@ const synarc = new SynArc({
 });
 ```
 
-> 💡 **Developer Sandbox (Arc Testnet)**: Pass `network: 'testnet'` and `...SYNARC_TESTNET` to run against Arc Testnet (`chainId: 5042002`).
-
-### 3. Frontend dApp (Injected EIP-1193 Provider)
-
-Initialize with MetaMask, Rabby, Rainbow, or Circle embedded wallets:
-
-```typescript
-import { SynArc, SYNARC_MAINNET } from 'synarc-agent-sdk';
-
-const synarc = new SynArc({
-  network: 'mainnet',
-  ...SYNARC_MAINNET,
-  provider: window.ethereum,
-});
-```
-
 ---
 
-## Creator DAOs & Crowdfunding
+## Creator & Business Escrows (`createCreatorDAO`)
 
-Deploy and interact with milestone-gated Creator DAO escrow contracts.
-
-### 1. Launch a Creator DAO
+Deploy isolated milestone-gated escrow contracts for client engagements or community crowdfunds:
 
 ```typescript
 const txHash = await synarc.createCreatorDAO({
-  name: "Autonomous Art Studio",
-  description: "Decentralized generative AI art studio on Arc Network",
-  goalUSDC: 1000,
+  name: "Enterprise AI Security Audit",
+  description: "Milestone-locked consulting escrow for smart contract verification.",
+  goalUSDC: 2500,
   durationDays: 30,
-  template: "art",
-  recipientWallet: "0xYourPayoutWalletAddress",
+  recipientWallet: "0xVendorAddress...",
+  template: "software",
 });
-
-console.log(`Creator DAO deployed! Tx: ${txHash}`);
-```
-
-### 2. Fund a Campaign Escrow
-
-```typescript
-// Support an escrow campaign with 50 USDC
-const txHash = await synarc.supportCreatorDAO("0xEscrowContractAddress", 50);
-console.log(`Funded! Tx: ${txHash}`);
-```
-
-### 3. Backer Milestone Voting & Payouts
-
-Backing capital remains milestone-gated inside the escrow:
-
-```typescript
-// 1. Backers vote to approve a completed milestone
-const approveTx = await synarc.approveMilestone("0xEscrowContractAddress", 0);
-console.log(`Voted to approve milestone! Tx: ${approveTx}`);
-
-// 2. Creator withdraws milestone budget after approval (>50% support)
-const withdrawTx = await synarc.withdrawMilestone("0xEscrowContractAddress", 0);
-console.log(`Milestone budget withdrawn! Tx: ${withdrawTx}`);
-
-// 3. Backers claim refund if campaign fails to reach goal before deadline
-const refundTx = await synarc.claimRefund("0xEscrowContractAddress");
-console.log(`Refund claimed! Tx: ${refundTx}`);
-```
-
-### 4. USDC Direct Nanopayments
-
-Send instant micro-payments directly to any creator wallet on Arc:
-
-```typescript
-// Send $0.10 micro-support
-await synarc.supportCreator("0xCreatorWalletAddress", 0.10);
-
-// Autonomous agent rewards creator with $5.00
-await synarc.supportCreator("0xCreatorWalletAddress", 5.00);
+console.log(`Escrow deployed! Tx: ${txHash}`);
 ```
 
 ---
 
-## Treasury Management & Balance Sync
+## Escrow Release Valve & Three-Way Match
 
-### Sync Direct ERC-20 Transfers
-
-When a treasury receives direct USDC transfers (e.g., from governance funding to the Agent Operating Treasury), trigger balance sync:
+The Release Valve (`SynArcTreasury.sol`) enforces that funds cannot leave the treasury without cryptographic agreement:
 
 ```typescript
-import { SynArc, SYNARC_TESTNET, TREASURY_AGENT_ADDRESS } from 'synarc-agent-sdk';
-
-const synarc = new SynArc({
-  ...SYNARC_TESTNET,
-  provider: window.ethereum,
+// 1. Dry-run zero-gas release simulation
+const simulation = await synarc.simulateRelease({
+  proposalId: 42n,
+  milestoneId: 1n,
+  documentHash: "0x8f1234abcd...", // Keccak256 hash of IPFS deliverable CID
+  invoiceHash: "0x9e5678ef01...",
+  amountUSDC: 25,
+  recipient: "0xRecipientAddress...",
 });
 
-// Sync on-chain accounting variables
-const txHash = await synarc.syncBalance(TREASURY_AGENT_ADDRESS);
-console.log(`Balances synced! Tx: ${txHash}`);
-```
-
-### Queue and Execute Timelocked Disbursements
-
-```typescript
-// 1. Queue withdrawal (initiates 24-hour timelock)
-const queueTx = await synarc.queueWithdrawal({
-  recipient: "0xRecipientAddress",
-  amountUSDC: 250,
-});
-console.log(`Withdrawal queued! Tx: ${queueTx}`);
-
-// 2. Execute withdrawal after 24h timelock delay has elapsed
-const executeTx = await synarc.executeWithdrawal(0);
-console.log(`Withdrawal executed! Tx: ${executeTx}`);
+// 2. Execute release under the 50 USDC policy cap
+if (simulation.canRelease) {
+  const releaseTx = await synarc.releaseMilestone({
+    proposalId: 42n,
+    milestoneId: 1n,
+    documentHash: "0x8f1234abcd...",
+    invoiceHash: "0x9e5678ef01...",
+    amountUSDC: 25,
+    recipient: "0xRecipientAddress...",
+  });
+  console.log(`Disbursement confirmed! Tx: ${releaseTx}`);
+}
 ```
 
 ---
 
 ## Automated Treasury Guard & AI Agent
 
-The **Automated Treasury Guard** monitors treasury health, handles automated sweep triggers, and coordinates Circle CCTP rebalances between Arc Testnet and Ethereum Sepolia.
+The Automated Treasury Guard monitors treasury health and executes automated sweep and rebalancing rules:
 
 ```typescript
 import { SynArc, SynArcTreasuryAgent, SYNARC_TESTNET } from 'synarc-agent-sdk';
@@ -248,20 +350,19 @@ import { SynArc, SynArcTreasuryAgent, SYNARC_TESTNET } from 'synarc-agent-sdk';
 const synarc = new SynArc({
   ...SYNARC_TESTNET,
   privateKey: process.env.AGENT_PRIVATE_KEY as `0x${string}`,
-  rebalanceThresholdUSDC: 100, // Rebalance trigger threshold
+  rebalanceThresholdUSDC: 100,
 });
 
 const agent = new SynArcTreasuryAgent(synarc);
 
-// Check treasury health and recommended actions
+// Monitor treasury status
 const health = await agent.monitorTreasury();
 console.log("Treasury Health:", health.status);
-console.log("Recommended Action:", health.recommendedAction);
 
-// Trigger CCTP rebalance if threshold exceeded
+// Trigger CCTP rebalance if recommended
 if (health.recommendedAction === 'rebalance') {
   const txHash = await agent.triggerRebalance(50, synarc.config.treasuryAddress);
-  console.log(`Rebalance initiated! Tx: ${txHash}`);
+  console.log(`Rebalance tx: ${txHash}`);
 }
 ```
 
@@ -269,7 +370,7 @@ if (health.recommendedAction === 'rebalance') {
 
 ## Arc Earn & DeFi Vaults (`SynArcEarn`)
 
-The `SynArcEarn` module enables autonomous agents and DAO operators to interact directly with curated Morpho vaults on Arc Mainnet and Testnet via Arc App Kit:
+Interact with curated Morpho vaults on Arc Network via Circle Earn Kit:
 
 ```typescript
 import { SynArc, SynArcEarn, SYNARC_MAINNET } from 'synarc-agent-sdk';
@@ -282,121 +383,24 @@ const synarc = new SynArc({
 
 const earn = new SynArcEarn(synarc);
 
-// 1. Explore available curated yield vaults on Arc
+// 1. Explore available yield vaults
 const vaults = await earn.exploreVaults();
-console.log("Available Vaults:", vaults);
 
-// 2. Deposit idle treasury USDC into a Morpho vault
+// 2. Deposit idle USDC into vault
 const depositTx = await earn.deposit("0xVaultAddress...", 100);
-console.log(`Deposited into vault! Tx: ${depositTx}`);
 
-// 3. Read current earning position and accrued yield
+// 3. Read current earning position
 const position = await earn.getPosition("0xVaultAddress...", synarc.account?.address);
-console.log(`Current Position: ${position.assets} USDC (Shares: ${position.shares})`);
-
-// 4. Withdraw principal or yield back to the treasury
-const withdrawTx = await earn.withdraw("0xVaultAddress...", 50);
-console.log(`Withdrawn to treasury! Tx: ${withdrawTx}`);
+console.log(`Current Position: ${position.assets} USDC`);
 ```
-
----
-
-## Escrow Release Valve & Three-Way Match
-
-The escrow release valve (`SynArcTreasury.sol`) enforces contract-level agreement between the Governor order terms, an authentic IPFS deliverable CID, and the payee's claim:
-
-- **$\le 50.00$ USDC Autonomous Track**: Authorized AI agents can trigger micro-disbursements instantly without manual review.
-- **$> 50.00$ USDC Human Review Gate**: Larger disbursements halt on-chain with `HumanApprovalRequired` and require explicit signoff via `approveReleaseHuman` by a designated reviewer or Governor timelock.
-- **Payee Timelocked Cooldown (48h)**: Beneficiary address changes require a mandatory 48-hour cooldown to defeat prompt-injection address substitution attacks.
-- **Idempotency Guard**: Deterministic on-chain bit flips ensure the exact same release cannot execute twice.
-
-```typescript
-// 1. Check on-chain agent release cap (50 USDC)
-const cap = await synarc.getAgentReleaseCap();
-console.log(`On-chain agent release cap: ${cap} USDC`);
-
-// 2. Dry-run zero-gas release simulation (Ghostfolio pattern)
-const simulation = await synarc.simulateRelease({
-  proposalId: 42n,
-  milestoneId: 1n,
-  documentHash: "0x8f1234abcd...", // Keccak256 hash of IPFS deliverable CID
-  invoiceHash: "0x9e5678ef01...",
-  amountUSDC: 25,
-  recipient: "0xRecipientAddress...",
-});
-console.log(`Simulation result (code ${simulation.code}):`, simulation.canRelease);
-
-// 3. Execute milestone release under policy cap
-const releaseTx = await synarc.releaseMilestone({
-  proposalId: 42n,
-  milestoneId: 1n,
-  documentHash: "0x8f1234abcd...",
-  invoiceHash: "0x9e5678ef01...",
-  amountUSDC: 25,
-  recipient: "0xRecipientAddress...",
-});
-console.log(`Disbursement released! Tx: ${releaseTx}`);
-```
-
----
-
-## On-Chain Governance & Voting
-
-Participate in Syn DAO's OpenZeppelin-compatible governance protocol.
-
-### 1. Create a Governance Proposal
-
-```typescript
-const proposalId = await synarc.propose({
-  title: "Fund Autonomous Market Maker Development",
-  description: "Disburse 500 USDC from Governance Treasury to fund liquidity agent research.",
-  targetContract: SYNARC_MAINNET.treasuryGovernance,
-  valueUSDC: 500,
-  durationDays: 3,
-});
-
-console.log(`Proposal submitted! ID: ${proposalId}`);
-```
-
-### 2. Cast Programmatic Votes
-
-```typescript
-// Vote options: 0 = Against, 1 = For, 2 = Abstain
-const voteTx = await synarc.castVote(
-  proposalId,
-  1, // For
-  "Autonomous evaluation confirmed alignment with DAO roadmap"
-);
-
-console.log(`Vote cast! Tx: ${voteTx}`);
-```
-
-### 3. Delegate Voting Weight
-
-```typescript
-// Delegate sARC voting power to your wallet or a trusted delegate
-const delegateTx = await synarc.delegate("0xDelegateAddress");
-console.log(`Delegation set! Tx: ${delegateTx}`);
-```
-
----
-
-## Cross-Chain USDC Transfers (Circle CCTP & Bridge Kit)
-
-Syn DAO natively routes USDC between Arc (Mainnet/Testnet) and external chains (Ethereum, Base, Avalanche) without wrapped tokens using Circle's Cross-Chain Transfer Protocol (CCTP) and Circle Bridge Kit:
-
-1. **Burn on Arc**: The agent or user initiates a `depositForBurn` via the canonical Circle Token Messenger contract (`0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d` on Mainnet, `0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA` on Testnet).
-2. **Iris Attestation**: The system queries Circle's Iris API for cryptographic validator attestations.
-3. **Mint on Destination**: `receiveMessage` is executed on the target network to mint 1:1 native USDC directly to the recipient wallet. Immediate pending tracking and CCTP recovery tooling ensure no transfers are lost.
 
 ---
 
 ## Official Developer Resources
 
+- **Circle Alliance Partner Page**: [partners.circle.com/partner/syn-dao](https://partners.circle.com/partner/syn-dao)
+- **npm Package**: [npmjs.com/package/synarc-agent-sdk](https://www.npmjs.com/package/synarc-agent-sdk)
+- **GitHub Repository**: [kellycryptos/SynArc](https://github.com/kellycryptos/SynArc)
+- **Official Documentation**: [syndaopro.xyz/docs/sdk](https://www.syndaopro.xyz/docs/sdk)
 - **YouTube Channel**: [@syndaopro](https://youtube.com/@syndaopro)
 - **Official X (Twitter)**: [@syndaopro](https://x.com/syndaopro)
-- **npm Package**: [npmjs.com/package/synarc-agent-sdk](https://www.npmjs.com/package/synarc-agent-sdk)
-- **GitHub Repository**: [kellycryptos/synarc-agent-sdk](https://github.com/kellycryptos/synarc-agent-sdk)
-- **Live Portal**: [syndaopro.xyz](https://www.syndaopro.xyz)
-- **Documentation**: [syndaopro.xyz/docs/sdk](https://www.syndaopro.xyz/docs/sdk)
-- **ArcScan Block Explorer**: [testnet.arcscan.app](https://testnet.arcscan.app)

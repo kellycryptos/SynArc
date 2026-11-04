@@ -10,6 +10,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "hardhat test",
+    "inspect": "node scripts/cli-inspect.js --inspect",
+    "demo": "node scripts/cli-inspect.js --demo",
     "lint": "eslint"
   },
   "dependencies": {
