@@ -22,5 +22,5 @@ If applicable, add screenshots.
 ## Environment
 - Browser:
 - Wallet:
-- Network: Arc Testnet
+- Network: Arc Mainnet / Arc Testnet
 - URL: syndaopro.xyz

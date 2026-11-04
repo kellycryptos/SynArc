@@ -21,7 +21,7 @@ export const ARC_CONFIG = {
     blockExplorer: 'https://testnet.arcscan.app',
   },
 
-  // Arc Mainnet Chain Information Placeholder (Expected ~5042 — update when official Public Mainnet opens)
+  // Arc Mainnet Chain Information (Chain ID 5042 — Live Production)
   mainnetChain: {
     id: 5042,
     name: 'Arc Mainnet',

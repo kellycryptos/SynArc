@@ -410,7 +410,7 @@ export const getSigner = async (wallets?: any[], targetChain?: any, activeAddres
                   chainName: chainToUse.name,
                   rpcUrls: chainToUse.rpcUrls?.default?.http || chainToUse.rpcUrls?.public?.http || ARC_RPC_URLS,
                   nativeCurrency: chainToUse.nativeCurrency || { name: 'USDC', symbol: 'USDC', decimals: 6 },
-                  blockExplorerUrls: [chainToUse.blockExplorers?.default?.url || 'https://testnet.arcscan.app']
+                  blockExplorerUrls: [chainToUse.blockExplorers?.default?.url || (chainToUse.id === 5042 ? 'https://explorer.arc.io' : 'https://testnet.arcscan.app')]
                 }]
               });
               await window.ethereum.request({

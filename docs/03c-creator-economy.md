@@ -30,12 +30,12 @@ Navigate to **Create Workspace** in the sidebar. Select from template types:
 ### Step 2: Configure Goals & Details
 Set your campaign name, target goal (in USDC), duration, and social tags. Crucially, specify the **milestones** that represent your deliverables. An AI assistant can auto-draft your campaign description from your title.
  
-### Step 3: Deploy to Arc Testnet
-Authenticate with your wallet (via WalletConnect / MetaMask / Coinbase / Circle). Click **Launch Project Workspace**. This deploys a fresh, independent `SynArcCrowdfund` escrow contract from **your wallet** directly to Arc Testnet.
+### Step 3: Deploy to Arc Mainnet or Testnet
+Authenticate with your wallet (via WalletConnect / MetaMask / Coinbase / Circle). Click **Launch Project Workspace**. This deploys a fresh, independent `SynArcCrowdfund` escrow contract from **your wallet** directly to Arc Mainnet (or Arc Testnet in developer sandbox mode).
 
 ### Step 4: Share Your DAO
 After deployment, a success screen shows:
-- ✅ Your newly deployed **contract address** (linked to ArcScan)
+- ✅ Your newly deployed **contract address** (linked to Arc Explorer / ArcScan)
 - 🔗 Your **shareable profile URL**: `https://syndaopro.xyz/creator/[your-slug]`
 - One-click **Share** button using the native Web Share API
 

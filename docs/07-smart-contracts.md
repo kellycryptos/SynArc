@@ -87,17 +87,26 @@ All 10 Creator DAOs are deployed on Arc Mainnet (Chain ID `5042`) and **100% ver
 
 ## Verifying Contracts on ArcScan
 
-To verify SynArc smart contracts on ArcScan, use the Hardhat verification toolbox.
+To verify SynArc smart contracts on Arc Mainnet Explorer or ArcScan Testnet, use the Hardhat verification toolbox.
 
 ### Setup Config
-Ensure your `hardhat.config.ts` includes the custom chain configuration for ArcScan:
+Ensure your `hardhat.config.ts` includes the custom chain configuration for Arc Mainnet and Arc Testnet:
 
 ```typescript
 etherscan: {
   apiKey: {
+    arcMainnet: "placeholder",
     arcTestnet: "placeholder"
   },
   customChains: [
+    {
+      network: "arcMainnet",
+      chainId: 5042,
+      urls: {
+        apiURL: "https://explorer.arc.io/api",
+        browserURL: "https://explorer.arc.io"
+      }
+    },
     {
       network: "arcTestnet",
       chainId: 5042002,

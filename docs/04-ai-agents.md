@@ -37,7 +37,7 @@ Traditional community treasuries often face idle capital, manual payment workflo
 ## Core Capabilities
 
 ### 1. Auto Rebalancing (via Circle CCTP) — `LIVE`
-When a community yield rebalance proposal is approved, or threshold rules are met on-chain, the agent initiates a bidirectional stablecoin transfer. By calling Circle's Native Burn-and-Mint interface, it avoids risky wrapper tokens and ensures slippage-free stablecoin mobility between Arc Testnet and Sepolia.
+When a community yield rebalance proposal is approved, or threshold rules are met on-chain, the agent initiates a bidirectional stablecoin transfer. By calling Circle's Native Burn-and-Mint interface, it avoids risky wrapper tokens and ensures slippage-free stablecoin mobility between Arc (Mainnet & Testnet) and external networks (Ethereum, Base, Avalanche).
 
 ### 2. Auto Payments (Scheduled & Milestone) — `LIVE`
 Creators and DAO teams can schedule recurring stablecoin payments (e.g. weekly creator payouts, monthly team payroll) or queue milestone-based payouts directly from the dashboard:

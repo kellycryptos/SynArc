@@ -101,4 +101,4 @@ No. Every workspace deploys its own completely independent escrow vault. There i
 
 ### 18. How can I verify a Creator DAO escrow contract?
 
-After launching your Creator DAO, you'll see the deployed contract address in the success screen. Visit [testnet.arcscan.app](https://testnet.arcscan.app), search for the address, and use the verification guide in [Smart Contracts](/docs/smart-contracts) to publish your source code.
+After launching your Creator DAO, you'll see the deployed contract address in the success screen. Visit Arc Explorer ([explorer.arc.io](https://explorer.arc.io) on Mainnet, or [testnet.arcscan.app](https://testnet.arcscan.app) on Testnet), search for the address, and use the verification guide in [Smart Contracts](/docs/smart-contracts) to publish your source code.

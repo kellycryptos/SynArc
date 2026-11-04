@@ -415,6 +415,7 @@ Key SDK Methods:
 - **sARC Token**: \`0x8f4b429794ABa4607d177b100Cc5e481D22d0ad4\`
 - **Circle USDC**: \`0x3600000000000000000000000000000000000000\`
 - **Circle EURC**: \`0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1\`
+- **Explorer**: [Arc Explorer](https://explorer.arc.io)
 
 ### Arc Testnet (Chain ID: 5042002)
 - **Governor**: \`0x83Fa2adf3f66e4951D7E9F2576a79e9d644aE25e\`

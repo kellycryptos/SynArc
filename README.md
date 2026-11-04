@@ -121,14 +121,14 @@ Creator DAOs are decentralized funding and governance structures that allow buil
 
 1. **Choose a Template**: Select from predefined templates (Music Creator, Artist, AI Agent, or Arc Builder) on the **Create DAO** page.
 2. **Set Milestones**: Define the phases of your project and assign a USDC funding amount to each milestone.
-3. **Deploy the Escrow**: Click **Launch Creator DAO** to deploy your independent `SynArcCrowdfund` escrow smart contract directly to Arc Testnet.
+3. **Deploy the Escrow**: Click **Launch Creator DAO** to deploy your independent `SynArcCrowdfund` escrow smart contract directly to Arc Mainnet (or Arc Testnet in sandbox mode).
 4. **Share and Fund**: Copy your public profile URL (e.g., `https://syndaopro.xyz/creator/[slug]`) and invite your community to back you using USDC nanopayments.
 
 ---
 
 ## 3c. Autonomous Treasury Agent
 
-Syn DAO features a fully autonomous Treasury Agent deployed and verified on Arc Testnet at `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D`.
+Syn DAO features a fully autonomous Treasury Agent deployed and verified on Arc Mainnet and Arc Testnet at `0x88BdF819466C1802ce6C780a9fbdF3A314cab07D`.
 
 To bypass the daily limits of Vercel Hobby tier crons, the Treasury Agent runs on a **5-minute recurring schedule** via [cron-job.org](https://cron-job.org). The `/api/agent/run` endpoint is secured with a shared-secret verification header (`x-cron-secret`) to prevent unauthorized triggers.
 
@@ -145,9 +145,9 @@ To bypass the daily limits of Vercel Hobby tier crons, the Treasury Agent runs o
 
 A fully bidirectional stablecoin routing pipeline built natively with Circle CCTP to enable frictionless capital mobility:
 
-- **Deposit (IN)**: Bridge native USDC from Ethereum Sepolia, Base Sepolia, Avalanche Fuji, and Solana Devnet directly into Arc Testnet.
-- **Withdraw (OUT)**: Bridge USDC from Arc Testnet back to external EVM networks, changing user wallet chains dynamically.
-- **Consensus Polling**: Programmatic attestation polling with Circle Sandbox Iris endpoints for secure, wrapper-free stablecoin transfers.
+- **Deposit (IN)**: Bridge native USDC and EURC from Ethereum, Base, and Avalanche directly into Arc Mainnet (and Sepolia, Base Sepolia, Avalanche Fuji on Arc Testnet).
+- **Withdraw (OUT)**: Bridge USDC and EURC from Arc back to external EVM networks, changing user wallet chains dynamically.
+- **Consensus Polling**: Programmatic attestation polling with Circle Iris endpoints (Production and Sandbox) for secure, wrapper-free stablecoin transfers.
 
 ---
 
@@ -211,7 +211,7 @@ console.log(`Deployed escrow! Tx: ${txHash}`);
 Syn DAO integrates with the Circle ecosystem and autonomous systems to power its rebalancing, governance, and onboarding systems:
 
 *   **Circle Alliance Program** — Syn DAO is a member of the Circle Alliance Program. Directory: https://partners.circle.com/partner/syn-dao. We use USDC (and EURC) on Arc Mainnet, with settlement in USDC.
-*   **Circle CCTP (Cross-Chain Transfer Protocol)** — *Fully Deployed & Functional*: Handles native burn-and-mint USDC routing between Arc Testnet and Ethereum Sepolia. In `lib/agent/cctp-executor.ts`, the system executes burns, polls Circle's Iris attestation API for validation consensus, and triggers mint receipts on the destination Messenger contract.
+*   **Circle CCTP (Cross-Chain Transfer Protocol)** — *Fully Deployed & Functional*: Handles native burn-and-mint USDC routing on Arc Mainnet (Ethereum, Base, Avalanche) and Arc Testnet (Sepolia, Base Sepolia, Avalanche Fuji). In `lib/agent/cctp-executor.ts`, the system executes burns, polls Circle's Iris attestation API for validation consensus, and triggers mint receipts on the destination Messenger contract.
 *   **Circle Gateway (x402 Nanopayments)** — *Simulated/Planned*: Tracks AI model execution fees for each inference call in `lib/agent/gateway-payments.ts`. The codebase contains hooks to deduct USDC internally for every Groq API request, awaiting live production endpoints to route actual on-chain fee payments.
 *   **Web3 & Modular Wallets (WalletConnect & Circle W3S)** — *Fully Deployed & Functional*: Seamless wallet connectivity powered by WalletConnect / Reown Cloud, ConnectKit, and RainbowKit supporting 300+ mobile and browser wallets, alongside Circle's Web3 Services (W3S) user-controlled smart accounts. In `lib/tx-helper.ts`, transactions submitted by Circle embedded wallets are routed via custom EIP-1193 providers and sponsored gaslessly via paymasters.
 *   **Groq AI** — *Fully Deployed & Functional*: Powers the agent's real-time treasury analysis engine in `lib/agent/treasury-agent.ts`. The agent script calls the Groq SDK using the Groq AI Engine to evaluate current balances and autonomously execute or queue rebalancing decisions.
@@ -507,7 +507,7 @@ Syn DAO is developed with a strict security-first mindset, preparing for institu
 *   **Non-Custodial Integrity**: User private keys are never transmitted, stored, or managed by the Syn DAO server layer. All cryptographic keys remain secured directly on user hardware, browser extension wallets, or mobile wallets via WalletConnect / EIP-1193, and non-custodial Circle user-controlled smart accounts.
 *   **Mathematical Transparency**: All votes are verified cryptographically via ECDSA signatures on the client side, ensuring full provability of election inputs.
 *   **Isolated Creator Escrows**: Every Creator DAO deploys its own independent `SynArcCrowdfund` escrow contract from the creator's wallet. No single contract holds funds for multiple creators — eliminating shared-contract attack surfaces.
-*   **Permissionless Architecture**: Anyone can verify the escrow source code. Contract addresses are surfaced in the UI after deployment and linkable on [ArcScan](https://testnet.arcscan.app) for full on-chain transparency.
+*   **Permissionless Architecture**: Anyone can verify the escrow source code. Contract addresses are surfaced in the UI after deployment and linkable on [Arc Explorer](https://explorer.arc.io) (Mainnet) and [ArcScan](https://testnet.arcscan.app) (Testnet) for full on-chain transparency.
 
 ### Recent Security Improvements
 
@@ -516,7 +516,7 @@ Syn DAO is developed with a strict security-first mindset, preparing for institu
 | **Escrow Isolation** | Each creator gets a fresh, independent contract deployment | ✅ Live |
 | **On-Chain State Reads** | `totalRaised` and contributor counts read directly from chain via `viem` | ✅ Live |
 | **RPC Resiliency** | 4-endpoint sequential fallback chain prevents single-point-of-failure | ✅ Live |
-| **Verification Docs** | Hardhat CLI + ArcScan UI verification guide published in `docs/07-smart-contracts.md` | ✅ Live |
+| **Verification Docs** | Hardhat CLI + Arc Explorer & ArcScan verification guide published in `docs/07-smart-contracts.md` | ✅ Live |
 | **Pre-Audit Review** | Internal security review of Governor, Timelock, and Crowdfund contracts | 🔄 In Progress |
 | **External Security Audit** | Comprehensive third-party audit across Treasury, Governor, Agent, and Crowdfund | 🗓 Scheduled |
 | **ZK Voting** | Encrypted ballots via Zero-Knowledge proofs | 🗓 Planned |
