@@ -18,7 +18,6 @@ import {
   ArrowRightLeft,
   Bot,
   Rocket,
-  Trophy,
   Zap,
   Search,
   TrendingUp,
@@ -57,7 +56,6 @@ const activeLinks: ActiveLink[] = [
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/faucet", label: "Faucet", icon: Droplets },
   { href: "/creator-daos", label: "Creator DAO", icon: Rocket },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/settings", label: "Settings", icon: Settings },
   { href: "/docs", label: "Docs", icon: BookOpen },
 ];
