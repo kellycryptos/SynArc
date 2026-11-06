@@ -76,16 +76,27 @@ export function Sidebar({ className, onClick }: { className?: string; onClick?: 
 
   const effectiveIsTestnet = mounted ? isArcTestnet : false;
 
-  // On mainnet, show "Claim sARC" (10 sARC daily); on testnet, show "Faucet" (1000 sARC).
-  const visibleLinks = activeLinks.map((link) => {
-    if (link.href === "/faucet") {
-      return {
-        ...link,
-        label: effectiveIsTestnet ? "Faucet" : "Claim sARC",
-      };
-    }
-    return link;
-  });
+  // On mainnet: rename Faucet to Claim sARC, and hide testnet-only links (settings, docs, creator-daos).
+  const visibleLinks = activeLinks
+    .map((link) => {
+      if (link.href === "/faucet") {
+        return {
+          ...link,
+          label: effectiveIsTestnet ? "Faucet" : "Claim sARC",
+        };
+      }
+      return link;
+    })
+    .filter((link) => {
+      if (
+        link.href === "/creator-daos" ||
+        link.href === "/settings" ||
+        link.href === "/docs"
+      ) {
+        return effectiveIsTestnet;
+      }
+      return true;
+    });
 
   // Proactively prefetch all primary routes on mount and whenever
   // the tab regains focus or visibility (e.g. user returns after leaving the site).
