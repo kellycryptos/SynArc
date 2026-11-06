@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { Wallet, X, Globe } from "lucide-react";
+import { Wallet, X, Globe, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface AuthPromptBannerProps {
@@ -18,7 +18,7 @@ interface AuthPromptBannerProps {
  * Disappears automatically once the user connects.
  */
 export function AuthPromptBanner({ action = "vote or create proposals" }: AuthPromptBannerProps) {
-  const { isAuthenticated, login, ready } = useAuth();
+  const { isAuthenticated, login, ready, simulateDemoWallet } = useAuth();
   const [dismissed, setDismissed] = useState(false);
 
   // Don't show if authenticated, not ready, or dismissed
@@ -66,6 +66,14 @@ export function AuthPromptBanner({ action = "vote or create proposals" }: AuthPr
 
         {/* Action button */}
         <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={simulateDemoWallet}
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg bg-surface border border-primary/30 hover:border-primary text-primary text-xs font-semibold font-mono hover:bg-primary/5 active:scale-[0.98] transition-all cursor-pointer shadow-2xs"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <span>⚡ Demo Wallet</span>
+          </button>
           <button
             onClick={login}
             className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 sm:py-1.5 rounded-lg bg-gradient-to-r from-[#2F6FFF] to-[#4F8BFF] text-white text-xs font-semibold font-space hover:opacity-95 active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(47,111,255,0.25)] cursor-pointer"

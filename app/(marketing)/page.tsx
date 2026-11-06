@@ -236,6 +236,13 @@ export default function LandingPage() {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
+              href="/dashboard?demo=true"
+              className="btn w-full sm:w-auto px-6 py-3.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-mono font-medium text-sm transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.15)] hover:text-white"
+            >
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              ⚡ 90s Judge Demo
+            </Link>
+            <Link
               href="/docs"
               className="btn w-full sm:w-auto px-7 py-3.5 rounded-xl border border-border bg-surface/80 hover:border-cyan-500/40 text-foreground font-mono font-medium text-sm transition-all flex items-center justify-center gap-2 shadow-xs hover:text-white"
             >

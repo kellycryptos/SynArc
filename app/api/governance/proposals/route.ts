@@ -235,7 +235,7 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-      const fixturePath = path.join(process.cwd(), "data/historical-proposals.json");
+      const fixturePath = path.join(/*turbopackIgnore: true*/ process.cwd(), "data", "historical-proposals.json");
       if (fs.existsSync(fixturePath)) {
         const raw = fs.readFileSync(fixturePath, "utf8");
         const fixtures = JSON.parse(raw);

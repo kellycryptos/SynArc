@@ -1,109 +1,129 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Github, Twitter, Mail, Youtube } from "lucide-react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
+import { ReceiptBoxModal } from "@/components/modals/ReceiptBoxModal";
 
 export function DashboardFooter() {
   const { networkName, currentChainId, contracts, explorerUrl } = useArcNetwork();
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const treasuryAddress = contracts.treasuryGovernance;
 
   return (
-    <footer className="mt-auto border-t border-border bg-surface/80 backdrop-blur-sm px-4 sm:px-6 py-4 text-xs font-mono text-muted">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-        {/* Left: Brand & Status */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+    <>
+      <footer className="mt-auto border-t border-border bg-surface/80 backdrop-blur-sm px-4 sm:px-6 py-4 text-xs font-mono text-muted">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          {/* Left: Brand & Status */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span className="text-foreground font-medium">{networkName} ({currentChainId})</span>
+            </div>
+            <span className="text-border">|</span>
+            <span className="text-muted hidden md:inline">
+              Syn DAO v0.1.0
             </span>
-            <span className="text-foreground font-medium">{networkName} ({currentChainId})</span>
           </div>
-          <span className="text-border">|</span>
-          <span className="text-muted hidden md:inline">
-            Syn DAO v0.1.0
-          </span>
-        </div>
 
-        {/* Center: Quick navigation links */}
-        <div className="flex flex-wrap items-center gap-4 text-muted">
-          <Link href="/docs" className="hover:text-foreground transition-colors">
-            Docs
-          </Link>
-          <Link href="/docs/sdk" className="hover:text-foreground transition-colors">
-            SDK
-          </Link>
-          <a
-            href={`${explorerUrl}/address/${treasuryAddress}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-foreground inline-flex items-center gap-1 transition-colors"
-          >
-            <span>Treasury</span>
-            <ExternalLink className="w-3 h-3 text-primary" />
-          </a>
-          <a
-            href={`${explorerUrl}/address/${contracts.governor}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-foreground inline-flex items-center gap-1 transition-colors"
-          >
-            <span>Governor</span>
-            <ExternalLink className="w-3 h-3 text-primary" />
-          </a>
-          <Link href="/terms" className="hover:text-foreground transition-colors">
-            Terms
-          </Link>
-          <Link href="/privacy" className="hover:text-foreground transition-colors">
-            Privacy
-          </Link>
-          <Link href="/contact" className="hover:text-primary transition-colors text-primary/90">
-            Feedback
-          </Link>
-        </div>
+          {/* Center: Quick navigation links */}
+          <div className="flex flex-wrap items-center gap-4 text-muted">
+            <button
+              type="button"
+              onClick={() => setIsReceiptModalOpen(true)}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:text-white hover:bg-amber-500/20 transition-colors cursor-pointer text-xs"
+              title="Sponsor Track Verification Matrix"
+            >
+              🏆 Receipt Box
+            </button>
+            <Link href="/docs" className="hover:text-foreground transition-colors">
+              Docs
+            </Link>
+            <Link href="/docs/sdk" className="hover:text-foreground transition-colors">
+              SDK
+            </Link>
+            <a
+              href={`${explorerUrl}/address/${treasuryAddress}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground inline-flex items-center gap-1 transition-colors"
+            >
+              <span>Treasury</span>
+              <ExternalLink className="w-3 h-3 text-primary" />
+            </a>
+            <a
+              href={`${explorerUrl}/address/${contracts.governor}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground inline-flex items-center gap-1 transition-colors"
+            >
+              <span>Governor</span>
+              <ExternalLink className="w-3 h-3 text-primary" />
+            </a>
+            <Link href="/terms" className="hover:text-foreground transition-colors">
+              Terms
+            </Link>
+            <Link href="/privacy" className="hover:text-foreground transition-colors">
+              Privacy
+            </Link>
+            <Link href="/contact" className="hover:text-primary transition-colors text-primary/90">
+              Feedback
+            </Link>
+          </div>
 
-        {/* Right: Social & Explorer */}
-        <div className="flex items-center gap-3">
-          <a
-            href="mailto:hello@syndaopro.xyz"
-            className="text-muted hover:text-primary transition-colors p-1"
-            title="Email hello@syndaopro.xyz"
-            aria-label="Email support"
-          >
-            <Mail className="w-3.5 h-3.5" />
-          </a>
-          <a
-            href="https://youtube.com/@syndaopro"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted hover:text-[#FF0000] transition-colors p-1"
-            aria-label="Syn DAO on YouTube"
-            title="Syn DAO on YouTube (@syndaopro)"
-          >
-            <Youtube className="w-3.5 h-3.5" />
-          </a>
-          <a
-            href="https://x.com/syndaopro"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted hover:text-foreground transition-colors p-1"
-            aria-label="Syn DAO on X"
-          >
-            <Twitter className="w-3.5 h-3.5" />
-          </a>
-          <a
-            href="https://github.com/kellycryptos/SynArc"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted hover:text-foreground transition-colors p-1"
-            aria-label="Syn DAO on GitHub"
-          >
-            <Github className="w-3.5 h-3.5" />
-          </a>
+          {/* Right: Social & Explorer */}
+          <div className="flex items-center gap-3">
+            <a
+              href="mailto:hello@syndaopro.xyz"
+              className="text-muted hover:text-primary transition-colors p-1"
+              title="Email hello@syndaopro.xyz"
+              aria-label="Email support"
+            >
+              <Mail className="w-3.5 h-3.5" />
+            </a>
+            <a
+              href="https://youtube.com/@syndaopro"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted hover:text-[#FF0000] transition-colors p-1"
+              aria-label="Syn DAO on YouTube"
+              title="Syn DAO on YouTube (@syndaopro)"
+            >
+              <Youtube className="w-3.5 h-3.5" />
+            </a>
+            <a
+              href="https://x.com/syndaopro"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted hover:text-foreground transition-colors p-1"
+              aria-label="Syn DAO on X"
+            >
+              <Twitter className="w-3.5 h-3.5" />
+            </a>
+            <a
+              href="https://github.com/kellycryptos/SynArc"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted hover:text-foreground transition-colors p-1"
+              aria-label="Syn DAO on GitHub"
+            >
+              <Github className="w-3.5 h-3.5" />
+            </a>
+          </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+
+      {/* Sponsor Track Verification Matrix ("The Receipt Box") */}
+      {isReceiptModalOpen && (
+        <ReceiptBoxModal
+          isOpen={isReceiptModalOpen}
+          onClose={() => setIsReceiptModalOpen(false)}
+        />
+      )}
+    </>
   );
 }

@@ -17,7 +17,7 @@ const PROTECTED_ROUTES = ['/settings'];
 
 export function WalletGuard({ children }: { children: ReactNode }) {
   const deferred = useDeferredWeb3();
-  const { isAuthenticated, ready, login } = useAuth();
+  const { isAuthenticated, ready, login, simulateDemoWallet } = useAuth();
   const pathname = usePathname();
 
   const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
@@ -113,6 +113,15 @@ export function WalletGuard({ children }: { children: ReactNode }) {
               Connect Wallet to Participate
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={simulateDemoWallet}
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-surface border border-primary/30 hover:border-primary text-primary text-xs font-semibold font-mono hover:bg-primary/5 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+          >
+            <Sparkles className="w-4 h-4 text-cyan-400" />
+            <span>⚡ Simulate Demo Wallet (Funded)</span>
+          </button>
         </GlassCard>
       </div>
     );
