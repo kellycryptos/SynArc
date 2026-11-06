@@ -20,6 +20,7 @@ import {
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { CONTRACTS_MAINNET } from "@/lib/arc-config";
 import { ContactModal } from "@/components/contact/ContactModal";
+import { ReceiptBoxModal } from "@/components/modals/ReceiptBoxModal";
 
 /* ─────────────────────────────────────────────────────────────
    Navigation Data
@@ -47,6 +48,7 @@ const ECOSYSTEM_LINKS: NavItem[] = [
 const DEVELOPER_LINKS: NavItem[] = [
   { label: "Documentation", href: "/docs" },
   { label: "Agent SDK Guide", href: "/docs/sdk", badge: "v0.1" },
+  { label: "Track Verification Matrix", href: "#receipt-box", badge: "Receipts" },
   { label: "GitHub Repository", href: "https://github.com/kellycryptos/SynArc", external: true },
   {
     label: "Treasury Contract",
@@ -64,7 +66,6 @@ const DEVELOPER_LINKS: NavItem[] = [
 const GOVERNANCE_LINKS: NavItem[] = [
   { label: "Three-Way Match Engine", href: "/#why" },
   { label: "How It Works", href: "/#how-it-works" },
-  { label: "DAO Leaderboard", href: "/leaderboard" },
   { label: "Protocol Analytics", href: "/analytics" },
   { label: "Account Settings", href: "/settings" },
 ];
@@ -103,7 +104,25 @@ const LEGAL_LINKS: NavItem[] = [
   { label: "Protocol Disclaimer", href: "/terms#disclaimer" },
 ];
 
-function FooterNavLink({ item }: { item: NavItem }) {
+function FooterNavLink({ item, onOpenReceipt }: { item: NavItem; onOpenReceipt?: () => void }) {
+  if (item.href === "#receipt-box") {
+    return (
+      <button
+        type="button"
+        onClick={onOpenReceipt}
+        className="group inline-flex items-center gap-1.5 text-muted hover:text-foreground transition-colors cursor-pointer text-left"
+      >
+        <ChevronRight className="w-2.5 h-2.5 text-primary opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+        <span>{item.label}</span>
+        {item.badge && (
+          <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider bg-amber-500/10 text-amber-300 border border-amber-500/20">
+            {item.badge}
+          </span>
+        )}
+      </button>
+    );
+  }
+
   if (item.badge === "Coming Soon") {
     return (
       <div className="inline-flex items-center gap-1.5 text-muted cursor-default select-none">
@@ -165,6 +184,7 @@ export function Footer() {
   const [copied, setCopied] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
 
   const treasuryAddress = CONTRACTS_MAINNET.treasuryGovernance;
   const shortTreasury = `${treasuryAddress.slice(0, 6)}...${treasuryAddress.slice(-4)}`;
@@ -302,7 +322,7 @@ export function Footer() {
                 <ul className="space-y-2.5 text-xs font-mono">
                   {DEVELOPER_LINKS.map((item) => (
                     <li key={item.label}>
-                      <FooterNavLink item={item} />
+                      <FooterNavLink item={item} onOpenReceipt={() => setIsReceiptModalOpen(true)} />
                     </li>
                   ))}
                 </ul>
@@ -391,6 +411,14 @@ export function Footer() {
             </div>
 
             <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setIsReceiptModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:text-white hover:bg-amber-500/20 transition-colors cursor-pointer text-xs"
+                title="Sponsor Track Verification Matrix"
+              >
+                <span>🏆 Receipt Box</span>
+              </button>
               <a
                 href={`https://explorer.arc.io/address/${treasuryAddress}`}
                 target="_blank"
@@ -419,6 +447,14 @@ export function Footer() {
         <ContactModal
           isOpen={isContactModalOpen}
           onClose={() => setIsContactModalOpen(false)}
+        />
+      )}
+
+      {/* Sponsor Track Verification Matrix ("The Receipt Box") */}
+      {isReceiptModalOpen && (
+        <ReceiptBoxModal
+          isOpen={isReceiptModalOpen}
+          onClose={() => setIsReceiptModalOpen(false)}
         />
       )}
     </>
