@@ -1,19 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { ExternalLink, Github, Twitter, Mail, Youtube } from "lucide-react";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
-import { ReceiptBoxModal } from "@/components/modals/ReceiptBoxModal";
 
 export function DashboardFooter() {
   const { networkName, currentChainId, contracts, explorerUrl } = useArcNetwork();
-  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const treasuryAddress = contracts.treasuryGovernance;
 
   return (
-    <>
-      <footer className="mt-auto border-t border-border bg-surface/80 backdrop-blur-sm px-4 sm:px-6 py-4 text-xs font-mono text-muted">
+    <footer className="mt-auto border-t border-border bg-surface/80 backdrop-blur-sm px-4 sm:px-6 py-4 text-xs font-mono text-muted">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           {/* Left: Brand & Status */}
           <div className="flex items-center gap-3">
@@ -32,14 +29,6 @@ export function DashboardFooter() {
 
           {/* Center: Quick navigation links */}
           <div className="flex flex-wrap items-center gap-4 text-muted">
-            <button
-              type="button"
-              onClick={() => setIsReceiptModalOpen(true)}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:text-white hover:bg-amber-500/20 transition-colors cursor-pointer text-xs"
-              title="Sponsor Track Verification Matrix"
-            >
-              🏆 Receipt Box
-            </button>
             <Link href="/docs" className="hover:text-foreground transition-colors">
               Docs
             </Link>
@@ -116,14 +105,5 @@ export function DashboardFooter() {
           </div>
         </div>
       </footer>
-
-      {/* Sponsor Track Verification Matrix ("The Receipt Box") */}
-      {isReceiptModalOpen && (
-        <ReceiptBoxModal
-          isOpen={isReceiptModalOpen}
-          onClose={() => setIsReceiptModalOpen(false)}
-        />
-      )}
-    </>
   );
 }

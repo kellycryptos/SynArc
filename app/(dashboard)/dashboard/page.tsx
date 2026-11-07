@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardTopCards } from "@/components/dashboard/DashboardTopCards";
 import { LatestReleaseStrip } from "@/components/dashboard/LatestReleaseStrip";
-import { EvaluatorQuickBar } from "@/components/dashboard/EvaluatorQuickBar";
 import { useCampaignStore } from "@/hooks/useCampaignStore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { TokenIcon } from "@/components/ui/TokenIcon";
@@ -91,9 +90,6 @@ export default function DashboardOverview() {
     <div className="space-y-8 animate-fade-in-up">
       {/* Auth-aware header: banner ("Public Governance Explorer") + Create Proposal button */}
       <DashboardHeader />
-
-      {/* 90-Second Evaluator Quick Bar: 1-click preset actions for zero-barrier testing */}
-      <EvaluatorQuickBar />
 
       {/* Top 3 Operational Cards: Treasury balance (live), Open proposals (live), Treasury guard status */}
       <DashboardTopCards />

@@ -20,7 +20,6 @@ import {
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { CONTRACTS_MAINNET } from "@/lib/arc-config";
 import { ContactModal } from "@/components/contact/ContactModal";
-import { ReceiptBoxModal } from "@/components/modals/ReceiptBoxModal";
 
 /* ─────────────────────────────────────────────────────────────
    Navigation Data
@@ -411,14 +410,6 @@ export function Footer() {
             </div>
 
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => setIsReceiptModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:text-white hover:bg-amber-500/20 transition-colors cursor-pointer text-xs"
-                title="Sponsor Track Verification Matrix"
-              >
-                <span>🏆 Receipt Box</span>
-              </button>
               <a
                 href={`https://explorer.arc.io/address/${treasuryAddress}`}
                 target="_blank"
@@ -447,14 +438,6 @@ export function Footer() {
         <ContactModal
           isOpen={isContactModalOpen}
           onClose={() => setIsContactModalOpen(false)}
-        />
-      )}
-
-      {/* Sponsor Track Verification Matrix ("The Receipt Box") */}
-      {isReceiptModalOpen && (
-        <ReceiptBoxModal
-          isOpen={isReceiptModalOpen}
-          onClose={() => setIsReceiptModalOpen(false)}
         />
       )}
     </>
