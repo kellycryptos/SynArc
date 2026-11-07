@@ -10,40 +10,6 @@ const isCircleAddress = (address?: string) => {
   return savedConnected && !!savedAddress && (address ? address.toLowerCase() === savedAddress.toLowerCase() : true);
 };
 
-
-class DemoEthereumProvider {
-  private address: string;
-  private chainId: number;
-
-  constructor(address: string = '0x71C83893F37a57a15152a5EcebEAf5f8841B981e', chainId: number = ARC_CHAIN.id) {
-    this.address = address;
-    this.chainId = chainId;
-  }
-
-  async request(args: { method: string; params?: any[] }): Promise<any> {
-    const { method, params } = args;
-    if (method === 'eth_accounts' || method === 'eth_requestAccounts') {
-      return [this.address];
-    }
-    if (method === 'eth_chainId') {
-      return `0x${this.chainId.toString(16)}`;
-    }
-    if (method === 'eth_sendTransaction' || method === 'eth_sendRawTransaction') {
-      const mockTxHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      return mockTxHash;
-    }
-    if (method === 'eth_getTransactionReceipt') {
-      return {
-        status: '0x1',
-        blockNumber: '0x12a4b0',
-        transactionHash: params?.[0] || '0x0',
-        gasUsed: '0x186a0',
-      };
-    }
-    return null;
-  }
-}
-
 class CircleEthereumProvider {
   private address: string;
   private chainId: number;
@@ -164,23 +130,6 @@ class CircleEthereumProvider {
 
 // Enforce target chain ID before executing transaction with dynamic checks to prevent Privy crashes
 export function selectActiveWallet(wallets?: any[], activeAddress?: string | null): any {
-  const isDemo = (typeof window !== 'undefined' && localStorage.getItem('synarc_demo_wallet_active') === 'true') ||
-    (activeAddress && activeAddress.toLowerCase() === '0x71c83893f37a57a15152a5ecebeaf5f8841b981e');
-
-  if (isDemo) {
-    const address = '0x71C83893F37a57a15152a5EcebEAf5f8841B981e';
-    const provider = new DemoEthereumProvider(address);
-    return {
-      address,
-      walletClientType: 'demo',
-      chainId: `eip155:${ARC_CHAIN.id}`,
-      getEthereumProvider: async () => provider,
-      getEip1193Provider: async () => provider,
-      getProvider: async () => provider,
-      switchChain: async () => {}
-    };
-  }
-
   if (isCircleAddress(activeAddress || undefined)) {
     const address = localStorage.getItem('synarc_circle_address')!;
     const provider = new CircleEthereumProvider(address);
@@ -233,10 +182,6 @@ const publicClientCacheByChain = new Map<number, any>();
 
 export const enforceChain = async (activeWallet: any, targetChainId: number = ARC_CHAIN.id): Promise<any> => {
   if (!activeWallet) throw new Error("No active wallet provided for chain enforcement");
-
-  if (activeWallet.walletClientType === 'demo') {
-    return await activeWallet.getEthereumProvider();
-  }
 
   const targetHex = `0x${targetChainId.toString(16)}`;
   

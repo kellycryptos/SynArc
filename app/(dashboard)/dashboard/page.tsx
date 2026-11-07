@@ -10,7 +10,6 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { TokenIcon } from "@/components/ui/TokenIcon";
 import { ArrowRight, Rocket, Plus, Users, Trophy } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@/hooks/auth/useAuth";
 import { useCreatorStore } from "@/hooks/useCreatorStore";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { useGovernanceStore } from "@/hooks/useGovernanceStore";
@@ -63,7 +62,6 @@ const GovernanceAnalytics = dynamic(
 
 export default function DashboardOverview() {
   const { isArcMainnet } = useArcNetwork();
-  const { simulateDemoWallet } = useAuth();
   const { campaigns, initializeStore } = useCampaignStore();
   const { creators, initializeStore: initializeCreatorsStore } = useCreatorStore();
   const { proposals, initialized, initializeStore: initializeGovStore } = useGovernanceStore();
@@ -72,11 +70,7 @@ export default function DashboardOverview() {
     initializeStore();
     initializeCreatorsStore();
     if (!initialized) initializeGovStore();
-
-    if (typeof window !== "undefined" && window.location.search.includes("demo=true")) {
-      simulateDemoWallet();
-    }
-  }, [initializeStore, initializeCreatorsStore, initialized, initializeGovStore, simulateDemoWallet]);
+  }, [initializeStore, initializeCreatorsStore, initialized, initializeGovStore]);
 
   // Calculate stats
   const activeCampaigns = campaigns.filter(c => c.state === "Active" || c.state === "Voting").length;

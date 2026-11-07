@@ -192,18 +192,11 @@ export async function POST(req: NextRequest) {
     const sanitizedKey = rawKey.trim().replace(/^['"]|['"]$/g, '')
 
     if (!sanitizedKey || sanitizedKey.length < 10) {
-      // In sterile container or demo mode without private keys, return simulated claim receipt
-      const simulatedTx = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`
-      claims.set(claimKey, now)
-      ipClaims.set(ipClaimKey, now)
-      return NextResponse.json({
-        success: true,
-        network,
-        tokenAmount: network === 'mainnet' ? '10' : '1000',
-        txHash: simulatedTx,
-        demoMode: true,
-        message: `Claimed ${network === 'mainnet' ? '10' : '1,000'} sARC successfully (Demo Mode Fixture)`,
-      })
+      return NextResponse.json({ 
+        error: network === 'mainnet' 
+          ? 'Deployer private key not configured on Mainnet. Please add DEPLOYER_PRIVATE_KEY in your Vercel Project Environment Variables.' 
+          : 'Faucet not configured for this network' 
+      }, { status: 500 })
     }
 
     const privateKey = sanitizedKey.startsWith('0x')
@@ -352,15 +345,9 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('Faucet error:', error)
-    // If upstream RPC fails or network is firewalled in sterile container, fallback cleanly
-    const simulatedTx = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`
-    return NextResponse.json({
-      success: true,
-      message: 'Claimed sARC tokens successfully (Demo Mode Fallback)',
-      txHash: simulatedTx,
-      demoMode: true,
-      amount: 10,
-      network: 'mainnet',
-    })
+    return NextResponse.json(
+      { error: error?.shortMessage || error?.message || 'Faucet claim failed' },
+      { status: 500 }
+    )
   }
 }

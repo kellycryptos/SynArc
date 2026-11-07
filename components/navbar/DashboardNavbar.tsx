@@ -3,8 +3,7 @@
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUSDCBalance } from "@/hooks/useUSDCBalance";
 import { NetworkStatusBadge } from "@/components/layout/NetworkStatusBadge";
-import { Menu, LogOut, Wallet, Sparkles } from "lucide-react";
-import { DemoModeBadge } from "@/components/layout/DemoModeBadge";
+import { Menu, LogOut, Wallet } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { SynArcLogo } from "@/components/ui/SynArcLogo";
 import { TokenIcon } from "@/components/ui/TokenIcon";
@@ -29,7 +28,7 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   }, []);
 
   const deferred = useDeferredWeb3();
-  const { isAuthenticated, walletAddress, email, user, logout, login, isCircle, simulateDemoWallet } = useAuth();
+  const { isAuthenticated, walletAddress, email, user, logout, login, isCircle } = useAuth();
   const activeWalletAddress = walletAddress;
   const { balance, loading, error } = useUSDCBalance(activeWalletAddress);
 
@@ -65,7 +64,6 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         {mounted && isAuthenticated ? (
           <div className="flex items-center gap-2 sm:gap-3">
 
-            <DemoModeBadge />
             {/* USDC Balance Display */}
             {loading && (!balance || balance === "0.00") ? (
               <div className="h-8 w-24 bg-surface animate-pulse rounded-lg border border-border shrink-0" />
@@ -123,14 +121,6 @@ export function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 </button>
               )}
             </ConnectButton.Custom>
-            <button
-              type="button"
-              onClick={simulateDemoWallet}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs font-medium transition-all cursor-pointer shadow-2xs"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-              <span>⚡ Demo</span>
-            </button>
           </div>
         )}
 

@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useArcNetwork } from "@/hooks/auth/useArcNetwork";
 import { ARC_CHAIN } from "@/lib/arc-config";
-import { Wallet, LogOut, Copy, ExternalLink, ChevronUp, ChevronDown, Check, Sparkles } from "lucide-react";
+import { Wallet, LogOut, Copy, ExternalLink, ChevronUp, ChevronDown, Check } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useDeferredWeb3 } from "@/providers/DeferredWeb3Provider";
@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 export function WalletConnectButton() {
   const deferred = useDeferredWeb3();
-  const { isAuthenticated, walletAddress, logout, ready, login, isDemo, simulateDemoWallet } = useAuth();
+  const { isAuthenticated, walletAddress, logout, ready, login } = useAuth();
   const { chainId } = useArcNetwork();
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -123,14 +123,6 @@ export function WalletConnectButton() {
             );
           }}
         </ConnectButton.Custom>
-        <button
-          type="button"
-          onClick={simulateDemoWallet}
-          className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-surface border border-primary/30 hover:border-primary text-primary font-mono text-[11px] font-medium hover:bg-primary/5 active:scale-[0.98] transition-all cursor-pointer shadow-2xs"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-          <span>⚡ Simulate Demo Wallet</span>
-        </button>
         <p className="text-[10px] text-center text-[#6B7385] px-1 leading-relaxed font-mono">
           <a href="/terms" className="text-[#4F8BFF] hover:underline transition-all">Terms</a>
           {" "}&amp;{" "}

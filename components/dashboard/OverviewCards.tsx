@@ -71,7 +71,7 @@ export function OverviewCards() {
         : (isMainnet ? (typeof treasuryBalance === 'number' ? `$${treasuryBalance.toFixed(2)}` : "—") : "$30,688.99"));
 
   const cards = [
-    { title: "Treasury Value", value: liveTreasuryValue, icon: DollarSign, trend: !isMainnet && liveTreasuryValue === "$30,688.99" ? "Testnet demo data" : (isMainnet && liveTreasuryValue === "—" ? "—" : "Live") },
+    { title: "Treasury Value", value: liveTreasuryValue, icon: DollarSign, trend: !isMainnet && liveTreasuryValue === "$30,688.99" ? "Testnet" : (isMainnet && liveTreasuryValue === "—" ? "—" : "Live") },
     { title: "Total Proposals", value: metrics?.totalProposals !== undefined ? metrics.totalProposals : (isMainnet ? "—" : 0), icon: FileText, trend: isMainnet ? (metrics?.totalProposals !== undefined ? "Live" : "—") : "Live" },
     { title: "Active Proposals", value: metrics?.activeProposals !== undefined ? metrics.activeProposals : (isMainnet ? "—" : 0), icon: Activity, trend: isMainnet ? (metrics?.activeProposals !== undefined ? "Live" : "—") : "Active" },
     { title: "Governance Participation", value: metrics?.governanceParticipation ? metrics.governanceParticipation : (isMainnet ? "—" : "0.0%"), icon: ArrowRightLeft, trend: isMainnet ? (metrics?.governanceParticipation && metrics.governanceParticipation !== "—" ? "Live" : "—") : "Live" },
@@ -112,7 +112,7 @@ export function OverviewCards() {
               <Icon className="w-4.5 h-4.5 text-[#6B7385]" />
               <span className={cn(
                 "font-mono text-xs px-2 py-0.5 rounded-[5px] border",
-                card.trend.includes("demo")
+                card.trend === "Testnet"
                   ? "text-amber-400 bg-amber-500/10 border-amber-500/20 text-[10px]"
                   : isPositive 
                   ? "text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/20"
