@@ -162,20 +162,11 @@ function FooterNavLink({ item }: { item: NavItem }) {
    ───────────────────────────────────────────────────────────── */
 
 export function Footer() {
-  const [copied, setCopied] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   const treasuryAddress = CONTRACTS_MAINNET.treasuryGovernance;
-  const shortTreasury = `${treasuryAddress.slice(0, 6)}...${treasuryAddress.slice(-4)}`;
 
-  const handleCopy = () => {
-    if (navigator?.clipboard) {
-      navigator.clipboard.writeText(treasuryAddress);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   const handleCopyEmail = () => {
     if (navigator?.clipboard) {
@@ -376,18 +367,7 @@ export function Footer() {
                 <span className="text-foreground font-medium">Arc Mainnet</span>
                 <span className="text-emerald-500">• Operational</span>
               </div>
-              <div className="hidden sm:inline-flex items-center gap-1.5 text-xs">
-                <span>Treasury:</span>
-                <code className="text-foreground">{shortTreasury}</code>
-                <button
-                  onClick={handleCopy}
-                  aria-label="Copy Treasury Contract Address"
-                  className="p-1 hover:text-primary transition-colors cursor-pointer"
-                  title="Copy full Treasury address"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                </button>
-              </div>
+
             </div>
 
             <div className="flex items-center gap-4">
